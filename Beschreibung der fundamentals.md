@@ -356,7 +356,7 @@ gelöscht. Spätere Änderungen sind unten vermerkt.
 
 ### Ergebnis der Umwandlung
 - 932 Einheiten, 86 Wartungen, 20 Equipments: 18 aus der INI plus „GENERIC“ und „MOUNTAIN“ aus `workouts.csv`.
-- 5 Kategorien plus „Training“, 28 Schwellwerte.
+- 5 Kategorien plus „Training“ (die 28 Schwellwerte werden seit 039 nicht mehr übernommen).
 - Die Jahressummen sind identisch mit `workouts.csv` (automatischer Test).
 
 ### Beschädigte Umlaute
@@ -366,9 +366,9 @@ gelöscht. Spätere Änderungen sind unten vermerkt.
 ### Fehlende Aufzeichnungen
 Zwei FIT-Dateien fehlen in den Altdaten: Zeile 344 (2019-11-11) und Zeile 933 (2026-10-05).
 
-## 10. Datenbankschema (Schemaversion 4, `PRAGMA user_version`)
+## 10. Datenbankschema (Schemaversion 5, `PRAGMA user_version`)
 
-Wörtlich aus `src/AndyTours.Daten/ErstelleSchema.cs`:
+Wörtlich aus `src/AndyTours.Daten/ErstelleSchema.cs`. Eine neue Datenbank erhält danach die aktuelle Version; ältere Datenbestände baut `BaueSchemaUm` beim Öffnen um, nachdem `OeffneDatenbank` sie gesichert hat (ADR 0010).
 
 ```sql
 -- Sportler (Nutzerverwaltung)
@@ -381,11 +381,7 @@ CREATE TABLE IF NOT EXISTS Fahrer (
     GewichtKg           REAL    NOT NULL,
     Ruhepuls            INTEGER NOT NULL,
     Maxpuls             INTEGER NOT NULL,
-    TrainingspulsVon    INTEGER NOT NULL,
-    TrainingspulsBis    INTEGER NOT NULL,
-    Heimatort           TEXT    NOT NULL,
-    HeimatBreitengrad   REAL,
-    HeimatLaengengrad   REAL
+    Heimatort           TEXT    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Aktivitaet (
@@ -415,26 +411,16 @@ CREATE TABLE IF NOT EXISTS Kategorie (
     IstStandard  INTEGER NOT NULL
 );
 
--- Ausrüstung; Kettenblätter und Ritzel als kommagetrennte Zähnezahlen („39,53")
+-- Ausrüstung
 CREATE TABLE IF NOT EXISTS Equipment (
     Id                 INTEGER PRIMARY KEY,
     Name               TEXT    NOT NULL UNIQUE COLLATE NOCASE,
     AktivitaetId       INTEGER REFERENCES Aktivitaet(Id),
-    GewichtKg          REAL    NOT NULL,
-    RadumfangMm        INTEGER NOT NULL,
-    CrCoeff            REAL    NOT NULL,
-    CmCoeff            REAL    NOT NULL,
-    CwCoeff            REAL    NOT NULL,
-    CwaCoeff           REAL    NOT NULL,
-    SinCoeff           REAL    NOT NULL,
-    Kettenblaetter     TEXT    NOT NULL,
-    Ritzel             TEXT    NOT NULL,
     Geraetezuordnung   TEXT    NOT NULL,
     StandardKategorie  TEXT    NOT NULL,
     IstStandard        INTEGER NOT NULL,
     Ausgemustert       INTEGER NOT NULL,
     Anschaffungsdatum  TEXT,
-    Bildpfad           TEXT    NOT NULL,
     AnfangsdistanzKm   REAL    NOT NULL
 );
 
@@ -494,16 +480,6 @@ CREATE TABLE IF NOT EXISTS Wartung (
     Aktiv        INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Schwellwert (
-    Id           INTEGER PRIMARY KEY,
-    Art          TEXT    NOT NULL,
-    Reihenfolge  INTEGER NOT NULL,
-    Name         TEXT    NOT NULL,
-    Von          REAL    NOT NULL,
-    Bis          REAL    NOT NULL,
-    Farbe        TEXT    NOT NULL
-);
-
 -- Einstellungen, die zum Datenbestand gehören (z. B. Datensicherung), als Schlüssel/Wert-Paare;
 -- seit Schemaversion 2. Ältere Datenbanken erhalten die Tabelle beim nächsten Öffnen automatisch.
 CREATE TABLE IF NOT EXISTS Einstellung (
@@ -530,8 +506,6 @@ CREATE TABLE IF NOT EXISTS Overlay (
     Eingeschaltet  INTEGER NOT NULL,
     Punkte         BLOB    NOT NULL
 );
-
-PRAGMA user_version = {Schemaversion};
 ```
 
 ## 11. Konventionen (wörtlich aus `docs/Konventionen.md`)
@@ -549,13 +523,14 @@ Verbindliche Regeln für den Quellcode. Grundlage ist die Projektvorgabe in `CLA
 | `src/AndyTours.App` | WPF-Oberfläche: `Views/` (XAML), `ViewModels/` und `Funktionen/` (Abläufe, die Daten und Import verbinden) | Core, Daten, Import |
 | `tools/AndyTours.Altdatenuebernahme` | Konsolenprogramm für die einmalige Umwandlung der Altdaten in einen AndyTours-Datenordner | Daten, Import |
 | `tests/AndyTours.Tests` | Unit-Tests (xUnit) | Core, Daten, Import, Altdatenuebernahme |
-| `Daten/` | Ihre Nutzdaten (Altdaten, FIT-Dateien, später die Datenbank) – **kein Quellcode** | – |
+| `Daten/` | Altdaten (nur lesend) – **kein Quellcode** | – |
 | `docs/` | Plan und Dokumentation | – |
 
 ### „Eine Aufgabe pro Datei"
 
 - **Eigenständige Fachfunktionen** (Berechnungen, Import-Schritte, Prüfungen) werden als `static class` mit genau **einer** öffentlichen Methode `Ausfuehren(...)` geschrieben. Der Klassenname beschreibt die Funktion als Verb:
   `Berechnungen/BerechneDurchschnittsgeschwindigkeit.cs` → `BerechneDurchschnittsgeschwindigkeit.Ausfuehren(distanzKm, fahrzeit)`
+  Varianten derselben Aufgabe dürfen statt `Ausfuehren` als benannte Methoden in derselben Klasse stehen, z. B. `ErmittleLoeschsperre.Equipment(…)` und `ErmittleLoeschsperre.Kategorie(…)`.
 - **Zusammengehörige Funktionen**, die dasselbe Format oder dieselbe Tabelle teilen, stehen gemeinsam in einer `static class`, deren Name das Thema als Substantiv nennt. Die Methoden heißen nach ihrer Tätigkeit:
   - Tabellen der Datenbank: `…Tabelle` mit `Laden`/`Speichern`, z. B. `TrainingseinheitenTabelle.Laden(verbindung)`
   - Einstellungen (Tabelle `Einstellung`): `…Einstellung` mit `Laden`/`Speichern`, z. B. `FensterpositionEinstellung.Speichern(verbindung, position)`
@@ -741,6 +716,18 @@ Die Hauptmenüpunkte als graue Flächen mit Rahmen (0008) wirken wie große Scha
 - Weiße Leiste, die sich vom grauen Fensterinhalt abhebt: deutlich abgegrenzt, aber ungewohnt für ein Windows-Menü.
 - Fluent ganz unverändert, ohne eigene Hervorhebung: kein eigener Wert, aber die Hervorhebung ist kaum sichtbar.
 
+### 0010 · Anpassung des Datenbankschemas
+
+#### Entscheidung
+Ältere Datenbestände werden beim Öffnen stufenweise an das aktuelle Schema angepasst. AndyTours liest die Schemaversion (`PRAGMA user_version`) und führt die nötigen Umbaustufen nacheinander aus (z. B. „4 → 5“), alle in einer Transaktion; die neue Versionsnummer wird erst am Ende gesetzt. Vor einem Umbau legt AndyTours eine Sicherung des bisherigen Stands an; scheitert sie, wird nichts umgebaut und der Start bricht mit einer Meldung ab. Wiederhergestellte Sicherungen älterer Versionen durchlaufen denselben Umbau. Neue Tabellen kommen weiterhin einfach über `CREATE TABLE IF NOT EXISTS` hinzu.
+
+#### Warum
+Die einfachste Lösung, die auch Spalten und Tabellen entfernen kann: wenig Code, jede Stufe klein und einzeln testbar, und sie setzt den bisherigen Weg über die Schemaversion fort. Die Transaktion verhindert halb umgebaute Bestände, die Sicherung schützt vor Fehlern im Umbau selbst.
+
+#### Alternativen
+- Neue Datenbank aufbauen und alle Daten umkopieren: jede Art von Änderung möglich, aber deutlich mehr Code, der für jede Tabelle gepflegt werden muss.
+- Nur hinzufügen, nie entfernen: kein Risiko, aber nicht mehr verwendete Werte bleiben dauerhaft im Datenbestand.
+
 ## 13. Funktionen im Einzelnen (Spezifikationen und Planentscheidungen)
 
 In Umsetzungsreihenfolge. Je Funktion: Abhängigkeiten aus der Map, Spezifikation (wörtlich aus `spec.md`) und die mit dem Benutzer abgestimmten Entscheidungen aus `plan.md`.
@@ -790,13 +777,13 @@ Alle Daten von AndyTours (Datenbestand, Aufzeichnungen, Anhänge) liegen in eine
 Abhängig von: `datenordner-waehlen`
 
 #### Was und warum
-Ein eigenständiges Programm außerhalb von AndyTours wandelt die BikeXperience-Daten einmalig in einen AndyTours-Datenordner um: Trainingseinheiten, Räder, Wartungen, Aktivitäten, Kategorien, Schwellwerte, persönliche Daten und Aufzeichnungen. Ein Bericht zeigt, was übernommen wurde und was auffällig war. So braucht die App selbst keinen Altdaten-Import, und die Übernahme lässt sich jederzeit wiederholen, z. B. nach Korrekturen.
+Ein eigenständiges Programm außerhalb von AndyTours wandelt die BikeXperience-Daten einmalig in einen AndyTours-Datenordner um: Trainingseinheiten, Räder, Wartungen, Aktivitäten, Kategorien, persönliche Daten und Aufzeichnungen. Ein Bericht zeigt, was übernommen wurde und was auffällig war. So braucht die App selbst keinen Altdaten-Import, und die Übernahme lässt sich jederzeit wiederholen, z. B. nach Korrekturen.
 
 #### Kriterien
 - Wenn der Benutzer das Programm mit dem BikeXperience-Ordner und einem Zielordner aufruft, dann schreibt es in diesen Zielordner.
 - Wenn der Benutzer keinen Zielordner angibt, dann schreibt das Programm in den Ordner `AppDaten` im Projektordner.
 - Wenn der Benutzer auch keinen BikeXperience-Ordner angibt, dann liest das Programm aus dem Ordner `Daten` im Projektordner.
-- Wenn die Umwandlung fertig ist, dann enthält der Zielordner alle Trainingseinheiten, Räder, Wartungen, Aktivitäten, Kategorien, Schwellwerte und persönlichen Daten aus BikeXperience.
+- Wenn die Umwandlung fertig ist, dann enthält der Zielordner alle Trainingseinheiten, Räder, Wartungen, Aktivitäten, Kategorien und persönlichen Daten aus BikeXperience.
 - Wenn die Umwandlung fertig ist, dann liegen alle Aufzeichnungen und Anhänge im Zielordner und lassen sich den Trainingseinheiten zuordnen.
 - Wenn die Umwandlung fertig ist, dann liegt im Zielordner ein Bericht mit den übernommenen Mengen, den Jahressummen (Anzahl, km, hm, Fahrzeit), den Hinweisen, Warnungen und nicht reparierten Umlauten.
 - Wenn die Umwandlung fertig ist, dann zeigt das Programm eine kurze Zusammenfassung (Mengen, Anzahl der Warnungen) und wo der Bericht liegt.

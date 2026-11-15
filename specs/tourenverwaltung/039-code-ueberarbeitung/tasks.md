@@ -38,8 +38,8 @@ Abschnitt 7 – Tests
 - [x] 23. Freigegebene Funde umsetzen, testen, committen
 
 Abschluss
-- [ ] 24. Zeilen zählen und mit dem Ausgangsstand vergleichen
-- [ ] 25. Suche nach veraltetem und ungenutztem Code wiederholen
-- [ ] 26. Installationsprogramm bauen, Umwandlungswerkzeug mit einer Kopie von `Daten/` prüfen
-- [ ] 27. `docs/tech.md`, `docs/structure.md` und Projektbeschreibung nachziehen
+- [x] 24. Zeilen zählen und mit dem Ausgangsstand vergleichen
+- [x] 25. Suche nach veraltetem und ungenutztem Code wiederholen
+- [x] 26. Installationsprogramm bauen, Umwandlungswerkzeug mit einer Kopie von `Daten/` prüfen
+- [x] 27. `docs/tech.md`, `docs/structure.md` und Projektbeschreibung nachziehen
 - [ ] 28. Manuelle Prüfung des Programms durch den Benutzer

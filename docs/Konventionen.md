@@ -13,7 +13,7 @@ Verbindliche Regeln für den Quellcode. Grundlage ist die Projektvorgabe in `CLA
 | `src/AndyTours.App` | WPF-Oberfläche: `Views/` (XAML), `ViewModels/` und `Funktionen/` (Abläufe, die Daten und Import verbinden) | Core, Daten, Import |
 | `tools/AndyTours.Altdatenuebernahme` | Konsolenprogramm für die einmalige Umwandlung der Altdaten in einen AndyTours-Datenordner | Daten, Import |
 | `tests/AndyTours.Tests` | Unit-Tests (xUnit) | Core, Daten, Import, Altdatenuebernahme |
-| `Daten/` | Ihre Nutzdaten (Altdaten, FIT-Dateien, später die Datenbank) – **kein Quellcode** | – |
+| `Daten/` | Altdaten (nur lesend) – **kein Quellcode** | – |
 | `docs/` | Plan und Dokumentation | – |
 
 ## „Eine Aufgabe pro Datei"

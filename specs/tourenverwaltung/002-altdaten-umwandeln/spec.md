@@ -1,13 +1,13 @@
 # 002 – Altdaten umwandeln
 
 ## Was und warum
-Ein eigenständiges Programm außerhalb von AndyTours wandelt die BikeXperience-Daten einmalig in einen AndyTours-Datenordner um: Trainingseinheiten, Räder, Wartungen, Aktivitäten, Kategorien, Schwellwerte, persönliche Daten und Aufzeichnungen. Ein Bericht zeigt, was übernommen wurde und was auffällig war. So braucht die App selbst keinen Altdaten-Import, und die Übernahme lässt sich jederzeit wiederholen, z. B. nach Korrekturen.
+Ein eigenständiges Programm außerhalb von AndyTours wandelt die BikeXperience-Daten einmalig in einen AndyTours-Datenordner um: Trainingseinheiten, Räder, Wartungen, Aktivitäten, Kategorien, persönliche Daten und Aufzeichnungen. Ein Bericht zeigt, was übernommen wurde und was auffällig war. So braucht die App selbst keinen Altdaten-Import, und die Übernahme lässt sich jederzeit wiederholen, z. B. nach Korrekturen.
 
 ## Kriterien
 - Wenn der Benutzer das Programm mit dem BikeXperience-Ordner und einem Zielordner aufruft, dann schreibt es in diesen Zielordner.
 - Wenn der Benutzer keinen Zielordner angibt, dann schreibt das Programm in den Ordner `AppDaten` im Projektordner.
 - Wenn der Benutzer auch keinen BikeXperience-Ordner angibt, dann liest das Programm aus dem Ordner `Daten` im Projektordner.
-- Wenn die Umwandlung fertig ist, dann enthält der Zielordner alle Trainingseinheiten, Räder, Wartungen, Aktivitäten, Kategorien, Schwellwerte und persönlichen Daten aus BikeXperience.
+- Wenn die Umwandlung fertig ist, dann enthält der Zielordner alle Trainingseinheiten, Räder, Wartungen, Aktivitäten, Kategorien und persönlichen Daten aus BikeXperience.
 - Wenn die Umwandlung fertig ist, dann liegen alle Aufzeichnungen und Anhänge im Zielordner und lassen sich den Trainingseinheiten zuordnen.
 - Wenn die Umwandlung fertig ist, dann liegt im Zielordner ein Bericht mit den übernommenen Mengen, den Jahressummen (Anzahl, km, hm, Fahrzeit), den Hinweisen, Warnungen und nicht reparierten Umlauten.
 - Wenn die Umwandlung fertig ist, dann zeigt das Programm eine kurze Zusammenfassung (Mengen, Anzahl der Warnungen) und wo der Bericht liegt.
