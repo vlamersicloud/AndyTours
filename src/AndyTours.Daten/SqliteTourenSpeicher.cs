@@ -54,6 +54,7 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
         if (anfrage is null) throw new UngueltigeTourException("Änderungsanforderung fehlt.");
         PruefeVersion(anfrage.Version);
         ValidiereTour.Ausfuehren(anfrage.Werte);
+        if (anfrage.Werte.FahrerId <= 0) throw new UngueltigeTourException("Fahrerkennung fehlt.");
 
         using var verbindung = Oeffnen();
         using var transaktion = verbindung.BeginTransaction(deferred: false);
