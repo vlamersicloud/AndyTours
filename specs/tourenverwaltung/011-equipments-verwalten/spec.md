@@ -1,7 +1,7 @@
 # 011 – Equipments verwalten
 
 ## Was und warum
-Der Benutzer pflegt seine Räder und seine Ausrüstung (Equipments) in den Einstellungen unter „Auswahllisten“: anlegen, bearbeiten, ausmustern und löschen. Je Aktivität kann ein Equipment Standard sein; es wird bei neuen Einheiten vorbelegt, und seine Standardkategorie wird mit angehakt. Im Bearbeitungsfenster einer Einheit stehen nur die Equipments der passenden Aktivität. Bisher gab es nur die aus BikeXperience übernommenen Equipments, und neue Räder ließen sich nicht anlegen. Gewicht, Radumfang, Widerstandswerte, Kettenblätter, Ritzel und Bild gehören nicht dazu, die Gerätezuordnung gehört zum Garmin-Import.
+Der Benutzer pflegt seine Räder und seine Ausrüstung (Equipments) in den Einstellungen unter „Auswahllisten“: anlegen, bearbeiten, ausmustern und löschen. Je Aktivität kann ein Equipment Standard sein; es wird bei neuen Einheiten vorbelegt, und seine Standardkategorie wird mit angehakt. Im Bearbeitungsfenster einer Einheit stehen nur die Equipments der passenden Aktivität. Bisher gab es nur die aus den Altdaten übernommenen Equipments, und neue Räder ließen sich nicht anlegen. Gewicht, Radumfang, Widerstandswerte, Kettenblätter, Ritzel und Bild gehören nicht dazu, die Gerätezuordnung gehört zum Garmin-Import.
 
 ## Kriterien
 

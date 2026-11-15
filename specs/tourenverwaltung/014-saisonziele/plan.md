@@ -1,10 +1,10 @@
 # Plan: 014 – Saisonziele
 
 ## Vorgehen
-Die Ziele bekommen eine eigene Tabelle `Saisonziel` mit Aktivität, „ab Jahr“, km, hm und Anzahl. Die aus BikeXperience übernommenen Ziele stehen weiter in der Tabelle `Aktivitaet` und dienen als **Grundziel**: Es gilt, solange die Aktivität für kein Jahr bis einschließlich des gefragten Jahres ein eigenes Ziel hat. So müssen keine Altdaten umgewandelt werden.
+Die Ziele bekommen eine eigene Tabelle `Saisonziel` mit Aktivität, „ab Jahr“, km, hm und Anzahl. Die aus den Altdaten übernommenen Ziele stehen weiter in der Tabelle `Aktivitaet` und dienen als **Grundziel**: Es gilt, solange die Aktivität für kein Jahr bis einschließlich des gefragten Jahres ein eigenes Ziel hat. So müssen keine Altdaten umgewandelt werden.
 
 - **Core:**
-  - `ErmittleSaisonziel` liefert das wirksame Ziel einer Aktivität für ein Jahr und seine Herkunft: eigenes Ziel, übernommen aus einem früheren Jahr oder übernommen aus BikeXperience. `jahresfortschritt` wird das später ebenfalls nutzen.
+  - `ErmittleSaisonziel` liefert das wirksame Ziel einer Aktivität für ein Jahr und seine Herkunft: eigenes Ziel, übernommen aus einem früheren Jahr oder Grundziel. `jahresfortschritt` wird das später ebenfalls nutzen.
   - `SaisonzielEingaben` wandelt Ziele in Feldtexte um und zurück und prüft die Grenzen.
 - **Daten:**
   - Die Tabelle `Saisonziel` kommt mit Schemaversion 3. Ältere Datenbanken und Sicherungen erhalten sie beim Öffnen automatisch, wie bei Version 2.
@@ -20,7 +20,7 @@ Die Ziele bekommen eine eigene Tabelle `Saisonziel` mit Aktivität, „ab Jahr�
 - `src/AndyTours.Core/Modell/Datenbestand.cs` (ändern) — Liste `Saisonziele`
 - `src/AndyTours.Core/Berechnungen/ErmittleSaisonziel.cs` (neu) — wirksames Ziel einer Aktivität für ein Jahr aus einer Zielliste
   - Gilt das jüngste eigene Ziel mit `AbJahr` ≤ Jahr, dann eigenes Ziel bzw. übernommen aus diesem Jahr.
-  - Sonst gilt das Grundziel der Aktivität, gekennzeichnet als übernommen aus BikeXperience.
+  - Sonst gilt das Grundziel der Aktivität, gekennzeichnet als „Grundziel“.
   - Ist auch kein Grundziel vorhanden, gibt es kein Ziel; dann gibt es keine Kennzeichnung.
 - `src/AndyTours.Core/Berechnungen/SaisonzielEingaben.cs` (neu) — Ziel als Feldtexte (0 ergibt ein leeres Feld); Feldtexte prüfen (ganze Zahl, Grenzen) und in Zahlen umwandeln, mit Hinweis zum ersten Fehler
 - `src/AndyTours.Core/Berechnungen/FuehreAktivitaetenZusammen.cs` (ändern) — entfernt die Ziele der Ursprungsaktivität aus dem Bestand
@@ -34,7 +34,7 @@ Die Ziele bekommen eine eigene Tabelle `Saisonziel` mit Aktivität, „ab Jahr�
 - `src/AndyTours.App/ViewModels/HauptfensterViewModel.Saisonziele.cs` (neu) — Befehl `SaisonzieleOeffnen`, Speichern über `Schreibe`, danach Bestand ersetzen
 - `src/AndyTours.App/ViewModels/HauptfensterViewModel.Auswahllisten.cs` (ändern) — beim Löschen einer Aktivität ihre Ziele auch aus dem Bestand entfernen
 - `src/AndyTours.App/Views/Hauptfenster.xaml` (ändern) — „_Saisonziele…“ im Menü „Extras“ nach „Persönliche Daten…“
-- `tests/AndyTours.Tests/Berechnungen/ErmittleSaisonzielTests.cs` (neu) — eigenes Ziel, übernommen aus Vorjahr, aus BikeXperience, kein Ziel, 0 überschreibt
+- `tests/AndyTours.Tests/Berechnungen/ErmittleSaisonzielTests.cs` (neu) — eigenes Ziel, übernommen aus Vorjahr, Grundziel, kein Ziel, 0 überschreibt
 - `tests/AndyTours.Tests/Berechnungen/SaisonzielEingabenTests.cs` (neu) — Texte, leere Felder, Grenzen und Hinweise
 - `tests/AndyTours.Tests/Berechnungen/FuehreZusammenTests.cs` (ändern) — Ziele der Ursprungsaktivität verschwinden
 - `tests/AndyTours.Tests/Daten/SaisonzieleTests.cs` (neu) — Jahre ersetzen (andere Jahre bleiben), Laden nach Speichern, Kaskade beim Löschen der Aktivität, Datenbestand mit Zielen
@@ -46,12 +46,12 @@ Die Ziele bekommen eine eigene Tabelle `Saisonziel` mit Aktivität, „ab Jahr�
 - Wenn der Benutzer im Fenster das Jahr wählt, dann stehen nur das laufende und das folgende Jahr zur Wahl, und das Fenster zeigt die Ziele des gewählten Jahres.
   - Umgesetzt: `SaisonzieleViewModel` (Jahresliste, Neuberechnung der Zeilen)
   - Geprüft: manuell – Liste enthält genau 2026 und 2027; Wechsel zeigt die Werte des Jahres.
-- Wenn für ein Jahr kein eigenes Ziel eingetragen ist, dann gilt das Ziel des nächstfrüheren Jahres, und das Fenster kennzeichnet es als „übernommen aus <Jahr>“ bzw. bei einem Ziel aus BikeXperience als „übernommen aus BikeXperience“.
+- Wenn für ein Jahr kein eigenes Ziel eingetragen ist, dann gilt das Ziel des nächstfrüheren Jahres, und das Fenster kennzeichnet es als „übernommen aus <Jahr>“ bzw. beim Grundziel der Aktivität als „Grundziel“.
   - Umgesetzt: `ErmittleSaisonziel`, Spalte „Herkunft“
   - Geprüft: `ErmittleSaisonzielTests`; manuell – 2026 ändern, 2027 zeigt „übernommen aus 2026“.
-- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus BikeXperience übernommenen Ziele; sie gelten für alle Jahre bis zur ersten Änderung.
+- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus den Altdaten übernommenen Ziele; sie gelten für alle Jahre bis zur ersten Änderung.
   - Umgesetzt: Grundziel aus `Aktivitaet` in `ErmittleSaisonziel`
-  - Geprüft: `ErmittleSaisonzielTests`; manuell – Werte mit BikeXperience vergleichen.
+  - Geprüft: `ErmittleSaisonzielTests`; manuell – Werte mit den Altdaten vergleichen.
 - Wenn eine Aktivität kein Ziel hat, dann sind ihre Felder leer.
   - Umgesetzt: `SaisonzielEingaben` (0 ergibt ein leeres Feld)
   - Geprüft: `SaisonzielEingabenTests`
@@ -76,7 +76,7 @@ Die Ziele bekommen eine eigene Tabelle `Saisonziel` mit Aktivität, „ab Jahr�
 
 ## Entscheidungen
 - **Jahreswechsel (E1):** Änderungen bleiben beim Wechsel zwischen den beiden Jahren erhalten, und „OK“ speichert beide gemeinsam. Gewechselt werden kann nur, solange alle Eingaben gültig sind.
-- **Kennzeichnung (F1):** Ein Ziel direkt aus BikeXperience heißt „übernommen aus BikeXperience“.
+- **Kennzeichnung (F1):** Das Grundziel der Aktivität heißt „Grundziel“.
 - **Eigenes Ziel erst bei Änderung:** Eine Zeile wird erst dann zum eigenen Ziel des Jahres, wenn eines ihrer Felder geändert wurde. Ein schon vorhandenes eigenes Ziel bleibt eigenes Ziel. „OK“ ohne Änderung legt nichts an.
 - **Grundziel bleibt in `Aktivitaet`:** Die Ziele werden nicht in die neue Tabelle umgezogen. Das spart eine Datenumwandlung, und ältere Sicherungen bleiben brauchbar.
 - **Zusammenführen:** Die Ziele der Ursprungsaktivität verschwinden; die Ziele der verbleibenden Aktivität gelten.

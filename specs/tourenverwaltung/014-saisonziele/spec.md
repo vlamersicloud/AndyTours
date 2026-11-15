@@ -8,8 +8,8 @@ Der Benutzer legt je Aktivität und Jahr Saisonziele für Kilometer, Höhenmeter
 ### Anzeigen
 - Wenn der Benutzer „Extras → Saisonziele…“ wählt, dann zeigt ein Fenster für das gewählte Jahr alle Aktivitäten mit ihren Zielen für Kilometer, Höhenmeter und Anzahl; vorgewählt ist das laufende Jahr.
 - Wenn der Benutzer im Fenster das Jahr wählt, dann stehen nur das laufende und das folgende Jahr zur Wahl, und das Fenster zeigt die Ziele des gewählten Jahres.
-- Wenn für ein Jahr kein eigenes Ziel eingetragen ist, dann gilt das Ziel des nächstfrüheren Jahres, und das Fenster kennzeichnet es als „übernommen aus <Jahr>“ bzw. bei einem Ziel aus BikeXperience als „übernommen aus BikeXperience“.
-- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus BikeXperience übernommenen Ziele; sie gelten für alle Jahre bis zur ersten Änderung.
+- Wenn für ein Jahr kein eigenes Ziel eingetragen ist, dann gilt das Ziel des nächstfrüheren Jahres, und das Fenster kennzeichnet es als „übernommen aus <Jahr>“ bzw. beim Grundziel der Aktivität als „Grundziel“.
+- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus den Altdaten übernommenen Ziele; sie gelten für alle Jahre bis zur ersten Änderung.
 - Wenn eine Aktivität kein Ziel hat, dann sind ihre Felder leer.
 
 ### Ändern

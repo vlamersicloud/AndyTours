@@ -1,7 +1,7 @@
 # 021 – Wartung erfassen
 
 ## Was und warum
-Die Karteikarte „Wartung“ zeigt alle Wartungen der Räder. Der Benutzer erfasst, ändert und löscht dort Wartungen mit Datum, Rad, Tätigkeit und Kommentar. Zu jeder Wartung steht der Kilometerstand des Rads an diesem Tag. Die Tätigkeiten pflegt er in den Einstellungen als eigene Auswahlliste, wie die Trainingsbereiche. So bleibt wie in BikeXperience nachvollziehbar, wann an welchem Rad was gemacht wurde. Alarme, die Haltbarkeit der Teile und der CSV-Austausch sind eigene Funktionen.
+Die Karteikarte „Wartung“ zeigt alle Wartungen der Räder. Der Benutzer erfasst, ändert und löscht dort Wartungen mit Datum, Rad, Tätigkeit und Kommentar. Zu jeder Wartung steht der Kilometerstand des Rads an diesem Tag. Die Tätigkeiten pflegt er in den Einstellungen als eigene Auswahlliste, wie die Trainingsbereiche. So bleibt nachvollziehbar, wann an welchem Rad was gemacht wurde. Alarme, die Haltbarkeit der Teile und der CSV-Austausch sind eigene Funktionen.
 
 ## Kriterien
 

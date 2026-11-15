@@ -1,13 +1,13 @@
 # 013 – Persönliche Daten
 
 ## Was und warum
-Der Benutzer pflegt seine persönlichen Daten in einem eigenen Fenster: Vorname, Nachname, Geburtstag, Größe, Gewicht, Ruhe- und Maximalpuls sowie den Heimatort. Die Werte wurden aus BikeXperience übernommen und lassen sich bisher nicht ansehen oder ändern. Spätere Funktionen greifen darauf zurück, etwa die Streckenkarte auf den Heimatort.
+Der Benutzer pflegt seine persönlichen Daten in einem eigenen Fenster: Vorname, Nachname, Geburtstag, Größe, Gewicht, Ruhe- und Maximalpuls sowie den Heimatort. Die Werte wurden aus den Altdaten übernommen und lassen sich bisher nicht ansehen oder ändern. Spätere Funktionen greifen darauf zurück, etwa die Streckenkarte auf den Heimatort.
 
 ## Kriterien
 
 ### Anzeigen
 - Wenn der Benutzer „Extras → Persönliche Daten…“ wählt, dann zeigt ein Fenster die gespeicherten Werte: Vorname, Nachname, Geburtstag, Größe in cm, Gewicht in kg, Ruhepuls, Maximalpuls und Heimatort (nur der Name des Orts).
-- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus BikeXperience übernommenen Werte.
+- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus den Altdaten übernommenen Werte.
 - Wenn noch keine persönlichen Daten vorhanden sind (neuer, leerer Datenordner), dann sind die Felder leer.
 
 ### Ändern

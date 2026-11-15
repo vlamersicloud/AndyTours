@@ -1,7 +1,7 @@
 # 019 – Streckenkarte
 
 ## Was und warum
-Im Tourdetail einer Einheit lässt sich die gefahrene Strecke auf einer Landkarte ansehen. Das Tourdetail bekommt dafür neben „Höhenprofil“ die Karteikarte „Karte“. Wahlweise erscheint die OpenStreetMap-Standardkarte oder OpenTopoMap mit Höhenlinien und Wegen. So lässt sich wie in BikeXperience nachvollziehen, wo eine Tour entlangführte. Bereits angesehene Gegenden bleiben auch ohne Internet sichtbar.
+Im Tourdetail einer Einheit lässt sich die gefahrene Strecke auf einer Landkarte ansehen. Das Tourdetail bekommt dafür neben „Höhenprofil“ die Karteikarte „Karte“. Wahlweise erscheint die OpenStreetMap-Standardkarte oder OpenTopoMap mit Höhenlinien und Wegen. So lässt sich nachvollziehen, wo eine Tour entlangführte. Bereits angesehene Gegenden bleiben auch ohne Internet sichtbar.
 
 ## Kriterien
 

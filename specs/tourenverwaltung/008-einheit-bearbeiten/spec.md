@@ -1,7 +1,7 @@
 # 008 – Trainingseinheit anlegen, bearbeiten, kopieren und löschen
 
 ## Was und warum
-Der Benutzer kann Trainingseinheiten neu anlegen, ändern, kopieren und löschen, wie mit dem Dialog in BikeXperience. Das Bearbeitungsfenster zeigt alle Werte einer Einheit, auch die, die in der Tabelle nicht vorkommen. Einzelne Werte lassen sich zusätzlich direkt in der Tabelle ändern. So pflegt er seine Touren ohne Umweg, berichtigt Fehler aus Aufzeichnungen und erfasst Einheiten ohne Aufzeichnung von Hand. Diese Funktion ist auch die Grundlage für die späteren Importe.
+Der Benutzer kann Trainingseinheiten neu anlegen, ändern, kopieren und löschen. Das Bearbeitungsfenster zeigt alle Werte einer Einheit, auch die, die in der Tabelle nicht vorkommen. Einzelne Werte lassen sich zusätzlich direkt in der Tabelle ändern. So pflegt er seine Touren ohne Umweg, berichtigt Fehler aus Aufzeichnungen und erfasst Einheiten ohne Aufzeichnung von Hand. Diese Funktion ist auch die Grundlage für die späteren Importe.
 
 Die Befehle stehen im Menü „Einheit“ und im Rechtsklickmenü der Tabelle. Mehrfachaktionen (Kategorie, Aktivität, Equipment), Anhänge öffnen und Werte aus der Aufzeichnung übernehmen sind eigene Funktionen.
 

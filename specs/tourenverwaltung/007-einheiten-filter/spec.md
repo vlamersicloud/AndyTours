@@ -1,7 +1,7 @@
 # 007 – Filter für die Trainingseinheiten
 
 ## Was und warum
-Über der Tabelle der Trainingseinheiten stehen Filter für Kategorie, Equipment, Trainingsbereich, Distanz, Höhenmeter und Name, wie in BikeXperience. Damit grenzt der Benutzer die Einheiten der Jahres- und Aktivitätsauswahl weiter ein, etwa auf alle Touren mit einem bestimmten Rad oder alle über 100 km, und sieht Summen und Bestwerte genau dieser Einheiten. Die Filter wirken sofort und sind nach einem Neustart wieder leer.
+Über der Tabelle der Trainingseinheiten stehen Filter für Kategorie, Equipment, Trainingsbereich, Distanz, Höhenmeter und Name. Damit grenzt der Benutzer die Einheiten der Jahres- und Aktivitätsauswahl weiter ein, etwa auf alle Touren mit einem bestimmten Rad oder alle über 100 km, und sieht Summen und Bestwerte genau dieser Einheiten. Die Filter wirken sofort und sind nach einem Neustart wieder leer.
 
 ## Kriterien
 - Wenn das Hauptfenster geöffnet ist, dann stehen über der Tabelle Filter für Kategorie, Equipment, Trainingsbereich, Distanz (von–bis), Höhenmeter (von–bis) und Name, und keiner davon ist gesetzt.

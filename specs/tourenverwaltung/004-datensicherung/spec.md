@@ -1,7 +1,7 @@
 # 004 – Automatische Datensicherung
 
 ## Was und warum
-AndyTours sichert die Datenbank automatisch beim Programmstart, jeweils nach einer einstellbaren Zahl von Programmstarts, in einen frei wählbaren Sicherungsordner. Die Sicherung ist immer aktiv. Nur die eingestellte Höchstzahl an Sicherungen wird aufbewahrt, die ältesten werden gelöscht. So gehen bei einem Defekt oder Bedienfehler höchstens die Änderungen der letzten Programmstarts verloren, wie bei BikeXperience.
+AndyTours sichert die Datenbank automatisch beim Programmstart, jeweils nach einer einstellbaren Zahl von Programmstarts, in einen frei wählbaren Sicherungsordner. Die Sicherung ist immer aktiv. Nur die eingestellte Höchstzahl an Sicherungen wird aufbewahrt, die ältesten werden gelöscht. So gehen bei einem Defekt oder Bedienfehler höchstens die Änderungen der letzten Programmstarts verloren.
 
 Standardwerte, solange in den Einstellungen nichts gewählt ist: alle 3 Programmstarts, höchstens 10 Sicherungen, Sicherungsordner `Sicherungen` im Datenordner. Das Zurückspielen einer Sicherung ist nicht Teil dieser Funktion (siehe `sicherung-wiederherstellen`).
 

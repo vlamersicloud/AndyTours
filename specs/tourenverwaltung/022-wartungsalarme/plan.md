@@ -1,7 +1,7 @@
 # Plan: 022 – Wartungsalarme
 
 ## Vorgehen
-Alarme sind Einträge der vorhandenen Tabelle `Wartung` mit dem Typ „Alarm“: Rad, Tätigkeit, Intervall (`AlarmKm`), eingeschaltet (`Aktiv`) und als Datum der Tag des Anlegens. Diese Felder stammen aus BikeXperience; Einfügen, Ändern und Löschen in `WartungenTabelle` schreiben sie schon. Die Wartungstabelle aus 021 zeigt weiterhin nur den Typ „Wartung“.
+Alarme sind Einträge der vorhandenen Tabelle `Wartung` mit dem Typ „Alarm“: Rad, Tätigkeit, Intervall (`AlarmKm`), eingeschaltet (`Aktiv`) und als Datum der Tag des Anlegens. Diese Felder stammen aus den Altdaten; Einfügen, Ändern und Löschen in `WartungenTabelle` schreiben sie schon. Die Wartungstabelle aus 021 zeigt weiterhin nur den Typ „Wartung“.
 
 Fachfunktionen im Core liefern:
 - den Stand eines Alarms: Bezugstag (letzte Wartung mit derselben Tätigkeit an diesem Rad, sonst Tag des Anlegens), gefahrene km nach dem Bezugstag, verbleibende km und Zustand (normal, bald fällig, fällig, ausgeschaltet; ausgemusterte Räder nie fällig),

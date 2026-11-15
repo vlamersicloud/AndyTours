@@ -1,7 +1,7 @@
 # 023 – Haltbarkeit der Teile
 
 ## Was und warum
-Die Wartungstabelle zeigt zu jeder Wartung, wie viele Kilometer und Tage seit der vorherigen Wartung mit derselben Tätigkeit an diesem Rad vergangen sind – also wie lange z. B. die gewechselte Kette gehalten hat. Bei der ersten Wartung einer Art zählt der ganze bisherige Weg des Rads. So lässt sich wie mit der Auskunft in BikeXperience ablesen, wie lange ein Teil hält, und das nächste Wechselintervall abschätzen.
+Die Wartungstabelle zeigt zu jeder Wartung, wie viele Kilometer und Tage seit der vorherigen Wartung mit derselben Tätigkeit an diesem Rad vergangen sind – also wie lange z. B. die gewechselte Kette gehalten hat. Bei der ersten Wartung einer Art zählt der ganze bisherige Weg des Rads. So lässt sich ablesen, wie lange ein Teil hält, und das nächste Wechselintervall abschätzen.
 
 ## Kriterien
 

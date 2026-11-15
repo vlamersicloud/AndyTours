@@ -1,7 +1,7 @@
 # 010 – Aktivitäten und Kategorien verwalten
 
 ## Was und warum
-Der Benutzer pflegt Aktivitäten und Kategorien in den Einstellungen unter „Auswahllisten“, neben den Trainingsbereichen: anlegen, umbenennen, löschen, Hauptaktivität und Standardkategorien festlegen und zwei Einträge zusammenführen. Bisher gab es nur die aus BikeXperience übernommenen Einträge; neue Sportarten oder Kategorien ließen sich nicht anlegen, doppelte wie „Trainieren“ und „Training“ nicht bereinigen. Geschwindigkeitseinheit und Saisonziele der Aktivitäten gehören nicht dazu.
+Der Benutzer pflegt Aktivitäten und Kategorien in den Einstellungen unter „Auswahllisten“, neben den Trainingsbereichen: anlegen, umbenennen, löschen, Hauptaktivität und Standardkategorien festlegen und zwei Einträge zusammenführen. Bisher gab es nur die aus den Altdaten übernommenen Einträge; neue Sportarten oder Kategorien ließen sich nicht anlegen, doppelte wie „Trainieren“ und „Training“ nicht bereinigen. Geschwindigkeitseinheit und Saisonziele der Aktivitäten gehören nicht dazu.
 
 ## Kriterien
 

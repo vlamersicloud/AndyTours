@@ -1,7 +1,7 @@
 # 020 – Mehrtagestour
 
 ## Was und warum
-Mehrere Einheiten, z. B. die Etappen einer Radreise, lassen sich gemeinsam im Tourdetail ansehen: oben die Summen, ein durchgehendes Höhenprofil über alle Etappen und eine Karte mit der ganzen Reise. Die Mehrtagestour entsteht jedes Mal aus den markierten Einheiten und wird nicht gespeichert. Die Summen stammen aus den Werten der Einheiten; sie stehen deshalb auch für Etappen ohne Aufzeichnung zur Verfügung, etwa wenn unterwegs der Radcomputer ausfällt. So lässt sich eine Reise wie mit der Mehrtagestour in BikeXperience als Ganzes nachvollziehen.
+Mehrere Einheiten, z. B. die Etappen einer Radreise, lassen sich gemeinsam im Tourdetail ansehen: oben die Summen, ein durchgehendes Höhenprofil über alle Etappen und eine Karte mit der ganzen Reise. Die Mehrtagestour entsteht jedes Mal aus den markierten Einheiten und wird nicht gespeichert. Die Summen stammen aus den Werten der Einheiten; sie stehen deshalb auch für Etappen ohne Aufzeichnung zur Verfügung, etwa wenn unterwegs der Radcomputer ausfällt. So lässt sich eine Reise als Ganzes nachvollziehen.
 
 ## Kriterien
 

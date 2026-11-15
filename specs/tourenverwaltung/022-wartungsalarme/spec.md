@@ -1,7 +1,7 @@
 # 022 – Wartungsalarme
 
 ## Was und warum
-Für ein Rad lässt sich ein Alarm einrichten, der nach einer bestimmten Kilometerzahl an eine Wartung erinnert, z. B. „Kettenwechsel alle 3.000 km“. Gezählt wird ab der letzten Wartung mit derselben Tätigkeit an diesem Rad; gibt es noch keine, ab dem Tag, an dem der Alarm angelegt wurde. Wird die Wartung erfasst, beginnt der Alarm von selbst neu. Fällige und bald fällige Alarme fallen auf der Karteikarte „Wartung“ und beim Programmstart auf, damit keine Wartung vergessen wird – wie die Alarme in BikeXperience, aber ohne sie nach jeder Wartung neu setzen zu müssen.
+Für ein Rad lässt sich ein Alarm einrichten, der nach einer bestimmten Kilometerzahl an eine Wartung erinnert, z. B. „Kettenwechsel alle 3.000 km“. Gezählt wird ab der letzten Wartung mit derselben Tätigkeit an diesem Rad; gibt es noch keine, ab dem Tag, an dem der Alarm angelegt wurde. Wird die Wartung erfasst, beginnt der Alarm von selbst neu. Fällige und bald fällige Alarme fallen auf der Karteikarte „Wartung“ und beim Programmstart auf, damit keine Wartung vergessen wird – ohne den Alarm nach jeder Wartung neu setzen zu müssen.
 
 ## Kriterien
 

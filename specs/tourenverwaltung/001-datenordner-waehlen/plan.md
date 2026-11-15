@@ -10,7 +10,7 @@
 - Kopieren läuft im Hintergrund (`Task.Run`) und meldet nach jeder Datei den Fortschritt (`IProgress<KopierFortschritt>`); ein allgemeines Fortschrittsfenster zeigt Balken, Dateien „x von y“ und MB „x von y“. Das Fenster ist wiederverwendbar (z. B. für `datensicherung`).
 - Schreibprobe mit Pufferzeit für Netzlaufwerke (UNC-Pfad oder Laufwerkstyp „Netzwerk“): Probedatei schreiben, 1 s warten, zurücklesen und vergleichen, löschen; bei Fehlschlag bis zu 3 Versuche mit je 2 s Pause. Lokale Laufwerke ohne Wartezeit, ein Versuch. Die gesamte Prüfung läuft mit 20 s Zeitlimit im Hintergrund, damit ein hängendes NAS die App nicht blockiert; Zeitüberschreitung = NichtErreichbar. Die Zeiten sind Parameter mit diesen Standardwerten (Tests verwenden 0).
 - Statusleiste zeigt rechts den aktiven Datenordner.
-- Menüpunkt „Altdaten aus BikeXperience übernehmen…“ und `FuehreAltdatenuebernahmeDurch` entfallen; die Umwandlungslogik in `AndyTours.Import/Altdaten` bleibt für `altdaten-umwandeln`.
+- Menüpunkt „Altdaten übernehmen…“ und `FuehreAltdatenuebernahmeDurch` entfallen; die Umwandlungslogik in `AndyTours.Import/Altdaten` bleibt für `altdaten-umwandeln`.
 
 ## Dateien
 - `src/AndyTours.Daten/Datenordner/DatenordnerInhalt.cs` (neu) — Konstanten: Dateiname der Datenbank (`andytours.db`), Name des Entwicklungsordners (`AppDaten`), Name der Projektmappe zum Finden des Projektordners
@@ -73,7 +73,7 @@
 - Wenn der gespeicherte Datenordner beim Start nicht erreichbar ist (z. B. NAS ausgeschaltet), dann erscheint eine Meldung mit der Wahl „Erneut versuchen“, „Anderen Ordner wählen“ oder „Beenden“. → `PruefeDatenordner` (Zustand NichtErreichbar), `App.xaml.cs`, `DatenordnerNichtErreichbarFenster`; geprüft durch `PruefeDatenordnerTests` (Pfad auf nicht vorhandenem Laufwerk) und manuell (Release, Merkdatei auf nicht vorhandenen Netzpfad setzen).
 
 ## Entscheidungen
-- Menüpunkt „Altdaten aus BikeXperience übernehmen…“ wird entfernt (Benutzerwahl a); die Altdaten wurden am 22.10.2026 einmalig per Hilfsprogramm nach `AppDaten/` übernommen (932 Einheiten, 930 Dateien).
+- Menüpunkt „Altdaten übernehmen…“ wird entfernt (Benutzerwahl a); die Altdaten wurden am 22.10.2026 einmalig per Hilfsprogramm nach `AppDaten/` übernommen (932 Einheiten, 930 Dateien).
 - Entwicklung = Debug-Build; Projektordner über die Projektmappe `AndyTours.slnx` gefunden.
 - Fachlogik in `AndyTours.Daten`, weil die Tests das WPF-Projekt nicht einbinden können.
 - Eigenes Fenster für „nicht erreichbar“, weil das Standard-Meldungsfenster keine eigenen Beschriftungen erlaubt; Rückfragen „kopieren?“ (Ja/Nein) und „vorhandene Daten verwenden?“ (OK/Abbrechen) als Standard-Meldungsfenster.

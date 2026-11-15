@@ -1,7 +1,7 @@
 # 017 – Garmin-Import
 
 ## Was und warum
-Neue Touren werden direkt vom angeschlossenen Garmin-Radcomputer übernommen: vom Edge 1040, der sich nicht wie ein USB-Laufwerk auslesen lässt, ebenso wie von den älteren Edge 1000 und Edge 800, die als Laufwerk erscheinen. AndyTours zeigt die Touren, die noch fehlen, legt für die gewählten Touren Einheiten mit allen Werten der Aufzeichnung an und legt die Aufzeichnung dazu ab. Das Rad erkennt AndyTours an der Rad-Kennung, die der Edge nach der Tour abfragt und in der Aufzeichnung speichert, ersatzweise an den Sensoren am Rad; die Zuordnung lernt AndyTours beim Import selbst. Als Ausweg ohne Gerät lassen sich Aufzeichnungsdateien auch von der Festplatte wählen. Damit entfällt das bisherige Übertragen über Umwege, und BikeXperience wird für den Import nicht mehr gebraucht.
+Neue Touren werden direkt vom angeschlossenen Garmin-Radcomputer übernommen: vom Edge 1040, der sich nicht wie ein USB-Laufwerk auslesen lässt, ebenso wie von den älteren Edge 1000 und Edge 800, die als Laufwerk erscheinen. AndyTours zeigt die Touren, die noch fehlen, legt für die gewählten Touren Einheiten mit allen Werten der Aufzeichnung an und legt die Aufzeichnung dazu ab. Das Rad erkennt AndyTours an der Rad-Kennung, die der Edge nach der Tour abfragt und in der Aufzeichnung speichert, ersatzweise an den Sensoren am Rad; die Zuordnung lernt AndyTours beim Import selbst. Als Ausweg ohne Gerät lassen sich Aufzeichnungsdateien auch von der Festplatte wählen. Damit entfällt das bisherige Übertragen über Umwege, und für den Import wird kein anderes Programm mehr gebraucht.
 
 ## Kriterien
 
@@ -10,7 +10,7 @@ Neue Touren werden direkt vom angeschlossenen Garmin-Radcomputer übernommen: vo
 - Wenn mehrere Garmin-Geräte gleichzeitig angeschlossen sind, dann zeigt die Liste die neuen Touren aller Geräte, jeweils mit dem Namen des Geräts.
 - Wenn der Benutzer auf „Importieren“ klickt, dann wird für jede angehakte Tour eine Einheit angelegt; Datum, Startzeit, Fahrzeit, Distanz, Höhenmeter, Höhen, Geschwindigkeiten, Puls, Trittfrequenz, Temperatur und Leistung kommen aus der Aufzeichnung, der Name bleibt leer.
 - Wenn eine Einheit importiert wird, dann ist ihre Fahrzeit die gestoppte Zeit ohne Pausen, wie sie der Edge als „Zeit“ anzeigt.
-- Wenn eine Tour importiert wird, dann wird ihre Aufzeichnung bei der Einheit abgelegt, so wie bei den aus BikeXperience übernommenen Touren.
+- Wenn eine Tour importiert wird, dann wird ihre Aufzeichnung bei der Einheit abgelegt, so wie bei den aus den Altdaten übernommenen Touren.
 - Wenn der Import fertig ist, dann sind die neuen Einheiten in der Tabelle markiert, und die Statusleiste meldet die Anzahl, z. B. „3 Touren importiert.“
 
 ### Import aus Dateien

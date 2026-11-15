@@ -40,9 +40,9 @@ Neuer Befehl „Extras → Persönliche Daten…“ öffnet ein eigenes Fenster 
 - Wenn der Benutzer „Extras → Persönliche Daten…“ wählt, dann zeigt ein Fenster die gespeicherten Werte: Vorname, Nachname, Geburtstag, Größe in cm, Gewicht in kg, Ruhepuls, Maximalpuls und Heimatort (nur der Name des Orts).
   - Umgesetzt: `Hauptfenster.xaml`, `HauptfensterViewModel.PersoenlicheDaten`, `PersoenlicheDatenFenster`, `FahrerEingaben.AlsEingaben`
   - Geprüft: `FahrerEingabenTests`; manuell – Menü wählen, alle acht Felder sichtbar.
-- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus BikeXperience übernommenen Werte.
+- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus den Altdaten übernommenen Werte.
   - Umgesetzt: Grundlage ist der erste Sportler des Bestands (von der Altdatenübernahme angelegt).
-  - Geprüft: manuell – Werte mit der BikeXperience-Anzeige vergleichen.
+  - Geprüft: manuell – Werte mit den Altdaten vergleichen.
 - Wenn noch keine persönlichen Daten vorhanden sind (neuer, leerer Datenordner), dann sind die Felder leer.
   - Umgesetzt: leerer `Fahrer` als Grundlage, `AlsEingaben` liefert leere Felder.
   - Geprüft: `FahrerEingabenTests`; manuell – neuen Datenordner wählen und Fenster öffnen.

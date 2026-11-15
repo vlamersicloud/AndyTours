@@ -84,7 +84,7 @@ Testbefehl: `dotnet test AndyTours.slnx`
 - **Kriterium:** Wenn eine Einheit importiert wird, dann ist ihre Fahrzeit die gestoppte Zeit ohne Pausen, wie sie der Edge als „Zeit“ anzeigt.
   - Umsetzung: `LeseFitAufzeichnung` (`TotalTimerTime`)
   - Prüfung: `LeseFitAufzeichnungTests` (gestoppte Zeit ≠ Gesamtzeit)
-- **Kriterium:** Wenn eine Tour importiert wird, dann wird ihre Aufzeichnung bei der Einheit abgelegt, so wie bei den aus BikeXperience übernommenen Touren.
+- **Kriterium:** Wenn eine Tour importiert wird, dann wird ihre Aufzeichnung bei der Einheit abgelegt, so wie bei den aus den Altdaten übernommenen Touren.
   - Umsetzung: `LegeAufzeichnungAb`, `ErstelleImportierteEinheit` (Anhänge Höhenprofil und GPS-Track), `TrainingseinheitenTabelle.Einfuegen`
   - Prüfung: `LegeAufzeichnungAbTests`, `EinheitSchreibenTests`
 - **Kriterium:** Wenn der Import fertig ist, dann sind die neuen Einheiten in der Tabelle markiert, und die Statusleiste meldet die Anzahl, z. B. „3 Touren importiert.“

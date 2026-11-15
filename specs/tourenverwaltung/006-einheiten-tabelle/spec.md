@@ -1,7 +1,7 @@
 # 006 – Tabelle der Trainingseinheiten
 
 ## Was und warum
-Die Karteikarte „Trainingseinheiten“ zeigt alle Einheiten der Jahres- und Aktivitätsauswahl in einer sortierbaren Tabelle, wie in BikeXperience. Eine Summenzeile fasst die angezeigten Einheiten zusammen, die Bestwerte der Auswahl sind rot hervorgehoben. So sieht der Benutzer seine Touren auf einen Blick und erkennt sofort die längste, höchste und schnellste.
+Die Karteikarte „Trainingseinheiten“ zeigt alle Einheiten der Jahres- und Aktivitätsauswahl in einer sortierbaren Tabelle. Eine Summenzeile fasst die angezeigten Einheiten zusammen, die Bestwerte der Auswahl sind rot hervorgehoben. So sieht der Benutzer seine Touren auf einen Blick und erkennt sofort die längste, höchste und schnellste.
 
 Spalten: Datum, Startzeit, Name, Aktivität, Kategorien, Equipment, Distanz, Höhenmeter, Fahrzeit, Ø km/h, max km/h, Ø Puls, max Puls, Trittfrequenz, Temperatur, Maximalhöhe, Trainingsbereich. Auswahl, Reihenfolge und Breite der Spalten passt der Benutzer an, sie bleiben erhalten. Ebenso merkt sich die App Größe und Position des Hauptfensters und die zuletzt gewählte Karteikarte (nach der ersten und zweiten Prüfung ergänzt). Filter, Bearbeiten, Anhänge und Suche sind eigene Funktionen.
 

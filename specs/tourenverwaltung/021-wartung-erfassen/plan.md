@@ -1,7 +1,7 @@
 # Plan: 021 – Wartung erfassen
 
 ## Vorgehen
-Wartungen sind schon Teil des Datenbestands (Tabelle `Wartung`, aus BikeXperience übernommen); bisher werden sie nur geladen und beim Umwandeln gespeichert. Die Tabelle bekommt Einfügen, Ändern, Löschen und das Ersetzen einer Tätigkeit, wie bei den Einheiten.
+Wartungen sind schon Teil des Datenbestands (Tabelle `Wartung`, aus den Altdaten übernommen); bisher werden sie nur geladen und beim Umwandeln gespeichert. Die Tabelle bekommt Einfügen, Ändern, Löschen und das Ersetzen einer Tätigkeit, wie bei den Einheiten.
 
 Fachfunktionen im Core liefern:
 - die Zeilen der Wartungstabelle: Datum, Rad, km-Stand, Tätigkeit, Kommentar, gefiltert nach Rad, die neueste oben; nur Einträge vom Typ „Wartung“ (Alarme kommen mit `wartungsalarme`),

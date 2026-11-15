@@ -1,7 +1,7 @@
 # 018 – Höhenprofil
 
 ## Was und warum
-Zu einer Trainingseinheit lässt sich der Verlauf der Tour ansehen: das Höhenprofil aus der Aufzeichnung, auf Wunsch zusammen mit Puls, Geschwindigkeit, Trittfrequenz und Temperatur. Es erscheint in einem eigenen Fenster „Tourdetail“, in das später auch die Strecke auf der Karte kommt. So lässt sich eine Tour wie in BikeXperience nachvollziehen, ohne ein anderes Programm zu öffnen.
+Zu einer Trainingseinheit lässt sich der Verlauf der Tour ansehen: das Höhenprofil aus der Aufzeichnung, auf Wunsch zusammen mit Puls, Geschwindigkeit, Trittfrequenz und Temperatur. Es erscheint in einem eigenen Fenster „Tourdetail“, in das später auch die Strecke auf der Karte kommt. So lässt sich eine Tour nachvollziehen, ohne ein anderes Programm zu öffnen.
 
 ## Kriterien
 

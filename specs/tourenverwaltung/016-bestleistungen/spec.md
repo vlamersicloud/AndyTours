@@ -1,7 +1,7 @@
 # 016 – Bestleistungen
 
 ## Was und warum
-Die Karteikarte „Aktuell“ zeigt über dem Diagramm die Bestleistungen, wie die Übersicht „Aktuell“ in BikeXperience: die Jahresrekorde mit ihrem Rekordjahr und die Einzelrekorde mit der Einheit, in der sie aufgestellt wurden. So sieht der Benutzer auf einen Blick, was seine besten Jahre und Touren waren und ob das laufende Jahr einen Rekord hält.
+Die Karteikarte „Aktuell“ zeigt über dem Diagramm die Bestleistungen: die Jahresrekorde mit ihrem Rekordjahr und die Einzelrekorde mit der Einheit, in der sie aufgestellt wurden. So sieht der Benutzer auf einen Blick, was seine besten Jahre und Touren waren und ob das laufende Jahr einen Rekord hält.
 
 ## Kriterien
 
