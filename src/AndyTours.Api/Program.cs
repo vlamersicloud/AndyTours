@@ -5,6 +5,7 @@ using System.Text;
 using AndyTours.Api;
 using AndyTours.Application.Auswertung;
 using AndyTours.Application.Touren;
+using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 using AndyTours.Daten;
 
@@ -25,6 +26,7 @@ builder.Services.AddExceptionHandler<ProblemExceptionHandler>();
 builder.Services.AddOpenApi("v1");
 builder.Services.AddSingleton<ITourenSpeicher>(_ => new SqliteTourenSpeicher(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IAktivitaetsauswertung>(_ => new SqliteAktivitaetsauswertung(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<IStammdatenLeser>(_ => new SqliteStammdatenLeser(Path.Combine(dataDirectory, "andytours.db")));
 
 var app = builder.Build();
 app.UseExceptionHandler();
@@ -99,5 +101,8 @@ app.MapGet("/api/v1/auswertung/aktivitaeten",
             bis ?? DateOnly.FromDateTime(DateTime.Today),
             raster ?? Auswertungsraster.Monat, aktivitaetId, kategorieId), ct)))
     .WithTags("Auswertung").Produces<AktivitaetsauswertungAntwort>().ProducesProblem(400);
+app.MapGet("/api/v1/stammdaten", async (IStammdatenLeser stammdaten, CancellationToken ct) =>
+    Results.Ok(await stammdaten.Laden(ct)))
+    .WithTags("Stammdaten").Produces<StammdatenAntwort>();
 app.Run();
 public partial class Program;

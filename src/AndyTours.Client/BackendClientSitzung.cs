@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using AndyTours.Application.Auswertung;
+using AndyTours.Application.Stammdaten;
 using AndyTours.Application.Touren;
 using AndyTours.Application.Verbindungen;
 
@@ -40,6 +41,7 @@ public sealed class BackendClientSitzung : IDisposable
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", zugriffstoken);
         Touren = new TourenHttpClient(_httpClient);
         Auswertung = new AktivitaetsauswertungHttpClient(_httpClient);
+        Stammdaten = new StammdatenHttpClient(_httpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
@@ -49,6 +51,8 @@ public sealed class BackendClientSitzung : IDisposable
     public ITourenSpeicher Touren { get; }
     /// <summary>Aktivitätsauswertung.</summary>
     public IAktivitaetsauswertung Auswertung { get; }
+    /// <summary>Lesezugriff auf die Stammdaten.</summary>
+    public IStammdatenLeser Stammdaten { get; }
     /// <summary>Verbindungsprüfung.</summary>
     public IBackendVerbindung Verbindung { get; }
 
