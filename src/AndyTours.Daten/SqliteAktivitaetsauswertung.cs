@@ -24,7 +24,6 @@ public sealed class SqliteAktivitaetsauswertung(string datenbankpfad) : IAktivit
         {
             using var verbindung = OeffneDatenbank.Ausfuehren(datenbankpfad);
             var einheiten = TrainingseinheitenTabelle.Laden(verbindung)
-                .Where(t => t.Datum >= anfrage.Von && t.Datum <= anfrage.Bis)
                 .Where(t => !anfrage.AktivitaetId.HasValue || t.AktivitaetId == anfrage.AktivitaetId.Value)
                 .Where(t => !anfrage.KategorieId.HasValue || t.KategorieIds.Contains(anfrage.KategorieId.Value))
                 .ToList();
