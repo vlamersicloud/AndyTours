@@ -34,6 +34,12 @@ public partial class App : global::System.Windows.Application
     /// </remarks>
     private async void AnwendungStartet(object sender, StartupEventArgs e)
     {
+        if (e.Args.Any(arg => string.Equals(arg, "--api", StringComparison.OrdinalIgnoreCase)))
+        {
+            await StarteApiModusAsync();
+            return;
+        }
+
         string ordner;
         try
         {
