@@ -2,34 +2,32 @@
 
 ## Gesicherter Ausgangspunkt
 
-- Branch: API_FIRST, ab main / 89473998afba8d3c950193eed3f776c79be4d0cf.
-- Der Branch wurde separat auf origin veröffentlicht; main wird nicht verändert.
+- Branch: API_FIRST, getrennt von main; Änderungen werden ausschließlich hier veröffentlicht.
 - Keine kompilierten EXE-Dateien im Repository.
-- Beschlossen: lokales und zentrales Backend, zunächst keine bidirektionale Offline-Synchronisierung.
-- Wahl der Hauptoberfläche (Web oder modernisierte WPF-App) ist noch offen.
+- **Entscheidung: WPF bleibt die Hauptoberfläche und wird zum API-Client umgestellt.**
+- Lokales und zentrales Backend sind vorgesehen; derzeit gibt es keine bidirektionale Offline-Synchronisierung.
 
 ## Architekturziel
 
-- Contracts: versionierte Requests, Responses und Fehlerverträge, keine SQLite-/WPF-Typen.
-- Application: Anwendungsfälle, Transaktionsgrenzen, Validierung, Import-/Analyseaufträge.
+- Contracts: versionierte Requests, Responses und Fehlerverträge, ohne SQLite-/WPF-Typen.
+- Application: Anwendungsfälle, Transaktionsgrenzen, Validierung und Import-/Analyseaufträge.
 - Core: vorhandene Fachregeln und Berechnungen, unabhängig von HTTP und Oberfläche.
-- Infrastructure: SQLite, Dateiablage, FIT, Garmin, Routing und Sicherungen nur hinter Application-Schnittstellen.
-- API: ASP.NET Core, /api/v1, OpenAPI, strukturierte Fehler, explizite Zugriffssicherung.
+- Infrastructure: SQLite, Dateiablage, FIT, Garmin, Routing und Sicherungen hinter Application-Schnittstellen.
+- API: ASP.NET Core unter `/api/v1`, OpenAPI, ProblemDetails und Zugriffssicherung.
 - Client: typisierte HTTP-Schnittstelle; kein SQL, keine Backend-Dateipfade oder Garmin-Secrets im Frontend.
-- Geräteadapter: nur lokale USB-/MTP-Kommunikation, Datei-Upload/Download über die API.
-- Lokaler Betrieb: derselbe Backend-Code mit eigener lokaler Datenablage.
-- Zentraler Betrieb: derselbe Backend-Code mit serverseitiger Datenablage und authentifizierten Clients.
-- Änderungen an parallelen Clients dürfen nicht durch unversioniertes Vollbestands-Speichern überschrieben werden.
+- Geräteadapter: ausschließlich lokale USB-/MTP-Kommunikation; Dateien werden über die API übertragen.
+- Lokaler Betrieb nutzt denselben Backend-Code mit eigener lokaler Datenablage.
+- Zentraler Betrieb nutzt denselben Backend-Code mit authentifizierten Clients und serverseitiger Datenablage.
+- Änderungen paralleler Clients dürfen nicht durch unversioniertes Vollbestands-Speichern überschrieben werden.
 
 ## Funktionsinventar / Paritätsprüfung
 
-Jeder Punkt benötigt einen fachlichen API-Vertrag, einen Anwendungsfall und einen
-benutzbaren Clientablauf. Ein angelegter Endpunkt allein bedeutet nicht migriert.
+Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutzbarer WPF-Clientablauf vorhanden sind. Ein API-Endpunkt allein bedeutet keine Funktionsparität.
 
 | Bereich | Zu erhaltende Abläufe | Status |
 |---|---|---|
-| Start / Verbindung | lokales/zentral konfiguriertes Backend, Fehler-/Erreichbarkeitsanzeige | offen |
-| Touren | Lesen, Filtern, Sortieren, Anlegen, Bearbeiten, Kopieren, Löschen, Mehrfachbearbeitung | offen |
+| Start / Verbindung | lokal/zentral konfiguriertes Backend, Fehler-/Erreichbarkeitsanzeige | offen |
+| Touren | Lesen, Filtern, Sortieren, Anlegen, Bearbeiten, Kopieren, Löschen, Mehrfachbearbeitung | teilweise: Backend-CRUD mit Versionen, WPF-Abläufe noch nicht migriert |
 | Zuordnungen | Kategorien, Equipment, Aktivitäten, Trainingsbereiche, Zusammenführen | offen |
 | Aktivitätsstatistik | freie Datumsgrenzen, Kalender-/Kennzahlauswahl, Saisonziele, Bestleistungen | offen |
 | Pulsauswertung | FIT-Messzeiten, aktuelle Garmin-Referenz mit Abrufdatum, Lückenkennzeichnung | offen |
@@ -48,7 +46,7 @@ benutzbaren Clientablauf. Ein angelegter Endpunkt allein bedeutet nicht migriert
 | Bestandsübernahme | SQLite und relative FIT-/Anhangpfade erhalten; explizit importieren, keine ungefragte Migration | offen |
 | Altdatenwerkzeug | vorhandenes Entwicklerwerkzeug weiter kompatibel halten oder explizit ersetzen | offen |
 
-## Erkannte direkte Abhängigkeiten im Ausgangsfrontend
+## Erkennbarer Ausgangsbestand direkter Frontend-Abhängigkeiten
 
 Inventar beim Branchstart (ohne bin/obj):
 - 11 Dateien rufen OeffneDatenbank.Ausfuehren auf.
@@ -58,29 +56,33 @@ Inventar beim Branchstart (ohne bin/obj):
 - Je 6 Dateien verwenden direkte File-/Directory-Zugriffe; Geräte- und bewusst
   lokale Export-/Downloadoperationen sind getrennt von Backendzugriffen zu bewerten.
 
-Abschlussprüfung: produktives Frontend darf weder AndyTours.Daten noch
+Abschlussprüfung: Das produktive WPF-Frontend darf weder AndyTours.Daten noch
 AndyTours.Import bzw. Microsoft.Data.Sqlite referenzieren oder beliebige
 Server-Dateipfade/SQL-Aufträge über HTTP übertragen. Die Geräteadapter-Ausnahme
 gilt ausschließlich für USB/MTP und lokale Benutzerauswahl, nicht für Fachlogik.
 
-## Geplante Arbeitsblöcke
+## Backend-Konfiguration (Platzhalter)
 
-1. Betriebs-/Frontendentscheidung und Abhängigkeitsinventar abschließen.
-2. Contracts, Application und Backend-Host mit lokal/zentraler Konfiguration.
-3. Ressourcen, Validierung, Dateiablage und Hintergrundaufträge migrieren.
-4. Sämtliche bisherigen Clientabläufe umstellen, Geräteadapter abgrenzen.
-5. Garmin-Connect-orientierte Darstellung: klare Navigation, KPI-Karten,
-   sichtbare Zeitraum-/Raster-/Kennzahlfilter, fokussierte Diagramme, konsistente
-   Leer-, Lade- und Fehlerzustände, Tastaturbedienung.
-6. Funktionsparität und Architekturgrenzen statisch prüfen, Builds auf Testserver.
-7. Tests bereitstellen (Ausführung durch Anwender), Windows-/Browser-Abnahme offen kennzeichnen.
+Das Backend benötigt einen absoluten Datenordner und ein Geheimnis mit mindestens 32 Bytes. Werte sind ausschließlich in der Serverkonfiguration/Umgebung zu setzen, nicht in Repositorydateien:
 
-Nach jedem wesentlichen Block committen und diesen Status anhand der tatsächlich
-umgesetzten Abläufe aktualisieren. Teilstände nicht als vollständige Umstellung ausgeben.
+```text
+Backend__Datenordner=<ABSOLUTER_SERVERPFAD>
+Backend__Zugriffstoken=<ZUFÄLLIGES_GEHEIMNIS_MIT_MINDESTENS_32_BYTES>
+ASPNETCORE_URLS=<OPTIONALE_BINDUNG; Standard: http://localhost:5000>
+```
+
+Die OpenAPI-Beschreibung und alle Fachrouten verlangen Bearer-Authentifizierung; Health ist anonym erreichbar. Nicht-loopback Zugriffe sind nur über HTTPS zulässig. Das Zugriffstoken gewährt vollen Zugriff auf den konfigurierten Datenbestand; es gibt derzeit keine Mehrbenutzerverwaltung. Es ist kein Garmin-Schlüssel. Für den Backendbetrieb wird die .NET 10 ASP.NET Core Runtime benötigt; die Desktop Runtime allein reicht nicht.
 
 ## Umgesetzter Zwischenstand (API_FIRST)
 
-- ✅ Grundlage: getrennte Contracts-, Application-, API- und Client-Projekte; API-Statusressource `/api/v1/health`; typisierter HTTP-Verbindungsclient.
-- ⏳ Nicht migriert: sämtliche fachlichen Ressourcen und Anwendungsfälle, Authentifizierung/Zugriffsschutz, Datenbank- und Dateiinfrastruktur, Importaufträge, lokale/zentral betriebene Konfiguration, WPF-Start/Ansichten sowie Geräteadapter.
-- ⏳ Alle Abläufe der obigen Paritätstabelle bleiben offen. Ein Statusendpunkt ist kein Nachweis fachlicher Parität.
-- Buildprüfung auf dem Testserver wurde versucht, scheiterte vor dem Build: `global.json` fordert .NET SDK 10.0.402, installiert ist 10.0.401. Tests wurden entsprechend Vorgabe nicht ausgeführt.
+- ✅ Versionierte Touren-DTOs ohne Core-/SQLite-Typen oder Dateipfade.
+- ✅ Application-Port und serverseitige Wertevalidierung.
+- ✅ SQLite-Tourenspeicher: Liste/Detail/Anlegen/Ändern/Löschen; Versionsprüfung und Mutation unter SQLite-Schreibtransaktion; Anhänge bleiben bei Änderung erhalten.
+- ✅ ASP.NET REST-Routen für Touren, Bearer-Schutz, HTTPS-Anforderung für Remotezugriffe, ProblemDetails und geschützte OpenAPI-Beschreibung.
+- ✅ Typisierter asynchroner Touren-HTTP-Client.
+- ✅ Sechs Tourenspeicher-Regressionstests wurden hinzugefügt, aber **nicht ausgeführt**.
+- ✅ Testserver verwendet .NET SDK 10.0.402 unter `/opt/dotnet-sdk-10.0.402/dotnet`; die bisherigen relevanten Builds waren erfolgreich und warnungsfrei.
+- ⏳ Die WPF-App verwendet die neuen API-Abläufe noch nicht; ihre direkten Daten-/Import-Abhängigkeiten und bisherigen Benutzerabläufe sind noch nicht umgestellt.
+- ⏳ Alle weiteren Fachmodule und deren Clientabläufe in der Paritätstabelle bleiben offen. Diese Teilabdeckung ist keine vollständige Umstellung.
+
+Keine EXE-Dateien wurden erstellt oder eingecheckt.
