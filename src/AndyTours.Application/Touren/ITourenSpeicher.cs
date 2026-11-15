@@ -4,6 +4,8 @@ namespace AndyTours.Application.Touren;
 public interface ITourenSpeicher
 {
  Task<TourListeAntwort> Liste(int start,int anzahl,DateOnly? von,DateOnly? bis,CancellationToken ct=default);
+ /// <summary>Liefert eine gefilterte Tourenseite; Count und Paging erfolgen nach allen Filtern.</summary>
+ Task<TourListeAntwort> ListeGefiltert(int start,int anzahl,TourenListenfilter filter,CancellationToken ct=default);
  Task<TourAntwort?> Lesen(long id,CancellationToken ct=default);
  Task<TourAntwort> Anlegen(TourWerte werte,CancellationToken ct=default);
  /// <summary>Legt eine Tour mit einer stabilen Idempotenzkennung an.</summary>

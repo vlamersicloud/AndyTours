@@ -12,11 +12,18 @@ public sealed class TourenHttpClient(HttpClient http) : ITourenSpeicher
     private const string Basis = "api/v1/touren/";
 
     /// <inheritdoc />
-    public async Task<TourListeAntwort> Liste(int start, int anzahl, DateOnly? von, DateOnly? bis, CancellationToken ct = default)
+    public Task<TourListeAntwort> Liste(int start, int anzahl, DateOnly? von, DateOnly? bis, CancellationToken ct = default) =>
+        ListeGefiltert(start, anzahl, new TourenListenfilter(von, bis, null, null), ct);
+
+    /// <inheritdoc />
+    public async Task<TourListeAntwort> ListeGefiltert(int start, int anzahl, TourenListenfilter filter, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(filter);
         var query = $"?start={start.ToString(CultureInfo.InvariantCulture)}&anzahl={anzahl.ToString(CultureInfo.InvariantCulture)}";
-        if (von.HasValue) query += $"&von={Uri.EscapeDataString(von.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}";
-        if (bis.HasValue) query += $"&bis={Uri.EscapeDataString(bis.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}";
+        if (filter.Von.HasValue) query += $"&von={Uri.EscapeDataString(filter.Von.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}";
+        if (filter.Bis.HasValue) query += $"&bis={Uri.EscapeDataString(filter.Bis.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}";
+        if (filter.AktivitaetId.HasValue) query += $"&aktivitaetId={filter.AktivitaetId.Value.ToString(CultureInfo.InvariantCulture)}";
+        if (filter.KategorieId.HasValue) query += $"&kategorieId={filter.KategorieId.Value.ToString(CultureInfo.InvariantCulture)}";
         using var response = await http.GetAsync(Basis + query, ct);
         await Pruefe(response, ct);
         return await response.Content.ReadFromJsonAsync<TourListeAntwort>(cancellationToken: ct)

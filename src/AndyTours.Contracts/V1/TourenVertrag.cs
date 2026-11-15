@@ -57,3 +57,9 @@ public sealed record TourListeAntwort(IReadOnlyList<TourAntwort> Eintraege, int 
 
 /// <summary>Änderungsanforderung mit der beim Lesen erhaltenen Versionskennung.</summary>
 public sealed record TourAendernAnfrage(string Version, TourWerte Werte);
+/// <summary>Optionale Datums-, Aktivitäts- und Kategorienfilter der Tourenliste.</summary>
+/// <param name="Von">Einschließendes Startdatum.</param>
+/// <param name="Bis">Einschließendes Enddatum.</param>
+/// <param name="AktivitaetId">Optionale Aktivitätskennung.</param>
+/// <param name="KategorieId">Optionale Kategorienkennung.</param>
+public sealed record TourenListenfilter(DateOnly? Von, DateOnly? Bis, long? AktivitaetId, long? KategorieId);

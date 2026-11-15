@@ -13,13 +13,23 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
     private SqliteConnection Oeffnen() => OeffneDatenbank.Ausfuehren(datenbankpfad);
 
     /// <inheritdoc />
-    public Task<TourListeAntwort> Liste(int start, int anzahl, DateOnly? von, DateOnly? bis, CancellationToken ct = default)
+    public Task<TourListeAntwort> Liste(int start, int anzahl, DateOnly? von, DateOnly? bis, CancellationToken ct = default) =>
+        ListeGefiltert(start, anzahl, new TourenListenfilter(von, bis, null, null), ct);
+
+    /// <inheritdoc />
+    public Task<TourListeAntwort> ListeGefiltert(int start, int anzahl, TourenListenfilter filter, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        ValidiereTour.Liste(start, anzahl, von, bis);
+        if (filter is null) throw new UngueltigeTourException("Tourenfilter fehlt.");
+        ValidiereTour.Liste(start, anzahl, filter.Von, filter.Bis);
+        if (filter.AktivitaetId is <= 0 || filter.KategorieId is <= 0)
+            throw new UngueltigeTourException("Aktivitäts- und Kategorienkennungen müssen positiv sein.");
         using var verbindung = Oeffnen();
         var alle = TrainingseinheitenTabelle.Laden(verbindung)
-            .Where(t => (!von.HasValue || t.Datum >= von.Value) && (!bis.HasValue || t.Datum <= bis.Value))
+            .Where(t => (!filter.Von.HasValue || t.Datum >= filter.Von.Value) &&
+                        (!filter.Bis.HasValue || t.Datum <= filter.Bis.Value) &&
+                        (!filter.AktivitaetId.HasValue || t.AktivitaetId == filter.AktivitaetId.Value) &&
+                        (!filter.KategorieId.HasValue || t.KategorieIds.Contains(filter.KategorieId.Value)))
             .ToList();
         var seite = alle.Skip(start).Take(anzahl).Select(TourenMapper.ToAntwort).ToArray();
         return Task.FromResult(new TourListeAntwort(seite, alle.Count, start, anzahl));
