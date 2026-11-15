@@ -11,6 +11,6 @@
 - [x] 9. Installationsprogramm bauen
 - [x] 10. Handbuch: Übernahme-Stellen entfernen, Abschnitte in Kapitel 2 neu nummerieren, Glossar anpassen
 - [x] 11. Handbuch: Hinweis auf den FIT-Import in 3.5
-- [ ] 12. Manuelle Prüfung: Neuinstallation (Seiten, Zusammenfassung, Programmordner, Protokoll, leerer Datenordner)
-- [ ] 13. Manuelle Prüfung: Datenordner mit AndyTours-Daten und mit fremden Dateien
-- [ ] 14. Manuelle Prüfung: Aktualisierung über Version 1.0.1
+- [x] 12. Manuelle Prüfung: Neuinstallation (Seiten, Zusammenfassung, Programmordner, Protokoll, leerer Datenordner)
+- [x] 13. Manuelle Prüfung: Datenordner mit AndyTours-Daten und mit fremden Dateien
+- [x] 14. Manuelle Prüfung: Aktualisierung über Version 1.0.1
