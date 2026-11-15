@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using AndyTours.Application.Auswertung;
+using AndyTours.Application.Stammdaten;
 using AndyTours.Application.Touren;
 using AndyTours.Contracts.V1;
 using AndyTours.Core.Modell;
@@ -18,6 +19,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
 {
     private readonly IAktivitaetsauswertung _auswertung;
     private readonly ITourenSpeicher _touren;
+    private readonly IStammdatenLeser _stammdatenLeser;
     private readonly ObservableCollection<AktivitaetsperiodenAntwort> _perioden = [];
     private long _generation;
     private int _start;
@@ -36,14 +38,16 @@ public partial class ApiUebersichtViewModel : ObservableObject
     [ObservableProperty] private bool _laedt;
     [ObservableProperty] private int _gesamtTouren;
     [ObservableProperty] private string _seitenText = "Keine Daten geladen";
+    [ObservableProperty] private TourAntwort? _ausgewaehlteTour;
 
     private static readonly CultureInfo Deutsch = CultureInfo.GetCultureInfo("de-DE");
 
     /// <summary>Initialisiert die Übersicht ausschließlich mit typisierten API-Ports.</summary>
-    public ApiUebersichtViewModel(IAktivitaetsauswertung auswertung, ITourenSpeicher touren)
+    public ApiUebersichtViewModel(IAktivitaetsauswertung auswertung, ITourenSpeicher touren, IStammdatenLeser stammdatenLeser)
     {
         _auswertung = auswertung;
         _touren = touren;
+        _stammdatenLeser = stammdatenLeser;
         Touren = [];
     }
 
