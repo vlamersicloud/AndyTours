@@ -104,6 +104,12 @@ public partial class ApiUebersichtViewModel : ObservableObject
     private void FilterGeaendert()
     {
         Interlocked.Increment(ref _generation);
+        LeereAnzeige();
+        StatusText = "Filter geändert – bitte aktualisieren.";
+    }
+
+    private void LeereAnzeige()
+    {
         _perioden.Clear();
         AusgewaehlteTour = null;
         Diagramm = new PlotModel { Background = OxyColors.White };
@@ -115,7 +121,6 @@ public partial class ApiUebersichtViewModel : ObservableObject
         SeitenText = "Keine Daten geladen";
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
         VorherigeSeiteCommand.NotifyCanExecuteChanged();
-        StatusText = "Filter geändert – bitte aktualisieren.";
     }
 
     /// <summary>Lädt Auswertung und erste Tourenseite parallel vom Backend.</summary>
@@ -209,6 +214,12 @@ public partial class ApiUebersichtViewModel : ObservableObject
         else if (!_lookupsGeladen && !vorherAktivitaetId.HasValue &&
                  stammdaten.Aktivitaeten.Count > 0 && neueAktivitaetsauswahl is null)
             hinweis = "Keine Hauptaktivität vorhanden; es wird nach allen Aktivitäten gefiltert.";
+
+        var lookupFilterGeaendert =
+            vorherAktivitaetId != neueAktivitaetsauswahl?.Id ||
+            vorherKategorieId != neueKategorieauswahl?.Id;
+        if (lookupFilterGeaendert)
+            LeereAnzeige();
 
         _filterAenderungSuspendiert = true;
         try
