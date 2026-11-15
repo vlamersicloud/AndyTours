@@ -31,6 +31,32 @@ public partial class App
             var fenster = hauptfenster;
             var uebergebeneSitzung = sitzung;
             var uebergebenesLokalesBackend = lokalesBackend;
+            fenster.AktivitaetenVerwaltenAngefordert += async () =>
+            {
+                ApiAktivitaetenFenster? verwaltungsfenster = null;
+                try
+                {
+                    var verwaltungsViewModel = new ApiAktivitaetenViewModel(uebergebeneSitzung.Aktivitaeten,
+                        text => MessageBox.Show(fenster, text, "Aktivität bestätigen",
+                            MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes);
+                    verwaltungsfenster = new ApiAktivitaetenFenster(verwaltungsViewModel) { Owner = fenster };
+                    verwaltungsfenster.ShowDialog();
+                }
+                catch (Exception)
+                {
+                    viewModel.StatusText = "Die Aktivitätenverwaltung konnte nicht geöffnet werden.";
+                }
+                finally
+                {
+                    if (verwaltungsfenster?.IsVisible == true)
+                    {
+                        try { verwaltungsfenster.Close(); }
+                        catch (Exception) { }
+                    }
+                    try { await viewModel.AktualisierenAsync(CancellationToken.None); }
+                    catch (Exception) { viewModel.StatusText = "Übersicht konnte nach der Verwaltung nicht aktualisiert werden."; }
+                }
+            };
             fenster.Closed += async (_, _) =>
             {
                 var bereinigungFehlgeschlagen = false;

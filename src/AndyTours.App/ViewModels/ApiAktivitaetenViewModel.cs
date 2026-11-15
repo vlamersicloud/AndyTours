@@ -59,7 +59,7 @@ public partial class ApiAktivitaetenViewModel : ObservableObject
     partial void OnHatAenderungenChanged(bool value) => AktualisiereCommands();
 
     [RelayCommand(CanExecute = nameof(KannLaden))]
-    private async Task LadenAsync(CancellationToken ct)
+    public async Task LadenAsync(CancellationToken ct)
     {
         if (Laedt) return;
         Laedt = true;

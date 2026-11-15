@@ -14,6 +14,9 @@ public partial class ApiHauptfenster : Window, IDisposable
     private readonly CancellationTokenSource _lifetime = new();
     private bool _geladen;
     private bool _geschlossen;
+    private bool _verwaltungOffen;
+
+    public event Func<Task>? AktivitaetenVerwaltenAngefordert;
 
     public ApiHauptfenster(ApiUebersichtViewModel viewModel, Uri backendAdresse)
     {
@@ -27,10 +30,13 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     protected override void OnClosing(CancelEventArgs e)
     {
-        if (_viewModel.EditorOffen)
+        var ownedWindowOffen = System.Windows.Application.Current?.Windows
+            .OfType<Window>()
+            .Any(window => window != this && window.Owner == this && window.IsVisible) == true;
+        if (_viewModel.EditorOffen || ownedWindowOffen)
         {
             e.Cancel = true;
-            _viewModel.StatusText = "Bitte zuerst den Bearbeitungsdialog schließen.";
+            _viewModel.StatusText = "Bitte zuerst alle geöffneten Dialogfenster schließen.";
             return;
         }
         base.OnClosing(e);
@@ -51,6 +57,25 @@ public partial class ApiHauptfenster : Window, IDisposable
         _geladen = true;
         try { await _viewModel.AktualisierenAsync(_lifetime.Token); }
         catch (OperationCanceledException) { }
+    }
+
+    private async void AktivitaetenVerwalten_Click(object sender, RoutedEventArgs e)
+    {
+        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        _verwaltungOffen = true;
+        try
+        {
+            if (AktivitaetenVerwaltenAngefordert is { } handler)
+                await handler();
+        }
+        catch (Exception)
+        {
+            _viewModel.StatusText = "Die Aktivitätenverwaltung konnte nicht geöffnet werden.";
+        }
+        finally
+        {
+            _verwaltungOffen = false;
+        }
     }
 
     private void TourenDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
