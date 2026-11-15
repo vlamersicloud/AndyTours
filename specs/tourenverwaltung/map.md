@@ -141,7 +141,7 @@ In Umsetzungsreihenfolge.
   - Status: done → [037-eigenstaendige-darstellung](037-eigenstaendige-darstellung/spec.md)
 - `windows-menue` — Das Hauptfenster hat oben eine normale, schlichte Windows-Menüleiste statt großer grauer Menü-Schaltflächen.
   - Abhängig von: `erscheinungsbild-und-icon`
-  - Status: open
+  - Status: specified → [038-windows-menue](038-windows-menue/spec.md)
 - `code-ueberarbeitung` — Das Programm verhält sich unverändert, sein Code samt Tests ist aber geprüft, verschlankt und gut verständlich.
   - Abhängig von: `eigenstaendige-darstellung`, `windows-menue`
   - Status: open
