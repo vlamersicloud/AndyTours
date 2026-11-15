@@ -1,7 +1,7 @@
 # 029 – Track bearbeiten
 
 ## Was und warum
-Im Tourdetail einer einzelnen Einheit lässt sich die Strecke auf der Karte kürzen, umkehren und glätten, wie im GPS-Viewer von BikeXperience. Das Ergebnis wird über „Als GPX exportieren…“ gespeichert, z. B. als Vorlage zum Weitergeben oder für eine neue Tour. Die Einheit und ihre Aufzeichnung bleiben dabei unverändert, damit die Originaldaten sicher sind.
+Im Tourdetail einer einzelnen Einheit lässt sich die Strecke auf der Karte kürzen, umkehren und glätten. Das Ergebnis wird über „Als GPX exportieren…“ gespeichert, z. B. als Vorlage zum Weitergeben oder für eine neue Tour. Die Einheit und ihre Aufzeichnung bleiben dabei unverändert, damit die Originaldaten sicher sind.
 
 ## Kriterien
 

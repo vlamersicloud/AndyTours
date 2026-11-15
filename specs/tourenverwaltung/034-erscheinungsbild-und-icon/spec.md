@@ -31,7 +31,7 @@ Alle Fenster von AndyTours erhalten das moderne, helle Erscheinungsbild von Wind
 - Wenn die Programmdatei von AndyTours im Explorer angezeigt wird, dann trägt sie das Icon.
 - Wenn AndyTours installiert ist, dann tragen die Verknüpfungen im Startmenü und auf dem Desktop sowie der Eintrag in den Windows-Einstellungen unter „Apps“ das Icon.
 - Wenn die Datei des Installationsprogramms im Explorer angezeigt wird oder das Installationsprogramm läuft, dann zeigt es das Icon.
-- Wenn die Datei des Umwandlungsprogramms für die BikeXperience-Daten im Explorer angezeigt wird, dann trägt sie dasselbe Icon.
+- Wenn die Datei des Umwandlungsprogramms für die Altdaten im Explorer angezeigt wird, dann trägt sie dasselbe Icon.
 
 ### Über AndyTours
 - Wenn der Benutzer „Hilfe → Über AndyTours“ wählt, dann öffnet sich ein eigenes kleines Fenster mit dem Icon in großer Darstellung, dem Namen „AndyTours“, der Versionsnummer und dem Autor.

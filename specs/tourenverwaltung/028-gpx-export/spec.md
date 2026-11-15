@@ -1,7 +1,7 @@
 # 028 – Track als GPX exportieren
 
 ## Was und warum
-Die Strecke einer Einheit lässt sich aus dem Tourdetail als GPX-Datei speichern, wie in BikeXperience. So kann eine gefahrene Tour in anderen Programmen angesehen, weitergegeben oder als Vorlage für eine neue Tour genutzt werden. Bei einer Mehrtagestour landen alle Etappen gemeinsam in einer Datei.
+Die Strecke einer Einheit lässt sich aus dem Tourdetail als GPX-Datei speichern. So kann eine gefahrene Tour in anderen Programmen angesehen, weitergegeben oder als Vorlage für eine neue Tour genutzt werden. Bei einer Mehrtagestour landen alle Etappen gemeinsam in einer Datei.
 
 ## Kriterien
 

@@ -1,7 +1,7 @@
 # 033 – Installationsprogramm
 
 ## Was und warum
-Ein Installationsprogramm richtet AndyTours auf dem Rechner ein und legt den Datenordner fest. Auf Wunsch übernimmt es die bisherigen Daten: BikeXperience-Daten über das vorhandene Umwandlungsprogramm oder, wenn nur Aufzeichnungen vorliegen, diese als Touren. Jede Änderung am Rechner hält es in einem Protokoll fest. Daran kann das Deinstallationsprogramm AndyTours später vollständig entfernen, ohne die Touren ungefragt zu löschen. So lässt sich AndyTours ohne Entwicklungsumgebung einrichten, aktualisieren und wieder entfernen.
+Ein Installationsprogramm richtet AndyTours auf dem Rechner ein und legt den Datenordner fest. Auf Wunsch übernimmt es die bisherigen Daten: Altdaten über das vorhandene Umwandlungsprogramm oder, wenn nur Aufzeichnungen vorliegen, diese als Touren. Jede Änderung am Rechner hält es in einem Protokoll fest. Daran kann das Deinstallationsprogramm AndyTours später vollständig entfernen, ohne die Touren ungefragt zu löschen. So lässt sich AndyTours ohne Entwicklungsumgebung einrichten, aktualisieren und wieder entfernen.
 
 ## Kriterien
 
@@ -18,15 +18,15 @@ Ein Installationsprogramm richtet AndyTours auf dem Rechner ein und legt den Dat
 ### Bisherige Daten übernehmen
 - Wenn das Installationsprogramm die Übernahme anbietet, dann ist sie vorgewählt, und der Benutzer kann sie abwählen.
 - Wenn der Benutzer die Übernahme gewählt hat, dann fragt das Installationsprogramm nach dem Ordner mit den bisherigen Daten, ohne einen Ordner vorzuschlagen.
-- Wenn im angegebenen Ordner BikeXperience-Daten liegen, dann wandelt das vorhandene Umwandlungsprogramm sie in den gewählten Datenordner um.
+- Wenn im angegebenen Ordner Altdaten liegen, dann wandelt das vorhandene Umwandlungsprogramm sie in den gewählten Datenordner um.
 - Wenn die Umwandlung fertig ist, dann zeigt das Installationsprogramm die Zusammenfassung des Umwandlungsprogramms und wo der Bericht liegt.
-- Wenn im angegebenen Ordner keine BikeXperience-Daten, aber Aufzeichnungen im FIT-Format liegen (auch in Unterordnern), dann fragt das Installationsprogramm, ob diese als Touren übernommen werden sollen, und nennt die Anzahl der gefundenen Aufzeichnungen.
+- Wenn im angegebenen Ordner keine Altdaten, aber Aufzeichnungen im FIT-Format liegen (auch in Unterordnern), dann fragt das Installationsprogramm, ob diese als Touren übernommen werden sollen, und nennt die Anzahl der gefundenen Aufzeichnungen.
 - Wenn der Benutzer die Übernahme der Aufzeichnungen bestätigt, dann ist danach jede lesbare Aufzeichnung eine Tour im Datenordner, mit denselben Werten wie bei einem Import vom Edge.
 - Wenn Aufzeichnungen als Touren übernommen werden, dann bekommen die Touren kein Rad und die Hauptaktivität „Radfahren“ zugeordnet.
 - Wenn eine Aufzeichnung nicht lesbar ist, dann wird sie übersprungen, die übrigen werden übernommen, und ein Bericht nennt die übersprungenen Dateien.
 - Wenn die Übernahme der Aufzeichnungen fertig ist, dann zeigt das Installationsprogramm, wie viele Touren übernommen und wie viele Dateien übersprungen wurden und wo der Bericht liegt.
 - Wenn der Benutzer die Übernahme der Aufzeichnungen verneint, dann wird nichts übernommen, und die Installation geht ohne bisherige Daten weiter.
-- Wenn im angegebenen Ordner weder BikeXperience-Daten noch Aufzeichnungen liegen, dann erscheint ein Hinweis, und der Benutzer kann einen anderen Ordner wählen oder ohne Übernahme weitermachen.
+- Wenn im angegebenen Ordner weder Altdaten noch Aufzeichnungen liegen, dann erscheint ein Hinweis, und der Benutzer kann einen anderen Ordner wählen oder ohne Übernahme weitermachen.
 - Wenn im gewählten Datenordner schon AndyTours-Daten liegen, dann bleiben sie unverändert, die Übernahme entfällt, und ein Hinweis sagt das.
 - Wenn die Übernahme mit einem Fehler abbricht, dann ist AndyTours trotzdem installiert, der Datenordner bleibt wie vorher, und ein Hinweis nennt den Grund.
 - Wenn die Übernahme läuft, dann bleibt der Ordner mit den bisherigen Daten unverändert.

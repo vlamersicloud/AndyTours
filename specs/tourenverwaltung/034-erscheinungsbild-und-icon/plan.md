@@ -54,7 +54,7 @@ Das Programmicon wird einmal als Vektorzeichnung in XAML beschrieben (große Fas
 - Wenn die Programmdatei von AndyTours im Explorer angezeigt wird, dann trägt sie das Icon. → `ApplicationIcon`; manuelle Prüfung: `bin\Debug\…\AndyTours.App.exe` im Explorer.
 - Wenn AndyTours installiert ist, dann tragen die Verknüpfungen im Startmenü und auf dem Desktop sowie der Eintrag in den Windows-Einstellungen unter „Apps“ das Icon. → Verknüpfungen und `UninstallDisplayIcon` zeigen auf die Programmdatei; manuelle Prüfung: Installation in der Windows-Sandbox mit Test-Datenordner.
 - Wenn die Datei des Installationsprogramms im Explorer angezeigt wird oder das Installationsprogramm läuft, dann zeigt es das Icon. → `SetupIconFile` in `AndyTours.iss`; manuelle Prüfung: `AndyTours-Setup-<Version>.exe` im Explorer und beim Start in der Sandbox.
-- Wenn die Datei des Umwandlungsprogramms für die BikeXperience-Daten im Explorer angezeigt wird, dann trägt sie dasselbe Icon. → `ApplicationIcon` im Umwandlungsprogramm; manuelle Prüfung: `bin\Werkzeug\AndyTours.Altdatenuebernahme.exe` nach dem Bauskript.
+- Wenn die Datei des Umwandlungsprogramms für die Altdaten im Explorer angezeigt wird, dann trägt sie dasselbe Icon. → `ApplicationIcon` im Umwandlungsprogramm; manuelle Prüfung: `bin\Werkzeug\AndyTours.Altdatenuebernahme.exe` nach dem Bauskript.
 
 ### Über AndyTours
 - Wenn der Benutzer „Hilfe → Über AndyTours“ wählt, dann öffnet sich ein eigenes kleines Fenster mit dem Icon in großer Darstellung, dem Namen „AndyTours“, der Versionsnummer und dem Autor. → `UeberFenster`, `UeberViewModel`, `HauptfensterViewModel.Ueber`; manuelle Prüfung: Menü aufrufen, Version 1.0.0 und „Andreas Hensel“ sehen.

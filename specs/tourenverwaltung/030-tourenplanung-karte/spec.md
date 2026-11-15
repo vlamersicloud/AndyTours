@@ -5,8 +5,8 @@ Der Benutzer plant eine neue Radtour, indem er Start und Ziel in eine Karte klic
 Zwischenpunkten anpasst. Die Strecke folgt dabei automatisch den Wegen, die zum gewählten Fahrprofil passen.
 Länge und Höhenmeter erscheinen sofort. An jeder Abzweigung, an der abgebogen werden muss, entsteht
 automatisch ein Abbiegepunkt mit der Richtung. Die fertige Planung wird als
-GPX-Datei gespeichert und lässt sich später wieder öffnen und weiterbearbeiten. Damit ersetzt AndyTours
-die Tourenplanung von BikeXperience und schafft die Grundlage, um geplante Strecken später auf den Garmin
+GPX-Datei gespeichert und lässt sich später wieder öffnen und weiterbearbeiten. Damit plant AndyTours
+Touren selbst und schafft die Grundlage, um geplante Strecken später auf den Garmin
 Edge 1040 zu übertragen.
 
 ## Kriterien

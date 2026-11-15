@@ -1,7 +1,7 @@
 # 027 – Einsatz je Equipment
 
 ## Was und warum
-Eine Auskunft zeigt für jedes Equipment die insgesamt gefahrenen Kilometer und Höhenmeter, wie die Auskunft „Einsatz je Equipment“ in BikeXperience. So lässt sich ablesen, wie viel jedes Rad gefahren wurde. Die Kilometer stimmen mit dem km-Stand der Wartung überein.
+Eine Auskunft zeigt für jedes Equipment die insgesamt gefahrenen Kilometer und Höhenmeter. So lässt sich ablesen, wie viel jedes Rad gefahren wurde. Die Kilometer stimmen mit dem km-Stand der Wartung überein.
 
 ## Kriterien
 
