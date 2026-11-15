@@ -9,9 +9,9 @@ Verbindliche Regeln für den Quellcode. Grundlage ist die Projektvorgabe in `CLA
 |---|---|---|
 | `src/AndyTours.Core` | Domänenmodell (`Modell/`) und Fachfunktionen (`Berechnungen/`) – ohne Oberfläche, ohne Datenbank | – |
 | `src/AndyTours.Daten` | SQLite-Datenbank: Schema, Lesen und Schreiben | Core |
-| `src/AndyTours.Import` | Einlesen von FIT/GPX/TCX und Übernahme der BikeXperience-Altdaten (`Altdaten/`) | Core |
+| `src/AndyTours.Import` | Einlesen von FIT/GPX/TCX und Lesen der Altdaten (`Altdaten/`) | Core |
 | `src/AndyTours.App` | WPF-Oberfläche: `Views/` (XAML), `ViewModels/` und `Funktionen/` (Abläufe, die Daten und Import verbinden) | Core, Daten, Import |
-| `tools/AndyTours.Altdatenuebernahme` | Konsolenprogramm für die einmalige Umwandlung der BikeXperience-Altdaten in einen AndyTours-Datenordner | Daten, Import |
+| `tools/AndyTours.Altdatenuebernahme` | Konsolenprogramm für die einmalige Umwandlung der Altdaten in einen AndyTours-Datenordner | Daten, Import |
 | `tests/AndyTours.Tests` | Unit-Tests (xUnit) | Core, Daten, Import, Altdatenuebernahme |
 | `Daten/` | Ihre Nutzdaten (Altdaten, FIT-Dateien, später die Datenbank) – **kein Quellcode** | – |
 | `docs/` | Plan und Dokumentation | – |
@@ -33,7 +33,6 @@ Verbindliche Regeln für den Quellcode. Grundlage ist die Projektvorgabe in `CLA
 - Jede Klasse, Methode und öffentliche Eigenschaft bekommt einen XML-Doc-Kommentar (`/// <summary>`), bei Bedarf mit `<param>`, `<returns>` und `<remarks>`.
 - Im Methodenrumpf erklären Inline-Kommentare das **Warum** und die einzelnen Rechenschritte, insbesondere Formeln, Einheiten und Sonderfälle.
 - XAML-Dateien beginnen mit einem Kommentar, der den Aufbau des Fensters beschreibt.
-- Wo eine Funktion dem Original BikeXperience nachgebildet ist, wird die Java-Klasse genannt (z. B. „entspricht `datamodel.PowerCalc`").
 
 ## Benennung
 

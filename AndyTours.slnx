@@ -12,7 +12,6 @@
     <Project Path="tests/AndyTours.Tests/AndyTours.Tests.csproj" />
   </Folder>
   <Folder Name="/docs/">
-    <File Path="docs/Analyse_und_Plan_Neuprogrammierung.md" />
     <File Path="docs/Konventionen.md" />
     <File Path="docs/product.md" />
     <File Path="docs/structure.md" />

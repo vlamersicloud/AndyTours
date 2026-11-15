@@ -37,7 +37,6 @@
 - `PascalCase` für Klassen, Methoden, Eigenschaften; `camelCase` für lokale Variablen und Parameter; Einheiten im Namen (`DistanzKm`, `FahrzeitSekunden`)
 - Ausführliche deutsche XML-Doc-Kommentare für jede Klasse, Methode und öffentliche Eigenschaft; Inline-Kommentare erklären das Warum, Formeln, Einheiten und Sonderfälle
 - XAML-Dateien beginnen mit einem Kommentar zum Aufbau des Fensters
-- Nachgebildete BikeXperience-Klassen werden genannt (z. B. „entspricht `datamodel.PowerCalc`“)
 - Oberfläche nach MVVM mit `CommunityToolkit.Mvvm`
 - Fenster nutzen Standardsteuerelemente ohne eigene Vorlagen; eigene Farben nur für fachliche Hervorhebungen
 - Eigene Stile für Steuerelemente bauen auf dem Fluent-Stil auf (`BasedOn="{StaticResource {x:Type …}}"`), sonst fällt das Steuerelement auf das klassische Aussehen zurück; ausgenommen sind `Border` und `ContentPresenter`, für die es keinen Fluent-Stil gibt

@@ -2,7 +2,6 @@
 
 Windows-Desktop-App zur Verwaltung der eigenen Fahrradtouren.
 
-AndyTours löst bei mir das Programm BikeXperience ab und übernimmt meine Daten.
 Umgesetzt sind die Funktionen, die ich selbst tatsächlich nutze. Die App ist für
 einen einzelnen Benutzer gedacht.
 
@@ -15,7 +14,7 @@ einen einzelnen Benutzer gedacht.
 - **Wartung der Räder**: Wartungen erfassen, Wartungsalarme, Haltbarkeit von Teilen, Einsatz der Equipments
 - **Tourenplanung** auf der Karte mit BRouter oder openrouteservice, Overlays, Übertragen von Courses auf den Edge
 - **Datensicherung** und Wiederherstellung
-- **Einmalige Übernahme** der BikeXperience-Altdaten mit einem eigenen Kommandozeilenprogramm
+- **Einmalige Übernahme** von Altdaten mit einem eigenen Kommandozeilenprogramm (Werkzeug für den Entwickler, nicht Teil der Installation)
 
 ## Benutzerhandbuch
 
@@ -50,8 +49,8 @@ powershell tools/AndyTours.Installation/Erstelle-Installation.ps1
 
 ## Hinweise
 
-Dies ist ein privates Hobbyprojekt. Es steht in keiner Verbindung zu BikeXperience oder
-Garmin. Die genannten Marken gehören ihren jeweiligen Inhabern.
+Dies ist ein privates Hobbyprojekt. Es steht in keiner Verbindung zu Garmin. Die genannten
+Marken gehören ihren jeweiligen Inhabern.
 
 ## Lizenz
 
