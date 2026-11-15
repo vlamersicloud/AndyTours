@@ -1,3 +1,4 @@
+using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
 
 namespace AndyTours.Import.Altdaten;
@@ -17,7 +18,7 @@ public static class FindeOderErgaenzeAktivitaet
     public static Aktivitaet Ausfuehren(Datenbestand bestand, string name, Migrationsbericht bericht)
     {
         string gesucht = name.Trim();
-        Aktivitaet? gefunden = bestand.Aktivitaeten.FirstOrDefault(a => a.Name.Equals(gesucht, StringComparison.OrdinalIgnoreCase));
+        Aktivitaet? gefunden = bestand.Aktivitaeten.FirstOrDefault(a => VergleicheNamen.Ausfuehren(a.Name, gesucht));
         if (gefunden is not null)
         {
             return gefunden;

@@ -1,3 +1,4 @@
+using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
 
 namespace AndyTours.Import.Altdaten;
@@ -22,7 +23,7 @@ public static class FindeOderErgaenzeKategorie
     public static Kategorie Ausfuehren(Datenbestand bestand, string name, Migrationsbericht bericht)
     {
         string gesucht = name.Trim();
-        Kategorie? gefunden = bestand.Kategorien.FirstOrDefault(k => k.Name.Equals(gesucht, StringComparison.OrdinalIgnoreCase));
+        Kategorie? gefunden = bestand.Kategorien.FirstOrDefault(k => VergleicheNamen.Ausfuehren(k.Name, gesucht));
         if (gefunden is not null)
         {
             return gefunden;

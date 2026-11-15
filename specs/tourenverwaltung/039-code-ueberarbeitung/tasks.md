@@ -22,8 +22,8 @@ Abschnitt 3 – Daten
 - [x] 15. Freigegebene Funde umsetzen, bauen, testen, committen
 
 Abschnitt 4 – Import
-- [ ] 16. Fundliste `funde-4-import.md` schreiben und freigeben lassen
-- [ ] 17. Freigegebene Funde umsetzen, bauen, testen, committen
+- [x] 16. Fundliste `funde-4-import.md` schreiben und freigeben lassen
+- [x] 17. Freigegebene Funde umsetzen, bauen, testen, committen
 
 Abschnitt 5 – App
 - [ ] 18. Fundliste `funde-5-app.md` (nach Fenstern gegliedert) schreiben und freigeben lassen

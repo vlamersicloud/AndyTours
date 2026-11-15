@@ -1,3 +1,4 @@
+using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
 
 namespace AndyTours.Import.Altdaten;
@@ -27,7 +28,7 @@ public static class FindeOderErgaenzeEquipment
         if (gefunden is not null)
         {
             // Zuordnung über den Kurznamen im Bericht festhalten, damit sie nachvollziehbar ist.
-            if (!gefunden.Name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase))
+            if (!VergleicheNamen.Ausfuehren(gefunden.Name, name))
             {
                 bericht.HinweisEinmalig($"Equipment „{name}“ wurde „{gefunden.Name}“ zugeordnet.");
             }

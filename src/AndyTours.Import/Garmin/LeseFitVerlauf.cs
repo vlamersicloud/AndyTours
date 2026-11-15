@@ -54,14 +54,11 @@ public static class LeseFitVerlauf
         {
             using FileStream datei = System.IO.File.OpenRead(pfad);
             var decoder = new Decode();
-            bool istFit = decoder.IsFIT(datei);
-            datei.Position = 0;
-            if (!istFit || !decoder.CheckIntegrity(datei))
+            if (!PruefeFitDatei.Ausfuehren(datei, decoder))
             {
                 return (null, "keine gültige FIT-Datei");
             }
 
-            datei.Position = 0;
             var verteiler = new MesgBroadcaster();
             decoder.MesgEvent += verteiler.OnMesg;
             verteiler.EventMesgEvent += (_, e) =>
@@ -107,7 +104,7 @@ public static class LeseFitVerlauf
                     Temperatur = punkt.GetTemperature() is sbyte temperatur ? temperatur : null,
                     Position = punkt.GetPositionLat() is int breite && breite != KeinePosition
                         && punkt.GetPositionLong() is int laenge && laenge != KeinePosition
-                        ? new Geoposition(InGrad(breite), InGrad(laenge))
+                        ? new Geoposition(Semicircles.InGrad(breite), Semicircles.InGrad(laenge))
                         : null,
                 });
             };
@@ -121,7 +118,4 @@ public static class LeseFitVerlauf
 
         return (verlauf, null);
     }
-
-    /// <summary>Rechnet Semicircles der FIT-Datei in Grad um.</summary>
-    private static double InGrad(int semicircles) => semicircles * (180.0 / (1L << 31));
 }

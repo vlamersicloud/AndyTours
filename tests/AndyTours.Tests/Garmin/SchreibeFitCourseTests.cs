@@ -6,7 +6,8 @@ using Dynastream.Fit;
 namespace AndyTours.Tests.Garmin;
 
 /// <summary>
-/// Tests für <see cref="SchreibeFitCourse"/>: Datei schreiben und mit dem SDK zurücklesen.
+/// Tests für <see cref="SchreibeFitCourse"/>: Datei schreiben und mit dem SDK zurücklesen (prüft dabei auch
+/// <see cref="Semicircles"/> in beide Richtungen).
 /// </summary>
 [Collection(FitTestdatei.Testgruppe)]
 public class SchreibeFitCourseTests

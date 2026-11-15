@@ -3,7 +3,7 @@
 Geprüft: alle 41 Dateien unter `src/AndyTours.Import` (`Garmin/` für die App, `Altdaten/` für das
 Umwandlungswerkzeug).
 
-Freigabe: _offen_
+Freigabe: alle Punkte freigegeben am 15.11.2026, Frage 1: A1 (4.6 bleibt)
 
 ## Ungenutzter Code
 Kein Fund. Alles Öffentliche wird außerhalb seiner Datei verwendet (der Altdaten-Teil vom

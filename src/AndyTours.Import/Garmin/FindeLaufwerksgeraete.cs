@@ -15,9 +15,7 @@ public static class FindeLaufwerksgeraete
     /// </summary>
     /// <returns>Die Aufzeichnungen aller gefundenen Geräte; leer, wenn keines angeschlossen ist.</returns>
     public static List<Geraeteaufzeichnung> Ausfuehren() =>
-        Ausfuehren(DriveInfo.GetDrives()
-            .Where(l => l.IsReady && l.DriveType == DriveType.Removable)
-            .Select(l => l.RootDirectory.FullName));
+        Ausfuehren(Wechsellaufwerke());
 
     /// <summary>
     /// Durchsucht die angegebenen Laufwerkswurzeln.
@@ -40,7 +38,7 @@ public static class FindeLaufwerksgeraete
                 continue;
             }
 
-            string geraet = LeseGeraetename(wurzel) ?? $"Garmin ({wurzel})";
+            string geraet = Geraetename(wurzel);
             aufzeichnungen.AddRange(Directory.EnumerateFiles(ordner, "*.fit")
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .Select(datei => new Geraeteaufzeichnung(Path.GetFileName(datei), geraet, ziel => File.Copy(datei, ziel, overwrite: true))));
@@ -53,25 +51,33 @@ public static class FindeLaufwerksgeraete
     /// Liest die Modellbeschreibung aus <c>Garmin/GarminDevice.xml</c> (auch für <see cref="FindeLaufwerksziele"/>).
     /// </summary>
     /// <param name="wurzel">Wurzelordner des Laufwerks, z. B. „E:\“.</param>
-    /// <returns>Der Name, z. B. „Edge 1000“, oder <c>null</c>, wenn die Datei fehlt oder unlesbar ist.</returns>
-    internal static string? LeseGeraetename(string wurzel)
+    /// <returns>Der Name, z. B. „Edge 1000“; fehlt die Datei oder ist sie unlesbar, „Garmin (E:\)“.</returns>
+    internal static string Geraetename(string wurzel)
     {
         string pfad = Path.Combine(wurzel, "Garmin", "GarminDevice.xml");
         try
         {
             if (!File.Exists(pfad))
             {
-                return null;
+                return Ersatzname(wurzel);
             }
 
             string? name = XDocument.Load(pfad).Descendants()
                 .FirstOrDefault(e => e.Name.LocalName == "Model")?
                 .Elements().FirstOrDefault(e => e.Name.LocalName == "Description")?.Value.Trim();
-            return string.IsNullOrEmpty(name) ? null : name;
+            return string.IsNullOrEmpty(name) ? Ersatzname(wurzel) : name;
         }
         catch (Exception fehler) when (fehler is IOException or UnauthorizedAccessException or System.Xml.XmlException)
         {
-            return null;
+            return Ersatzname(wurzel);
         }
     }
+
+    /// <summary>Name eines Geräts ohne lesbare Modellbeschreibung, z. B. „Garmin (E:\)“.</summary>
+    private static string Ersatzname(string wurzel) => $"Garmin ({wurzel})";
+
+    /// <summary>Wurzelordner aller bereiten Wechsellaufwerke (auch für <see cref="FindeLaufwerksziele"/>).</summary>
+    internal static IEnumerable<string> Wechsellaufwerke() => DriveInfo.GetDrives()
+        .Where(l => l.IsReady && l.DriveType == DriveType.Removable)
+        .Select(l => l.RootDirectory.FullName);
 }

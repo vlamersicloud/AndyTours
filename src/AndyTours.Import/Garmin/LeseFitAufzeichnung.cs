@@ -19,7 +19,7 @@ public static partial class LeseFitAufzeichnung
     /// (z. B. „7af22db6-d829-4395-9e42-a200867c4abf“). Das SDK kennt die Nachricht nicht; sie wird deshalb
     /// über ihre Nummer gelesen. Fehlt sie, bleibt die Rad-Kennung leer.
     /// </remarks>
-    public const ushort RadwahlNachricht = 526;
+    private const ushort RadwahlNachricht = 526;
 
     /// <summary>ANT+-Gerätetypen der Sensoren, an denen ein Rad erkannt wird (Geschwindigkeit und Trittfrequenz).</summary>
     private static readonly HashSet<byte> Radsensoren = [AntplusDeviceType.BikeSpeedCadence, AntplusDeviceType.BikeCadence, AntplusDeviceType.BikeSpeed];
@@ -63,14 +63,11 @@ public static partial class LeseFitAufzeichnung
         {
             using FileStream datei = System.IO.File.OpenRead(pfad);
             var decoder = new Decode();
-            bool istFit = decoder.IsFIT(datei);
-            datei.Position = 0;
-            if (!istFit || !decoder.CheckIntegrity(datei))
+            if (!PruefeFitDatei.Ausfuehren(datei, decoder))
             {
                 return (null, "keine gültige FIT-Datei");
             }
 
-            datei.Position = 0;
             var verteiler = new MesgBroadcaster();
             decoder.MesgEvent += verteiler.OnMesg;
             verteiler.FileIdMesgEvent += (_, e) => dateikennung ??= (FileIdMesg)e.mesg;

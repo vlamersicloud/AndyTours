@@ -13,9 +13,7 @@ public static class FindeLaufwerksziele
     /// </summary>
     /// <returns>Die gefundenen Geräte; leer, wenn keines angeschlossen ist.</returns>
     public static List<Courseziel> Ausfuehren() =>
-        Ausfuehren(DriveInfo.GetDrives()
-            .Where(l => l.IsReady && l.DriveType == DriveType.Removable)
-            .Select(l => l.RootDirectory.FullName));
+        Ausfuehren(FindeLaufwerksgeraete.Wechsellaufwerke());
 
     /// <summary>
     /// Durchsucht die angegebenen Laufwerkswurzeln.
@@ -34,7 +32,7 @@ public static class FindeLaufwerksziele
             {
                 string ordner = Path.Combine(wurzel, NeueDateien);
                 return new Courseziel(
-                    FindeLaufwerksgeraete.LeseGeraetename(wurzel) ?? $"Garmin ({wurzel})",
+                    FindeLaufwerksgeraete.Geraetename(wurzel),
                     datei => File.Exists(Path.Combine(ordner, datei)),
                     (datei, inhalt) =>
                     {

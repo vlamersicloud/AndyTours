@@ -27,9 +27,6 @@ namespace AndyTours.Import.Garmin;
 /// </remarks>
 public static class SchreibeFitCourse
 {
-    /// <summary>Umrechnung von Grad in die Einheit „Semicircles“ des FIT-Formats.</summary>
-    private const double SemicirclesJeGrad = 2147483648.0 / 180;
-
     /// <summary>
     /// Erzeugt die FIT-Datei.
     /// </summary>
@@ -63,10 +60,10 @@ public static class SchreibeFitCourse
         runde.SetMessageIndex(0);
         runde.SetTimestamp(Zeit(start, letzter.Zeit));
         runde.SetStartTime(start);
-        runde.SetStartPositionLat(Semicircles(erster.Position.Breite));
-        runde.SetStartPositionLong(Semicircles(erster.Position.Laenge));
-        runde.SetEndPositionLat(Semicircles(letzter.Position.Breite));
-        runde.SetEndPositionLong(Semicircles(letzter.Position.Laenge));
+        runde.SetStartPositionLat(Semicircles.AusGrad(erster.Position.Breite));
+        runde.SetStartPositionLong(Semicircles.AusGrad(erster.Position.Laenge));
+        runde.SetEndPositionLat(Semicircles.AusGrad(letzter.Position.Breite));
+        runde.SetEndPositionLong(Semicircles.AusGrad(letzter.Position.Laenge));
         runde.SetTotalElapsedTime((float)letzter.Zeit.TotalSeconds);
         runde.SetTotalTimerTime((float)letzter.Zeit.TotalSeconds);
         runde.SetTotalDistance((float)(letzter.DistanzKm * 1000));
@@ -79,8 +76,8 @@ public static class SchreibeFitCourse
             hoehe = punkt.Hoehe ?? hoehe;
             var satz = new RecordMesg();
             satz.SetTimestamp(Zeit(start, punkt.Zeit));
-            satz.SetPositionLat(Semicircles(punkt.Position.Breite));
-            satz.SetPositionLong(Semicircles(punkt.Position.Laenge));
+            satz.SetPositionLat(Semicircles.AusGrad(punkt.Position.Breite));
+            satz.SetPositionLong(Semicircles.AusGrad(punkt.Position.Laenge));
             satz.SetDistance((float)(punkt.DistanzKm * 1000));
             if (hoehe is double meter)
             {
@@ -100,8 +97,8 @@ public static class SchreibeFitCourse
             var hinweis = new CoursePointMesg();
             hinweis.SetMessageIndex(nummer++);
             hinweis.SetTimestamp(Zeit(start, ort.Zeit));
-            hinweis.SetPositionLat(Semicircles(ort.Position.Breite));
-            hinweis.SetPositionLong(Semicircles(ort.Position.Laenge));
+            hinweis.SetPositionLat(Semicircles.AusGrad(ort.Position.Breite));
+            hinweis.SetPositionLong(Semicircles.AusGrad(ort.Position.Laenge));
             hinweis.SetDistance((float)(ort.DistanzKm * 1000));
             hinweis.SetType(Typ(abbiegung.Richtung));
             hinweis.SetName(BeschreibeAbbiegung.Kurz(abbiegung.Richtung, abbiegung.Ausfahrt));
@@ -139,7 +136,4 @@ public static class SchreibeFitCourse
     /// <summary>Zeitpunkt eines Punkts: Start plus Zeit seit dem Start, auf ganze Sekunden.</summary>
     private static Dynastream.Fit.DateTime Zeit(Dynastream.Fit.DateTime start, TimeSpan seitStart) =>
         new(start.GetTimeStamp() + (uint)Math.Round(seitStart.TotalSeconds));
-
-    /// <summary>Grad in Semicircles.</summary>
-    private static int Semicircles(double grad) => (int)Math.Round(grad * SemicirclesJeGrad);
 }
