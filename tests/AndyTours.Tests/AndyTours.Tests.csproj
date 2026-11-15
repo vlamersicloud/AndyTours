@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.xaml"
+                      LogicalName="AndyTours.ApiHauptfenster.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\AndyTours.Core\AndyTours.Core.csproj" />
     <ProjectReference Include="..\..\src\AndyTours.Daten\AndyTours.Daten.csproj" />
     <ProjectReference Include="..\..\src\AndyTours.Import\AndyTours.Import.csproj" />
