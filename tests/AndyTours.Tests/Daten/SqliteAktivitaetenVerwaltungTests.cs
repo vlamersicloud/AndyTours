@@ -28,6 +28,21 @@ public sealed class SqliteAktivitaetenVerwaltungTests : IDisposable
     }
 
     [Fact]
+    public async Task NeueAktivitaetWirdHauptWennBestandNochKeineHauptaktivitaetHat()
+    {
+        using (var c = OeffneDatenbank.Ausfuehren(_datenbank))
+        using (var tx = c.BeginTransaction())
+        {
+            AktivitaetenTabelle.Einfuegen(c, tx, new Aktivitaet { Name = "Alt", IstHaupt = false });
+            tx.Commit();
+        }
+        var snapshot = await _verwaltung.Laden();
+        var ergebnis = await _verwaltung.Anlegen(new(snapshot.Version, "Neu"));
+        Assert.True(ergebnis.Eintraege.Single(a => a.Name == "Neu").IstHaupt);
+        Assert.False(ergebnis.Eintraege.Single(a => a.Name == "Alt").IstHaupt);
+    }
+
+    [Fact]
     public async Task VeralteteFamilienversionBlockiertSchreibzugriff()
     {
         var erste = await _verwaltung.Anlegen(new((await _verwaltung.Laden()).Version, "Rad"));

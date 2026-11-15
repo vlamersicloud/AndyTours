@@ -28,6 +28,7 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
     /// <inheritdoc />
     public Task<AktivitaetenAntwort> Anlegen(AktivitaetSpeichernAnfrage anfrage, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         PruefeAnfrage(anfrage);
         PruefeName(anfrage.Name);
         using var verbindung = Oeffnen();
@@ -35,14 +36,14 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
         PruefeVersion(verbindung, anfrage.Version);
         var aktivitaeten = AktivitaetenTabelle.Laden(verbindung);
         PruefeEindeutigenNamen(aktivitaeten, anfrage.Name);
-        var haupt = aktivitaeten.Count == 0;
+        var haupt = !aktivitaeten.Any(a => a.IstHaupt);
         var neueAktivitaet = new Aktivitaet { Name = anfrage.Name.Trim(), IstHaupt = haupt };
         var id = AktivitaetenTabelle.Einfuegen(verbindung, transaktion, neueAktivitaet);
         var ids = OrdneAktivitaeten.Ausfuehren(aktivitaeten, AktivitaetenReihenfolgeEinstellung.Laden(verbindung))
             .Select(a => a.Id).Append(id).ToArray();
         AktivitaetenReihenfolgeEinstellung.Speichern(verbindung, transaktion, ids);
-        ct.ThrowIfCancellationRequested();
         var antwort = Antwort(verbindung);
+        ct.ThrowIfCancellationRequested();
         transaktion.Commit();
         return Task.FromResult(antwort);
     }
@@ -50,6 +51,7 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
     /// <inheritdoc />
     public Task<AktivitaetenAntwort> Umbenennen(long id, AktivitaetSpeichernAnfrage anfrage, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         PruefeId(id);
         PruefeAnfrage(anfrage);
         PruefeName(anfrage.Name);
@@ -62,8 +64,8 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
         PruefeEindeutigenNamen(aktivitaeten.Where(a => a.Id != id), anfrage.Name);
         aktivitaet.Name = anfrage.Name.Trim();
         AktivitaetenTabelle.Aendern(verbindung, transaktion, aktivitaet);
-        ct.ThrowIfCancellationRequested();
         var antwort = Antwort(verbindung);
+        ct.ThrowIfCancellationRequested();
         transaktion.Commit();
         return Task.FromResult(antwort);
     }
@@ -71,6 +73,7 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
     /// <inheritdoc />
     public Task<AktivitaetenAntwort> Loeschen(long id, string version, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         PruefeId(id);
         PruefeVersionEingabe(version);
         using var verbindung = Oeffnen();
@@ -86,8 +89,8 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
         var ids = OrdneAktivitaeten.Ausfuehren(aktivitaeten, AktivitaetenReihenfolgeEinstellung.Laden(verbindung))
             .Where(a => a.Id != id).Select(a => a.Id).ToArray();
         AktivitaetenReihenfolgeEinstellung.Speichern(verbindung, transaktion, ids);
-        ct.ThrowIfCancellationRequested();
         var antwort = Antwort(verbindung);
+        ct.ThrowIfCancellationRequested();
         transaktion.Commit();
         return Task.FromResult(antwort);
     }
@@ -95,6 +98,7 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
     /// <inheritdoc />
     public Task<AktivitaetenAntwort> SetzeHauptaktivitaet(AktivitaetAuswahlAnfrage anfrage, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         if (anfrage is null) throw UngueltigeAnfrage();
         PruefeVersionEingabe(anfrage.Version);
         PruefeId(anfrage.AktivitaetId);
@@ -112,8 +116,8 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
                 AktivitaetenTabelle.Aendern(verbindung, transaktion, aktivitaet);
             }
         }
-        ct.ThrowIfCancellationRequested();
         var antwort = Antwort(verbindung);
+        ct.ThrowIfCancellationRequested();
         transaktion.Commit();
         return Task.FromResult(antwort);
     }
@@ -121,6 +125,7 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
     /// <inheritdoc />
     public Task<AktivitaetenAntwort> SetzeReihenfolge(AktivitaetenReihenfolgeAnfrage anfrage, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         if (anfrage is null) throw UngueltigeAnfrage();
         PruefeVersionEingabe(anfrage.Version);
         if (anfrage.Ids is null) throw UngueltigeAnfrage();
@@ -134,8 +139,8 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
             !anfrage.Ids.ToHashSet().SetEquals(aktuell.Eintraege.Select(a => a.Id)))
             throw UngueltigeAnfrage("Die Reihenfolge muss jede vorhandene Aktivität genau einmal enthalten.");
         AktivitaetenReihenfolgeEinstellung.Speichern(verbindung, transaktion, anfrage.Ids);
-        ct.ThrowIfCancellationRequested();
         var antwort = Antwort(verbindung);
+        ct.ThrowIfCancellationRequested();
         transaktion.Commit();
         return Task.FromResult(antwort);
     }
@@ -143,6 +148,7 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
     /// <inheritdoc />
     public Task<AktivitaetenAntwort> Zusammenfuehren(AktivitaetenZusammenfuehrenAnfrage anfrage, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         if (anfrage is null) throw UngueltigeAnfrage();
         PruefeVersionEingabe(anfrage.Version);
         PruefeId(anfrage.QuelleId);
@@ -159,8 +165,8 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
         var ids = OrdneAktivitaeten.Ausfuehren(aktivitaeten, AktivitaetenReihenfolgeEinstellung.Laden(verbindung))
             .Where(a => a.Id != anfrage.QuelleId).Select(a => a.Id).ToArray();
         AktivitaetenReihenfolgeEinstellung.Speichern(verbindung, transaktion, ids);
-        ct.ThrowIfCancellationRequested();
         var antwort = Antwort(verbindung);
+        ct.ThrowIfCancellationRequested();
         transaktion.Commit();
         return Task.FromResult(antwort);
     }
@@ -209,7 +215,8 @@ public sealed class SqliteAktivitaetenVerwaltung(string datenbankpfad) : IAktivi
 
     private static void PruefeEindeutigenNamen(IEnumerable<Aktivitaet> aktivitaeten, string name)
     {
-        if (aktivitaeten.Any(a => string.Equals(a.Name, name.Trim(), StringComparison.OrdinalIgnoreCase)))
+        var normalized = name.Trim();
+        if (aktivitaeten.Any(a => string.Equals(a.Name.Trim(), normalized, StringComparison.OrdinalIgnoreCase)))
             throw UngueltigeAnfrage("Eine Aktivität mit diesem Namen existiert bereits.");
     }
 

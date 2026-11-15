@@ -28,7 +28,7 @@ public sealed class AktivitaetenHttpVerwaltung(HttpClient http) : IAktivitaetenV
     public async Task<AktivitaetenAntwort> Loeschen(long id, string version, CancellationToken ct = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Delete, Basis + Id(id));
-        request.Headers.TryAddWithoutValidation("If-Match", version);
+        request.Headers.TryAddWithoutValidation("If-Match", $"\"{version}\"");
         using var response = await http.SendAsync(request, ct);
         await Pruefe(response, ct);
         return await LiesAntwort(response, ct);
@@ -90,6 +90,7 @@ public sealed class AktivitaetenHttpVerwaltung(HttpClient http) : IAktivitaetenV
             }
             if (count > 8192) return fallback;
             using var json = JsonDocument.Parse(buffer.AsMemory(0, count), new JsonDocumentOptions { MaxDepth = 16 });
+            if (json.RootElement.ValueKind != JsonValueKind.Object) return fallback;
             if (!json.RootElement.TryGetProperty("code", out var codeElement) || codeElement.ValueKind != JsonValueKind.String ||
                 !json.RootElement.TryGetProperty("detail", out var detailElement) || detailElement.ValueKind != JsonValueKind.String)
                 return fallback;

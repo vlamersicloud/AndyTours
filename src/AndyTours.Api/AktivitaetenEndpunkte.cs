@@ -29,12 +29,15 @@ public static class AktivitaetenEndpunkte
             MitVersion(await verwaltung.Umbenennen(id, anfrage, ct), ctx))
             .Produces<AktivitaetenAntwort>().ProducesProblem(400).ProducesProblem(404).ProducesProblem(409);
 
-        gruppe.MapDelete("/{id:long}", async (long id, [FromHeader(Name = "If-Match")] string? version,
+        gruppe.MapDelete("/{id:long}", async (long id, [FromHeader(Name = "If-Match")] string version,
             IAktivitaetenVerwaltung verwaltung, HttpContext ctx, CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(version))
                 throw new StammdatenException(StammdatenFehlerart.Ungueltig, "If-Match mit der Familienversion ist erforderlich.");
-            return MitVersion(await verwaltung.Loeschen(id, version, ct), ctx);
+            var normalizedVersion = version.Length >= 2 && version[0] == '"' && version[^1] == '"'
+                ? version[1..^1]
+                : version;
+            return MitVersion(await verwaltung.Loeschen(id, normalizedVersion, ct), ctx);
         }).WithDescription("If-Match enthält die unquotierte Familienversion der vollständigen geordneten Aktivitätsliste.")
             .Produces<AktivitaetenAntwort>().ProducesProblem(400).ProducesProblem(404).ProducesProblem(409);
 
