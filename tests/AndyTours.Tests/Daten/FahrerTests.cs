@@ -17,18 +17,14 @@ public class FahrerTests
     };
 
     [Fact]
-    public void Vorhandener_Sportler_wird_geaendert_und_behaelt_die_uebrigen_Werte()
+    public void Vorhandener_Sportler_wird_geaendert_und_behaelt_seine_Nummer()
     {
         using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(":memory:");
         DatenbestandTabellen.Speichern(verbindung, new Datenbestand
         {
             Fahrer =
             {
-                new Fahrer
-                {
-                    Id = 3, Vorname = "Alt", GewichtKg = 90, TrainingspulsVon = 120, TrainingspulsBis = 150,
-                    Heimatort = "Alt", HeimatBreitengrad = 47.97, HeimatLaengengrad = 11.1,
-                },
+                new Fahrer { Id = 3, Vorname = "Alt", GewichtKg = 90, Heimatort = "Alt" },
             },
         });
 
@@ -45,10 +41,6 @@ public class FahrerTests
         Assert.Equal(48, gelesen.Ruhepuls);
         Assert.Equal(178, gelesen.Maxpuls);
         Assert.Equal("Ingolstadt", gelesen.Heimatort);
-        Assert.Equal(120, gelesen.TrainingspulsVon);
-        Assert.Equal(150, gelesen.TrainingspulsBis);
-        Assert.Equal(47.97, gelesen.HeimatBreitengrad);
-        Assert.Equal(11.1, gelesen.HeimatLaengengrad);
     }
 
     [Fact]

@@ -53,7 +53,6 @@ public class UmwandlungTests
         Assert.Contains(bestand.Equipments, e => e.Name == "Namur");
         Assert.Contains(bestand.Aktivitaeten, a => a.Name == "Bike");
         Assert.Contains(bestand.Kategorien, k => k.Name == "Training");
-        Assert.Single(bestand.Schwellwerte);
         Assert.Equal("Testfahrer", Assert.Single(bestand.Fahrer).Vorname);
     }
 

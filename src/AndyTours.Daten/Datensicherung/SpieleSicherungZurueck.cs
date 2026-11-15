@@ -28,8 +28,8 @@ public static class SpieleSicherungZurueck
     /// <item><b>Aktuellen Stand sichern</b> (<see cref="ErstelleSicherung"/>) in den Sicherungsordner. So lässt
     /// sich auch das Wiederherstellen rückgängig machen. Schlägt das fehl, wird abgebrochen.</item>
     /// <item><b>Vorbereiten:</b> Die Sicherung wird per Online-Sicherung von SQLite in eine Zwischendatei im
-    /// Datenordner kopiert. Beim Öffnen mit <see cref="OeffneDatenbank"/> erhält eine ältere Sicherung
-    /// fehlende Tabellen und die aktuelle Schemaversion. Danach werden die vorher gelesenen
+    /// Datenordner kopiert. Beim Öffnen mit <see cref="OeffneDatenbank"/> wird eine ältere Sicherung ohne weitere Sicherung
+    /// auf die aktuelle Schemaversion umgebaut (<see cref="BaueSchemaUm"/>). Danach werden die vorher gelesenen
     /// Sicherungseinstellungen hineingeschrieben – sie gelten unverändert weiter; nur der Startzähler
     /// steht auf 0, weil gerade gesichert wurde.</item>
     /// <item><b>Austauschen:</b> Die Zwischendatei ersetzt die Datenbank in einem Schritt
@@ -93,7 +93,7 @@ public static class SpieleSicherungZurueck
                 quelle.BackupDatabase(ziel);
             }
 
-            using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(zwischendatei))
+            using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(zwischendatei, vorUmbauSichern: false))
             {
                 SicherungEinstellungen.Speichern(verbindung, einstellungen with { StartsSeitSicherung = 0 });
             }

@@ -11,25 +11,29 @@ namespace AndyTours.Daten;
 /// <item>Datumswerte als Text „JJJJ-MM-TT", Uhrzeiten als „hh:mm" – so sortieren sie auch als Text richtig.</item>
 /// <item>Zeitdauern als ganze Sekunden.</item>
 /// <item>Wahrheitswerte als 0/1 (SQLite kennt keinen eigenen Typ dafür).</item>
-/// <item>Aufzählungen (Anhangtyp, Wartungstyp, Schwellwertart) als Name im Klartext, damit die
+/// <item>Aufzählungen (Anhangtyp, Wartungstyp) als Name im Klartext, damit die
 /// Datenbank auch mit einem SQLite-Werkzeug lesbar bleibt.</item>
 /// </list>
-/// Die Schemaversion steht in <c>PRAGMA user_version</c>; spätere Änderungen am Schema können
-/// daran erkennen, ob eine ältere Datenbank angepasst werden muss.
+/// Die Schemaversion steht in <c>PRAGMA user_version</c>. Neue Tabellen kommen hier hinzu und werden in
+/// älteren Datenbanken beim nächsten Öffnen angelegt; alle anderen Änderungen baut <see cref="BaueSchemaUm"/>
+/// um (siehe <c>docs/adr/0010-anpassung-des-datenbankschemas.md</c>). Die Version setzt
+/// <see cref="OeffneDatenbank"/>.
 /// </remarks>
 public static class ErstelleSchema
 {
     /// <summary>Aktuelle Version des Datenbankschemas.</summary>
-    public const int Schemaversion = 4;
+    public const int Schemaversion = 5;
 
     /// <summary>
     /// Führt die CREATE-Anweisungen aus. Vorhandene Tabellen und Daten bleiben unverändert.
     /// </summary>
     /// <param name="verbindung">Geöffnete Datenbankverbindung.</param>
-    public static void Ausfuehren(SqliteConnection verbindung)
+    /// <param name="transaktion">Laufende Transaktion (beim Umbau), sonst <c>null</c>.</param>
+    public static void Ausfuehren(SqliteConnection verbindung, SqliteTransaction? transaktion = null)
     {
         using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = $"""
+        befehl.Transaction = transaktion;
+        befehl.CommandText = """
             -- Sportler (Nutzerverwaltung)
             CREATE TABLE IF NOT EXISTS Fahrer (
                 Id                  INTEGER PRIMARY KEY,
@@ -40,11 +44,7 @@ public static class ErstelleSchema
                 GewichtKg           REAL    NOT NULL,
                 Ruhepuls            INTEGER NOT NULL,
                 Maxpuls             INTEGER NOT NULL,
-                TrainingspulsVon    INTEGER NOT NULL,
-                TrainingspulsBis    INTEGER NOT NULL,
-                Heimatort           TEXT    NOT NULL,
-                HeimatBreitengrad   REAL,
-                HeimatLaengengrad   REAL
+                Heimatort           TEXT    NOT NULL
             );
 
             CREATE TABLE IF NOT EXISTS Aktivitaet (
@@ -74,26 +74,16 @@ public static class ErstelleSchema
                 IstStandard  INTEGER NOT NULL
             );
 
-            -- Ausrüstung; Kettenblätter und Ritzel als kommagetrennte Zähnezahlen („39,53")
+            -- Ausrüstung
             CREATE TABLE IF NOT EXISTS Equipment (
                 Id                 INTEGER PRIMARY KEY,
                 Name               TEXT    NOT NULL UNIQUE COLLATE NOCASE,
                 AktivitaetId       INTEGER REFERENCES Aktivitaet(Id),
-                GewichtKg          REAL    NOT NULL,
-                RadumfangMm        INTEGER NOT NULL,
-                CrCoeff            REAL    NOT NULL,
-                CmCoeff            REAL    NOT NULL,
-                CwCoeff            REAL    NOT NULL,
-                CwaCoeff           REAL    NOT NULL,
-                SinCoeff           REAL    NOT NULL,
-                Kettenblaetter     TEXT    NOT NULL,
-                Ritzel             TEXT    NOT NULL,
                 Geraetezuordnung   TEXT    NOT NULL,
                 StandardKategorie  TEXT    NOT NULL,
                 IstStandard        INTEGER NOT NULL,
                 Ausgemustert       INTEGER NOT NULL,
                 Anschaffungsdatum  TEXT,
-                Bildpfad           TEXT    NOT NULL,
                 AnfangsdistanzKm   REAL    NOT NULL
             );
 
@@ -153,16 +143,6 @@ public static class ErstelleSchema
                 Aktiv        INTEGER NOT NULL
             );
 
-            CREATE TABLE IF NOT EXISTS Schwellwert (
-                Id           INTEGER PRIMARY KEY,
-                Art          TEXT    NOT NULL,
-                Reihenfolge  INTEGER NOT NULL,
-                Name         TEXT    NOT NULL,
-                Von          REAL    NOT NULL,
-                Bis          REAL    NOT NULL,
-                Farbe        TEXT    NOT NULL
-            );
-
             -- Einstellungen, die zum Datenbestand gehören (z. B. Datensicherung), als Schlüssel/Wert-Paare;
             -- seit Schemaversion 2. Ältere Datenbanken erhalten die Tabelle beim nächsten Öffnen automatisch.
             CREATE TABLE IF NOT EXISTS Einstellung (
@@ -189,8 +169,6 @@ public static class ErstelleSchema
                 Eingeschaltet  INTEGER NOT NULL,
                 Punkte         BLOB    NOT NULL
             );
-
-            PRAGMA user_version = {Schemaversion};
             """;
         befehl.ExecuteNonQuery();
     }

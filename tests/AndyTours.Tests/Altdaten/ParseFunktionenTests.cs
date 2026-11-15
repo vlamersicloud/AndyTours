@@ -80,11 +80,4 @@ public class ParseFunktionenTests
     {
         Assert.Equal(erwartet, NormalisiereAnhangPfad.Ausfuehren(pfad));
     }
-
-    [Fact]
-    public void ParseZahlenliste_liest_Zaehnezahlen()
-    {
-        Assert.Equal(new List<int> { 11, 12, 13 }, ParseZahlenliste.Ausfuehren("11,12, 13"));
-        Assert.Empty(ParseZahlenliste.Ausfuehren(""));
-    }
 }

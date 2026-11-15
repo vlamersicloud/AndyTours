@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using AndyTours.App.Funktionen;
 using AndyTours.App.ViewModels;
 using AndyTours.App.Views;
+using AndyTours.Daten;
 using AndyTours.Daten.Datenordner;
 using AndyTours.Daten.Datensicherung;
 
@@ -25,7 +26,8 @@ public partial class App : Application
     /// <item>Ordner prüfen (ein fehlender Ordner wird dabei angelegt).</item>
     /// <item>Nicht erreichbar oder nicht beschreibbar → Meldung mit „Erneut versuchen / Anderen Ordner wählen / Beenden“,
     /// so lange, bis ein brauchbarer Ordner vorliegt oder der Benutzer beendet.</item>
-    /// <item>Automatische Datensicherung, falls fällig (<see cref="SichereBeimStart"/>).</item>
+    /// <item>Automatische Datensicherung, falls fällig (<see cref="SichereBeimStart"/>). Dabei wird ein Datenbestand
+    /// einer früheren Version gesichert und umgebaut; scheitert diese Sicherung, endet der Start mit einer Meldung.</item>
     /// <item>Hauptfenster mit dem Ordner öffnen.</item>
     /// </list>
     /// <c>async void</c> ist hier zulässig, weil es sich um einen Ereignishandler handelt.
@@ -90,7 +92,18 @@ public partial class App : Application
             // „Erneut versuchen“ und ein abgebrochener Ordnerwechsel: Schleife prüft erneut
         }
 
-        await SichereBeimStart(ordner);
+        try
+        {
+            await SichereBeimStart(ordner);
+        }
+        catch (SicherungVorUmbauFehlgeschlagenException fehler)
+        {
+            // Ohne Sicherung wird ein älterer Datenbestand nicht umgebaut; beim nächsten Start erneut versuchen
+            MessageBox.Show($"{fehler.Message}\n\nAndyTours wird beendet. Beim nächsten Start wird es erneut versucht.",
+                "AndyTours", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown();
+            return;
+        }
 
         HauptfensterViewModel viewModel;
         try

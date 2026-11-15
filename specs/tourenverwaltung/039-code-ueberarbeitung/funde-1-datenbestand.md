@@ -5,7 +5,7 @@ der Oberfläche (`src/AndyTours.App`) vor, in keiner Berechnung und in keiner An
 nur aus den Altdaten gelesen, in der Datenbank gespeichert und beim Bearbeiten unverändert
 durchgereicht.
 
-Freigabe: _offen_
+Freigabe: alle Punkte freigegeben am 15.11.2026
 
 ## Equipment (Tabelle `Equipment`)
 | Nr. | Wert | Bedeutung | Heute verwendet in | Vorschlag |

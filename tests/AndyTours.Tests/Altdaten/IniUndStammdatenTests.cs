@@ -25,15 +25,10 @@ public class IniUndStammdatenTests
         "birthday=28.05.1963",
         "pulsemin=50",
         "pulsemax=168",
-        "[LimitsGrad]",
-        "Abfahrt;-30,0;153,51,102",
-        "Flach;0,3;170,0,0",
         "[Equipment.Genius/Bike]",
-        "chainwheels=24,34",
         "activity=Bike",
         "date=16.7.2018",
         "rejected=false",
-        "wheeldiameter=2210",
         "[FieldLengths]",
         "fieldLenHM=50",
     };
@@ -69,18 +64,6 @@ public class IniUndStammdatenTests
     }
 
     [Fact]
-    public void Schwellwerte_werden_mit_Farbe_gelesen()
-    {
-        List<Schwellwert> schwellwerte = WandleSchwellwerte.Ausfuehren(LeseIniDatei.Ausfuehren(IniZeilen));
-
-        Assert.Equal(2, schwellwerte.Count);
-        Assert.Equal(SchwellwertArt.Steigung, schwellwerte[0].Art);
-        Assert.Equal(-30, schwellwerte[0].Von);
-        Assert.Equal("#AA0000", schwellwerte[1].Farbe);
-        Assert.Equal(1, schwellwerte[1].Reihenfolge);
-    }
-
-    [Fact]
     public void Equipment_wird_mit_Aktivitaet_verknuepft()
     {
         IniDatei ini = LeseIniDatei.Ausfuehren(IniZeilen);
@@ -89,9 +72,7 @@ public class IniUndStammdatenTests
         Equipment genius = Assert.Single(equipments);
         Assert.Equal("Genius/Bike", genius.Name);
         Assert.Equal(1, genius.AktivitaetId);
-        Assert.Equal(new List<int> { 24, 34 }, genius.Kettenblaetter);
         Assert.Equal(new DateOnly(2018, 7, 16), genius.Anschaffungsdatum);
-        Assert.Equal(2210, genius.RadumfangMm);
     }
 
     [Fact]

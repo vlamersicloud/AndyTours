@@ -229,10 +229,14 @@ public class SpieleSicherungZurueckTests
         // Einstellungen lassen sich speichern – die Tabelle aus Schemaversion 2 ist also vorhanden
         Stelle(temp.Pfad, Lies(temp.Pfad) with { Intervall = 9 });
         Assert.Equal(9, Lies(temp.Pfad).Intervall);
-        using var verbindung = new SqliteConnection($"Data Source={Path.Combine(temp.Pfad, DatenordnerInhalt.Datenbankdatei)};Pooling=False");
-        verbindung.Open();
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "PRAGMA user_version;";
-        Assert.Equal((long)ErstelleSchema.Schemaversion, befehl.ExecuteScalar());
+
+        // Umgebaut: aktuelle Version, die nicht mehr verwendeten Werte sind entfernt
+        string datenbank = Path.Combine(temp.Pfad, DatenordnerInhalt.Datenbankdatei);
+        Assert.Equal(ErstelleSchema.Schemaversion, TestSicherungen.Version(datenbank));
+        Assert.DoesNotContain("Kettenblaetter", TestSicherungen.Spalten(datenbank, "Equipment"));
+        Assert.Empty(TestSicherungen.Spalten(datenbank, "Schwellwert"));
+
+        // Nur die zusätzliche Sicherung des aktuellen Stands, keine weitere für den Umbau der Zwischendatei
+        Assert.Equal(2, Directory.GetFiles(Standardordner(temp.Pfad), "*.db").Length);
     }
 }

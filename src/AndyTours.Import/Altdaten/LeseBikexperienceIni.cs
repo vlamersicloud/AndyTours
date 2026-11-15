@@ -6,7 +6,7 @@ namespace AndyTours.Import.Altdaten;
 public static class LeseBikexperienceIni
 {
     /// <summary>
-    /// Liest Sportler, Aktivitäten, Kategorien, Equipments und Schwellwerte.
+    /// Liest Sportler, Aktivitäten, Kategorien und Equipments.
     /// </summary>
     /// <param name="pfad">Vollständiger Pfad zur <c>bikexperience.ini</c>.</param>
     /// <returns>Die übernommenen Stammdaten.</returns>
@@ -24,7 +24,6 @@ public static class LeseBikexperienceIni
             Aktivitaeten = aktivitaeten,
             Kategorien = WandleKategorien.Ausfuehren(ini),
             Equipments = WandleEquipments.Ausfuehren(ini, aktivitaeten),
-            Schwellwerte = WandleSchwellwerte.Ausfuehren(ini),
         };
     }
 }

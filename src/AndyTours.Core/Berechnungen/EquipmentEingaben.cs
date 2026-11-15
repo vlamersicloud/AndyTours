@@ -46,7 +46,7 @@ public static class EquipmentEingaben
     /// <item>Das Anschaffungsdatum muss leer oder ein gültiges Datum sein.</item>
     /// <item>Die Anfangskilometer müssen leer oder eine Zahl von 0 an sein.</item>
     /// <item>Standard ist nur möglich mit Aktivität und ohne „ausgemustert“; sonst wird es abgeschaltet.</item>
-    /// <item>Nummer und die Werte, die AndyTours nicht pflegt, werden aus <paramref name="basis"/> übernommen.</item>
+    /// <item>Die Nummer wird aus <paramref name="basis"/> übernommen.</item>
     /// <item>Die Gerätezuordnung entsteht aus den verbliebenen Rad-Kennungen und Sensoren der Eingaben.</item>
     /// </list>
     /// Geprüft wird in dieser Reihenfolge; der Hinweis nennt den ersten Fehler.
@@ -78,21 +78,11 @@ public static class EquipmentEingaben
             Id = basis.Id,
             Name = eingaben.Name.Trim(),
             AktivitaetId = eingaben.AktivitaetId,
-            GewichtKg = basis.GewichtKg,
-            RadumfangMm = basis.RadumfangMm,
-            CrCoeff = basis.CrCoeff,
-            CmCoeff = basis.CmCoeff,
-            CwCoeff = basis.CwCoeff,
-            CwaCoeff = basis.CwaCoeff,
-            SinCoeff = basis.SinCoeff,
-            Kettenblaetter = [.. basis.Kettenblaetter],
-            Ritzel = [.. basis.Ritzel],
             Geraetezuordnung = GeraetezuordnungText.Schreiben(eingaben.Radkennungen),
             StandardKategorie = eingaben.StandardKategorie.Trim(),
             IstStandard = eingaben.IstStandard && eingaben.AktivitaetId is not null && !eingaben.Ausgemustert,
             Ausgemustert = eingaben.Ausgemustert,
             Anschaffungsdatum = datum,
-            Bildpfad = basis.Bildpfad,
             AnfangsdistanzKm = kilometer ?? 0,
         };
         return (equipment, null);

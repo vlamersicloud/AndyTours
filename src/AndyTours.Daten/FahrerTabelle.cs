@@ -17,8 +17,7 @@ public static class FahrerTabelle
     {
         using SqliteCommand befehl = verbindung.CreateCommand();
         befehl.CommandText = """
-            SELECT Id, Vorname, Nachname, Geburtstag, GroesseCm, GewichtKg, Ruhepuls, Maxpuls,
-                   TrainingspulsVon, TrainingspulsBis, Heimatort, HeimatBreitengrad, HeimatLaengengrad
+            SELECT Id, Vorname, Nachname, Geburtstag, GroesseCm, GewichtKg, Ruhepuls, Maxpuls, Heimatort
             FROM Fahrer ORDER BY Id;
             """;
 
@@ -37,11 +36,7 @@ public static class FahrerTabelle
                 GewichtKg = leser.GetDouble(5),
                 Ruhepuls = leser.GetInt32(6),
                 Maxpuls = leser.GetInt32(7),
-                TrainingspulsVon = leser.GetInt32(8),
-                TrainingspulsBis = leser.GetInt32(9),
-                Heimatort = leser.GetString(10),
-                HeimatBreitengrad = leser.IsDBNull(11) ? null : leser.GetDouble(11),
-                HeimatLaengengrad = leser.IsDBNull(12) ? null : leser.GetDouble(12),
+                Heimatort = leser.GetString(8),
             });
         }
 
@@ -59,10 +54,8 @@ public static class FahrerTabelle
         using SqliteCommand befehl = verbindung.CreateCommand();
         befehl.Transaction = transaktion;
         befehl.CommandText = """
-            INSERT INTO Fahrer (Id, Vorname, Nachname, Geburtstag, GroesseCm, GewichtKg, Ruhepuls, Maxpuls,
-                                TrainingspulsVon, TrainingspulsBis, Heimatort, HeimatBreitengrad, HeimatLaengengrad)
-            VALUES ($id, $vorname, $nachname, $geburtstag, $groesse, $gewicht, $ruhepuls, $maxpuls,
-                    $tpVon, $tpBis, $heimatort, $breite, $laenge);
+            INSERT INTO Fahrer (Id, Vorname, Nachname, Geburtstag, GroesseCm, GewichtKg, Ruhepuls, Maxpuls, Heimatort)
+            VALUES ($id, $vorname, $nachname, $geburtstag, $groesse, $gewicht, $ruhepuls, $maxpuls, $heimatort);
             """;
 
         foreach (Fahrer f in fahrer)
@@ -77,11 +70,7 @@ public static class FahrerTabelle
             befehl.Parameters.AddWithValue("$gewicht", f.GewichtKg);
             befehl.Parameters.AddWithValue("$ruhepuls", f.Ruhepuls);
             befehl.Parameters.AddWithValue("$maxpuls", f.Maxpuls);
-            befehl.Parameters.AddWithValue("$tpVon", f.TrainingspulsVon);
-            befehl.Parameters.AddWithValue("$tpBis", f.TrainingspulsBis);
             befehl.Parameters.AddWithValue("$heimatort", f.Heimatort);
-            befehl.Parameters.AddWithValue("$breite", (object?)f.HeimatBreitengrad ?? DBNull.Value);
-            befehl.Parameters.AddWithValue("$laenge", (object?)f.HeimatLaengengrad ?? DBNull.Value);
             befehl.ExecuteNonQuery();
         }
     }
@@ -90,9 +79,8 @@ public static class FahrerTabelle
     /// Speichert die persönlichen Daten in den Sportler von AndyTours; fehlt er noch, wird er angelegt.
     /// </summary>
     /// <remarks>
-    /// Geschrieben werden nur die Werte des Fensters „Persönliche Daten“ (Vorname, Nachname, Geburtstag,
-    /// Größe, Gewicht, Ruhe- und Maximalpuls, Heimatort). Trainingspuls und Koordinaten des Heimatorts
-    /// bleiben in der Datenbank unverändert. Alles läuft in einer Transaktion: Schlägt ein Schritt fehl,
+    /// Geschrieben werden die Werte des Fensters „Persönliche Daten“ (Vorname, Nachname, Geburtstag,
+    /// Größe, Gewicht, Ruhe- und Maximalpuls, Heimatort). Alles läuft in einer Transaktion: Schlägt ein Schritt fehl,
     /// bleibt die Datenbank wie vorher.
     /// </remarks>
     /// <param name="verbindung">Geöffnete Verbindung.</param>
@@ -150,9 +138,8 @@ public static class FahrerTabelle
 
         // Noch kein Sportler: einen leeren anlegen, die Nummer vergibt die Datenbank
         befehl.CommandText = """
-            INSERT INTO Fahrer (Vorname, Nachname, GroesseCm, GewichtKg, Ruhepuls, Maxpuls,
-                                TrainingspulsVon, TrainingspulsBis, Heimatort)
-            VALUES ('', '', 0, 0, 0, 0, 0, 0, '');
+            INSERT INTO Fahrer (Vorname, Nachname, GroesseCm, GewichtKg, Ruhepuls, Maxpuls, Heimatort)
+            VALUES ('', '', 0, 0, 0, 0, '');
             SELECT last_insert_rowid();
             """;
         return (long)befehl.ExecuteScalar()!;

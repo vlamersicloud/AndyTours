@@ -14,10 +14,10 @@ public class DatenbankTests
     {
         return new Datenbestand
         {
-            Fahrer = { new Fahrer { Id = 1, Vorname = "Andy", Geburtstag = new DateOnly(1963, 5, 28), HeimatBreitengrad = 47.97 } },
+            Fahrer = { new Fahrer { Id = 1, Vorname = "Andy", Geburtstag = new DateOnly(1963, 5, 28), Heimatort = "Ingolstadt" } },
             Aktivitaeten = { new Aktivitaet { Id = 1, Name = "Bike", IstHaupt = true, ZielKm = 8000 } },
             Kategorien = { new Kategorie { Id = 1, Name = "Arbeit" }, new Kategorie { Id = 2, Name = "Urlaub", IstStandard = true } },
-            Equipments = { new Equipment { Id = 1, Name = "Genius/Bike", AktivitaetId = 1, Kettenblaetter = { 24, 34 }, Ausgemustert = true } },
+            Equipments = { new Equipment { Id = 1, Name = "Genius/Bike", AktivitaetId = 1, Ausgemustert = true } },
             Trainingseinheiten =
             {
                 new Trainingseinheit
@@ -29,7 +29,6 @@ public class DatenbankTests
                 },
             },
             Wartungen = { new Wartung { Id = 1, Datum = new DateOnly(2026, 9, 6), EquipmentId = null, Taetigkeit = "Dämpfer", Typ = WartungsTyp.Alarm, AlarmKm = 1500 } },
-            Schwellwerte = { new Schwellwert { Id = 1, Art = SchwellwertArt.Steigung, Name = "Hügel", Von = 3, Bis = 6, Farbe = "#CC6600" } },
         };
     }
 
@@ -51,8 +50,6 @@ public class DatenbankTests
         Assert.Equal("2026/a.fit", Assert.Single(einheit.Anhaenge).RelativerPfad);
 
         Equipment equipment = Assert.Single(geladen.Equipments);
-        Assert.Equal(new List<int> { 24, 34 }, equipment.Kettenblaetter);
-        Assert.Empty(equipment.Ritzel);
         Assert.True(equipment.Ausgemustert);
         Assert.Null(equipment.Anschaffungsdatum);
 
@@ -60,8 +57,7 @@ public class DatenbankTests
         Assert.Null(wartung.EquipmentId);
         Assert.Equal(WartungsTyp.Alarm, wartung.Typ);
 
-        Assert.Equal(47.97, Assert.Single(geladen.Fahrer).HeimatBreitengrad);
-        Assert.Equal("Hügel", Assert.Single(geladen.Schwellwerte).Name);
+        Assert.Equal("Ingolstadt", Assert.Single(geladen.Fahrer).Heimatort);
         Assert.True(geladen.Kategorien[1].IstStandard);
     }
 

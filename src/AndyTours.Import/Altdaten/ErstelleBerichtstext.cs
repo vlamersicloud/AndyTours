@@ -35,7 +35,6 @@ public static class ErstelleBerichtstext
         text.AppendLine(de, $"  Wartungen:          {bestand.Wartungen.Count}");
         text.AppendLine(de, $"  Aktivitäten:        {bestand.Aktivitaeten.Count}");
         text.AppendLine(de, $"  Kategorien:         {bestand.Kategorien.Count}");
-        text.AppendLine(de, $"  Schwellwerte:       {bestand.Schwellwerte.Count}");
         text.AppendLine(de, $"  Sportler:           {bestand.Fahrer.Count}");
         text.AppendLine();
 

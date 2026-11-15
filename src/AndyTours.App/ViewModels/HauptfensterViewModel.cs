@@ -476,7 +476,7 @@ public partial class HauptfensterViewModel : ObservableObject
         {
             LadeDatenbank(neu);
         }
-        catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)
+        catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException or SicherungVorUmbauFehlgeschlagenException)
         {
             MessageBox.Show($"Die Daten im Ordner\n{neu}\nkonnten nicht geladen werden:\n\n{fehler.Message}\n\nDer bisherige Datenordner bleibt aktiv.",
                 "Datenordner ändern", MessageBoxButton.OK, MessageBoxImage.Error);

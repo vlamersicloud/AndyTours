@@ -96,23 +96,13 @@ public class EquipmentEingabenTests
     }
 
     [Fact]
-    public void Nicht_gepflegte_Werte_bleiben_erhalten()
+    public void Die_Nummer_bleibt_erhalten()
     {
-        var basis = new Equipment
-        {
-            Id = 9, Name = "Alt", GewichtKg = 13, RadumfangMm = 2290, CrCoeff = 0.004, Kettenblaetter = [36, 52],
-            Ritzel = [11, 28], Geraetezuordnung = "Bike1", Bildpfad = "rad.jpg",
-        };
+        var basis = new Equipment { Id = 9, Name = "Alt" };
 
         Equipment equipment = EquipmentEingaben.AlsEquipment(Gueltig, basis, Auswahlbestand.MitEquipments()).Equipment!;
 
         Assert.Equal(9, equipment.Id);
-        Assert.Equal(13, equipment.GewichtKg);
-        Assert.Equal(2290, equipment.RadumfangMm);
-        Assert.Equal(0.004, equipment.CrCoeff);
-        Assert.Equal([36, 52], equipment.Kettenblaetter);
-        Assert.Equal([11, 28], equipment.Ritzel);
-        Assert.Equal("rad.jpg", equipment.Bildpfad);
     }
 
     [Fact]

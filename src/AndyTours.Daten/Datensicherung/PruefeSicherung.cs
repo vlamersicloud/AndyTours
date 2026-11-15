@@ -17,12 +17,13 @@ public static class PruefeSicherung
     /// <summary>
     /// Tabellen, die jede AndyTours-Datenbank seit Schemaversion 1 enthält. Fehlt eine davon,
     /// ist die Datei keine AndyTours-Datenbank. (Die Tabelle <c>Einstellung</c> gibt es erst seit
-    /// Version 2 und fehlt deshalb hier – ältere Sicherungen sollen brauchbar bleiben.)
+    /// Version 2 und fehlt deshalb hier – ältere Sicherungen sollen brauchbar bleiben. Die Tabelle
+    /// <c>Schwellwert</c> entfällt seit Version 5 und wird deshalb nicht verlangt.)
     /// </summary>
     private static readonly string[] Kerntabellen =
     [
         "Fahrer", "Aktivitaet", "Kategorie", "Equipment", "Trainingseinheit",
-        "EinheitKategorie", "Anhang", "Wartung", "Schwellwert",
+        "EinheitKategorie", "Anhang", "Wartung",
     ];
 
     /// <summary>

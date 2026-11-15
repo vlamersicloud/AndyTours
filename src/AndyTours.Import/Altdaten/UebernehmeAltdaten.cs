@@ -8,7 +8,7 @@ namespace AndyTours.Import.Altdaten;
 /// <remarks>
 /// Ablauf:
 /// <list type="number">
-/// <item>Stammdaten aus <c>bikexperience.ini</c> lesen (Sportler, Aktivitäten, Kategorien, Equipments, Schwellwerte).</item>
+/// <item>Stammdaten aus <c>bikexperience.ini</c> lesen (Sportler, Aktivitäten, Kategorien, Equipments).</item>
 /// <item>Trainingseinheiten aus <c>workouts.csv</c> lesen und deren Namensverweise in Nummern umsetzen;
 /// fehlende Stammdaten werden dabei ergänzt.</item>
 /// <item>Wartungen aus <c>maintanence.dat</c> lesen und den Equipments zuordnen.</item>
@@ -67,12 +67,6 @@ public static class UebernehmeAltdaten
         bestand.Aktivitaeten.AddRange(einstellungen.Aktivitaeten);
         bestand.Kategorien.AddRange(einstellungen.Kategorien);
         bestand.Equipments.AddRange(einstellungen.Equipments);
-        bestand.Schwellwerte.AddRange(einstellungen.Schwellwerte);
-
-        foreach (Schwellwert schwellwert in bestand.Schwellwerte)
-        {
-            schwellwert.Name = Repariere(schwellwert.Name, $"bikexperience.ini, Schwellwert {schwellwert.Art}");
-        }
 
         foreach (Equipment equipment in bestand.Equipments)
         {

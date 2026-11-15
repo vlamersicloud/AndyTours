@@ -54,7 +54,7 @@ public static class FahrerEingaben
     /// <item>Ruhepuls: ganze Zahl von 30 bis 120; Maximalpuls: ganze Zahl von 100 bis 230.</item>
     /// <item>Sind beide Pulswerte angegeben, muss der Ruhepuls kleiner als der Maximalpuls sein.</item>
     /// </list>
-    /// Nummer, Trainingspuls und Koordinaten des Heimatorts werden aus <paramref name="basis"/> übernommen.
+    /// Die Nummer wird aus <paramref name="basis"/> übernommen.
     /// </remarks>
     /// <param name="eingaben">Die Eingaben des Fensters.</param>
     /// <param name="basis">Der bisherige Sportler bzw. ein leerer (Nummer 0).</param>
@@ -110,11 +110,7 @@ public static class FahrerEingaben
             GewichtKg = gewicht ?? 0,
             Ruhepuls = ruhepuls ?? 0,
             Maxpuls = maxpuls ?? 0,
-            TrainingspulsVon = basis.TrainingspulsVon,
-            TrainingspulsBis = basis.TrainingspulsBis,
             Heimatort = eingaben.Heimatort.Trim(),
-            HeimatBreitengrad = basis.HeimatBreitengrad,
-            HeimatLaengengrad = basis.HeimatLaengengrad,
         };
         return (fahrer, null);
     }

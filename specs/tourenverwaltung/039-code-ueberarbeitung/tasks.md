@@ -1,17 +1,17 @@
 # Aufgaben: 039 – Code-Überarbeitung
 
 Abschnitt 1 – ungenutzte Werte aus dem Datenbestand
-- [ ] 1. Fundliste `funde-1-datenbestand.md` schreiben und freigeben lassen
-- [ ] 2. Modell und Core-Funktionen ohne die freigegebenen Werte
-- [ ] 3. Tabellenklassen ohne die freigegebenen Werte
-- [ ] 4. Neues Schema auf Version 5
-- [ ] 5. Umbaustufe 4 → 5 (`BaueSchemaUm`) in einer Transaktion
-- [ ] 6. Sicherung vor dem Umbau in `OeffneDatenbank`, eigener Fehler bei Fehlschlag
-- [ ] 7. Wiederherstellen älterer Sicherungen (`PruefeSicherung`, `SpieleSicherungZurueck`)
-- [ ] 8. Meldung und Programmende beim Start, Meldung beim Wechsel des Datenordners
-- [ ] 9. Altdaten-Lesecode und Umwandlungswerkzeug ohne die entfernten Werte
-- [ ] 10. Vorhandene Tests anpassen, `SchemaumbauTests` ergänzen
-- [ ] 11. Bauen, testen, Umbau mit einer Kopie von `AppDaten` prüfen, committen
+- [x] 1. Fundliste `funde-1-datenbestand.md` schreiben und freigeben lassen
+- [x] 2. Modell und Core-Funktionen ohne die freigegebenen Werte
+- [x] 3. Tabellenklassen ohne die freigegebenen Werte
+- [x] 4. Neues Schema auf Version 5
+- [x] 5. Umbaustufe 4 → 5 (`BaueSchemaUm`) in einer Transaktion
+- [x] 6. Sicherung vor dem Umbau in `OeffneDatenbank`, eigener Fehler bei Fehlschlag
+- [x] 7. Wiederherstellen älterer Sicherungen (`PruefeSicherung`, `SpieleSicherungZurueck`)
+- [x] 8. Meldung und Programmende beim Start, Meldung beim Wechsel des Datenordners
+- [x] 9. Altdaten-Lesecode und Umwandlungswerkzeug ohne die entfernten Werte
+- [x] 10. Vorhandene Tests anpassen, `SchemaumbauTests` ergänzen
+- [x] 11. Bauen, testen, Umbau mit einer Kopie von `AppDaten` prüfen, committen
 
 Abschnitt 2 – Core
 - [ ] 12. Fundliste `funde-2-core.md` schreiben und freigeben lassen

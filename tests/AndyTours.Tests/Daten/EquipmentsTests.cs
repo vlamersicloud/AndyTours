@@ -24,7 +24,7 @@ public class EquipmentsTests
             Aktivitaeten = { new Aktivitaet { Id = 1, Name = "Bike", IstHaupt = true }, new Aktivitaet { Id = 2, Name = "Laufen" } },
             Equipments =
             {
-                new Equipment { Id = 1, Name = "Genius", AktivitaetId = 1, IstStandard = true, GewichtKg = 14.5, Kettenblaetter = [32] },
+                new Equipment { Id = 1, Name = "Genius", AktivitaetId = 1, IstStandard = true },
                 new Equipment { Id = 2, Name = "FELT", AktivitaetId = 1, Ausgemustert = true },
                 new Equipment { Id = 3, Name = "Schuhe", AktivitaetId = 2 },
                 new Equipment { Id = 4, Name = "Rennrad", AktivitaetId = 1 },
@@ -89,8 +89,6 @@ public class EquipmentsTests
         Assert.False(gelesen.IstStandard);
         Assert.True(gelesen.Ausgemustert);
         Assert.Equal(100, gelesen.AnfangsdistanzKm);
-        Assert.Equal(14.5, gelesen.GewichtKg);
-        Assert.Equal([32], gelesen.Kettenblaetter);
         Assert.Equal(1, TrainingseinheitenTabelle.Laden(verbindung).Single(e => e.Id == 1).EquipmentId);
     }
 

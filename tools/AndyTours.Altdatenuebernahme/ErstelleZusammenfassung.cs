@@ -30,7 +30,6 @@ public static class ErstelleZusammenfassung
         text.AppendLine(de, $"  Wartungen:          {bestand.Wartungen.Count:N0}");
         text.AppendLine(de, $"  Aktivitäten:        {bestand.Aktivitaeten.Count:N0}");
         text.AppendLine(de, $"  Kategorien:         {bestand.Kategorien.Count:N0}");
-        text.AppendLine(de, $"  Schwellwerte:       {bestand.Schwellwerte.Count:N0}");
         text.AppendLine(de, $"  Sportler:           {bestand.Fahrer.Count:N0}");
         text.AppendLine(de, $"  Warnungen: {bericht.Warnungen.Count:N0}, nicht reparierte Umlaute: {bericht.NichtReparierteTexte.Count:N0}");
         text.AppendLine(de, $"Bericht: {Path.Combine(zielordner, ErstelleZwischenordner.Berichtsdatei)}");

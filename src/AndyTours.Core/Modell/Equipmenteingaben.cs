@@ -8,10 +8,6 @@ namespace AndyTours.Core.Modell;
 /// geprüft und umgewandelt wird mit <see cref="Berechnungen.EquipmentEingaben.AlsEquipment"/>. Aktivität
 /// und Standardkategorie werden aus Listen gewählt. Ein leeres Feld bedeutet „nicht erfasst“.
 /// <para>
-/// Nicht enthalten sind die Werte, die AndyTours nicht pflegt (Gewicht, Radumfang, Widerstandswerte,
-/// Kettenblätter, Ritzel, Bild); sie bleiben beim Speichern unverändert erhalten.
-/// </para>
-/// <para>
 /// Die Gerätezuordnung erscheint als Liste der gemerkten Rad-Kennungen und Sensoren
 /// (<see cref="Radkennungen"/>); im Fenster lassen sich nur einzelne entfernen, gemerkt werden sie beim Import.
 /// </para>

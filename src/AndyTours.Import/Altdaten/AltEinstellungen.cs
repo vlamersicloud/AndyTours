@@ -22,7 +22,4 @@ public class AltEinstellungen
 
     /// <summary>Equipments aus <c>[Equipment.*]</c>.</summary>
     public List<Equipment> Equipments { get; set; } = new();
-
-    /// <summary>Schwellwerte aus <c>[Limits*]</c>.</summary>
-    public List<Schwellwert> Schwellwerte { get; set; } = new();
 }

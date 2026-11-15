@@ -25,7 +25,6 @@ public static class DatenbestandTabellen
             Equipments = EquipmentsTabelle.Laden(verbindung),
             Trainingseinheiten = TrainingseinheitenTabelle.Laden(verbindung),
             Wartungen = WartungenTabelle.Laden(verbindung),
-            Schwellwerte = SchwellwerteTabelle.Laden(verbindung),
         };
     }
 
@@ -62,7 +61,6 @@ public static class DatenbestandTabellen
         EquipmentsTabelle.Speichern(verbindung, transaktion, bestand.Equipments);
         TrainingseinheitenTabelle.Speichern(verbindung, transaktion, bestand.Trainingseinheiten);
         WartungenTabelle.Speichern(verbindung, transaktion, bestand.Wartungen);
-        SchwellwerteTabelle.Speichern(verbindung, transaktion, bestand.Schwellwerte);
 
         // Erst hier wird alles endgültig geschrieben; ohne Commit verwirft Dispose die Änderungen.
         transaktion.Commit();

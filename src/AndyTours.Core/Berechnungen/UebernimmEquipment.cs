@@ -71,7 +71,7 @@ public static class UebernimmEquipment
         }
     }
 
-    /// <summary>Erzeugt eine unabhängige Kopie mit eigenen Listen.</summary>
+    /// <summary>Erzeugt eine unabhängige Kopie.</summary>
     /// <param name="e">Das zu kopierende Equipment.</param>
     /// <returns>Die Kopie.</returns>
     public static Equipment Kopie(Equipment e) => new()
@@ -79,21 +79,11 @@ public static class UebernimmEquipment
         Id = e.Id,
         Name = e.Name,
         AktivitaetId = e.AktivitaetId,
-        GewichtKg = e.GewichtKg,
-        RadumfangMm = e.RadumfangMm,
-        CrCoeff = e.CrCoeff,
-        CmCoeff = e.CmCoeff,
-        CwCoeff = e.CwCoeff,
-        CwaCoeff = e.CwaCoeff,
-        SinCoeff = e.SinCoeff,
-        Kettenblaetter = [.. e.Kettenblaetter],
-        Ritzel = [.. e.Ritzel],
         Geraetezuordnung = e.Geraetezuordnung,
         StandardKategorie = e.StandardKategorie,
         IstStandard = e.IstStandard,
         Ausgemustert = e.Ausgemustert,
         Anschaffungsdatum = e.Anschaffungsdatum,
-        Bildpfad = e.Bildpfad,
         AnfangsdistanzKm = e.AnfangsdistanzKm,
     };
 }

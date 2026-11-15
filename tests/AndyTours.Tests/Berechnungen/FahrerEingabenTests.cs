@@ -24,17 +24,14 @@ public class FahrerEingabenTests
         Heimatort = " Ingolstadt ",
     };
 
-    /// <summary>Bisheriger Sportler mit Werten, die das Fenster nicht pflegt.</summary>
-    private static readonly Fahrer Basis = new()
-    {
-        Id = 7, TrainingspulsVon = 120, TrainingspulsBis = 150, HeimatBreitengrad = 48.76, HeimatLaengengrad = 11.42,
-    };
+    /// <summary>Bisheriger Sportler; seine Nummer bleibt erhalten.</summary>
+    private static readonly Fahrer Basis = new() { Id = 7 };
 
     /// <summary>Prüft die Eingaben und liefert nur den Hinweis.</summary>
     private static string? Hinweis(Fahrereingaben eingaben) => FahrerEingaben.AlsFahrer(eingaben, Basis, Heute).Hinweis;
 
     [Fact]
-    public void Gueltige_Eingaben_ergeben_den_Sportler_und_behalten_die_uebrigen_Werte()
+    public void Gueltige_Eingaben_ergeben_den_Sportler_mit_seiner_Nummer()
     {
         (Fahrer? fahrer, string? hinweis) = FahrerEingaben.AlsFahrer(Gueltig, Basis, Heute);
 
@@ -49,10 +46,6 @@ public class FahrerEingabenTests
         Assert.Equal(48, fahrer.Ruhepuls);
         Assert.Equal(178, fahrer.Maxpuls);
         Assert.Equal("Ingolstadt", fahrer.Heimatort);
-        Assert.Equal(120, fahrer.TrainingspulsVon);
-        Assert.Equal(150, fahrer.TrainingspulsBis);
-        Assert.Equal(48.76, fahrer.HeimatBreitengrad);
-        Assert.Equal(11.42, fahrer.HeimatLaengengrad);
     }
 
     [Fact]

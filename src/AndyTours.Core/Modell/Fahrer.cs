@@ -33,18 +33,6 @@ public class Fahrer
     /// <summary>Maximalpuls in Schlägen pro Minute (in den Altdaten: <c>pulsemax</c>).</summary>
     public int Maxpuls { get; set; }
 
-    /// <summary>Untere Grenze des persönlichen Trainingspulses (in den Altdaten: <c>hfMin</c>).</summary>
-    public int TrainingspulsVon { get; set; }
-
-    /// <summary>Obere Grenze des persönlichen Trainingspulses (in den Altdaten: <c>hfMax</c>).</summary>
-    public int TrainingspulsBis { get; set; }
-
     /// <summary>Name des Heimatorts (Startpunkt der Kartenanzeige).</summary>
     public string Heimatort { get; set; } = string.Empty;
-
-    /// <summary>Geografische Breite des Heimatorts in Grad, falls bekannt.</summary>
-    public double? HeimatBreitengrad { get; set; }
-
-    /// <summary>Geografische Länge des Heimatorts in Grad, falls bekannt.</summary>
-    public double? HeimatLaengengrad { get; set; }
 }

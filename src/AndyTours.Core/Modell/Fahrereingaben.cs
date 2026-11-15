@@ -6,10 +6,6 @@ namespace AndyTours.Core.Modell;
 /// <remarks>
 /// Alle Werte sind Text, weil der Benutzer auch Ungültiges tippen kann; geprüft und umgewandelt wird mit
 /// <see cref="Berechnungen.FahrerEingaben.AlsFahrer"/>. Ein leeres Feld bedeutet „unbekannt“.
-/// <para>
-/// Nicht enthalten sind die Werte, die AndyTours hier nicht pflegt (Trainingspuls, Koordinaten des
-/// Heimatorts); sie bleiben beim Speichern unverändert erhalten.
-/// </para>
 /// </remarks>
 public record Fahrereingaben
 {

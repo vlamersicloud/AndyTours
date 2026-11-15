@@ -30,7 +30,4 @@ public class Datenbestand
 
     /// <summary>Alle Wartungseinträge und Alarme.</summary>
     public List<Wartung> Wartungen { get; set; } = new();
-
-    /// <summary>Alle Schwellwerte (Puls-, Geschwindigkeits-, Steigungs- und Leistungsbereiche).</summary>
-    public List<Schwellwert> Schwellwerte { get; set; } = new();
 }
