@@ -1,5 +1,5 @@
-using System.IO;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -23,7 +23,7 @@ public sealed class LokalesBackend : IAsyncDisposable
     /// <summary>Die Clientverbindung zum gestarteten lokalen Backend.</summary>
     public BackendClientSitzung Sitzung { get; }
 
-    /// <summary>Startet einen isolierten lokalen API-Prozess und wartet auf dessen Health-Ressource.</summary>
+    /// <summary>Startet einen isolierten API-Prozess und wartet auf Health- und Tourenressourcen.</summary>
     public static async Task<LokalesBackend> StartenAsync(
         string backendDll, string datenordner, CancellationToken ct)
     {
@@ -52,6 +52,8 @@ public sealed class LokalesBackend : IAsyncDisposable
         start.Environment["Backend__Zugriffstoken"] = token;
         start.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
 
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(TimeSpan.FromSeconds(20));
         var prozess = new Process { StartInfo = start };
         BackendClientSitzung? sitzung = null;
         try
@@ -60,23 +62,34 @@ public sealed class LokalesBackend : IAsyncDisposable
             if (!prozess.Start())
                 throw new InvalidOperationException("Lokales Backend konnte nicht gestartet werden.");
             sitzung = new BackendClientSitzung(adresse, token);
-            var deadline = DateTime.UtcNow.AddSeconds(20);
-            while (DateTime.UtcNow < deadline)
+
+            while (!deadline.IsCancellationRequested)
             {
-                ct.ThrowIfCancellationRequested();
                 if (prozess.HasExited)
                     throw new InvalidOperationException("Lokales Backend wurde vor dem Verbindungsaufbau beendet.");
                 try
                 {
-                    if (await sitzung.Verbindung.IstErreichbarAsync(ct))
+                    if (await sitzung.Verbindung.IstErreichbarAsync(deadline.Token))
+                    {
+                        await sitzung.Touren.Liste(0, 1, null, null, deadline.Token);
+                        if (prozess.HasExited)
+                            throw new InvalidOperationException("Lokales Backend wurde während der Bereitschaftsprüfung beendet.");
                         return new LokalesBackend(prozess, sitzung);
+                    }
                 }
                 catch (HttpRequestException)
                 {
-                    // Der Listener kann während des Backendstarts noch nicht bereit sein.
+                    // Während des Starts kann der Listener noch nicht erreichbar sein.
                 }
-                await Task.Delay(200, ct);
+                await Task.Delay(200, deadline.Token);
             }
+            throw new TimeoutException("Lokales Backend wurde innerhalb von 20 Sekunden nicht bereit.");
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            sitzung?.Dispose();
+            await ProzessBeendenAsync(prozess);
+            prozess.Dispose();
             throw new TimeoutException("Lokales Backend wurde innerhalb von 20 Sekunden nicht bereit.");
         }
         catch
@@ -109,7 +122,7 @@ public sealed class LokalesBackend : IAsyncDisposable
         }
         catch (InvalidOperationException)
         {
-            // Prozess wurde nicht gestartet oder ist bereits vollständig beendet.
+            // Prozess wurde nicht gestartet oder ist bereits beendet.
         }
     }
 }
