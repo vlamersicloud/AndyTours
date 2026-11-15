@@ -251,7 +251,7 @@ public static class TrainingseinheitenTabelle
     /// <param name="transaktion">Laufende Transaktion.</param>
     /// <param name="einheit">Die Einheit mit ihrer Nummer.</param>
     /// <exception cref="InvalidOperationException">Die Einheit gibt es in der Datenbank nicht (mehr).</exception>
-    private static void AendereInTransaktion(SqliteConnection verbindung, SqliteTransaction transaktion, Trainingseinheit einheit)
+    public static void AendereInTransaktion(SqliteConnection verbindung, SqliteTransaction transaktion, Trainingseinheit einheit)
     {
         using (SqliteCommand befehl = verbindung.CreateCommand())
         {
