@@ -216,7 +216,9 @@ public partial class HauptfensterViewModel : IAuswahllistenSpeicher
 
             case Auswahlliste.Aktivitaet:
             {
-                var aktivitaet = new Aktivitaet { Name = neu };
+                // Gibt es noch keine Hauptaktivität (leerer Datenordner), wird die neue Aktivität dazu.
+                // Ohne Hauptaktivität bekämen importierte Touren ohne Rad keine gültige Aktivität.
+                var aktivitaet = new Aktivitaet { Name = neu, IstHaupt = !_bestand.Aktivitaeten.Any(a => a.IstHaupt) };
                 bool gespeichert = SchreibeInTransaktion((verbindung, transaktion) =>
                 {
                     aktivitaet.Id = AktivitaetenTabelle.Einfuegen(verbindung, transaktion, aktivitaet);

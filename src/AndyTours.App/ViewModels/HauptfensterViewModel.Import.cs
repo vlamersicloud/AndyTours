@@ -56,6 +56,11 @@ public partial class HauptfensterViewModel
     private void VomGarminImportieren()
     {
         Statusmeldung = string.Empty;
+        if (!PruefeHauptaktivitaet())
+        {
+            return;
+        }
+
         string zwischenordner = Path.Combine(Path.GetTempPath(), "AndyTours_Import_" + Guid.NewGuid().ToString("N"));
         List<Trainingseinheit> vorhanden = [.. _bestand.Trainingseinheiten];
         try
@@ -84,6 +89,11 @@ public partial class HauptfensterViewModel
     private void FitDateienImportieren()
     {
         Statusmeldung = string.Empty;
+        if (!PruefeHauptaktivitaet())
+        {
+            return;
+        }
+
         var dialog = new OpenFileDialog
         {
             Title = "FIT-Dateien importieren",
@@ -98,6 +108,30 @@ public partial class HauptfensterViewModel
         string[] dateien = dialog.FileNames;
         List<Trainingseinheit> vorhanden = [.. _bestand.Trainingseinheiten];
         Importiere(LeseMitFortschritt("FIT-Dateien werden gelesen …", fortschritt => LeseDateien(dateien, vorhanden, fortschritt)));
+    }
+
+    /// <summary>
+    /// Prüft vor dem Import, ob es eine Hauptaktivität gibt, und meldet sonst, was zu tun ist.
+    /// </summary>
+    /// <remarks>
+    /// Importierte Touren ohne Rad (oder mit einem Rad ohne Aktivität) bekommen die Hauptaktivität. Die Aktivität
+    /// ist in der Datenbank Pflicht; ohne Hauptaktivität würde das Speichern der ersten Tour scheitern, nachdem
+    /// ihre Aufzeichnung schon in den Datenordner kopiert wurde. Das kommt nur bei einem neuen, leeren Datenordner vor.
+    /// </remarks>
+    /// <returns><c>true</c>, wenn importiert werden kann.</returns>
+    private bool PruefeHauptaktivitaet()
+    {
+        if (_bestand.Aktivitaeten.Any(a => a.IstHaupt))
+        {
+            return true;
+        }
+
+        MessageBox.Show(
+            "Es gibt noch keine Hauptaktivität.\n\n"
+                + "Bitte zuerst unter „Extras → Einstellungen…“ auf der Karteikarte „Auswahllisten“ "
+                + "eine Aktivität anlegen bzw. mit „Als Hauptaktivität“ zur Hauptaktivität machen.",
+            Importtitel, MessageBoxButton.OK, MessageBoxImage.Information);
+        return false;
     }
 
     /// <summary>

@@ -188,11 +188,10 @@ Bevor Sie die erste Tour importieren, lohnt ein Blick in die Einstellungen.
 2. Ist Ihnen die Schrift zu klein, wählen Sie auf der Karteikarte **Allgemein** unter **Größe der Oberfläche:** eine größere Stufe. Die Änderung wirkt sofort.
 3. Wechseln Sie zur Karteikarte **Auswahllisten**.
 4. Wählen Sie unter **Liste:** den Eintrag **Aktivität**. Prüfen Sie, ob Ihre Sportarten vorhanden sind, zum Beispiel „Bike“. Legen Sie fehlende mit **Hinzufügen** an (siehe [Abschnitt 4.9.4](#k4-9-4)).
-5. Trägt noch keine Aktivität den Zusatz **(Hauptaktivität)**, markieren Sie Ihre wichtigste Aktivität und klicken Sie auf **Als Hauptaktivität**.
-6. Wählen Sie unter **Liste:** den Eintrag **Equipment**. Prüfen Sie, ob Ihre Räder vorhanden sind. Legen Sie fehlende mit **Hinzufügen** an.
-7. Klicken Sie auf **Schließen**.
+5. Wählen Sie unter **Liste:** den Eintrag **Equipment**. Prüfen Sie, ob Ihre Räder vorhanden sind. Legen Sie fehlende mit **Hinzufügen** an.
+6. Klicken Sie auf **Schließen**.
 
-**Hinweis:** Haben Sie bei der Installation keine bisherigen Daten übernommen, enthält der Datenordner noch keine Aktivität. Legen Sie dann vor der ersten Tour mindestens eine Aktivität an und machen Sie sie zur Hauptaktivität. Der Import ordnet jede Tour der Aktivität ihres Rads zu. Hat das Rad keine Aktivität, gilt die Hauptaktivität.
+**Hinweis:** Haben Sie bei der Installation keine bisherigen Daten übernommen, enthält der Datenordner noch keine Aktivität. Legen Sie dann vor der ersten Tour mindestens eine Aktivität an. Die erste Aktivität wird automatisch zur Hauptaktivität, mit **Als Hauptaktivität** können Sie später eine andere wählen. Der Import ordnet jede Tour der Aktivität ihres Rads zu. Hat das Rad keine Aktivität, gilt die Hauptaktivität. Fehlt die Hauptaktivität, weist AndyTours beim Import darauf hin und importiert nichts.
 
 ### 3.5 Die erste Tour vom Garmin Edge importieren
 
