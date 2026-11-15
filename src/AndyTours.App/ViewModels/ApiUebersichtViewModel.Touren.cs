@@ -7,11 +7,14 @@ using AndyTours.Client;
 using AndyTours.App.Views;
 using AndyTours.Contracts.V1;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AndyTours.App.ViewModels;
 
 public partial class ApiUebersichtViewModel
 {
+    [ObservableProperty] private bool _editorOffen;
+
     [RelayCommand(CanExecute = nameof(KannNeueTour))]
     private async Task NeueTourAsync(CancellationToken ct)
     {
@@ -227,15 +230,25 @@ public partial class ApiUebersichtViewModel
         Func<Trainingseinheit, Window, Task<bool>> speichern,
         CancellationToken ct)
     {
-        var listen = ErmittleEingabelisten.Ausfuehren(bestand, einheit, trainingsbereiche);
-        EinheitBearbeitenFenster? fenster = null;
-        var editorViewModel = new EinheitBearbeitenViewModel(
-            einheit, listen, bestand.Kategorien, istNeu ? "Neue Tour" : "Tour bearbeiten",
-            werte => speichern(werte, fenster!), bestand, istNeu);
-        fenster = new EinheitBearbeitenFenster(editorViewModel) { Owner = System.Windows.Application.Current.MainWindow };
-        fenster.ShowDialog();
         ct.ThrowIfCancellationRequested();
-        return editorViewModel.IstGespeichert;
+        EditorOffen = true;
+        try
+        {
+            var listen = ErmittleEingabelisten.Ausfuehren(bestand, einheit, trainingsbereiche);
+            EinheitBearbeitenFenster? fenster = null;
+            var editorViewModel = new EinheitBearbeitenViewModel(
+                einheit, listen, bestand.Kategorien, istNeu ? "Neue Tour" : "Tour bearbeiten",
+                werte => speichern(werte, fenster!), bestand, istNeu);
+            ct.ThrowIfCancellationRequested();
+            fenster = new EinheitBearbeitenFenster(editorViewModel) { Owner = System.Windows.Application.Current.MainWindow };
+            fenster.ShowDialog();
+            ct.ThrowIfCancellationRequested();
+            return editorViewModel.IstGespeichert;
+        }
+        finally
+        {
+            EditorOffen = false;
+        }
     }
 
     private void ZeigeSpeicherfehler(Window fenster, Exception fehler)

@@ -1,6 +1,9 @@
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using AndyTours.App.ViewModels;
 
 namespace AndyTours.App.Views;
@@ -22,6 +25,17 @@ public partial class ApiHauptfenster : Window, IDisposable
         Closed += FensterGeschlossen;
     }
 
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        if (_viewModel.EditorOffen)
+        {
+            e.Cancel = true;
+            _viewModel.StatusText = "Bitte zuerst den Bearbeitungsdialog schließen.";
+            return;
+        }
+        base.OnClosing(e);
+    }
+
     public void Dispose()
     {
         if (_geschlossen) return;
@@ -39,6 +53,17 @@ public partial class ApiHauptfenster : Window, IDisposable
         catch (OperationCanceledException) { }
     }
 
+    private void TourenDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not DataGrid grid || e.OriginalSource is not DependencyObject ursprung) return;
+        if (ItemsControl.ContainerFromElement(grid, ursprung) is not DataGridRow { Item: Contracts.V1.TourAntwort } row)
+            return;
+
+        if (_viewModel.TourBearbeitenCommand.CanExecute(null))
+            _viewModel.TourBearbeitenCommand.Execute(null);
+        e.Handled = true;
+    }
+
     private void FensterGeschlossen(object? sender, EventArgs e)
     {
         if (_geschlossen) return;
@@ -47,6 +72,10 @@ public partial class ApiHauptfenster : Window, IDisposable
         _viewModel.AktualisierenCommand.Cancel();
         _viewModel.NaechsteSeiteCommand.Cancel();
         _viewModel.VorherigeSeiteCommand.Cancel();
+        _viewModel.NeueTourCommand.Cancel();
+        _viewModel.TourBearbeitenCommand.Cancel();
+        _viewModel.TourKopierenCommand.Cancel();
+        _viewModel.TourLoeschenCommand.Cancel();
         _lifetime.Dispose();
     }
 }
