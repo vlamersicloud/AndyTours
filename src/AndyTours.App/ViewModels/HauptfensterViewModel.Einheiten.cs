@@ -231,7 +231,7 @@ public partial class HauptfensterViewModel
             gespeichert => SpeichereAusFenster(gespeichert, istNeu),
             _bestand,
             istNeu);
-        var fenster = new EinheitBearbeitenFenster(viewModel) { Owner = Application.Current.MainWindow };
+        var fenster = new EinheitBearbeitenFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow };
         fenster.ShowDialog();
     }
 

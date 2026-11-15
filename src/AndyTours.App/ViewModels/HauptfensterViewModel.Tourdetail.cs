@@ -48,7 +48,7 @@ public partial class HauptfensterViewModel
                 ordner => SpeichereStill(verbindung => GpxOrdnerEinstellung.Speichern(verbindung, ordner)),
                 () => (LadeEinstellung(PlanungEinstellung.Laden) ?? Planungseinstellungen.Standard).Profil,
                 () => LadeEinstellung(RoutingEinstellung.Laden) ?? Routingeinstellungen.Standard);
-            new TourdetailFenster(viewModel) { Owner = Application.Current.MainWindow }.Show();
+            new TourdetailFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow }.Show();
         }
     }
 

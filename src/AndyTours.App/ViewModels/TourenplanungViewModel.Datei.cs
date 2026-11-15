@@ -78,7 +78,7 @@ public partial class TourenplanungViewModel
     private void GarminUebertragen()
     {
         string name = BildeCoursename.FuerPlanung(Dateipfad, DateOnly.FromDateTime(DateTime.Today));
-        Window? fenster = Application.Current?.Windows.OfType<TourenplanungFenster>().FirstOrDefault(f => f.DataContext == this);
+        Window? fenster = global::System.Windows.Application.Current?.Windows.OfType<TourenplanungFenster>().FirstOrDefault(f => f.DataContext == this);
         CourseUebertragenViewModel.Zeige(fenster, [new Coursezeile(Planung, name)], Profil, _ladeRouting);
     }
 

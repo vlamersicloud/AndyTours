@@ -34,7 +34,7 @@ public partial class HauptfensterViewModel
             return;
         }
 
-        _overlaysFenster = new OverlaysFenster(new OverlaysViewModel(() => Datenordner)) { Owner = Application.Current.MainWindow };
+        _overlaysFenster = new OverlaysFenster(new OverlaysViewModel(() => Datenordner)) { Owner = global::System.Windows.Application.Current.MainWindow };
         _overlaysFenster.Closed += (_, _) => _overlaysFenster = null;
         _overlaysFenster.Show();
     }

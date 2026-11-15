@@ -117,7 +117,7 @@ public static class WechsleDatenordner
 
     /// <summary>Das gerade aktive Fenster der App (Besitzer für Dialoge) oder <c>null</c> vor dem Öffnen des Hauptfensters.</summary>
     private static Window? AktivesFenster() =>
-        Application.Current.Windows.OfType<Window>().FirstOrDefault(f => f.IsActive) ?? Application.Current.MainWindow;
+        global::System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(f => f.IsActive) ?? global::System.Windows.Application.Current.MainWindow;
 
     /// <summary>Zeigt eine Meldung – mit Besitzerfenster, falls vorhanden, damit sie über diesem erscheint.</summary>
     private static MessageBoxResult Meldung(Window? besitzer, string text, MessageBoxButton knoepfe, MessageBoxImage symbol) =>

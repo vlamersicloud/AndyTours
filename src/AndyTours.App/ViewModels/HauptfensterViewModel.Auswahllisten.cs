@@ -137,7 +137,7 @@ public partial class HauptfensterViewModel : IAuswahllistenSpeicher
         var viewModel = new ZusammenfuehrenViewModel(ursprung, ziele);
         var fenster = new ZusammenfuehrenFenster(viewModel)
         {
-            Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? Application.Current.MainWindow,
+            Owner = global::System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? global::System.Windows.Application.Current.MainWindow,
         };
         return fenster.ShowDialog() == true ? viewModel.Ergebnis : null;
     }

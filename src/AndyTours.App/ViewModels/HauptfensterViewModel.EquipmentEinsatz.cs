@@ -16,7 +16,7 @@ public partial class HauptfensterViewModel
     [RelayCommand]
     private void EquipmentEinsatzOeffnen()
     {
-        var fenster = new EquipmentEinsatzFenster(new EquipmentEinsatzViewModel(_bestand)) { Owner = Application.Current.MainWindow };
+        var fenster = new EquipmentEinsatzFenster(new EquipmentEinsatzViewModel(_bestand)) { Owner = global::System.Windows.Application.Current.MainWindow };
         fenster.ShowDialog();
     }
 }

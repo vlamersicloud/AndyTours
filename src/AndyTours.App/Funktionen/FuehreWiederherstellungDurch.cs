@@ -42,7 +42,7 @@ public static class FuehreWiederherstellungDurch
     /// <returns><c>true</c>, wenn eine Sicherung zurückgespielt wurde.</returns>
     public static async Task<bool> Ausfuehren(string datenordner, Action neuLaden)
     {
-        Window? besitzer = Application.Current.Windows.OfType<Window>().FirstOrDefault(f => f.IsActive) ?? Application.Current.MainWindow;
+        Window? besitzer = global::System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(f => f.IsActive) ?? global::System.Windows.Application.Current.MainWindow;
         string datenbankdatei = Path.Combine(datenordner, DatenordnerInhalt.Datenbankdatei);
 
         // 1. Sicherungsordner und Sicherungen ermitteln

@@ -26,7 +26,7 @@ public partial class HauptfensterViewModel
             FahrerEingaben.AlsEingaben(basis),
             eingaben => FahrerEingaben.AlsFahrer(eingaben, basis, DateOnly.FromDateTime(DateTime.Today)).Hinweis,
             eingaben => SpeicherePersoenlicheDaten(eingaben, basis));
-        var fenster = new PersoenlicheDatenFenster(viewModel) { Owner = Application.Current.MainWindow };
+        var fenster = new PersoenlicheDatenFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow };
         fenster.ShowDialog();
     }
 

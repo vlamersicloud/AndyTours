@@ -167,7 +167,7 @@ public partial class EinstellungenViewModel : ObservableObject
             Title = "Ordner für die Datensicherung wählen",
             InitialDirectory = Directory.Exists(Sicherungsordner) ? Sicherungsordner : string.Empty,
         };
-        Window? besitzer = Application.Current?.Windows.OfType<Window>().FirstOrDefault(f => f.IsActive);
+        Window? besitzer = global::System.Windows.Application.Current?.Windows.OfType<Window>().FirstOrDefault(f => f.IsActive);
         bool? gewaehlt = besitzer is null ? dialog.ShowDialog() : dialog.ShowDialog(besitzer);
         if (gewaehlt != true)
         {

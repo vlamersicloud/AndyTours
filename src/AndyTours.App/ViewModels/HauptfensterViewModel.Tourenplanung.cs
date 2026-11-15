@@ -41,7 +41,7 @@ public partial class HauptfensterViewModel
         var viewModel = new TourenplanungViewModel(einstellungen, suedWest, nordOst,
             () => LadeEinstellung(RoutingEinstellung.Laden) ?? Routingeinstellungen.Standard,
             neu => SpeichereStill(verbindung => PlanungEinstellung.Speichern(verbindung, neu)));
-        new TourenplanungFenster(viewModel) { Owner = Application.Current.MainWindow }.Show();
+        new TourenplanungFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow }.Show();
     }
 
     /// <summary>

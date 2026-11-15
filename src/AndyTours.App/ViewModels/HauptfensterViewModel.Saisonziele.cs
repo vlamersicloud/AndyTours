@@ -19,7 +19,7 @@ public partial class HauptfensterViewModel
     private void SaisonzieleOeffnen()
     {
         var viewModel = new SaisonzieleViewModel(_bestand.Aktivitaeten, _bestand.Saisonziele, DateTime.Today.Year, SpeichereSaisonziele);
-        var fenster = new SaisonzieleFenster(viewModel) { Owner = Application.Current.MainWindow };
+        var fenster = new SaisonzieleFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow };
         fenster.ShowDialog();
     }
 

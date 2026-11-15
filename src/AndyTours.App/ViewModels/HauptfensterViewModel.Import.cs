@@ -100,7 +100,7 @@ public partial class HauptfensterViewModel
             Filter = "FIT-Dateien (*.fit)|*.fit|Alle Dateien (*.*)|*.*",
             Multiselect = true,
         };
-        if (dialog.ShowDialog(Application.Current.MainWindow) != true)
+        if (dialog.ShowDialog(global::System.Windows.Application.Current.MainWindow) != true)
         {
             return;
         }
@@ -231,7 +231,7 @@ public partial class HauptfensterViewModel
     private static Leseergebnis LeseMitFortschritt(string titel, Func<IProgress<KopierFortschritt>, Leseergebnis> arbeit)
     {
         var viewModel = new FortschrittsViewModel(titel);
-        var fenster = new FortschrittsFenster(viewModel) { Owner = Application.Current.MainWindow };
+        var fenster = new FortschrittsFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow };
         Leseergebnis? ergebnis = null;
         Exception? fehler = null;
 
@@ -291,7 +291,7 @@ public partial class HauptfensterViewModel
             .ToList();
 
         var viewModel = new GarminImportViewModel(zeilen, equipments);
-        var fenster = new GarminImportFenster(viewModel) { Owner = Application.Current.MainWindow };
+        var fenster = new GarminImportFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow };
         if (fenster.ShowDialog() != true)
         {
             return false;

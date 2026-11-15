@@ -441,7 +441,7 @@ public partial class HauptfensterViewModel : ObservableObject
     {
         var viewModel = new EinstellungenViewModel(Datenordner, !Programmpfade.IstEntwicklung, WechsleZuNeuemDatenordner,
             ErstelleAuswahllistenViewModel());
-        var fenster = new EinstellungenFenster(viewModel) { Owner = Application.Current.MainWindow };
+        var fenster = new EinstellungenFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow };
         fenster.ShowDialog();
     }
 
@@ -503,7 +503,7 @@ public partial class HauptfensterViewModel : ObservableObject
     [RelayCommand]
     private void Beenden()
     {
-        Application.Current.Shutdown();
+        global::System.Windows.Application.Current.Shutdown();
     }
 
     /// <summary>Adresse des Benutzerhandbuchs auf GitHub; GitHub stellt die Markdown-Datei lesbar dar.</summary>
@@ -539,6 +539,6 @@ public partial class HauptfensterViewModel : ObservableObject
     [RelayCommand]
     private void Ueber()
     {
-        new UeberFenster(new UeberViewModel()) { Owner = Application.Current.MainWindow }.ShowDialog();
+        new UeberFenster(new UeberViewModel()) { Owner = global::System.Windows.Application.Current.MainWindow }.ShowDialog();
     }
 }

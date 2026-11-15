@@ -273,7 +273,7 @@ public partial class StreckenkarteViewModel : ObservableObject
             ? [new Coursezeile(_bearbeitet, BildeCoursename.FuerEtappe(new Etappe(_einheit, _bearbeitet), bearbeitet: true), "Strecke")]
             : [.. _gpsEtappen.Select(e => new Coursezeile(e.Verlauf!, BildeCoursename.FuerEtappe(e),
                 _alleEtappen.Count > 1 ? $"Etappe {Nummer(e)}" : "Strecke"))];
-        Window? fenster = Application.Current?.Windows.OfType<TourdetailFenster>()
+        Window? fenster = global::System.Windows.Application.Current?.Windows.OfType<TourdetailFenster>()
             .FirstOrDefault(f => f.DataContext is TourdetailViewModel tourdetail && tourdetail.Streckenkarte == this);
         CourseUebertragenViewModel.Zeige(fenster, zeilen, _ladeProfil(), _ladeRouting);
 

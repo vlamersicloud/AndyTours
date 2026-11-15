@@ -69,7 +69,7 @@ public partial class HauptfensterViewModel
     {
         if (BeschreibeFaelligeAlarme.Ausfuehren(_bestand) is string text)
         {
-            MessageBox.Show(Application.Current.MainWindow, text, Alarmtitel, MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(global::System.Windows.Application.Current.MainWindow, text, Alarmtitel, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -193,7 +193,7 @@ public partial class HauptfensterViewModel
             titel,
             SpeichereAlarm,
             _bestand);
-        var fenster = new AlarmBearbeitenFenster(viewModel) { Owner = Application.Current.MainWindow };
+        var fenster = new AlarmBearbeitenFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow };
         fenster.ShowDialog();
     }
 

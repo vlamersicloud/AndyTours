@@ -107,7 +107,7 @@ public partial class TourdetailFenster : Window
     /// </summary>
     private void OverlaysOeffnen_Click(object sender, RoutedEventArgs e)
     {
-        if (Application.Current.MainWindow?.DataContext is HauptfensterViewModel hauptfenster)
+        if (global::System.Windows.Application.Current.MainWindow?.DataContext is HauptfensterViewModel hauptfenster)
         {
             hauptfenster.OverlaysOeffnenCommand.Execute(null);
         }

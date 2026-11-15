@@ -72,7 +72,7 @@ public partial class HauptfensterViewModel
             eingaben => SpeichereEquipment(eingaben, basis, out gespeichert));
         var fenster = new EquipmentBearbeitenFenster(viewModel)
         {
-            Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? Application.Current.MainWindow,
+            Owner = global::System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? global::System.Windows.Application.Current.MainWindow,
         };
         return fenster.ShowDialog() == true ? gespeichert : null;
     }

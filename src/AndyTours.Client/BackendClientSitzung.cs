@@ -31,7 +31,7 @@ public sealed class BackendClientSitzung : IDisposable
             zugriffstoken.Contains('\r') || zugriffstoken.Contains('\n'))
             throw new ArgumentException("Zugriffstoken muss mindestens 32 Bytes umfassen und darf keine Zeilenumbrüche enthalten.", nameof(zugriffstoken));
 
-        var adresse = basisAdresse.AbsoluteUri.EndsWith("/", StringComparison.Ordinal)
+        var adresse = basisAdresse.AbsoluteUri.EndsWith('/')
             ? basisAdresse
             : new Uri(basisAdresse.AbsoluteUri + "/", UriKind.Absolute);
         BasisAdresse = adresse;

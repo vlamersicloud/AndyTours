@@ -320,7 +320,7 @@ public partial class OverlaysViewModel : ObservableObject
         IReadOnlyList<Auswahleintrag> eintraege = BildeOrdnerpfade.Ausfuehren(_ordner, knoten.Ordner?.Id);
         var viewModel = new EintragWaehlenViewModel("Verschieben nach", $"Neuer Ordner für „{knoten.Name}“:", eintraege,
             eintraege.FirstOrDefault(e => e.Id == bisher));
-        var fenster = new EintragWaehlenFenster(viewModel) { Owner = Application.Current.Windows.OfType<OverlaysFenster>().FirstOrDefault() };
+        var fenster = new EintragWaehlenFenster(viewModel) { Owner = global::System.Windows.Application.Current.Windows.OfType<OverlaysFenster>().FirstOrDefault() };
         if (fenster.ShowDialog() != true || viewModel.Ergebnis is not Auswahleintrag ziel || ziel.Id == bisher)
         {
             return;

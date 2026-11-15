@@ -30,7 +30,7 @@ public partial class HauptfensterViewModel
         }
 
         var viewModel = new KategorienZuordnenViewModel(ErmittleKategoriezustaende.Ausfuehren(_bestand.Kategorien, einheiten), einheiten.Count);
-        var fenster = new KategorienZuordnenFenster(viewModel) { Owner = Application.Current.MainWindow };
+        var fenster = new KategorienZuordnenFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow };
 
         // Abbrechen oder kein Häkchen geändert: nichts zu tun, auch keine Rückfrage
         if (fenster.ShowDialog() != true || !viewModel.AendertEtwas)
@@ -102,7 +102,7 @@ public partial class HauptfensterViewModel
             : string.Format(CultureInfo.GetCultureInfo("de-DE"), "{0} für {1:N0} Einheiten:", was, einheiten.Count);
 
         var viewModel = new EintragWaehlenViewModel(titel, erklaerung, eintraege, vorgewaehlt);
-        var fenster = new EintragWaehlenFenster(viewModel) { Owner = Application.Current.MainWindow };
+        var fenster = new EintragWaehlenFenster(viewModel) { Owner = global::System.Windows.Application.Current.MainWindow };
         return fenster.ShowDialog() == true ? viewModel.Ergebnis : null;
     }
 

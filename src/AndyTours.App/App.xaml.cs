@@ -14,7 +14,7 @@ namespace AndyTours.App;
 /// <summary>
 /// Anwendungsklasse von AndyTours: steuert den Programmstart.
 /// </summary>
-public partial class App : Application
+public partial class App : global::System.Windows.Application
 {
     /// <summary>
     /// Programmstart: Datenordner ermitteln und prüfen, bei Bedarf nachfragen, dann das Hauptfenster öffnen.
