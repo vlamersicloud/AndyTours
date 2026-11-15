@@ -8,6 +8,7 @@ using AndyTours.Application.Touren;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 using AndyTours.Daten;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 if (string.IsNullOrWhiteSpace(builder.Configuration["urls"]) &&
@@ -30,6 +31,15 @@ builder.Services.AddSingleton<IStammdatenLeser>(_ => new SqliteStammdatenLeser(P
 
 var app = builder.Build();
 app.UseExceptionHandler();
+app.UseStatusCodePages(async statusCodeContext =>
+{
+    var context = statusCodeContext.HttpContext;
+    await Results.Problem(
+        statusCode: context.Response.StatusCode,
+        title: "Anfrage konnte nicht verarbeitet werden.",
+        extensions: new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier })
+        .ExecuteAsync(context);
+});
 app.Use(async (httpContext, next) =>
 {
     if (httpContext.Request.Path.Equals("/api/v1/health", StringComparison.OrdinalIgnoreCase))
@@ -74,10 +84,9 @@ touren.MapGet("/{id:long}", async (long id, ITourenSpeicher store, HttpContext c
     ctx.Response.Headers.ETag = $"\"{result.Version}\"";
     return Results.Ok(result);
 }).Produces<TourAntwort>().ProducesProblem(404).ProducesProblem(400);
-touren.MapPost("/", async (TourWerte values, ITourenSpeicher store, HttpContext ctx, CancellationToken ct) =>
+touren.MapPost("/", async (TourWerte values, [FromHeader(Name = "Idempotency-Key")] Guid anfrageId, ITourenSpeicher store, HttpContext ctx, CancellationToken ct) =>
 {
-    var key = ctx.Request.Headers["Idempotency-Key"].ToString();
-    if (!Guid.TryParseExact(key, "D", out var anfrageId) || anfrageId == Guid.Empty)
+    if (anfrageId == Guid.Empty)
         return Results.Problem(statusCode: 400, title: "Gültiger Idempotency-Key-Header erforderlich.");
 
     var result = await store.AnlegenIdempotent(values, anfrageId, ct);
