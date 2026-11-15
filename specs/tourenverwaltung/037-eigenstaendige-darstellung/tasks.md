@@ -12,6 +12,6 @@
 - [x] 10. Feature-Map und Funktionsauswahl bereinigen
 - [x] 11. Specs und Pläne 001–023 bereinigen
 - [x] 12. Specs und Pläne 027–034 bereinigen
-- [ ] 13. Projektbeschreibung („Beschreibung der fundamentals.md“) bereinigen, außer Abschnitt 9
+- [x] 13. Projektbeschreibung („Beschreibung der fundamentals.md“) bereinigen, außer Abschnitt 9
 - [ ] 14. Suche über alle Dateien außerhalb der Ausnahmen ist leer; Bauen und Testen
 - [ ] 15. Manuelle Prüfung: „Über AndyTours“ und Herkunft „Grundziel“ in den Saisonzielen

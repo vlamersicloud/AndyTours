@@ -11,7 +11,7 @@ Entscheidungen aus dem Plan. Mit ihr lässt sich das Projekt von vorn aufsetzen,
 
 ## 1. Ursprünglicher Auftrag
 
-> Ein Tool zur Verwaltung meiner Fahrradtouren erstellen wie im Vorbild BikeXperience. Frage mich zu jeder Funktion,
+> Ein Tool zur Verwaltung meiner Fahrradtouren erstellen. Frage mich zu jeder Funktion,
 > ob ich die tatsächlich nutzen und implementieren will. Jede Funktion soll ein eigener Task in der Map werden.
 
 Ergänzt beim Aufruf von `/sdd-fundamentals`:
@@ -26,11 +26,10 @@ Der Arbeitsname war zuerst „RadlDB“ und wurde in „AndyTours“ geändert (
 
 | Frage | Antwort |
 |---|---|
-| Funktionsumfang | Zu jeder einzelnen BikeXperience-Funktion fragen, bevor sie in den Plan kommt (Ergebnis: Abschnitt 7) |
+| Funktionsumfang | Zu jeder einzelnen Funktion fragen, bevor sie in den Plan kommt (Ergebnis: Abschnitt 7) |
 | Mehrbenutzer | Nein, ein Benutzer reicht |
 | Plattform | Nur Windows (WPF, kein Avalonia) |
 | Datenhaltung | SQLite |
-| Parallelbetrieb mit BikeXperience | Nein, kein Rück-Export nach `workouts.csv` |
 | Garmin-Gerät | Garmin Edge 1040 Solar. Er meldet sich per USB nur als Mediengerät (MTP), nicht als Laufwerk (siehe ADR 0002) |
 | Garmin-Gerät | Garmin Edge 1000 und Garmin Edge 800 |
 | Altdaten | Kein Altdaten-Import in der App. Ein eigenes Kommandozeilenprogramm wandelt sie einmalig um |
@@ -82,13 +81,13 @@ zusätzlich als ADR (z. B. 0008) und in `docs/tech.md`. Ändert sich ein Kriteri
 ## 4. Produkt
 
 - AndyTours: Windows-Desktop-App zur Verwaltung der eigenen Fahrradtouren.
-- Vorbild ist BikeXperience 6.0.4 (Java/Swing, Launch4j). Umgesetzt werden nur die Funktionen, die der Benutzer tatsächlich nutzt.
+- Umgesetzt werden nur die Funktionen, die der Benutzer tatsächlich nutzt.
 - Neue Touren kommen per Import vom Garmin Edge 1040.
 - Zielgruppe: nur der Benutzer selbst (Einzelbenutzer).
 - Ziele:
-  - BikeXperience ablösen und alle Daten aus `Daten/` übernehmen.
-  - Statistiken über die Jahre wie in der Ansicht „Aktuell“.
-  - Wartung der Räder wie in BikeXperience.
+  - Alle Touren in einer eigenen App verwalten; die Altdaten aus `Daten/` sind übernommen.
+  - Statistiken über die Jahre in der Ansicht „Aktuell“.
+  - Wartung der Räder mit Wartungen, Alarmen und der Haltbarkeit von Teilen.
 
 ## 5. Technik
 
@@ -193,7 +192,7 @@ Ausführlich in `docs/Konventionen.md`, wörtlich in Abschnitt 11 dieser Datei.
 - **Eine Datei je Aufgabe.**
   - Eigenständige Fachfunktionen sind `static class` mit einer öffentlichen Methode `Ausfuehren(...)`. Der Klassenname ist ein Verb, z. B. `BerechneAuswahlsummen`.
   - Zusammengehöriges steht gemeinsam in einer `static class` mit einem Substantiv als Namen: `…Tabelle.Laden/Speichern`, `…Einstellung.Laden/Speichern`, `DatumSpalte.Lesen/AlsText`.
-- Ausführliche deutsche XML-Doc-Kommentare. XAML-Dateien beginnen mit einem Kommentar zum Aufbau. Nachgebildete BikeXperience-Klassen werden genannt.
+- Ausführliche deutsche XML-Doc-Kommentare. XAML-Dateien beginnen mit einem Kommentar zum Aufbau.
 - Bezeichner sind deutsch ohne Umlaute; Oberfläche und Kommentare stehen mit Umlauten.
 - Fachfunktionen bekommen Unit-Tests.
 - Equipment-Namen werden immer über `EquipmentAnzeigename.Bilden` gebildet (Zusatz „(ausgemustert)“) und über `EquipmentAnzeigename.Passt` verglichen.
@@ -399,8 +398,8 @@ CREATE TABLE IF NOT EXISTS Aktivitaet (
     ZielAnzahl               INTEGER NOT NULL
 );
 
--- Eigene Saisonziele je Aktivität, gültig ab einem Jahr (seit Schemaversion 3); das Grundziel aus
--- BikeXperience steht weiter in Aktivitaet. Wird eine Aktivität gelöscht, verschwinden ihre Ziele mit.
+-- Eigene Saisonziele je Aktivität, gültig ab einem Jahr (seit Schemaversion 3); das Grundziel der
+-- Aktivität steht weiter in Aktivitaet. Wird eine Aktivität gelöscht, verschwinden ihre Ziele mit.
 CREATE TABLE IF NOT EXISTS Saisonziel (
     AktivitaetId  INTEGER NOT NULL REFERENCES Aktivitaet(Id) ON DELETE CASCADE,
     AbJahr        INTEGER NOT NULL,
@@ -546,9 +545,9 @@ Verbindliche Regeln für den Quellcode. Grundlage ist die Projektvorgabe in `CLA
 |---|---|---|
 | `src/AndyTours.Core` | Domänenmodell (`Modell/`) und Fachfunktionen (`Berechnungen/`) – ohne Oberfläche, ohne Datenbank | – |
 | `src/AndyTours.Daten` | SQLite-Datenbank: Schema, Lesen und Schreiben | Core |
-| `src/AndyTours.Import` | Einlesen von FIT/GPX/TCX und Übernahme der BikeXperience-Altdaten (`Altdaten/`) | Core |
+| `src/AndyTours.Import` | Einlesen von FIT/GPX/TCX und Lesen der Altdaten (`Altdaten/`) | Core |
 | `src/AndyTours.App` | WPF-Oberfläche: `Views/` (XAML), `ViewModels/` und `Funktionen/` (Abläufe, die Daten und Import verbinden) | Core, Daten, Import |
-| `tools/AndyTours.Altdatenuebernahme` | Konsolenprogramm für die einmalige Umwandlung der BikeXperience-Altdaten in einen AndyTours-Datenordner | Daten, Import |
+| `tools/AndyTours.Altdatenuebernahme` | Konsolenprogramm für die einmalige Umwandlung der Altdaten in einen AndyTours-Datenordner | Daten, Import |
 | `tests/AndyTours.Tests` | Unit-Tests (xUnit) | Core, Daten, Import, Altdatenuebernahme |
 | `Daten/` | Ihre Nutzdaten (Altdaten, FIT-Dateien, später die Datenbank) – **kein Quellcode** | – |
 | `docs/` | Plan und Dokumentation | – |
@@ -570,7 +569,6 @@ Verbindliche Regeln für den Quellcode. Grundlage ist die Projektvorgabe in `CLA
 - Jede Klasse, Methode und öffentliche Eigenschaft bekommt einen XML-Doc-Kommentar (`/// <summary>`), bei Bedarf mit `<param>`, `<returns>` und `<remarks>`.
 - Im Methodenrumpf erklären Inline-Kommentare das **Warum** und die einzelnen Rechenschritte, insbesondere Formeln, Einheiten und Sonderfälle.
 - XAML-Dateien beginnen mit einem Kommentar, der den Aufbau des Fensters beschreibt.
-- Wo eine Funktion dem Original BikeXperience nachgebildet ist, wird die Java-Klasse genannt (z. B. „entspricht `datamodel.PowerCalc`").
 
 ### Benennung
 
@@ -763,7 +761,7 @@ Alle Daten von AndyTours (Datenbestand, Aufzeichnungen, Anhänge) liegen in eine
 
 #### Entscheidungen aus dem Plan
 
-- Menüpunkt „Altdaten aus BikeXperience übernehmen…“ wird entfernt (Benutzerwahl a); die Altdaten wurden am 22.10.2026 einmalig per Hilfsprogramm nach `AppDaten/` übernommen (932 Einheiten, 930 Dateien).
+- Menüpunkt „Altdaten übernehmen…“ wird entfernt (Benutzerwahl a); die Altdaten wurden am 22.10.2026 einmalig per Hilfsprogramm nach `AppDaten/` übernommen (932 Einheiten, 930 Dateien).
 - Entwicklung = Debug-Build; Projektordner über die Projektmappe `AndyTours.slnx` gefunden.
 - Fachlogik in `AndyTours.Daten`, weil die Tests das WPF-Projekt nicht einbinden können.
 - Eigenes Fenster für „nicht erreichbar“, weil das Standard-Meldungsfenster keine eigenen Beschriftungen erlaubt; Rückfragen „kopieren?“ (Ja/Nein) und „vorhandene Daten verwenden?“ (OK/Abbrechen) als Standard-Meldungsfenster.
@@ -841,7 +839,7 @@ Im Hauptfenster wählt der Benutzer ein Jahr und eine Aktivität. Neben der Ausw
 Abhängig von: `datenordner-waehlen`
 
 #### Was und warum
-AndyTours sichert die Datenbank automatisch beim Programmstart, jeweils nach einer einstellbaren Zahl von Programmstarts, in einen frei wählbaren Sicherungsordner. Die Sicherung ist immer aktiv. Nur die eingestellte Höchstzahl an Sicherungen wird aufbewahrt, die ältesten werden gelöscht. So gehen bei einem Defekt oder Bedienfehler höchstens die Änderungen der letzten Programmstarts verloren, wie bei BikeXperience.
+AndyTours sichert die Datenbank automatisch beim Programmstart, jeweils nach einer einstellbaren Zahl von Programmstarts, in einen frei wählbaren Sicherungsordner. Die Sicherung ist immer aktiv. Nur die eingestellte Höchstzahl an Sicherungen wird aufbewahrt, die ältesten werden gelöscht. So gehen bei einem Defekt oder Bedienfehler höchstens die Änderungen der letzten Programmstarts verloren.
 
 Standardwerte, solange in den Einstellungen nichts gewählt ist: alle 3 Programmstarts, höchstens 10 Sicherungen, Sicherungsordner `Sicherungen` im Datenordner. Das Zurückspielen einer Sicherung ist nicht Teil dieser Funktion (siehe `sicherung-wiederherstellen`).
 
@@ -906,7 +904,7 @@ Vor dem Zurücksetzen sichert die App den aktuellen Stand als zusätzliche, ganz
 Abhängig von: `hauptfenster-auswahl`
 
 #### Was und warum
-Die Karteikarte „Trainingseinheiten“ zeigt alle Einheiten der Jahres- und Aktivitätsauswahl in einer sortierbaren Tabelle, wie in BikeXperience. Eine Summenzeile fasst die angezeigten Einheiten zusammen, die Bestwerte der Auswahl sind rot hervorgehoben. So sieht der Benutzer seine Touren auf einen Blick und erkennt sofort die längste, höchste und schnellste.
+Die Karteikarte „Trainingseinheiten“ zeigt alle Einheiten der Jahres- und Aktivitätsauswahl in einer sortierbaren Tabelle. Eine Summenzeile fasst die angezeigten Einheiten zusammen, die Bestwerte der Auswahl sind rot hervorgehoben. So sieht der Benutzer seine Touren auf einen Blick und erkennt sofort die längste, höchste und schnellste.
 
 Spalten: Datum, Startzeit, Name, Aktivität, Kategorien, Equipment, Distanz, Höhenmeter, Fahrzeit, Ø km/h, max km/h, Ø Puls, max Puls, Trittfrequenz, Temperatur, Maximalhöhe, Trainingsbereich. Auswahl, Reihenfolge und Breite der Spalten passt der Benutzer an, sie bleiben erhalten. Ebenso merkt sich die App Größe und Position des Hauptfensters und die zuletzt gewählte Karteikarte (nach der ersten und zweiten Prüfung ergänzt). Filter, Bearbeiten, Anhänge und Suche sind eigene Funktionen.
 
@@ -949,7 +947,7 @@ Spalten: Datum, Startzeit, Name, Aktivität, Kategorien, Equipment, Distanz, Hö
 Abhängig von: `einheiten-tabelle`
 
 #### Was und warum
-Über der Tabelle der Trainingseinheiten stehen Filter für Kategorie, Equipment, Trainingsbereich, Distanz, Höhenmeter und Name, wie in BikeXperience. Damit grenzt der Benutzer die Einheiten der Jahres- und Aktivitätsauswahl weiter ein, etwa auf alle Touren mit einem bestimmten Rad oder alle über 100 km, und sieht Summen und Bestwerte genau dieser Einheiten. Die Filter wirken sofort und sind nach einem Neustart wieder leer.
+Über der Tabelle der Trainingseinheiten stehen Filter für Kategorie, Equipment, Trainingsbereich, Distanz, Höhenmeter und Name. Damit grenzt der Benutzer die Einheiten der Jahres- und Aktivitätsauswahl weiter ein, etwa auf alle Touren mit einem bestimmten Rad oder alle über 100 km, und sieht Summen und Bestwerte genau dieser Einheiten. Die Filter wirken sofort und sind nach einem Neustart wieder leer.
 
 #### Kriterien
 - Wenn das Hauptfenster geöffnet ist, dann stehen über der Tabelle Filter für Kategorie, Equipment, Trainingsbereich, Distanz (von–bis), Höhenmeter (von–bis) und Name, und keiner davon ist gesetzt.
@@ -985,7 +983,7 @@ Abhängig von: `einheiten-tabelle`
 Abhängig von: `einheiten-tabelle`
 
 #### Was und warum
-Der Benutzer kann Trainingseinheiten neu anlegen, ändern, kopieren und löschen, wie mit dem Dialog in BikeXperience. Das Bearbeitungsfenster zeigt alle Werte einer Einheit, auch die, die in der Tabelle nicht vorkommen. Einzelne Werte lassen sich zusätzlich direkt in der Tabelle ändern. So pflegt er seine Touren ohne Umweg, berichtigt Fehler aus Aufzeichnungen und erfasst Einheiten ohne Aufzeichnung von Hand. Diese Funktion ist auch die Grundlage für die späteren Importe.
+Der Benutzer kann Trainingseinheiten neu anlegen, ändern, kopieren und löschen. Das Bearbeitungsfenster zeigt alle Werte einer Einheit, auch die, die in der Tabelle nicht vorkommen. Einzelne Werte lassen sich zusätzlich direkt in der Tabelle ändern. So pflegt er seine Touren ohne Umweg, berichtigt Fehler aus Aufzeichnungen und erfasst Einheiten ohne Aufzeichnung von Hand. Diese Funktion ist auch die Grundlage für die späteren Importe.
 
 Die Befehle stehen im Menü „Einheit“ und im Rechtsklickmenü der Tabelle. Mehrfachaktionen (Kategorie, Aktivität, Equipment), Anhänge öffnen und Werte aus der Aufzeichnung übernehmen sind eigene Funktionen.
 
@@ -1079,7 +1077,7 @@ Der Benutzer pflegt in den Einstellungen unter „Auswahllisten“ die festen We
 Abhängig von: `hauptfenster-auswahl`
 
 #### Was und warum
-Der Benutzer pflegt Aktivitäten und Kategorien in den Einstellungen unter „Auswahllisten“, neben den Trainingsbereichen: anlegen, umbenennen, löschen, Hauptaktivität und Standardkategorien festlegen und zwei Einträge zusammenführen. Bisher gab es nur die aus BikeXperience übernommenen Einträge; neue Sportarten oder Kategorien ließen sich nicht anlegen, doppelte wie „Trainieren“ und „Training“ nicht bereinigen. Geschwindigkeitseinheit und Saisonziele der Aktivitäten gehören nicht dazu.
+Der Benutzer pflegt Aktivitäten und Kategorien in den Einstellungen unter „Auswahllisten“, neben den Trainingsbereichen: anlegen, umbenennen, löschen, Hauptaktivität und Standardkategorien festlegen und zwei Einträge zusammenführen. Bisher gab es nur die aus den Altdaten übernommenen Einträge; neue Sportarten oder Kategorien ließen sich nicht anlegen, doppelte wie „Trainieren“ und „Training“ nicht bereinigen. Geschwindigkeitseinheit und Saisonziele der Aktivitäten gehören nicht dazu.
 
 #### Kriterien
 
@@ -1129,7 +1127,7 @@ Der Benutzer pflegt Aktivitäten und Kategorien in den Einstellungen unter „Au
 Abhängig von: `hauptfenster-auswahl`
 
 #### Was und warum
-Der Benutzer pflegt seine Räder und seine Ausrüstung (Equipments) in den Einstellungen unter „Auswahllisten“: anlegen, bearbeiten, ausmustern und löschen. Je Aktivität kann ein Equipment Standard sein; es wird bei neuen Einheiten vorbelegt, und seine Standardkategorie wird mit angehakt. Im Bearbeitungsfenster einer Einheit stehen nur die Equipments der passenden Aktivität. Bisher gab es nur die aus BikeXperience übernommenen Equipments, und neue Räder ließen sich nicht anlegen. Gewicht, Radumfang, Widerstandswerte, Kettenblätter, Ritzel und Bild gehören nicht dazu, die Gerätezuordnung gehört zum Garmin-Import.
+Der Benutzer pflegt seine Räder und seine Ausrüstung (Equipments) in den Einstellungen unter „Auswahllisten“: anlegen, bearbeiten, ausmustern und löschen. Je Aktivität kann ein Equipment Standard sein; es wird bei neuen Einheiten vorbelegt, und seine Standardkategorie wird mit angehakt. Im Bearbeitungsfenster einer Einheit stehen nur die Equipments der passenden Aktivität. Bisher gab es nur die aus den Altdaten übernommenen Equipments, und neue Räder ließen sich nicht anlegen. Gewicht, Radumfang, Widerstandswerte, Kettenblätter, Ritzel und Bild gehören nicht dazu, die Gerätezuordnung gehört zum Garmin-Import.
 
 #### Kriterien
 
@@ -1222,13 +1220,13 @@ Der Benutzer markiert eine oder mehrere Einheiten in der Tabelle und ordnet ihne
 Abhängig von: `hauptfenster-auswahl`
 
 #### Was und warum
-Der Benutzer pflegt seine persönlichen Daten in einem eigenen Fenster: Vorname, Nachname, Geburtstag, Größe, Gewicht, Ruhe- und Maximalpuls sowie den Heimatort. Die Werte wurden aus BikeXperience übernommen und lassen sich bisher nicht ansehen oder ändern. Spätere Funktionen greifen darauf zurück, etwa die Streckenkarte auf den Heimatort.
+Der Benutzer pflegt seine persönlichen Daten in einem eigenen Fenster: Vorname, Nachname, Geburtstag, Größe, Gewicht, Ruhe- und Maximalpuls sowie den Heimatort. Die Werte wurden aus den Altdaten übernommen und lassen sich bisher nicht ansehen oder ändern. Spätere Funktionen greifen darauf zurück, etwa die Streckenkarte auf den Heimatort.
 
 #### Kriterien
 
 ##### Anzeigen
 - Wenn der Benutzer „Extras → Persönliche Daten…“ wählt, dann zeigt ein Fenster die gespeicherten Werte: Vorname, Nachname, Geburtstag, Größe in cm, Gewicht in kg, Ruhepuls, Maximalpuls und Heimatort (nur der Name des Orts).
-- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus BikeXperience übernommenen Werte.
+- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus den Altdaten übernommenen Werte.
 - Wenn noch keine persönlichen Daten vorhanden sind (neuer, leerer Datenordner), dann sind die Felder leer.
 
 ##### Ändern
@@ -1265,8 +1263,8 @@ Der Benutzer legt je Aktivität und Jahr Saisonziele für Kilometer, Höhenmeter
 ##### Anzeigen
 - Wenn der Benutzer „Extras → Saisonziele…“ wählt, dann zeigt ein Fenster für das gewählte Jahr alle Aktivitäten mit ihren Zielen für Kilometer, Höhenmeter und Anzahl; vorgewählt ist das laufende Jahr.
 - Wenn der Benutzer im Fenster das Jahr wählt, dann stehen nur das laufende und das folgende Jahr zur Wahl, und das Fenster zeigt die Ziele des gewählten Jahres.
-- Wenn für ein Jahr kein eigenes Ziel eingetragen ist, dann gilt das Ziel des nächstfrüheren Jahres, und das Fenster kennzeichnet es als „übernommen aus <Jahr>“ bzw. bei einem Ziel aus BikeXperience als „übernommen aus BikeXperience“.
-- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus BikeXperience übernommenen Ziele; sie gelten für alle Jahre bis zur ersten Änderung.
+- Wenn für ein Jahr kein eigenes Ziel eingetragen ist, dann gilt das Ziel des nächstfrüheren Jahres, und das Fenster kennzeichnet es als „übernommen aus <Jahr>“ bzw. beim Grundziel der Aktivität als „Grundziel“.
+- Wenn das Fenster zum ersten Mal geöffnet wird, dann zeigt es die aus den Altdaten übernommenen Ziele; sie gelten für alle Jahre bis zur ersten Änderung.
 - Wenn eine Aktivität kein Ziel hat, dann sind ihre Felder leer.
 
 ##### Ändern
@@ -1284,7 +1282,7 @@ Der Benutzer legt je Aktivität und Jahr Saisonziele für Kilometer, Höhenmeter
 #### Entscheidungen aus dem Plan
 
 - **Jahreswechsel (E1):** Änderungen bleiben beim Wechsel zwischen den beiden Jahren erhalten, und „OK“ speichert beide gemeinsam. Gewechselt werden kann nur, solange alle Eingaben gültig sind.
-- **Kennzeichnung (F1):** Ein Ziel direkt aus BikeXperience heißt „übernommen aus BikeXperience“.
+- **Kennzeichnung (F1):** Das Grundziel der Aktivität heißt „Grundziel“.
 - **Eigenes Ziel erst bei Änderung:** Eine Zeile wird erst dann zum eigenen Ziel des Jahres, wenn eines ihrer Felder geändert wurde. Ein schon vorhandenes eigenes Ziel bleibt eigenes Ziel. „OK“ ohne Änderung legt nichts an.
 - **Grundziel bleibt in `Aktivitaet`:** Die Ziele werden nicht in die neue Tabelle umgezogen. Das spart eine Datenumwandlung, und ältere Sicherungen bleiben brauchbar.
 - **Zusammenführen:** Die Ziele der Ursprungsaktivität verschwinden; die Ziele der verbleibenden Aktivität gelten.
@@ -1329,7 +1327,7 @@ Die Karteikarte „Aktuell“ zeigt in einem Liniendiagramm die Jahressummen all
 Abhängig von: `hauptfenster-auswahl`
 
 #### Was und warum
-Die Karteikarte „Aktuell“ zeigt über dem Diagramm die Bestleistungen, wie die Übersicht „Aktuell“ in BikeXperience: die Jahresrekorde mit ihrem Rekordjahr und die Einzelrekorde mit der Einheit, in der sie aufgestellt wurden. So sieht der Benutzer auf einen Blick, was seine besten Jahre und Touren waren und ob das laufende Jahr einen Rekord hält.
+Die Karteikarte „Aktuell“ zeigt über dem Diagramm die Bestleistungen: die Jahresrekorde mit ihrem Rekordjahr und die Einzelrekorde mit der Einheit, in der sie aufgestellt wurden. So sieht der Benutzer auf einen Blick, was seine besten Jahre und Touren waren und ob das laufende Jahr einen Rekord hält.
 
 #### Kriterien
 
@@ -1361,7 +1359,7 @@ Die Karteikarte „Aktuell“ zeigt über dem Diagramm die Bestleistungen, wie d
 Abhängig von: `einheit-bearbeiten`
 
 #### Was und warum
-Neue Touren werden direkt vom angeschlossenen Garmin-Radcomputer übernommen: vom Edge 1040, der sich nicht wie ein USB-Laufwerk auslesen lässt, ebenso wie von den älteren Edge 1000 und Edge 800, die als Laufwerk erscheinen. AndyTours zeigt die Touren, die noch fehlen, legt für die gewählten Touren Einheiten mit allen Werten der Aufzeichnung an und legt die Aufzeichnung dazu ab. Das Rad erkennt AndyTours an der Rad-Kennung, die der Edge nach der Tour abfragt und in der Aufzeichnung speichert, ersatzweise an den Sensoren am Rad; die Zuordnung lernt AndyTours beim Import selbst. Als Ausweg ohne Gerät lassen sich Aufzeichnungsdateien auch von der Festplatte wählen. Damit entfällt das bisherige Übertragen über Umwege, und BikeXperience wird für den Import nicht mehr gebraucht.
+Neue Touren werden direkt vom angeschlossenen Garmin-Radcomputer übernommen: vom Edge 1040, der sich nicht wie ein USB-Laufwerk auslesen lässt, ebenso wie von den älteren Edge 1000 und Edge 800, die als Laufwerk erscheinen. AndyTours zeigt die Touren, die noch fehlen, legt für die gewählten Touren Einheiten mit allen Werten der Aufzeichnung an und legt die Aufzeichnung dazu ab. Das Rad erkennt AndyTours an der Rad-Kennung, die der Edge nach der Tour abfragt und in der Aufzeichnung speichert, ersatzweise an den Sensoren am Rad; die Zuordnung lernt AndyTours beim Import selbst. Als Ausweg ohne Gerät lassen sich Aufzeichnungsdateien auch von der Festplatte wählen. Damit entfällt das bisherige Übertragen über Umwege, und für den Import wird kein anderes Programm mehr gebraucht.
 
 #### Kriterien
 
@@ -1370,7 +1368,7 @@ Neue Touren werden direkt vom angeschlossenen Garmin-Radcomputer übernommen: vo
 - Wenn mehrere Garmin-Geräte gleichzeitig angeschlossen sind, dann zeigt die Liste die neuen Touren aller Geräte, jeweils mit dem Namen des Geräts.
 - Wenn der Benutzer auf „Importieren“ klickt, dann wird für jede angehakte Tour eine Einheit angelegt; Datum, Startzeit, Fahrzeit, Distanz, Höhenmeter, Höhen, Geschwindigkeiten, Puls, Trittfrequenz, Temperatur und Leistung kommen aus der Aufzeichnung, der Name bleibt leer.
 - Wenn eine Einheit importiert wird, dann ist ihre Fahrzeit die gestoppte Zeit ohne Pausen, wie sie der Edge als „Zeit“ anzeigt.
-- Wenn eine Tour importiert wird, dann wird ihre Aufzeichnung bei der Einheit abgelegt, so wie bei den aus BikeXperience übernommenen Touren.
+- Wenn eine Tour importiert wird, dann wird ihre Aufzeichnung bei der Einheit abgelegt, so wie bei den aus den Altdaten übernommenen Touren.
 - Wenn der Import fertig ist, dann sind die neuen Einheiten in der Tabelle markiert, und die Statusleiste meldet die Anzahl, z. B. „3 Touren importiert.“
 
 ##### Import aus Dateien
@@ -1404,7 +1402,7 @@ Neue Touren werden direkt vom angeschlossenen Garmin-Radcomputer übernommen: vo
 Abhängig von: `einheiten-tabelle`
 
 #### Was und warum
-Zu einer Trainingseinheit lässt sich der Verlauf der Tour ansehen: das Höhenprofil aus der Aufzeichnung, auf Wunsch zusammen mit Puls, Geschwindigkeit, Trittfrequenz und Temperatur. Es erscheint in einem eigenen Fenster „Tourdetail“, in das später auch die Strecke auf der Karte kommt. So lässt sich eine Tour wie in BikeXperience nachvollziehen, ohne ein anderes Programm zu öffnen.
+Zu einer Trainingseinheit lässt sich der Verlauf der Tour ansehen: das Höhenprofil aus der Aufzeichnung, auf Wunsch zusammen mit Puls, Geschwindigkeit, Trittfrequenz und Temperatur. Es erscheint in einem eigenen Fenster „Tourdetail“, in das später auch die Strecke auf der Karte kommt. So lässt sich eine Tour nachvollziehen, ohne ein anderes Programm zu öffnen.
 
 #### Kriterien
 
@@ -1438,7 +1436,7 @@ Zu einer Trainingseinheit lässt sich der Verlauf der Tour ansehen: das Höhenpr
 Abhängig von: `einheiten-tabelle`
 
 #### Was und warum
-Im Tourdetail einer Einheit lässt sich die gefahrene Strecke auf einer Landkarte ansehen. Das Tourdetail bekommt dafür neben „Höhenprofil“ die Karteikarte „Karte“. Wahlweise erscheint die OpenStreetMap-Standardkarte oder OpenTopoMap mit Höhenlinien und Wegen. So lässt sich wie in BikeXperience nachvollziehen, wo eine Tour entlangführte. Bereits angesehene Gegenden bleiben auch ohne Internet sichtbar.
+Im Tourdetail einer Einheit lässt sich die gefahrene Strecke auf einer Landkarte ansehen. Das Tourdetail bekommt dafür neben „Höhenprofil“ die Karteikarte „Karte“. Wahlweise erscheint die OpenStreetMap-Standardkarte oder OpenTopoMap mit Höhenlinien und Wegen. So lässt sich nachvollziehen, wo eine Tour entlangführte. Bereits angesehene Gegenden bleiben auch ohne Internet sichtbar.
 
 #### Kriterien
 
@@ -1470,7 +1468,7 @@ Im Tourdetail einer Einheit lässt sich die gefahrene Strecke auf einer Landkart
 Abhängig von: `hoehenprofil`, `streckenkarte`
 
 #### Was und warum
-Mehrere Einheiten, z. B. die Etappen einer Radreise, lassen sich gemeinsam im Tourdetail ansehen: oben die Summen, ein durchgehendes Höhenprofil über alle Etappen und eine Karte mit der ganzen Reise. Die Mehrtagestour entsteht jedes Mal aus den markierten Einheiten und wird nicht gespeichert. Die Summen stammen aus den Werten der Einheiten; sie stehen deshalb auch für Etappen ohne Aufzeichnung zur Verfügung, etwa wenn unterwegs der Radcomputer ausfällt. So lässt sich eine Reise wie mit der Mehrtagestour in BikeXperience als Ganzes nachvollziehen.
+Mehrere Einheiten, z. B. die Etappen einer Radreise, lassen sich gemeinsam im Tourdetail ansehen: oben die Summen, ein durchgehendes Höhenprofil über alle Etappen und eine Karte mit der ganzen Reise. Die Mehrtagestour entsteht jedes Mal aus den markierten Einheiten und wird nicht gespeichert. Die Summen stammen aus den Werten der Einheiten; sie stehen deshalb auch für Etappen ohne Aufzeichnung zur Verfügung, etwa wenn unterwegs der Radcomputer ausfällt. So lässt sich eine Reise als Ganzes nachvollziehen.
 
 #### Kriterien
 
@@ -1511,7 +1509,7 @@ Mehrere Einheiten, z. B. die Etappen einer Radreise, lassen sich gemeinsam im To
 Abhängig von: `equipments-verwalten`
 
 #### Was und warum
-Die Karteikarte „Wartung“ zeigt alle Wartungen der Räder. Der Benutzer erfasst, ändert und löscht dort Wartungen mit Datum, Rad, Tätigkeit und Kommentar. Zu jeder Wartung steht der Kilometerstand des Rads an diesem Tag. Die Tätigkeiten pflegt er in den Einstellungen als eigene Auswahlliste, wie die Trainingsbereiche. So bleibt wie in BikeXperience nachvollziehbar, wann an welchem Rad was gemacht wurde. Alarme, die Haltbarkeit der Teile und der CSV-Austausch sind eigene Funktionen.
+Die Karteikarte „Wartung“ zeigt alle Wartungen der Räder. Der Benutzer erfasst, ändert und löscht dort Wartungen mit Datum, Rad, Tätigkeit und Kommentar. Zu jeder Wartung steht der Kilometerstand des Rads an diesem Tag. Die Tätigkeiten pflegt er in den Einstellungen als eigene Auswahlliste, wie die Trainingsbereiche. So bleibt nachvollziehbar, wann an welchem Rad was gemacht wurde. Alarme, die Haltbarkeit der Teile und der CSV-Austausch sind eigene Funktionen.
 
 #### Kriterien
 
@@ -1566,7 +1564,7 @@ Die Karteikarte „Wartung“ zeigt alle Wartungen der Räder. Der Benutzer erfa
 Abhängig von: `wartung-erfassen`
 
 #### Was und warum
-Für ein Rad lässt sich ein Alarm einrichten, der nach einer bestimmten Kilometerzahl an eine Wartung erinnert, z. B. „Kettenwechsel alle 3.000 km“. Gezählt wird ab der letzten Wartung mit derselben Tätigkeit an diesem Rad; gibt es noch keine, ab dem Tag, an dem der Alarm angelegt wurde. Wird die Wartung erfasst, beginnt der Alarm von selbst neu. Fällige und bald fällige Alarme fallen auf der Karteikarte „Wartung“ und beim Programmstart auf, damit keine Wartung vergessen wird – wie die Alarme in BikeXperience, aber ohne sie nach jeder Wartung neu setzen zu müssen.
+Für ein Rad lässt sich ein Alarm einrichten, der nach einer bestimmten Kilometerzahl an eine Wartung erinnert, z. B. „Kettenwechsel alle 3.000 km“. Gezählt wird ab der letzten Wartung mit derselben Tätigkeit an diesem Rad; gibt es noch keine, ab dem Tag, an dem der Alarm angelegt wurde. Wird die Wartung erfasst, beginnt der Alarm von selbst neu. Fällige und bald fällige Alarme fallen auf der Karteikarte „Wartung“ und beim Programmstart auf, damit keine Wartung vergessen wird – ohne den Alarm nach jeder Wartung neu setzen zu müssen.
 
 #### Kriterien
 
@@ -1621,7 +1619,7 @@ Für ein Rad lässt sich ein Alarm einrichten, der nach einer bestimmten Kilomet
 Abhängig von: `wartung-erfassen`
 
 #### Was und warum
-Die Wartungstabelle zeigt zu jeder Wartung, wie viele Kilometer und Tage seit der vorherigen Wartung mit derselben Tätigkeit an diesem Rad vergangen sind – also wie lange z. B. die gewechselte Kette gehalten hat. Bei der ersten Wartung einer Art zählt der ganze bisherige Weg des Rads. So lässt sich wie mit der Auskunft in BikeXperience ablesen, wie lange ein Teil hält, und das nächste Wechselintervall abschätzen.
+Die Wartungstabelle zeigt zu jeder Wartung, wie viele Kilometer und Tage seit der vorherigen Wartung mit derselben Tätigkeit an diesem Rad vergangen sind – also wie lange z. B. die gewechselte Kette gehalten hat. Bei der ersten Wartung einer Art zählt der ganze bisherige Weg des Rads. So lässt sich ablesen, wie lange ein Teil hält, und das nächste Wechselintervall abschätzen.
 
 #### Kriterien
 
@@ -1749,7 +1747,7 @@ Das Feld „Name:“ der Filterleiste wird zum Feld „Suche:“ und findet Einh
 Abhängig von: `equipments-verwalten`
 
 #### Was und warum
-Eine Auskunft zeigt für jedes Equipment die insgesamt gefahrenen Kilometer und Höhenmeter, wie die Auskunft „Einsatz je Equipment“ in BikeXperience. So lässt sich ablesen, wie viel jedes Rad gefahren wurde. Die Kilometer stimmen mit dem km-Stand der Wartung überein.
+Eine Auskunft zeigt für jedes Equipment die insgesamt gefahrenen Kilometer und Höhenmeter. So lässt sich ablesen, wie viel jedes Rad gefahren wurde. Die Kilometer stimmen mit dem km-Stand der Wartung überein.
 
 #### Kriterien
 
@@ -1784,7 +1782,7 @@ Eine Auskunft zeigt für jedes Equipment die insgesamt gefahrenen Kilometer und 
 Abhängig von: `streckenkarte`
 
 #### Was und warum
-Die Strecke einer Einheit lässt sich aus dem Tourdetail als GPX-Datei speichern, wie in BikeXperience. So kann eine gefahrene Tour in anderen Programmen angesehen, weitergegeben oder als Vorlage für eine neue Tour genutzt werden. Bei einer Mehrtagestour landen alle Etappen gemeinsam in einer Datei.
+Die Strecke einer Einheit lässt sich aus dem Tourdetail als GPX-Datei speichern. So kann eine gefahrene Tour in anderen Programmen angesehen, weitergegeben oder als Vorlage für eine neue Tour genutzt werden. Bei einer Mehrtagestour landen alle Etappen gemeinsam in einer Datei.
 
 #### Kriterien
 
@@ -1821,7 +1819,7 @@ Die Strecke einer Einheit lässt sich aus dem Tourdetail als GPX-Datei speichern
 Abhängig von: `streckenkarte`
 
 #### Was und warum
-Im Tourdetail einer einzelnen Einheit lässt sich die Strecke auf der Karte kürzen, umkehren und glätten, wie im GPS-Viewer von BikeXperience. Das Ergebnis wird über „Als GPX exportieren…“ gespeichert, z. B. als Vorlage zum Weitergeben oder für eine neue Tour. Die Einheit und ihre Aufzeichnung bleiben dabei unverändert, damit die Originaldaten sicher sind.
+Im Tourdetail einer einzelnen Einheit lässt sich die Strecke auf der Karte kürzen, umkehren und glätten. Das Ergebnis wird über „Als GPX exportieren…“ gespeichert, z. B. als Vorlage zum Weitergeben oder für eine neue Tour. Die Einheit und ihre Aufzeichnung bleiben dabei unverändert, damit die Originaldaten sicher sind.
 
 #### Kriterien
 
@@ -1862,7 +1860,7 @@ Zwischenpunkten anpasst. Die Strecke folgt dabei automatisch den Wegen, die zum 
 Länge und Höhenmeter erscheinen sofort. An jeder Abzweigung, an der abgebogen werden muss, entsteht
 automatisch ein Abbiegepunkt mit der Richtung. Die fertige Planung wird als
 GPX-Datei gespeichert und lässt sich später wieder öffnen und weiterbearbeiten. Damit ersetzt AndyTours
-die Tourenplanung von BikeXperience und schafft die Grundlage, um geplante Strecken später auf den Garmin
+Touren selbst und schafft die Grundlage, um geplante Strecken später auf den Garmin
 Edge 1040 zu übertragen.
 
 #### Kriterien
@@ -2031,7 +2029,7 @@ Nicht enthalten: Courses aus der Overlay-Verwaltung übertragen und Courses als 
 Abhängig von: `datenordner-waehlen`, `altdaten-umwandeln`
 
 #### Was und warum
-Ein Installationsprogramm richtet AndyTours auf dem Rechner ein und legt den Datenordner fest. Auf Wunsch übernimmt es die bisherigen Daten: BikeXperience-Daten über das vorhandene Umwandlungsprogramm oder, wenn nur Aufzeichnungen vorliegen, diese als Touren. Jede Änderung am Rechner hält es in einem Protokoll fest. Daran kann das Deinstallationsprogramm AndyTours später vollständig entfernen, ohne die Touren ungefragt zu löschen. So lässt sich AndyTours ohne Entwicklungsumgebung einrichten, aktualisieren und wieder entfernen.
+Ein Installationsprogramm richtet AndyTours auf dem Rechner ein und legt den Datenordner fest. Auf Wunsch übernimmt es die bisherigen Daten: Altdaten über das vorhandene Umwandlungsprogramm oder, wenn nur Aufzeichnungen vorliegen, diese als Touren. Jede Änderung am Rechner hält es in einem Protokoll fest. Daran kann das Deinstallationsprogramm AndyTours später vollständig entfernen, ohne die Touren ungefragt zu löschen. So lässt sich AndyTours ohne Entwicklungsumgebung einrichten, aktualisieren und wieder entfernen.
 
 #### Kriterien
 
@@ -2048,15 +2046,15 @@ Ein Installationsprogramm richtet AndyTours auf dem Rechner ein und legt den Dat
 ##### Bisherige Daten übernehmen
 - Wenn das Installationsprogramm die Übernahme anbietet, dann ist sie vorgewählt, und der Benutzer kann sie abwählen.
 - Wenn der Benutzer die Übernahme gewählt hat, dann fragt das Installationsprogramm nach dem Ordner mit den bisherigen Daten, ohne einen Ordner vorzuschlagen.
-- Wenn im angegebenen Ordner BikeXperience-Daten liegen, dann wandelt das vorhandene Umwandlungsprogramm sie in den gewählten Datenordner um.
+- Wenn im angegebenen Ordner Altdaten liegen, dann wandelt das vorhandene Umwandlungsprogramm sie in den gewählten Datenordner um.
 - Wenn die Umwandlung fertig ist, dann zeigt das Installationsprogramm die Zusammenfassung des Umwandlungsprogramms und wo der Bericht liegt.
-- Wenn im angegebenen Ordner keine BikeXperience-Daten, aber Aufzeichnungen im FIT-Format liegen (auch in Unterordnern), dann fragt das Installationsprogramm, ob diese als Touren übernommen werden sollen, und nennt die Anzahl der gefundenen Aufzeichnungen.
+- Wenn im angegebenen Ordner keine Altdaten, aber Aufzeichnungen im FIT-Format liegen (auch in Unterordnern), dann fragt das Installationsprogramm, ob diese als Touren übernommen werden sollen, und nennt die Anzahl der gefundenen Aufzeichnungen.
 - Wenn der Benutzer die Übernahme der Aufzeichnungen bestätigt, dann ist danach jede lesbare Aufzeichnung eine Tour im Datenordner, mit denselben Werten wie bei einem Import vom Edge.
 - Wenn Aufzeichnungen als Touren übernommen werden, dann bekommen die Touren kein Rad und die Hauptaktivität „Radfahren“ zugeordnet.
 - Wenn eine Aufzeichnung nicht lesbar ist, dann wird sie übersprungen, die übrigen werden übernommen, und ein Bericht nennt die übersprungenen Dateien.
 - Wenn die Übernahme der Aufzeichnungen fertig ist, dann zeigt das Installationsprogramm, wie viele Touren übernommen und wie viele Dateien übersprungen wurden und wo der Bericht liegt.
 - Wenn der Benutzer die Übernahme der Aufzeichnungen verneint, dann wird nichts übernommen, und die Installation geht ohne bisherige Daten weiter.
-- Wenn im angegebenen Ordner weder BikeXperience-Daten noch Aufzeichnungen liegen, dann erscheint ein Hinweis, und der Benutzer kann einen anderen Ordner wählen oder ohne Übernahme weitermachen.
+- Wenn im angegebenen Ordner weder Altdaten noch Aufzeichnungen liegen, dann erscheint ein Hinweis, und der Benutzer kann einen anderen Ordner wählen oder ohne Übernahme weitermachen.
 - Wenn im gewählten Datenordner schon AndyTours-Daten liegen, dann bleiben sie unverändert, die Übernahme entfällt, und ein Hinweis sagt das.
 - Wenn die Übernahme mit einem Fehler abbricht, dann ist AndyTours trotzdem installiert, der Datenordner bleibt wie vorher, und ein Hinweis nennt den Grund.
 - Wenn die Übernahme läuft, dann bleibt der Ordner mit den bisherigen Daten unverändert.
@@ -2120,7 +2118,7 @@ Alle Fenster von AndyTours erhalten das moderne, helle Erscheinungsbild von Wind
 - Wenn die Programmdatei von AndyTours im Explorer angezeigt wird, dann trägt sie das Icon.
 - Wenn AndyTours installiert ist, dann tragen die Verknüpfungen im Startmenü und auf dem Desktop sowie der Eintrag in den Windows-Einstellungen unter „Apps“ das Icon.
 - Wenn die Datei des Installationsprogramms im Explorer angezeigt wird oder das Installationsprogramm läuft, dann zeigt es das Icon.
-- Wenn die Datei des Umwandlungsprogramms für die BikeXperience-Daten im Explorer angezeigt wird, dann trägt sie dasselbe Icon.
+- Wenn die Datei des Umwandlungsprogramms für die Altdaten im Explorer angezeigt wird, dann trägt sie dasselbe Icon.
 
 ##### Über AndyTours
 - Wenn der Benutzer „Hilfe → Über AndyTours“ wählt, dann öffnet sich ein eigenes kleines Fenster mit dem Icon in großer Darstellung, dem Namen „AndyTours“, der Versionsnummer und dem Autor.
