@@ -25,12 +25,12 @@ public partial class TourenplanungViewModel : ObservableObject
     private const string Titel = "Tour planen";
 
     /// <summary>Hinweis, wenn der Routingdienst ein Teilstück nicht geliefert hat.</summary>
-    public const string DienstNichtErreichbar =
+    private const string DienstNichtErreichbar =
         "Der Routingdienst hat die Strecke nicht geliefert (keine Internetverbindung?). Betroffene Teilstücke sind als " +
         "gerade Linie gezeichnet.";
 
     /// <summary>Hinweis, wenn sich keine Anfrage bilden lässt, weil die Routingeinstellungen unvollständig sind.</summary>
-    public const string EinstellungenUnvollstaendig =
+    private const string EinstellungenUnvollstaendig =
         "Der Routingdienst ist nicht vollständig eingestellt (Serveradresse oder Zugangsschlüssel unter „Extras → " +
         "Einstellungen“). Die Strecke ist als gerade Linie gezeichnet.";
 
@@ -121,7 +121,7 @@ public partial class TourenplanungViewModel : ObservableObject
     private bool _istGeaendert;
 
     /// <summary><c>true</c>, wenn die Planung mindestens einen Wegpunkt hat.</summary>
-    public bool HatWegpunkte => Planung.Wegpunkte.Count > 0;
+    private bool HatWegpunkte => Planung.Wegpunkte.Count > 0;
 
     /// <summary>
     /// Hängt einen Wegpunkt als neues Ziel an (Klick in die Karte neben die Strecke).

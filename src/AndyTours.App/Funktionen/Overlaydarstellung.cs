@@ -1,9 +1,6 @@
 using Mapsui;
 using Mapsui.Layers;
-using Mapsui.Nts;
-using Mapsui.Projections;
 using Mapsui.Styles;
-using NetTopologySuite.Geometries;
 using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
 
@@ -20,7 +17,7 @@ namespace AndyTours.App.Funktionen;
 public static class Overlaydarstellung
 {
     /// <summary>Name der Overlay-Ebene einer Karte.</summary>
-    public const string Ebenenname = "Overlays";
+    private const string Ebenenname = "Overlays";
 
     /// <summary>Deckkraft der Linien (0–255): leicht durchscheinend.</summary>
     private const int Deckkraft = 190;
@@ -96,36 +93,20 @@ public static class Overlaydarstellung
     public static void ZeigeGanz(Map karte, Overlay overlay)
     {
         (Geoposition suedWest, Geoposition nordOst) = UmschliesseOverlay.Ausfuehren(overlay);
-        MPoint sw = InKartenkoordinaten(suedWest);
-        MPoint no = InKartenkoordinaten(nordOst);
-
-        // Mindestgröße, damit ein sehr kurzes Overlay (oder ein einzelner Punkt) nicht bis zum Anschlag vergrößert wird
-        double breite = Math.Max(no.X - sw.X, 500);
-        double hoehe = Math.Max(no.Y - sw.Y, 500);
-        MPoint mitte = new((sw.X + no.X) / 2, (sw.Y + no.Y) / 2);
-        karte.Navigator.ZoomToBox(
-            new MRect(
-                mitte.X - breite * (0.5 + Rand), mitte.Y - hoehe * (0.5 + Rand),
-                mitte.X + breite * (0.5 + Rand), mitte.Y + hoehe * (0.5 + Rand)),
-            MBoxFit.Fit);
+        karte.Navigator.ZoomToBox(Kartenzeichnung.Rechteck(suedWest, nordOst, Rand), MBoxFit.Fit);
     }
 
     /// <summary>Die Linie eines Abschnitts; ein einzelner Punkt wird ein kleiner Kreis.</summary>
     private static IFeature Linie(IReadOnlyList<Geoposition> abschnitt, Mapsui.Styles.Color farbe)
     {
-        Coordinate[] punkte = [.. abschnitt.Select(InKartenkoordinaten).Select(p => new Coordinate(p.X, p.Y))];
-        if (punkte.Length > 1)
+        if (abschnitt.Count > 1)
         {
-            return new GeometryFeature(new LineString(punkte)) { Styles = [new VectorStyle { Line = new Pen(farbe, Linienbreite) }] };
+            return Kartenzeichnung.Linie(abschnitt, new Pen(farbe, Linienbreite));
         }
 
-        return new PointFeature(punkte[0].X, punkte[0].Y)
+        return new PointFeature(Kartenzeichnung.InKartenkoordinaten(abschnitt[0]))
         {
             Styles = [new SymbolStyle { SymbolType = SymbolType.Ellipse, SymbolScale = 0.3, Fill = new Mapsui.Styles.Brush(farbe), Outline = null }],
         };
     }
-
-    /// <summary>Rechnet eine Position in Grad in die Koordinaten der Karte (Web-Mercator) um.</summary>
-    private static MPoint InKartenkoordinaten(Geoposition position) =>
-        SphericalMercator.FromLonLat(new MPoint(position.Laenge, position.Breite));
 }

@@ -74,7 +74,7 @@ public partial class AlarmBearbeitenViewModel : ObservableObject
 
         // Bisherige Tätigkeit: den gleich geschriebenen Listeneintrag wählen, sonst sie selbst voranstellen
         string bisher = e.Taetigkeit;
-        string? passend = taetigkeiten.FirstOrDefault(t => string.Equals(t.Trim(), bisher, StringComparison.OrdinalIgnoreCase));
+        string? passend = taetigkeiten.FirstOrDefault(t => VergleicheNamen.Ausfuehren(t, bisher));
         Taetigkeiten = passend is null && bisher.Length > 0 ? [bisher, .. taetigkeiten] : taetigkeiten;
         _taetigkeit = passend ?? (bisher.Length > 0 ? bisher : null);
 

@@ -24,7 +24,7 @@ namespace AndyTours.App.ViewModels;
 public partial class StreckenkarteViewModel : ObservableObject
 {
     /// <summary>Hinweis, wenn die Aufzeichnung keine Positionen enthält (z. B. Fahrt auf der Rolle).</summary>
-    public const string KeineGpsDaten = "Die Aufzeichnung enthält keine GPS-Daten.";
+    private const string KeineGpsDaten = "Die Aufzeichnung enthält keine GPS-Daten.";
 
     /// <summary>Hinweis, wenn Kartenausschnitte weder aus dem Zwischenspeicher noch aus dem Internet kamen.</summary>
     public const string KarteNichtGeladen = "Die Karte konnte nicht geladen werden. Besteht eine Internetverbindung?";

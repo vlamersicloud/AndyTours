@@ -89,7 +89,7 @@ public static class OeffneDatenbank
     private static void SichereVorUmbau(SqliteConnection verbindung, string dateipfad)
     {
         Sicherungseinstellungen einstellungen =
-            Abfrage(verbindung, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'Einstellung';") is long anzahl and > 0
+            Abfrage(verbindung, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'Einstellung';") is long and > 0
                 ? SicherungEinstellung.Laden(verbindung)
                 : new Sicherungseinstellungen();
         string datenordner = Path.GetDirectoryName(Path.GetFullPath(dateipfad))!;

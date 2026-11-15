@@ -15,12 +15,12 @@ namespace AndyTours.App.Funktionen;
 public static class Abbiegungsabruf
 {
     /// <summary>Grund, wenn der Dienst nicht vollständig eingestellt ist.</summary>
-    public const string NichtEingestellt =
+    private const string NichtEingestellt =
         "Die Abbiegungen konnten nicht ermittelt werden, weil der Routingdienst nicht vollständig eingestellt ist " +
         "(Serveradresse oder Zugangsschlüssel unter „Extras → Einstellungen“). Der Course enthält keine Abbiegehinweise.";
 
     /// <summary>Grund, wenn der Dienst nicht geantwortet hat.</summary>
-    public const string KeineAntwort =
+    private const string KeineAntwort =
         "Die Abbiegungen konnten nicht ermittelt werden, weil der Routingdienst nicht geantwortet hat (keine " +
         "Internetverbindung?). Der Course enthält keine Abbiegehinweise.";
 

@@ -40,19 +40,19 @@ namespace AndyTours.App.ViewModels;
 public partial class EinstellungenViewModel : ObservableObject
 {
     /// <summary>Erklärung, warum der Datenordner in der Entwicklungsversion nicht änderbar ist.</summary>
-    public const string Entwicklungshinweis =
+    private const string Entwicklungshinweis =
         "Diese Entwicklungsversion verwendet immer den Ordner „AppDaten“ im Projektordner, damit Ihre " +
         "echten Daten unberührt bleiben. Der Datenordner lässt sich nur in der fertigen Programmversion ändern.";
 
     /// <summary>Hinweis bei einer ungültigen Eingabe für Intervall oder Höchstzahl.</summary>
-    public static readonly string Bereichshinweis = string.Create(CultureInfo.InvariantCulture,
+    private static readonly string Bereichshinweis = string.Create(CultureInfo.InvariantCulture,
         $"Bitte eine ganze Zahl von {Sicherungseinstellungen.Minimalwert} bis {Sicherungseinstellungen.Maximalwert} eingeben.");
 
     /// <summary>Hinweis bei einer ungültigen Adresse des BRouter-Servers.</summary>
-    public const string UngueltigeAdresse = "Bitte eine vollständige Adresse eingeben, z. B. https://brouter.de/brouter.";
+    private const string UngueltigeAdresse = "Bitte eine vollständige Adresse eingeben, z. B. https://brouter.de/brouter.";
 
     /// <summary>Hinweis, wenn openrouteservice ohne Zugangsschlüssel gewählt ist.</summary>
-    public const string Schluesselhinweis =
+    private const string Schluesselhinweis =
         "Ohne Zugangsschlüssel kann openrouteservice keine Strecken ermitteln. Einen kostenlosen Schlüssel gibt es nach " +
         "einer Anmeldung auf openrouteservice.org.";
 
@@ -96,7 +96,7 @@ public partial class EinstellungenViewModel : ObservableObject
     private string _datenordner;
 
     /// <summary><c>true</c>, wenn der Datenordner geändert werden darf (nur in der fertigen Programmversion).</summary>
-    public bool AendernMoeglich { get; }
+    private bool AendernMoeglich { get; }
 
     /// <summary><c>true</c>, wenn der <see cref="Entwicklungshinweis"/> angezeigt werden soll.</summary>
     public bool HinweisSichtbar => !AendernMoeglich;
@@ -243,12 +243,20 @@ public partial class EinstellungenViewModel : ObservableObject
     /// </remarks>
     /// <param name="aenderung">Die Änderung, z. B. <c>e =&gt; e with { Intervall = 5 }</c>.</param>
     /// <returns><c>true</c>, wenn gespeichert wurde.</returns>
-    private bool Speichere(Func<Sicherungseinstellungen, Sicherungseinstellungen> aenderung)
+    private bool Speichere(Func<Sicherungseinstellungen, Sicherungseinstellungen> aenderung) =>
+        SpeichereEinstellung(verbindung => SicherungEinstellung.Speichern(verbindung, aenderung(SicherungEinstellung.Laden(verbindung))));
+
+    /// <summary>
+    /// Öffnet die Datenbank und speichert eine Einstellung; bei einem Fehler erscheint eine Meldung.
+    /// </summary>
+    /// <param name="speichern">Das Speichern, z. B. <c>v =&gt; OverlayfarbeEinstellung.Speichern(v, farbe)</c>.</param>
+    /// <returns><c>true</c>, wenn gespeichert wurde.</returns>
+    private bool SpeichereEinstellung(Action<SqliteConnection> speichern)
     {
         try
         {
             using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
-            SicherungEinstellung.Speichern(verbindung, aenderung(SicherungEinstellung.Laden(verbindung)));
+            speichern(verbindung);
             return true;
         }
         catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)
@@ -359,16 +367,9 @@ public partial class EinstellungenViewModel : ObservableObject
     /// <param name="neu">Die neuen Einstellungen.</param>
     private void SpeichereRouting(Routingeinstellungen neu)
     {
-        try
+        if (SpeichereEinstellung(verbindung => RoutingEinstellung.Speichern(verbindung, neu)))
         {
-            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
-            RoutingEinstellung.Speichern(verbindung, neu);
             _routing = neu;
-        }
-        catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)
-        {
-            MessageBox.Show($"Die Einstellung konnte nicht gespeichert werden:\n\n{fehler.Message}",
-                "Einstellungen", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -389,16 +390,9 @@ public partial class EinstellungenViewModel : ObservableObject
             return;
         }
 
-        try
+        if (SpeichereEinstellung(verbindung => OverlayfarbeEinstellung.Speichern(verbindung, farbe)))
         {
-            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
-            OverlayfarbeEinstellung.Speichern(verbindung, farbe);
             Overlaybestand.SetzeFarbe(farbe);
-        }
-        catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)
-        {
-            MessageBox.Show($"Die Einstellung konnte nicht gespeichert werden:\n\n{fehler.Message}",
-                "Einstellungen", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -437,16 +431,9 @@ public partial class EinstellungenViewModel : ObservableObject
             return;
         }
 
-        try
+        if (SpeichereEinstellung(verbindung => OberflaechengroesseEinstellung.Speichern(verbindung, value)))
         {
-            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
-            OberflaechengroesseEinstellung.Speichern(verbindung, value);
             Oberflaechenskalierung.Setze(value);
-        }
-        catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)
-        {
-            MessageBox.Show($"Die Einstellung konnte nicht gespeichert werden:\n\n{fehler.Message}",
-                "Einstellungen", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

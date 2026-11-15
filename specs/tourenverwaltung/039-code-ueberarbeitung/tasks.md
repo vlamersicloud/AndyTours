@@ -26,8 +26,8 @@ Abschnitt 4 – Import
 - [x] 17. Freigegebene Funde umsetzen, bauen, testen, committen
 
 Abschnitt 5 – App
-- [ ] 18. Fundliste `funde-5-app.md` (nach Fenstern gegliedert) schreiben und freigeben lassen
-- [ ] 19. Freigegebene Funde umsetzen, bauen, testen, committen
+- [x] 18. Fundliste `funde-5-app.md` (nach Fenstern gegliedert) schreiben und freigeben lassen
+- [x] 19. Freigegebene Funde umsetzen, bauen, testen, committen
 
 Abschnitt 6 – Umwandlungswerkzeug, Installations- und Bauskripte
 - [ ] 20. Fundliste `funde-6-werkzeuge.md` schreiben und freigeben lassen

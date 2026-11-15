@@ -5,9 +5,7 @@ using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Layers;
 using Mapsui.Nts;
-using Mapsui.Projections;
 using Mapsui.Styles;
-using NetTopologySuite.Geometries;
 using Point = System.Windows.Point;
 using AndyTours.App.Funktionen;
 using AndyTours.App.ViewModels;
@@ -134,11 +132,7 @@ public partial class TourenplanungFenster : Window
     /// <summary>Baut die Karte mit ihren Ebenen und zeigt den Startausschnitt.</summary>
     private void BaueKarte()
     {
-        var karte = new Map();
-
-        // Mapsui legt von sich aus ein Protokoll- und ein Leistungs-Widget auf die Karte (im Debug-Build sichtbar)
-        karte.Widgets.Clear();
-        karte.Navigator.RotationLock = true;
+        Map karte = Kartenzeichnung.ErzeugeKarte();
         karte.Layers.Add(Kartenebenen.Erzeuge(Kartenart.OpenStreetMap));
 
         // Overlays direkt über den Kartenausschnitten, damit sie Strecke, Abbiege- und Wegpunkte nicht verdecken
@@ -153,7 +147,7 @@ public partial class TourenplanungFenster : Window
         Zeichne();
 
         // Mapsui merkt sich den Aufruf, bis die Karte ihre Größe kennt
-        karte.Navigator.ZoomToBox(Rechteck(_viewModel.StartSuedWest, _viewModel.StartNordOst, 0), MBoxFit.Fit);
+        karte.Navigator.ZoomToBox(Kartenzeichnung.Rechteck(_viewModel.StartSuedWest, _viewModel.StartNordOst, 0), MBoxFit.Fit);
     }
 
     /// <summary>
@@ -225,7 +219,7 @@ public partial class TourenplanungFenster : Window
 
         var suedWest = new Geoposition(punkte.Min(p => p.Breite), punkte.Min(p => p.Laenge));
         var nordOst = new Geoposition(punkte.Max(p => p.Breite), punkte.Max(p => p.Laenge));
-        Karte.Map.Navigator.ZoomToBox(Rechteck(suedWest, nordOst, Rand), MBoxFit.Fit);
+        Karte.Map.Navigator.ZoomToBox(Kartenzeichnung.Rechteck(suedWest, nordOst, Rand), MBoxFit.Fit);
     }
 
     /// <summary>Linke Taste gedrückt: Wegpunkt oder Linie greifen, sonst einen möglichen Klick vormerken.</summary>
@@ -362,7 +356,7 @@ public partial class TourenplanungFenster : Window
         MRect ausschnitt = Karte.Map.Navigator.Viewport.ToExtent();
         if (ausschnitt.Width > 0 && ausschnitt.Height > 0)
         {
-            _viewModel.MerkeAusschnitt(InGeoposition(ausschnitt.Min), InGeoposition(ausschnitt.Max));
+            _viewModel.MerkeAusschnitt(Kartenzeichnung.InGeoposition(ausschnitt.Min), Kartenzeichnung.InGeoposition(ausschnitt.Max));
         }
     }
 
@@ -372,7 +366,7 @@ public partial class TourenplanungFenster : Window
         IReadOnlyList<Geoposition> wegpunkte = _viewModel.Planung.Wegpunkte;
         for (int i = wegpunkte.Count - 1; i >= 0; i--)
         {
-            Mapsui.Manipulations.ScreenPosition bildschirm = Karte.Map.Navigator.Viewport.WorldToScreen(InKartenkoordinaten(wegpunkte[i]));
+            Mapsui.Manipulations.ScreenPosition bildschirm = Karte.Map.Navigator.Viewport.WorldToScreen(Kartenzeichnung.InKartenkoordinaten(wegpunkte[i]));
             if (Abstand(punkt, new Point(bildschirm.X, bildschirm.Y)) <= Wegpunktradius)
             {
                 return i;
@@ -400,54 +394,16 @@ public partial class TourenplanungFenster : Window
     private MemoryLayer Ebene(string name) => (MemoryLayer)Karte.Map.Layers.First(ebene => ebene.Name == name);
 
     /// <summary>Eine Linie durch die Punkte; gestrichelt für Luftlinien, offene Teilstücke und Vorschau.</summary>
-    private static GeometryFeature Linie(List<Geoposition> punkte, Mapsui.Styles.Color farbe, bool gestrichelt)
-    {
-        Coordinate[] linie = [.. punkte.Select(InKartenkoordinaten).Select(p => new Coordinate(p.X, p.Y))];
-        var stift = new Pen(farbe, gestrichelt ? 3 : 4) { PenStyle = gestrichelt ? PenStyle.Dash : PenStyle.Solid };
-        return new GeometryFeature(new LineString(linie)) { Styles = [new VectorStyle { Line = stift }] };
-    }
+    private static GeometryFeature Linie(List<Geoposition> punkte, Mapsui.Styles.Color farbe, bool gestrichelt) =>
+        Kartenzeichnung.Linie(punkte, new Pen(farbe, gestrichelt ? 3 : 4) { PenStyle = gestrichelt ? PenStyle.Dash : PenStyle.Solid });
 
     /// <summary>Ein runder Punkt an einer Position.</summary>
     private static PointFeature Zeichen(Geoposition position, Mapsui.Styles.Color fuellung, Mapsui.Styles.Color rand, double groesse) =>
-        new(InKartenkoordinaten(position))
-        {
-            Styles =
-            [
-                new SymbolStyle
-                {
-                    SymbolType = SymbolType.Ellipse,
-                    SymbolScale = groesse,
-                    Fill = new Mapsui.Styles.Brush(fuellung),
-                    Outline = new Pen(rand, 2),
-                },
-            ],
-        };
-
-    /// <summary>Rechteck in Kartenkoordinaten um zwei Ecken, mit Rand und einer Mindestgröße von 500 m.</summary>
-    private static MRect Rechteck(Geoposition suedWest, Geoposition nordOst, double rand)
-    {
-        MPoint sw = InKartenkoordinaten(suedWest), no = InKartenkoordinaten(nordOst);
-        double breite = Math.Max(no.X - sw.X, 500), hoehe = Math.Max(no.Y - sw.Y, 500);
-        MPoint mitte = new((sw.X + no.X) / 2, (sw.Y + no.Y) / 2);
-        return new MRect(
-            mitte.X - breite * (0.5 + rand), mitte.Y - hoehe * (0.5 + rand),
-            mitte.X + breite * (0.5 + rand), mitte.Y + hoehe * (0.5 + rand));
-    }
+        Kartenzeichnung.Zeichen(position, SymbolType.Ellipse, fuellung, rand, groesse);
 
     /// <summary>Die geografische Position zu einem Punkt auf dem Bildschirm.</summary>
     private Geoposition InGeoposition(Point punkt) =>
-        InGeoposition(Karte.Map.Navigator.Viewport.ScreenToWorld(punkt.X, punkt.Y));
-
-    /// <summary>Die geografische Position zu einem Punkt in Kartenkoordinaten (Web-Mercator).</summary>
-    private static Geoposition InGeoposition(MPoint kartenpunkt)
-    {
-        (double laenge, double breite) = SphericalMercator.ToLonLat(kartenpunkt.X, kartenpunkt.Y);
-        return new Geoposition(breite, laenge);
-    }
-
-    /// <summary>Rechnet eine Position in Grad in die Koordinaten der Karte (Web-Mercator) um.</summary>
-    private static MPoint InKartenkoordinaten(Geoposition position) =>
-        SphericalMercator.FromLonLat(new MPoint(position.Laenge, position.Breite));
+        Kartenzeichnung.InGeoposition(Karte.Map.Navigator.Viewport.ScreenToWorld(punkt.X, punkt.Y));
 
     /// <summary>Abstand zweier Bildschirmpunkte in Pixeln.</summary>
     private static double Abstand(Point a, Point b) => (a - b).Length;

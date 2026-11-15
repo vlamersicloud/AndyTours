@@ -7,7 +7,6 @@ using AndyTours.App.Views;
 using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
 using AndyTours.Daten;
-using AndyTours.Daten.Datenordner;
 using AndyTours.Import.Garmin;
 
 namespace AndyTours.App.ViewModels;
@@ -65,7 +64,7 @@ public partial class HauptfensterViewModel
     {
         try
         {
-            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Path.Combine(Datenordner, DatenordnerInhalt.Datenbankdatei));
+            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
             return GpxOrdnerEinstellung.Laden(verbindung);
         }
         catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)

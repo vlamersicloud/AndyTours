@@ -8,7 +8,6 @@ using AndyTours.App.Views;
 using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
 using AndyTours.Daten;
-using AndyTours.Daten.Datenordner;
 
 namespace AndyTours.App.ViewModels;
 
@@ -282,7 +281,7 @@ public partial class HauptfensterViewModel
     {
         try
         {
-            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Path.Combine(Datenordner, DatenordnerInhalt.Datenbankdatei));
+            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
             schreiben(verbindung);
             return true;
         }

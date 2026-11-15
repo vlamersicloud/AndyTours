@@ -41,7 +41,7 @@ namespace AndyTours.App.ViewModels;
 public partial class TourdetailViewModel : ObservableObject
 {
     /// <summary>Hinweis, wenn die Aufzeichnung keine Höhendaten enthält.</summary>
-    public const string KeineHoehendaten = "Die Aufzeichnung enthält keine Höhendaten.";
+    private const string KeineHoehendaten = "Die Aufzeichnung enthält keine Höhendaten.";
 
     /// <summary>Hinweis in beiden Karteikarten, wenn keine der Einheiten einer Mehrtagestour eine Aufzeichnung hat.</summary>
     public const string KeineAufzeichnung = "Keine der Einheiten hat eine Aufzeichnung.";

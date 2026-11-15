@@ -6,6 +6,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using AndyTours.App.Funktionen;
 using AndyTours.App.ViewModels;
 using AndyTours.Core.Modell;
 
@@ -453,22 +454,9 @@ public partial class EinheitenTabelle : UserControl
     /// <param name="ids">Nummern der Einheiten, die noch angezeigt werden.</param>
     private void ViewModel_MarkiereEinheiten(IReadOnlyCollection<long> ids)
     {
-        if (_viewModel is null)
+        if (_viewModel is not null)
         {
-            return;
-        }
-
-        List<Einheitszeile> zeilen = _viewModel.Einheitszeilen.Where(z => ids.Contains(z.Id)).ToList();
-        Tabelle.SelectedItems.Clear();
-        foreach (Einheitszeile zeile in zeilen)
-        {
-            Tabelle.SelectedItems.Add(zeile);
-        }
-
-        // Die oberste markierte Zeile in der aktuellen Sortierung sichtbar machen
-        if (Tabelle.Items.OfType<Einheitszeile>().FirstOrDefault(z => ids.Contains(z.Id)) is Einheitszeile erste)
-        {
-            Tabelle.ScrollIntoView(erste);
+            Tabellenbedienung.MarkiereZeilen(Tabelle, [.. _viewModel.Einheitszeilen.Where(z => ids.Contains(z.Id))]);
         }
     }
 
@@ -481,30 +469,17 @@ public partial class EinheitenTabelle : UserControl
     /// </remarks>
     private void Zeile_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (_viewModel is null || e.ChangedButton != MouseButton.Left)
+        if (e.ChangedButton == MouseButton.Left)
         {
-            return;
+            Tabelle.CancelEdit(DataGridEditingUnit.Row);
         }
 
-        e.Handled = true;
-        Tabelle.CancelEdit(DataGridEditingUnit.Row);
-        if (_viewModel.EinheitBearbeitenCommand.CanExecute(null))
-        {
-            _viewModel.EinheitBearbeitenCommand.Execute(null);
-        }
+        Tabellenbedienung.BeiDoppelklick(e, _viewModel?.EinheitBearbeitenCommand);
     }
 
-    /// <summary>
-    /// Rechtsklick auf eine nicht markierte Zeile markiert diese, damit sich das Rechtsklickmenü auf sie bezieht;
-    /// bei einer schon markierten Zeile bleibt eine Mehrfachmarkierung erhalten.
-    /// </summary>
-    private void Tabelle_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (SucheVorfahr<DataGridRow>(e.OriginalSource as DependencyObject) is DataGridRow zeile && !zeile.IsSelected)
-        {
-            Tabelle.SelectedItem = zeile.Item;
-        }
-    }
+    /// <summary>Rechtsklick markiert die angeklickte Zeile (siehe <see cref="Tabellenbedienung.MarkiereBeiRechtsklick"/>).</summary>
+    private void Tabelle_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e) =>
+        Tabellenbedienung.MarkiereBeiRechtsklick(Tabelle, e);
 
     /// <summary>
     /// Entf löscht die markierten Einheiten (mit Rückfrage) – außer während der Bearbeitung einer Zelle, dort
@@ -512,15 +487,9 @@ public partial class EinheitenTabelle : UserControl
     /// </summary>
     private void Tabelle_PreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Delete || _zelleInBearbeitung || _viewModel is null)
+        if (!_zelleInBearbeitung)
         {
-            return;
-        }
-
-        e.Handled = true;
-        if (_viewModel.EinheitenLoeschenCommand.CanExecute(null))
-        {
-            _viewModel.EinheitenLoeschenCommand.Execute(null);
+            Tabellenbedienung.BeiEntf(e, _viewModel?.EinheitenLoeschenCommand);
         }
     }
 
@@ -666,26 +635,6 @@ public partial class EinheitenTabelle : UserControl
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// Sucht vom angeklickten Element aus aufwärts das nächste Element des Typs <typeparamref name="T"/>.
-    /// </summary>
-    /// <remarks>Textteile (z. B. Run) gehören nicht zum sichtbaren Baum; dort geht es über den logischen Baum weiter.</remarks>
-    /// <typeparam name="T">Gesuchter Typ, z. B. <see cref="DataGridRow"/>.</typeparam>
-    /// <param name="start">Das angeklickte Element.</param>
-    /// <returns>Das gefundene Element oder <c>null</c>.</returns>
-    private static T? SucheVorfahr<T>(DependencyObject? start) where T : DependencyObject
-    {
-        DependencyObject? aktuell = start;
-        while (aktuell is not null and not T)
-        {
-            aktuell = aktuell is Visual or System.Windows.Media.Media3D.Visual3D
-                ? VisualTreeHelper.GetParent(aktuell)
-                : LogicalTreeHelper.GetParent(aktuell);
-        }
-
-        return aktuell as T;
     }
 
     /// <summary>

@@ -85,6 +85,9 @@ public partial class HauptfensterViewModel : ObservableObject
     [ObservableProperty]
     private string _datenordner = string.Empty;
 
+    /// <summary>Vollständiger Pfad der Datenbank im aktiven Datenordner.</summary>
+    private string Datenbankdatei => Path.Combine(Datenordner, DatenordnerInhalt.Datenbankdatei);
+
     /// <summary>Auswählbare Jahre in der Werkzeugleiste.</summary>
     public ObservableCollection<string> Jahre { get; }
 
@@ -212,7 +215,7 @@ public partial class HauptfensterViewModel : ObservableObject
     {
         try
         {
-            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Path.Combine(Datenordner, DatenordnerInhalt.Datenbankdatei));
+            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
             speichern(verbindung);
         }
         catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)
@@ -240,7 +243,7 @@ public partial class HauptfensterViewModel : ObservableObject
 
         try
         {
-            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Path.Combine(Datenordner, DatenordnerInhalt.Datenbankdatei));
+            using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
             AusgeblendeteSpaltenEinstellung.Speichern(verbindung, neu);
         }
         catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)

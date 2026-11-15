@@ -1,5 +1,4 @@
 using System.Globalization;
-using AndyTours.Core.Modell;
 
 namespace AndyTours.Core.Berechnungen;
 

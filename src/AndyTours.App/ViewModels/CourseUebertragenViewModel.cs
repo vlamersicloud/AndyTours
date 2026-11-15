@@ -108,13 +108,13 @@ public partial class CourseUebertragenViewModel : ObservableObject
     public string? Ergebnis { get; private set; }
 
     /// <summary><c>true</c>, wenn das <see cref="Ergebnis"/> einen Grund für fehlende Abbiegehinweise enthält.</summary>
-    public bool ErgebnisMitWarnung { get; private set; }
+    private bool ErgebnisMitWarnung { get; set; }
 
     /// <summary>
     /// Sucht die angeschlossenen Garmin-Geräte: Edge 800/1000 als Laufwerk, Edge 1040 als Mediengerät.
     /// </summary>
     /// <returns>Die Geräte; leer, wenn keines angeschlossen ist.</returns>
-    public static List<Courseziel> FindeZiele() => [.. FindeLaufwerksziele.Ausfuehren(), .. FindeMtpZiele.Ausfuehren()];
+    private static List<Courseziel> FindeZiele() => [.. FindeLaufwerksziele.Ausfuehren(), .. FindeMtpZiele.Ausfuehren()];
 
     /// <summary>
     /// Sucht die Geräte, zeigt das Fenster und meldet das Ergebnis; ohne Gerät erscheint nur ein Hinweis.

@@ -282,7 +282,7 @@ public partial class HauptfensterViewModel : IAuswahllistenSpeicher
 
                 eintraege[stelle] = neuerName;
                 // Wartungen und Alarme werden gemeinsam umbenannt
-                bool verwendet = _bestand.Wartungen.Any(w => string.Equals(w.Taetigkeit.Trim(), alt.Trim(), StringComparison.OrdinalIgnoreCase));
+                bool verwendet = _bestand.Wartungen.Any(w => VergleicheNamen.Ausfuehren(w.Taetigkeit, alt));
                 return SpeichereTaetigkeiten(eintraege, verwendet ? (alt, neuerName) : null);
             }
 
@@ -578,7 +578,7 @@ public partial class HauptfensterViewModel : IAuswahllistenSpeicher
         _trainingsbereiche = eintraege;
         if (umbenennung is { } umbenannt && BenenneTrainingsbereichUm.Ausfuehren(_bestand.Trainingseinheiten, umbenannt.Alt, umbenannt.Neu) > 0)
         {
-            if (string.Equals(Filter.Trainingsbereich, umbenannt.Alt.Trim(), StringComparison.OrdinalIgnoreCase))
+            if (Filter.Trainingsbereich is string bereich && VergleicheNamen.Ausfuehren(bereich, umbenannt.Alt))
             {
                 Filter.Trainingsbereich = umbenannt.Neu;
             }

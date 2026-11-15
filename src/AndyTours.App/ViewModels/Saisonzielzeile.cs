@@ -44,7 +44,7 @@ public partial class Saisonzielzeile : ObservableObject
     public string Name { get; }
 
     /// <summary><c>true</c>, wenn für das Jahr schon beim Anzeigen ein eigenes Ziel eingetragen war.</summary>
-    public bool IstEigenesZiel { get; }
+    private bool IstEigenesZiel { get; }
 
     /// <summary>Ziel Kilometer als Text.</summary>
     [ObservableProperty]

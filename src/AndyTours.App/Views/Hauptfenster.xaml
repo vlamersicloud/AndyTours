@@ -78,7 +78,7 @@
              damit sie nicht davon abhängt, ob die Fluent-Vorlage des Menüs einen Rahmen zeichnet -->
         <Border DockPanel.Dock="Top" Height="1" Background="#FFC2C9D1" />
 
-        <!-- 2. Werkzeugleiste: Filter für Jahr und Aktivität, wirken später auf alle Karteikarten -->
+        <!-- 2. Werkzeugleiste: Filter für Jahr und Aktivität mit den Summen der Auswahl -->
         <ToolBarTray DockPanel.Dock="Top">
             <ToolBar>
                 <Label Content="Jahr:" VerticalAlignment="Center" />

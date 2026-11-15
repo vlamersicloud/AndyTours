@@ -22,7 +22,7 @@ public static class KopiereMitFortschritt
     /// <item><see cref="Progress{T}"/> leitet die Meldungen automatisch in den Oberflächen-Thread um,
     /// wo das ViewModel sie anzeigt.</item>
     /// </list>
-    /// Wiederverwendbar für jeden Kopiervorgang mit Datenbestand (z. B. die spätere Datensicherung).
+    /// Verwendet beim Wechsel des Datenordners, wenn der Datenbestand in den neuen Ordner kopiert wird.
     /// </remarks>
     /// <param name="besitzer">Fenster, über dem der Fortschritt erscheint, oder <c>null</c>.</param>
     /// <param name="quellordner">Zu kopierender Datenordner.</param>

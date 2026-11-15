@@ -8,8 +8,7 @@ namespace AndyTours.App.ViewModels;
 /// ViewModel des Fortschrittsfensters: bereitet einen <see cref="KopierFortschritt"/> für die Anzeige auf.
 /// </summary>
 /// <remarks>
-/// Allgemein gehalten, damit das Fenster für jeden länger dauernden Kopiervorgang dient
-/// (Datenordner wechseln, später auch die Datensicherung).
+/// Angezeigt, während beim Wechsel des Datenordners der Datenbestand kopiert wird.
 /// </remarks>
 public partial class FortschrittsViewModel : ObservableObject
 {

@@ -1,7 +1,6 @@
 using Microsoft.Data.Sqlite;
 using AndyTours.Core.Modell;
 using AndyTours.Daten;
-using AndyTours.Tests.Datenordner;
 
 namespace AndyTours.Tests.Daten;
 

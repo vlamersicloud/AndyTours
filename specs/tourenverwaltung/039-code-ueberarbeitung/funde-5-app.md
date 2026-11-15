@@ -7,7 +7,7 @@ Projektmappe die Analyzer-Regeln für ungenutzte private Teile, Parameter, Zuwei
 Die Funde sind wenige und betreffen mehrere Fenster zugleich; deshalb sind sie nach Art statt nach
 Fenstern gegliedert.
 
-Freigabe: _offen_
+Freigabe: alle Punkte freigegeben am 15.11.2026
 
 ## Ungenutzter Code
 Kein ungenutzter Code. Zu weit sichtbar bzw. überflüssig:

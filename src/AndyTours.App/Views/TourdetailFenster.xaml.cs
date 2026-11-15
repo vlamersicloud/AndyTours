@@ -2,11 +2,8 @@ using System.ComponentModel;
 using System.Windows;
 using Mapsui;
 using Mapsui.Layers;
-using Mapsui.Nts;
-using Mapsui.Projections;
 using Mapsui.Styles;
 using Mapsui.Tiling.Layers;
-using NetTopologySuite.Geometries;
 using AndyTours.App.Funktionen;
 using AndyTours.App.ViewModels;
 using AndyTours.Core.Modell;
@@ -138,12 +135,7 @@ public partial class TourdetailFenster : Window
     /// </summary>
     private void BaueKarte()
     {
-        var karte = new Map();
-
-        // Mapsui legt von sich aus ein Protokoll- und ein Leistungs-Widget auf die Karte (im Debug-Build sichtbar)
-        karte.Widgets.Clear();
-        karte.Navigator.RotationLock = true;
-
+        Map karte = Kartenzeichnung.ErzeugeKarte();
         karte.Layers.Add(Kartenebene(_streckenkarte.Kartenart));
 
         // Overlays direkt über den Kartenausschnitten, damit sie die eigene Strecke nicht verdecken
@@ -181,26 +173,20 @@ public partial class TourdetailFenster : Window
         IReadOnlyList<Strecke> strecken = _streckenkarte.Strecken;
         var streckenebene = (MemoryLayer)karte.Layers.First(ebene => ebene.Name == Streckenebene);
         var zeichenebene = (MemoryLayer)karte.Layers.First(ebene => ebene.Name == Zeichenebene);
-        streckenebene.Features = [.. strecken.Select((strecke, i) => Linie(strecke, Streckenfarben[i % Streckenfarben.Length]))];
+        streckenebene.Features = [.. strecken.Select((strecke, i) =>
+            Kartenzeichnung.Linie(strecke.Punkte, new Pen(Streckenfarben[i % Streckenfarben.Length], 4)))];
 
-        // Wechsel zuerst, damit Start und Ziel darüber liegen
+        // Wechsel zuerst, damit Start und Ziel darüber liegen. Der Startkreis ist größer als das Zielquadrat: Bei einer
+        // Rundtour liegen beide übereinander, und der Kreis bleibt als Ring um das Quadrat sichtbar.
+        Mapsui.Styles.Color weiss = Mapsui.Styles.Color.White;
         zeichenebene.Features =
         [
-            .. strecken.Skip(1).Select(strecke => Zeichen(strecke.Punkte[0], SymbolType.Ellipse, Wechselfarbe, 0.35)),
-            Zeichen(strecken[0].Punkte[0], SymbolType.Ellipse, Startfarbe, 0.8),
-            Zeichen(strecken[^1].Punkte[^1], SymbolType.Rectangle, Zielfarbe, 0.45),
+            .. strecken.Skip(1).Select(strecke => Kartenzeichnung.Zeichen(strecke.Punkte[0], SymbolType.Ellipse, Wechselfarbe, weiss, 0.35)),
+            Kartenzeichnung.Zeichen(strecken[0].Punkte[0], SymbolType.Ellipse, Startfarbe, weiss, 0.8),
+            Kartenzeichnung.Zeichen(strecken[^1].Punkte[^1], SymbolType.Rectangle, Zielfarbe, weiss, 0.45),
         ];
 
-        MPoint suedWest = InKartenkoordinaten(_streckenkarte.SuedWest!);
-        MPoint nordOst = InKartenkoordinaten(_streckenkarte.NordOst!);
-
-        // Mindestgröße, damit eine sehr kurze Strecke (oder ein einzelner Punkt) nicht bis zum Anschlag vergrößert wird
-        double breite = Math.Max(nordOst.X - suedWest.X, 500);
-        double hoehe = Math.Max(nordOst.Y - suedWest.Y, 500);
-        MPoint mitte = new((suedWest.X + nordOst.X) / 2, (suedWest.Y + nordOst.Y) / 2);
-        _ganzeStrecke = new MRect(
-            mitte.X - breite * (0.5 + Rand), mitte.Y - hoehe * (0.5 + Rand),
-            mitte.X + breite * (0.5 + Rand), mitte.Y + hoehe * (0.5 + Rand));
+        _ganzeStrecke = Kartenzeichnung.Rechteck(_streckenkarte.SuedWest!, _streckenkarte.NordOst!, Rand);
     }
 
     /// <summary>Zeigt die ganze Strecke (beim Öffnen und bei „Ganze Strecke“).</summary>
@@ -244,40 +230,4 @@ public partial class TourdetailFenster : Window
         _kartenebenen[kartenart] = ebene;
         return ebene;
     }
-
-    /// <summary>
-    /// Die Linie einer Strecke in ihrer Farbe; eine Strecke aus nur einem Punkt wird ein Punkt.
-    /// </summary>
-    private static GeometryFeature Linie(Strecke strecke, Mapsui.Styles.Color farbe)
-    {
-        Coordinate[] linie = [.. strecke.Punkte.Select(InKartenkoordinaten).Select(p => new Coordinate(p.X, p.Y))];
-        Geometry geometrie = linie.Length > 1 ? new LineString(linie) : new NetTopologySuite.Geometries.Point(linie[0]);
-        return new GeometryFeature(geometrie) { Styles = [new VectorStyle { Line = new Pen(farbe, 4) }] };
-    }
-
-    /// <summary>
-    /// Ein Start-, Ziel- oder Wechselzeichen an einer Position.
-    /// </summary>
-    /// <remarks>
-    /// Der Startkreis ist größer als das Zielquadrat: Bei einer Rundtour liegen beide übereinander, und der Kreis
-    /// bleibt als Ring um das Quadrat sichtbar.
-    /// </remarks>
-    private static PointFeature Zeichen(Geoposition position, SymbolType form, Mapsui.Styles.Color farbe, double groesse) =>
-        new(InKartenkoordinaten(position))
-        {
-            Styles =
-            [
-                new SymbolStyle
-                {
-                    SymbolType = form,
-                    SymbolScale = groesse,
-                    Fill = new Mapsui.Styles.Brush(farbe),
-                    Outline = new Pen(Mapsui.Styles.Color.White, 2),
-                },
-            ],
-        };
-
-    /// <summary>Rechnet eine Position in Grad in die Koordinaten der Karte (Web-Mercator) um.</summary>
-    private static MPoint InKartenkoordinaten(Geoposition position) =>
-        SphericalMercator.FromLonLat(new MPoint(position.Laenge, position.Breite));
 }

@@ -1,7 +1,6 @@
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
+using AndyTours.App.Funktionen;
 using AndyTours.App.ViewModels;
 using AndyTours.Core.Modell;
 
@@ -91,85 +90,34 @@ public partial class WartungenAnsicht : UserControl
     /// <param name="ids">Nummern der Alarme.</param>
     private void ViewModel_MarkiereAlarme(IReadOnlyCollection<long> ids)
     {
-        if (_viewModel is null)
+        if (_viewModel is not null)
         {
-            return;
-        }
-
-        List<Alarmzeile> zeilen = _viewModel.Alarmzeilen.Where(z => ids.Contains(z.Id)).ToList();
-        AlarmTabelle.SelectedItems.Clear();
-        foreach (Alarmzeile zeile in zeilen)
-        {
-            AlarmTabelle.SelectedItems.Add(zeile);
-        }
-
-        if (AlarmTabelle.Items.OfType<Alarmzeile>().FirstOrDefault(z => ids.Contains(z.Id)) is Alarmzeile erste)
-        {
-            AlarmTabelle.ScrollIntoView(erste);
+            Tabellenbedienung.MarkiereZeilen(AlarmTabelle, [.. _viewModel.Alarmzeilen.Where(z => ids.Contains(z.Id))]);
         }
     }
 
     /// <summary>Doppelklick auf eine Wartung: öffnet das Wartungsfenster der markierten Wartung.</summary>
     private void Zeile_MouseDoubleClick(object sender, MouseButtonEventArgs e) =>
-        FuehreAusBeiDoppelklick(e, _viewModel?.WartungBearbeitenCommand);
+        Tabellenbedienung.BeiDoppelklick(e, _viewModel?.WartungBearbeitenCommand);
 
     /// <summary>Doppelklick auf einen Alarm: öffnet das Alarmfenster des markierten Alarms.</summary>
     private void Alarmzeile_MouseDoubleClick(object sender, MouseButtonEventArgs e) =>
-        FuehreAusBeiDoppelklick(e, _viewModel?.AlarmBearbeitenCommand);
+        Tabellenbedienung.BeiDoppelklick(e, _viewModel?.AlarmBearbeitenCommand);
 
     /// <summary>Entf löscht die markierten Wartungen (nach der Rückfrage des ViewModels).</summary>
     private void Tabelle_PreviewKeyDown(object sender, KeyEventArgs e) =>
-        FuehreAusBeiEntf(e, _viewModel?.WartungenLoeschenCommand);
+        Tabellenbedienung.BeiEntf(e, _viewModel?.WartungenLoeschenCommand);
 
     /// <summary>Entf löscht die markierten Alarme (nach der Rückfrage des ViewModels).</summary>
     private void AlarmTabelle_PreviewKeyDown(object sender, KeyEventArgs e) =>
-        FuehreAusBeiEntf(e, _viewModel?.AlarmeLoeschenCommand);
+        Tabellenbedienung.BeiEntf(e, _viewModel?.AlarmeLoeschenCommand);
 
-    /// <summary>Führt bei einem Doppelklick mit der linken Maustaste einen Befehl aus, sofern er wählbar ist.</summary>
-    private static void FuehreAusBeiDoppelklick(MouseButtonEventArgs e, ICommand? befehl)
-    {
-        if (befehl is null || e.ChangedButton != MouseButton.Left)
-        {
-            return;
-        }
-
-        e.Handled = true;
-        if (befehl.CanExecute(null))
-        {
-            befehl.Execute(null);
-        }
-    }
-
-    /// <summary>Führt bei der Entf-Taste einen Befehl aus, sofern er wählbar ist.</summary>
-    private static void FuehreAusBeiEntf(KeyEventArgs e, ICommand? befehl)
-    {
-        if (e.Key != Key.Delete || befehl is null)
-        {
-            return;
-        }
-
-        e.Handled = true;
-        if (befehl.CanExecute(null))
-        {
-            befehl.Execute(null);
-        }
-    }
-
-    /// <summary>
-    /// Rechtsklick auf eine nicht markierte Zeile markiert diese, damit sich das Rechtsklickmenü auf sie bezieht;
-    /// bei einer schon markierten Zeile bleibt eine Mehrfachmarkierung erhalten.
-    /// </summary>
+    /// <summary>Rechtsklick markiert die angeklickte Zeile (siehe <see cref="Tabellenbedienung.MarkiereBeiRechtsklick"/>).</summary>
     private void Liste_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
-        DependencyObject? element = e.OriginalSource as DependencyObject;
-        while (element is not null and not DataGridRow)
+        if (sender is DataGrid liste)
         {
-            element = VisualTreeHelper.GetParent(element);
-        }
-
-        if (element is DataGridRow zeile && !zeile.IsSelected && sender is DataGrid liste)
-        {
-            liste.SelectedItem = zeile.Item;
+            Tabellenbedienung.MarkiereBeiRechtsklick(liste, e);
         }
     }
 }

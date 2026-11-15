@@ -25,7 +25,7 @@ public partial class TourenplanungViewModel
     private const string Dateifilter = "GPX-Dateien (*.gpx)|*.gpx";
 
     /// <summary>Hinweis, wenn eine gewählte Datei keine Planung von AndyTours ist.</summary>
-    public const string KeinePlanung =
+    private const string KeinePlanung =
         "Die Datei ist keine von AndyTours gespeicherte Planung oder konnte nicht gelesen werden. Die aktuelle Planung " +
         "bleibt unverändert.";
 
