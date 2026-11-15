@@ -34,8 +34,8 @@ Abschnitt 6 – Umwandlungswerkzeug, Installations- und Bauskripte
 - [x] 21. Freigegebene Funde umsetzen, bauen, testen, committen
 
 Abschnitt 7 – Tests
-- [ ] 22. Fundliste `funde-7-tests.md` schreiben und freigeben lassen
-- [ ] 23. Freigegebene Funde umsetzen, testen, committen
+- [x] 22. Fundliste `funde-7-tests.md` schreiben und freigeben lassen
+- [x] 23. Freigegebene Funde umsetzen, testen, committen
 
 Abschluss
 - [ ] 24. Zeilen zählen und mit dem Ausgangsstand vergleichen

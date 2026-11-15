@@ -123,22 +123,6 @@ public class LeseFitAufzeichnungTests
     }
 
     [Fact]
-    public void Beschaedigte_Datei_liefert_einen_Fehler()
-    {
-        using var temp = new TempOrdner();
-        string pfad = Path.Combine(temp.Pfad, "kaputt.fit");
-        FitTestdatei.Schreibe(pfad, new(StartUtc));
-        byte[] inhalt = System.IO.File.ReadAllBytes(pfad);
-        inhalt[inhalt.Length / 2] ^= 0xFF;
-        System.IO.File.WriteAllBytes(pfad, inhalt);
-
-        (Aufzeichnung? aufzeichnung, string? fehler) = LeseFitAufzeichnung.Ausfuehren(pfad);
-
-        Assert.Null(aufzeichnung);
-        Assert.False(string.IsNullOrEmpty(fehler));
-    }
-
-    [Fact]
     public void Keine_FIT_Datei_liefert_einen_Fehler()
     {
         using var temp = new TempOrdner();

@@ -16,16 +16,10 @@ public class PasstZumSuchbegriffTests
     [InlineData("BRÜNDLING")]    // Groß- und Kleinschreibung zählt nicht
     [InlineData("sabine")]       // im Kommentar
     [InlineData("  Sab  ")]      // Leerzeichen am Rand zählen nicht
-    public void Ein_Wort_in_Name_oder_Kommentar_passt(string suchbegriff)
-    {
-        Assert.True(PasstZumSuchbegriff.Ausfuehren(Einheit(), suchbegriff));
-    }
-
-    [Theory]
-    [InlineData("Sabine Alm")]
+    [InlineData("Sabine Alm")]   // mehrere Wörter in beliebiger Reihenfolge
     [InlineData("Alm Sabine")]
     [InlineData("mit   alm")]    // mehrere Leerzeichen zwischen den Wörtern
-    public void Mehrere_Woerter_in_beliebiger_Reihenfolge(string suchbegriff)
+    public void Passende_Suchbegriffe(string suchbegriff)
     {
         Assert.True(PasstZumSuchbegriff.Ausfuehren(Einheit(), suchbegriff));
     }

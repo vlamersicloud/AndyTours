@@ -4,7 +4,7 @@ Geprüft: alle 156 Dateien unter `tests/AndyTours.Tests` (1055 Testfälle). Gesu
 gleichem Inhalt, nach gleich benannten Tests für dieselbe Sache, nach Tests für Code, den nur die Tests
 verwenden, und – mit einer Abdeckungsmessung – nach Fachfunktionen ohne Test.
 
-Freigabe: _offen_
+Freigabe: freigegeben am 15.11.2026
 
 ## Fachfunktionen ohne Test
 Kein Fund. Jede Klasse in Core, Daten, Import und im Umwandlungswerkzeug wird von Tests durchlaufen.

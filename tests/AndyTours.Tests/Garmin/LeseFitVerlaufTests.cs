@@ -5,7 +5,7 @@ using AndyTours.Tests.Datenordner;
 namespace AndyTours.Tests.Garmin;
 
 /// <summary>
-/// Tests für <see cref="LeseFitVerlauf"/> mit Dateien aus <see cref="FitTestdatei"/>.
+/// Tests für <see cref="LeseFitVerlauf"/> (die Fehlerfälle prüfen zugleich <see cref="PruefeFitDatei"/>) mit Dateien aus <see cref="FitTestdatei"/>.
 /// </summary>
 /// <remarks>
 /// Läuft in der Testgruppe <see cref="FitTestdatei.Testgruppe"/> nicht gleichzeitig mit anderen Tests, die
