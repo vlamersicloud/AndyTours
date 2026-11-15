@@ -115,7 +115,7 @@ zusätzlich als ADR (z. B. 0008) und in `docs/tech.md`. Ändert sich ein Kriteri
 - Routing (Tourenplanung): BRouter (voreingestellt) oder openrouteservice (ADR 0004).
 - Erscheinungsbild: eingebautes Fluent-Design von WPF, immer hell (`ThemeMode="Light"` in `App.xaml`, ADR 0006). Die Meldung
   `WPF0001` (experimentelle Schnittstelle) ist im App-Projekt per `NoWarn` abgeschaltet.
-- Kontrastfarben auf dem Fluent-Design (Karteikarten, Hauptmenü, weiße Felder und Listen), app-weit in `App.xaml` (ADR 0008).
+- Kontrastfarben auf dem Fluent-Design (Karteikarten, Hervorhebung in Menüs, weiße Felder und Listen), app-weit in `App.xaml` (ADR 0008); Hauptmenüleiste schlicht ohne eigene Flächen (ADR 0009).
 - Skalierung der Oberfläche: zentrale Vergrößerung des Fensterinhalts in Stufen 100–200 % (ADR 0007).
 
 ### `Directory.Build.props` (gilt für alle Projekte)
@@ -205,9 +205,9 @@ Ausführlich in `docs/Konventionen.md`, wörtlich in Abschnitt 11 dieser Datei.
     Hintergrundfarbe der Zelle für fachliche Farben); eigene Zellstile der Ansichten bauen mit
     `BasedOn="{StaticResource {x:Type DataGridCell}}"` darauf auf;
   - der Reiterstil für Karteikarten (baut auf dem Fluent-Reiter auf; eigene Vorlage, weil Fluent den gewählten Reiter fest weiß animiert).
-- Ausnahme bei den Farben, app-weit in `App.xaml` (ADR 0008): Karteikarten haben eine hellgraue Seite, mit der der gewählte
-  Reiter (deutlicher Rahmen, halbfette Beschriftung) eine Fläche bildet; nicht gewählte Reiter und die Hauptmenüpunkte sind dunkler
-  grau, beim Darüberfahren bzw. geöffnet noch etwas dunkler (auch die Einträge aufklappender Menüs); Eingabe-, Auswahl- und
+- Ausnahme bei den Farben, app-weit in `App.xaml` (ADR 0008, Hauptmenü ADR 0009): Karteikarten haben eine hellgraue Seite, mit der der gewählte
+  Reiter (deutlicher Rahmen, halbfette Beschriftung) eine Fläche bildet; nicht gewählte Reiter sind dunkler grau, beim Darüberfahren noch etwas dunkler; die Hauptmenüpunkte
+  sind schlichter Text mit feiner Trennlinie darunter; hervorgehobene Menüpunkte sind überall etwas dunkler grau; Eingabe-, Auswahl- und
   Datumsfelder sowie Listen sind deckend weiß, Listen mit feinem Rahmen. `Label` haben app-weit den Innenabstand `5,5,12,5`.
 - Jedes Fenster meldet sich nach `InitializeComponent` bei `Oberflaechenskalierung` an; Dialoge haben unten eine feste
   Schaltflächenleiste und darüber rollbaren Inhalt (`DockPanel`, Leiste unten angedockt, `ScrollViewer` mit dem Inhalt);
@@ -336,7 +336,7 @@ gelöscht. Spätere Änderungen sind unten vermerkt.
 - Fluent-Design von Windows 11, immer hell, Akzentfarbe von Windows; Meldungsfenster bleiben Windows-Standard.
 - Karteikarten: hellgraue Seite `#F0F2F5` mit Rahmen `#8F98A3`; gewählter Reiter in Seitenfarbe mit gleichem Rahmen und halbfetter
   Beschriftung; nicht gewählte Reiter `#DCE1E7`, beim Darüberfahren `#CDD4DC`.
-- Hauptmenüpunkte wie nicht gewählte Reiter; hervorgehobene Menüpunkte (auch aufklappende Menüs, Kontextmenüs) `#CDD4DC`.
+- Hauptmenüpunkte als schlichter Text, Trennlinie `#C2C9D1` (ADR 0009); hervorgehobene Menüpunkte (Hauptmenü, aufklappende Menüs, Kontextmenüs) `#CDD4DC`.
 - Eingabe-, Auswahl- und Datumsfelder deckend weiß, Listen weiß mit feinem Rahmen.
 - Programmicon: stilisiertes Fahrrad mit orangem Rahmen und dunklen Rädern vor grünen Bergen mit weißen Gipfeln und blauem Himmel
   auf abgerundetem Quadrat.
@@ -710,6 +710,7 @@ Die Stufe gehört zum Datenbestand und steht in der Tabelle `Einstellung`. Die E
 - Karten mitvergrößern: einheitlicher, aber das Kartenbild wird unscharf und zeigt weniger Ausschnitt.
 
 ### 0008 · Kontrastfarben der Oberfläche
+Teilweise ersetzt durch 0009 (Hauptmenüpunkte ohne eigene Flächen)
 
 #### Entscheidung
 Auf dem Fluent-Design (ADR 0006) setzt AndyTours app-weit in `App.xaml` eigene Farben für mehr Kontrast. Sie gelten für alle Fenster, auch künftige:
@@ -726,6 +727,19 @@ Im Fluent-Design sind Reiter und Hauptmenüpunkte durchsichtig und ohne Rahmen, 
 - Fluent unverändert lassen: keine eigenen Farben, aber Reiter und Menüpunkte bleiben kaum erkennbar.
 - Weiße Seite mit weißem Reiter: ausprobiert und verworfen, weil Seite, Reiter und Felder ineinander verschwimmen und die graue Liste blass wirkt.
 - Gewählten Reiter in Fluent-Weiß auf grauer Seite lassen: ohne eigene Vorlage, aber Reiter und Seite bilden keine Fläche.
+
+### 0009 · Hauptmenüleiste
+
+#### Entscheidung
+Die Hauptmenüleiste des Hauptfensters ist eine schlichte, durchgehende Leiste in der Farbe des Fensterhintergrunds. Die Hauptmenüpunkte („Datei“, „Einheit“ …) stehen als einfacher Text darauf, ohne eigene Flächen oder Rahmen, wie in der Fluent-Vorlage. Beim Darüberfahren und bei offenem Menü sind sie leicht grau hinterlegt (`#CDD4DC`, dieselbe Farbe wie hervorgehobene Einträge in aufklappenden Menüs). Eine feine Linie (`#C2C9D1`) trennt die Leiste von der Werkzeugleiste darunter. Aufklappende Menüs und Kontextmenüs bleiben wie in [0008](0008-kontrastfarben-der-oberflaeche.md). Die Entscheidung ersetzt 0008 für die Hauptmenüpunkte.
+
+#### Warum
+Die Hauptmenüpunkte als graue Flächen mit Rahmen (0008) wirken wie große Schaltflächen und unelegant. Eine schlichte Textleiste ist der heutige Windows-Standard (z. B. der Editor in Windows 11) und passt zum Fluent-Design. Die etwas dunklere Hervorhebung beim Darüberfahren bleibt, weil das Fluent-Grau kaum sichtbar ist; die Trennlinie grenzt die Leiste deutlich ab.
+
+#### Alternativen
+- Graue Flächen mit Rahmen beibehalten (0008): gut erkennbar, aber unelegant.
+- Weiße Leiste, die sich vom grauen Fensterinhalt abhebt: deutlich abgegrenzt, aber ungewohnt für ein Windows-Menü.
+- Fluent ganz unverändert, ohne eigene Hervorhebung: kein eigener Wert, aber die Hervorhebung ist kaum sichtbar.
 
 ## 13. Funktionen im Einzelnen (Spezifikationen und Planentscheidungen)
 

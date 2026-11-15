@@ -150,7 +150,7 @@ Ist der Datenordner nicht erreichbar, zum Beispiel weil das NAS ausgeschaltet is
 
 **Aufbau:** Das Hauptfenster besteht von oben nach unten aus vier Teilen:
 
-1. **Menüleiste** ganz oben mit den Menüs **Datei**, **Einheit**, **Tourenplanung**, **Extras** und **Hilfe**. Die Menüs sehen aus wie graue Schaltflächen. Ein Klick klappt das Menü auf.
+1. **Menüleiste** ganz oben mit den Menüs **Datei**, **Einheit**, **Tourenplanung**, **Extras** und **Hilfe**. Die Menüs stehen als schlichter Text in einer hellen Leiste; eine feine Linie trennt sie von der Werkzeugleiste. Fahren Sie mit der Maus darüber, ist der Menüpunkt leicht grau hinterlegt. Ein Klick klappt das Menü auf.
 2. **Werkzeugleiste** darunter: links die Auswahl **Jahr:**, daneben die Auswahl **Aktivität:**, rechts davon fett die Summen dieser Auswahl, zum Beispiel **80 Einheiten · 7.016,77 km · 66.572 hm**.
 3. **Karteikarten** **Aktuell**, **Trainingseinheiten** und **Wartung**. Sie füllen den größten Teil des Fensters. Die gewählte Karteikarte erkennen Sie an der halbfetten Beschriftung. Ihr Reiter geht nahtlos in die hellgraue Seite darunter über. Die übrigen Reiter sind dunkler grau.
 4. **Statusleiste** am unteren Rand: links die Anzahl der Trainingseinheiten, daneben bei Bedarf eine Meldung zur letzten Aktion, rechts **Datenordner:** mit dem Pfad des Datenordners.
