@@ -380,7 +380,10 @@ public partial class EinheitenTabelle : UserControl
 
         foreach (Einheitenspalte spalte in Enum.GetValues<Einheitenspalte>())
         {
-            var eintrag = new MenuItem { Header = Bezeichnungen[spalte], Tag = spalte, StaysOpenOnClick = true };
+            // IsCheckable: Das Fluent-Design zeigt das Häkchen nur bei ankreuzbaren Einträgen an. Das Umschalten
+            // beim Klick übernimmt WPF zwar selbst, AktualisiereMenue stellt den Haken danach aber ohnehin
+            // passend zur tatsächlichen Sichtbarkeit der Spalte ein.
+            var eintrag = new MenuItem { Header = Bezeichnungen[spalte], Tag = spalte, StaysOpenOnClick = true, IsCheckable = true };
             eintrag.Click += (_, _) =>
             {
                 _viewModel.SpalteUmschaltenCommand.Execute(spalte);
