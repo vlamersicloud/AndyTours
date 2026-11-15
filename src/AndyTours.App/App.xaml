@@ -176,6 +176,12 @@
                  beim Darüberfahren etwas dunkler grau statt des kaum sichtbaren Fluent-Graus. -->
             <SolidColorBrush x:Key="MenuBarItemBackgroundSelected" Color="#FFCDD4DC" />
 
+            <!-- Rahmen der Kontextmenüs und der aufklappenden Menüs: Fluent zeichnet ihn so hell, dass sich das Menü
+                 kaum von einer weißen Tabelle abhebt. Dunkelgrau wie der Rahmen der Karteikarten (ADR 0009); beide
+                 Menüarten sehen damit gleich aus. Die Fluent-Vorlagen lesen die Farben über diese Schlüssel. -->
+            <SolidColorBrush x:Key="ContextMenuBorderBrush" Color="#FF8F98A3" />
+            <SolidColorBrush x:Key="MenuBorderColorDefaultBrush" Color="#FF8F98A3" />
+
             <!-- Tabellen: wie Fluent, aber mit dem Zellstil oben (Fluent setzt sonst seinen eigenen Zellstil ein) -->
             <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
                 <Setter Property="CellStyle" Value="{StaticResource {x:Type DataGridCell}}" />
