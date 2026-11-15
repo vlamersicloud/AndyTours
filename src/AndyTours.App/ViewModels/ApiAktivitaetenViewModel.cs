@@ -70,7 +70,6 @@ public partial class ApiAktivitaetenViewModel : ObservableObject
         {
             var antwort = await _verwaltung.Laden(ct);
             SetzeSnapshot(antwort, Auswahl?.Id);
-            HatAenderungen = false;
             StatusText = $"{Eintraege.Count} Aktivitäten geladen.";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -187,9 +186,12 @@ public partial class ApiAktivitaetenViewModel : ObservableObject
     private void SetzeSnapshot(AktivitaetenAntwort antwort, long? bevorzugteId)
     {
         _geladeneVersion = antwort.Version;
+        Auswahl = null;
+        Ziel = null;
         Eintraege.Clear();
         foreach (var eintrag in antwort.Eintraege) Eintraege.Add(eintrag);
         Auswahl = bevorzugteId is { } id ? Eintraege.FirstOrDefault(a => a.Id == id) : null;
+        NameText = Auswahl?.Name ?? string.Empty;
         OnPropertyChanged(nameof(ZielOptionen));
         AktualisiereCommands();
     }

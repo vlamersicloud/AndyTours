@@ -37,7 +37,7 @@ public partial class App
                 try
                 {
                     var verwaltungsViewModel = new ApiAktivitaetenViewModel(uebergebeneSitzung.Aktivitaeten,
-                        text => MessageBox.Show(fenster, text, "Aktivität bestätigen",
+                        text => MessageBox.Show((Window?)verwaltungsfenster ?? fenster, text, "Aktivität bestätigen",
                             MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes);
                     verwaltungsfenster = new ApiAktivitaetenFenster(verwaltungsViewModel) { Owner = fenster };
                     verwaltungsfenster.ShowDialog();
@@ -53,8 +53,11 @@ public partial class App
                         try { verwaltungsfenster.Close(); }
                         catch (Exception) { }
                     }
-                    try { await viewModel.AktualisierenAsync(CancellationToken.None); }
-                    catch (Exception) { viewModel.StatusText = "Übersicht konnte nach der Verwaltung nicht aktualisiert werden."; }
+                    if (fenster.IsVisible)
+                    {
+                        try { await viewModel.AktualisierenAsync(CancellationToken.None); }
+                        catch (Exception) { viewModel.StatusText = "Übersicht konnte nach der Verwaltung nicht aktualisiert werden."; }
+                    }
                 }
             };
             fenster.Closed += async (_, _) =>

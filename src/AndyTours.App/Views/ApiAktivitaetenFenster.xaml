@@ -16,10 +16,12 @@
                 </Style>
             </Grid.Style>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="2*"/>
-                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <DockPanel Margin="0,0,0,14">
+            <DockPanel Grid.Row="0" Margin="0,0,0,14">
                 <Button DockPanel.Dock="Right" Content="Neu laden" Command="{Binding LadenCommand}" Padding="12,6"/>
                 <StackPanel>
                     <TextBlock Text="Aktivitäten verwalten" FontSize="24" FontWeight="Bold" Foreground="#18324F"/>
@@ -27,41 +29,42 @@
                                Foreground="#637083" Margin="0,4,0,0" TextWrapping="Wrap"/>
                 </StackPanel>
             </DockPanel>
-            <DataGrid Grid.Row="1" Grid.RowSpan="2" Margin="0,0,0,14"
+            <DataGrid Grid.Row="1" Margin="0,0,0,14"
                       ItemsSource="{Binding Eintraege}" SelectedItem="{Binding Auswahl, Mode=TwoWay}"
                       AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False"
                       SelectionMode="Single" SelectionUnit="FullRow" HeadersVisibility="Column"
                       GridLinesVisibility="Horizontal" Background="White">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*"/>
-                    <DataGridCheckBoxColumn Header="Hauptaktivität" Binding="{Binding IstHaupt}" Width="*"/>
-                    <DataGridTextColumn Header="Geschwindigkeitseinheit" Binding="{Binding Geschwindigkeitseinheit}" Width="*"/>
-                    <DataGridTextColumn Header="Distanzziel (km)" Binding="{Binding ZielKm, StringFormat={}{0:N1}}" Width="*"/>
-                    <DataGridTextColumn Header="Höhenmeterziel" Binding="{Binding ZielHm, StringFormat={}{0:N0}}" Width="*"/>
-                    <DataGridTextColumn Header="Anzahlziel" Binding="{Binding ZielAnzahl}" Width="*"/>
+                    <DataGridCheckBoxColumn Header="Haupt" Binding="{Binding IstHaupt}" Width="Auto"/>
+                    <DataGridTextColumn Header="Einheit" Binding="{Binding Geschwindigkeitseinheit}" Width="*"/>
+                    <DataGridTextColumn Header="Ziel km" Binding="{Binding ZielKm, StringFormat={}{0:N1}}" Width="*"/>
+                    <DataGridTextColumn Header="Ziel hm" Binding="{Binding ZielHm, StringFormat={}{0:N0}}" Width="*"/>
+                    <DataGridTextColumn Header="Ziel Anzahl" Binding="{Binding ZielAnzahl}" Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
-            <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+            <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="14" Margin="0,0,0,12">
                 <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="2*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <StackPanel Margin="0,0,12,0">
-                        <TextBlock Text="Name" Foreground="#637083"/>
-                        <TextBox Text="{Binding NameText, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" MinWidth="180"/>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <StackPanel Margin="0,0,10,12">
+                        <TextBlock Text="Aktivitätsname" Foreground="#637083"/>
+                        <TextBox Text="{Binding NameText, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                    <StackPanel Grid.Column="1" Margin="10,0,0,12">
                         <TextBlock Text="Zusammenführen in" Foreground="#637083"/>
                         <ComboBox ItemsSource="{Binding ZielOptionen}" SelectedItem="{Binding Ziel, Mode=TwoWay}"
-                                  DisplayMemberPath="Name" Margin="0,5,0,0" MinWidth="180"/>
+                                  DisplayMemberPath="Name" Margin="0,5,0,0"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
-                        <Button Content="Anlegen" Command="{Binding AnlegenCommand}" Padding="12,7" Margin="0,0,6,0"/>
-                        <Button Content="Umbenennen" Command="{Binding UmbenennenCommand}" Padding="12,7" Margin="0,0,6,0"/>
-                        <Button Content="Löschen" Command="{Binding LoeschenCommand}" Padding="12,7" Margin="0,0,6,0"/>
-                        <Button Content="Als Haupt" Command="{Binding HauptSetzenCommand}" Padding="12,7"/>
-                    </StackPanel>
+                    <WrapPanel Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Left">
+                        <Button Content="Anlegen" Command="{Binding AnlegenCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                        <Button Content="Umbenennen" Command="{Binding UmbenennenCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                        <Button Content="Löschen" Command="{Binding LoeschenCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                        <Button Content="Als Haupt setzen" Command="{Binding HauptSetzenCommand}" Padding="14,7"/>
+                    </WrapPanel>
                 </Grid>
             </Border>
-            <DockPanel Grid.Row="4">
+            <DockPanel Grid.Row="3">
                 <Button DockPanel.Dock="Right" Content="Zusammenführen" Command="{Binding ZusammenfuehrenCommand}"
                         Padding="14,7" Background="#246DB2" Foreground="White" FontWeight="SemiBold"/>
                 <StackPanel Orientation="Horizontal">
