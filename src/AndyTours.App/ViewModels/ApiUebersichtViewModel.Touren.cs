@@ -29,12 +29,13 @@ public partial class ApiUebersichtViewModel
             }
 
             var einheit = ErstelleNeueEinheit.Ausfuehren(bestand, null, DateOnly.FromDateTime(DateTime.Today));
+            var anfrageId = Guid.NewGuid();
             gespeichert = ZeigeEditor(einheit, bestand, stammdaten.Trainingsbereiche, istNeu: true,
                 async (werte, fenster) =>
                 {
                     try
                     {
-                        await _touren.Anlegen(ApiFormularMapper.AlsWerte(werte), ct);
+                        await _touren.AnlegenIdempotent(ApiFormularMapper.AlsWerte(werte), anfrageId, ct);
                         return true;
                     }
                     catch (Exception fehler)
@@ -106,13 +107,14 @@ public partial class ApiUebersichtViewModel
                 ? KopiereEinheit.Ausfuehren(original, DateOnly.FromDateTime(DateTime.Today))
                 : original;
             var version = frisch.Version;
+            var anfrageId = kopieren ? Guid.NewGuid() : Guid.Empty;
             gespeichert = ZeigeEditor(einheit, bestand, stammdaten.Trainingsbereiche, istNeu: kopieren,
                 async (werte, fenster) =>
                 {
                     try
                     {
                         if (kopieren)
-                            await _touren.Anlegen(ApiFormularMapper.AlsWerte(werte), ct);
+                            await _touren.AnlegenIdempotent(ApiFormularMapper.AlsWerte(werte), anfrageId, ct);
                         else
                             await _touren.Aendern(frisch.Id,
                                 new TourAendernAnfrage(version, ApiFormularMapper.AlsWerte(werte)), ct);

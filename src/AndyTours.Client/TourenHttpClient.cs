@@ -34,9 +34,18 @@ public sealed class TourenHttpClient(HttpClient http) : ITourenSpeicher
     }
 
     /// <inheritdoc />
-    public async Task<TourAntwort> Anlegen(TourWerte werte, CancellationToken ct = default)
+    public Task<TourAntwort> Anlegen(TourWerte werte, CancellationToken ct = default) =>
+        AnlegenIdempotent(werte, Guid.NewGuid(), ct);
+
+    /// <inheritdoc />
+    public async Task<TourAntwort> AnlegenIdempotent(TourWerte werte, Guid anfrageId, CancellationToken ct = default)
     {
-        using var response = await http.PostAsJsonAsync(Basis, werte, ct);
+        using var request = new HttpRequestMessage(HttpMethod.Post, Basis)
+        {
+            Content = JsonContent.Create(werte)
+        };
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", anfrageId.ToString("D"));
+        using var response = await http.SendAsync(request, ct);
         await Pruefe(response, ct);
         return await response.Content.ReadFromJsonAsync<TourAntwort>(cancellationToken: ct)
             ?? throw new BackendApiException(response.StatusCode);

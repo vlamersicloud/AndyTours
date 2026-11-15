@@ -169,6 +169,13 @@ public static class ErstelleSchema
                 Eingeschaltet  INTEGER NOT NULL,
                 Punkte         BLOB    NOT NULL
             );
+
+            -- Idempotenzbelege für bestätigungssichere Tourenanlagen über die versionierte API.
+            CREATE TABLE IF NOT EXISTS ApiTourAnlage (
+                AnfrageId    TEXT PRIMARY KEY,
+                AnfrageHash  TEXT NOT NULL,
+                AntwortJson  TEXT NOT NULL
+            );
             """;
         befehl.ExecuteNonQuery();
     }

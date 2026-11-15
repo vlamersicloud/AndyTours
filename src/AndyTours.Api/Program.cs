@@ -76,10 +76,16 @@ touren.MapGet("/{id:long}", async (long id, ITourenSpeicher store, HttpContext c
 }).Produces<TourAntwort>().ProducesProblem(404).ProducesProblem(400);
 touren.MapPost("/", async (TourWerte values, ITourenSpeicher store, HttpContext ctx, CancellationToken ct) =>
 {
-    var result = await store.Anlegen(values, ct);
+    var key = ctx.Request.Headers["Idempotency-Key"].ToString();
+    if (!Guid.TryParseExact(key, "D", out var anfrageId) || anfrageId == Guid.Empty)
+        return Results.Problem(statusCode: 400, title: "Gültiger Idempotency-Key-Header erforderlich.");
+
+    var result = await store.AnlegenIdempotent(values, anfrageId, ct);
     ctx.Response.Headers.ETag = $"\"{result.Version}\"";
     return Results.Created($"/api/v1/touren/{result.Id}", result);
-}).Produces<TourAntwort>(201).ProducesProblem(400);
+})
+    .WithDescription("Erfordert einen stabilen Idempotency-Key-Header (GUID), damit identische Wiederholungen dieselbe Antwort liefern.")
+    .Produces<TourAntwort>(201).ProducesProblem(400);
 touren.MapPut("/{id:long}", async (long id, TourAendernAnfrage request, ITourenSpeicher store, HttpContext ctx, CancellationToken ct) =>
 {
     var result = await store.Aendern(id, request, ct);
