@@ -68,10 +68,6 @@ public static class ErstelleZwischenordner
     /// <summary>
     /// Legt den leeren Zwischenordner neben dem Zielordner an; ein Rest eines früheren Laufs wird vorher entfernt.
     /// </summary>
-    /// <remarks>
-    /// Wird auch von <see cref="ErstelleAufzeichnungsordner"/> verwendet, damit beide Wege denselben
-    /// Zwischenordner nutzen und ihn auf dieselbe Weise gegen das Ziel austauschen.
-    /// </remarks>
     /// <param name="zielordner">Späterer Zielordner; bestimmt Ort und Namen des Zwischenordners.</param>
     /// <returns>Vollständiger Pfad des leeren Zwischenordners <c>.&lt;Zielname&gt;.umwandlung</c>.</returns>
     /// <exception cref="IOException">Der Zielordner ist ein Laufwerk.</exception>
