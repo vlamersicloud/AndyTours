@@ -954,7 +954,9 @@ Erlaubt sind ganze Zahlen von 1 bis 99. Bei einer ungültigen Eingabe erscheint 
 
 Eine Sicherung ist eine Datei mit Datum und Uhrzeit im Namen, zum Beispiel **andytours_2026-10-23_07-39-12.db**. Andere Dateien im Sicherungsordner bleiben unberührt. Ohne Touren im Datenbestand legt AndyTours keine Sicherung an.
 
-**Achtung:** Die automatische Sicherung umfasst den Datenbestand mit Touren, Rädern, Wartungen und Einstellungen. Die Aufzeichnungsdateien in den Jahresordnern des Datenordners sind nicht darin enthalten. Sichern Sie den ganzen Datenordner deshalb zusätzlich mit Ihrer üblichen Datensicherung, zum Beispiel regelmäßig auf eine externe Festplatte oder ein NAS.
+Die automatische Sicherung umfasst den ganzen Datenbestand: Touren, Räder und Ausrüstung, Wartungen und Alarme, Saisonziele, Overlays und alle Einstellungen, auch Fahrprofil und Kartenausschnitt der Tourenplanung, Größe und Position des Hauptfensters, die zuletzt gewählte Karteikarte und die gewählten Spalten.
+
+**Achtung:** Die Aufzeichnungsdateien vom Garmin (FIT-Dateien) in den Jahresordnern des Datenordners sind bewusst nicht in der Sicherung enthalten. Sichern Sie den ganzen Datenordner deshalb zusätzlich mit Ihrer üblichen Datensicherung, zum Beispiel regelmäßig auf eine externe Festplatte oder ein NAS.
 
 **Karteikarte „Tourenplanung“**
 

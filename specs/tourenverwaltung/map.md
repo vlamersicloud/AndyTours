@@ -142,9 +142,6 @@ In Umsetzungsreihenfolge.
 - `windows-menue` — Das Hauptfenster hat oben eine normale, schlichte Windows-Menüleiste statt großer grauer Menü-Schaltflächen.
   - Abhängig von: `erscheinungsbild-und-icon`
   - Status: open
-- `vollstaendige-datensicherung` — Die automatische Sicherung umfasst alle Daten, die bei der Nutzung entstehen oder sich ändern, also auch die Aufzeichnungen und die übrigen Dateien im Datenordner, und lässt sich vollständig wiederherstellen.
-  - Abhängig von: `datensicherung`
-  - Status: open
 - `code-ueberarbeitung` — Das Programm verhält sich unverändert, sein Code samt Tests ist aber geprüft, verschlankt und gut verständlich.
-  - Abhängig von: `eigenstaendige-darstellung`, `windows-menue`, `vollstaendige-datensicherung`
+  - Abhängig von: `eigenstaendige-darstellung`, `windows-menue`
   - Status: open
