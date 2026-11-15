@@ -4,8 +4,8 @@
 
 .DESCRIPTION
     1. Liest die Versionsnummer aus Directory.Build.props.
-    2. Veröffentlicht die App als Release-Build für win-x64 mit eingebautem .NET (self-contained),
-       damit auf dem Zielrechner nichts weiter installiert sein muss.
+    2. Veröffentlicht die App und das lokale Backend als Release-Builds für win-x64 mit eingebautem .NET (self-contained),
+       damit auf dem Zielrechner nichts weiter installiert sein muss. Das Backend liegt im Unterordner backend.
     3. Übersetzt AndyTours.iss mit dem Inno-Setup-Compiler ISCC.exe.
     Das Umwandlungsprogramm für Altdaten gehört nicht zur Installation (Spezifikation 036).
 
@@ -42,7 +42,14 @@ dotnet publish (Join-Path $Projektordner 'src\AndyTours.App\AndyTours.App.csproj
     --output $AppAusgabe -p:DebugType=none
 if ($LASTEXITCODE -ne 0) { throw 'Die App konnte nicht veröffentlicht werden.' }
 
-# --- 3. Inno-Setup-Compiler suchen und aufrufen ---
+# --- 3. Lokales Backend veröffentlichen ---
+Write-Host Lokales Backend wird veröffentlicht …
+dotnet publish (Join-Path $Projektordner src\AndyTours.Api\AndyTours.Api.csproj) `
+    --configuration Release --runtime win-x64 --self-contained true `
+    --output (Join-Path $AppAusgabe backend) -p:DebugType=none
+if ($LASTEXITCODE -ne 0) { throw Das Backend konnte nicht veröffentlicht werden. }
+
+# --- 4. Inno-Setup-Compiler suchen und aufrufen ---
 $Kandidaten = @(
     (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'),
     (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe'),

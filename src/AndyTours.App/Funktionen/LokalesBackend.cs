@@ -25,10 +25,14 @@ public sealed class LokalesBackend : IAsyncDisposable
 
     /// <summary>Startet einen isolierten API-Prozess und wartet auf Health- und Tourenressourcen.</summary>
     public static async Task<LokalesBackend> StartenAsync(
-        string backendDll, string datenordner, CancellationToken ct)
+        string backendProgramm, string datenordner, CancellationToken ct)
     {
-        if (!Path.IsPathFullyQualified(backendDll) || !File.Exists(backendDll))
-            throw new ArgumentException("Backend-DLL muss als vorhandene absolute Datei angegeben sein.", nameof(backendDll));
+        if (!Path.IsPathFullyQualified(backendProgramm) || !File.Exists(backendProgramm))
+            throw new ArgumentException("Backendprogramm muss als vorhandene absolute Datei angegeben sein.", nameof(backendProgramm));
+        var erweiterung = Path.GetExtension(backendProgramm);
+        if (!string.Equals(erweiterung, ".exe", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(erweiterung, ".dll", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Backendprogramm muss eine EXE- oder DLL-Datei sein.", nameof(backendProgramm));
         if (!Path.IsPathFullyQualified(datenordner))
             throw new ArgumentException("Datenordner muss ein absoluter Pfad sein.", nameof(datenordner));
 
@@ -41,13 +45,14 @@ public sealed class LokalesBackend : IAsyncDisposable
 
         var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         var adresse = new Uri($"http://127.0.0.1:{port}/");
+        var istExe = string.Equals(erweiterung, ".exe", StringComparison.OrdinalIgnoreCase);
         var start = new ProcessStartInfo
         {
-            FileName = "dotnet",
+            FileName = istExe ? backendProgramm : "dotnet",
             UseShellExecute = false,
             CreateNoWindow = true
         };
-        start.ArgumentList.Add(backendDll);
+        if (!istExe) start.ArgumentList.Add(backendProgramm);
         start.Environment["Backend__Datenordner"] = datenordner;
         start.Environment["Backend__Zugriffstoken"] = token;
         start.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
