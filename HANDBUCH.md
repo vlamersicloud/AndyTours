@@ -42,7 +42,7 @@ Mit AndyTours können Sie:
 
 AndyTours ist für eine einzelne Person gedacht. Alle Ihre Daten liegen in einem einzigen Ordner, dem **Datenordner**. Diesen Ordner können Sie frei wählen, zum Beispiel auch auf einem NAS (Netzwerkspeicher).
 
-Nach dem Start sehen Sie das Hauptfenster. Es öffnet die Karteikarte, die beim letzten Beenden gewählt war. Beim allerersten Start ist das die Karteikarte **Aktuell** mit Ihren Bestleistungen und dem Diagramm der Jahressummen.
+Nach dem Start sehen Sie das Hauptfenster. Es öffnet die Karteikarte, die beim letzten Beenden gewählt war. Beim allerersten Start ist das die Karteikarte **Aktuell** mit Ihrer Zeitraumübersicht, Bestleistungen und Pulsbereichsauswertung.
 
 <a id="nicht-enthalten"></a>
 ### Was das Programm nicht kann
@@ -273,57 +273,62 @@ Haben Sie kein Gerät zur Hand, importieren Sie Aufzeichnungsdateien von der Fes
 <a id="k4-3"></a>
 ### 4.3 Karteikarte „Aktuell“
 
-Die Karteikarte **Aktuell** zeigt Ihre Bestleistungen und Ihren Jahresfortschritt.
+Die Karteikarte **Aktuell** zeigt Ihre Aktivitäten, Bestleistungen und Pulsbereiche
+für einen ausdrücklich eingestellten Zeitraum.
 
-**Aufbau:** Oben links steht die Liste **Jahresrekorde**, rechts daneben die Liste **Einzelrekorde**. Darunter folgt die Überschrift des Diagramms, zum Beispiel **Kilometer (Summe Entfernung)**. Unter der Überschrift stehen zwei Zeilen mit Kennzahlen des laufenden Jahres. Die erste nennt Stand, Ziel, **Soll heute** und **Vorsprung** bzw. **Rückstand**. Die zweite Zeile ist grau und beginnt meist mit **noch …**. Den restlichen Platz füllt das Diagramm der Jahressummen. Reicht der Platz nicht, zum Beispiel bei großer Oberfläche, können Sie die Karteikarte nach unten rollen.
+#### Zeitraum, Kalender und Kennzahl wählen
 
-#### Welche Einheiten zählen
+- Standard ist **01.01. des aktuellen Jahres bis heute**.
+- **Von** und **Bis** gelten einschließlich und lassen sich frei einstellen.
+- **Aktuelles Jahr bis heute** stellt den Standard wieder her.
+- **Gruppierung:** Jahr, Monat, Kalenderwoche (ISO, Montag–Sonntag) oder Tag.
+- **Kennzahl:** Gesamtkilometer, Höhenmeter, Fahrzeit in Stunden oder Anzahl Aktivitäten.
+- Die Balken sind Periodensummen, keine kumulative Kurve. Leere Perioden zählen mit 0.
+  Ein Klick ins Diagramm wechselt keine Kennzahl mehr.
+- Aktivität und Kategorie wirken mit. Der Filter **Tabellenjahr** oben wirkt unabhängig
+  auf die bestehende Tabellenauswahl, nicht auf diese Von-/Bis-Felder.
 
-- Es zählen immer alle Jahre. Die Auswahl **Jahr:** der Werkzeugleiste wirkt hier nicht.
-- Die Auswahl **Aktivität:** wirkt. Bei **alle Aktivitäten** werden alle zusammengezählt.
-- Von der Filterleiste der Trainingseinheiten wirkt nur die **Kategorie:**.
+#### Bestleistungen im selben Zeitraum
 
-#### Bestleistungen
+Jahres- und Einzelrekorde verwenden dieselben Datumsgrenzen wie das Diagramm.
+Bei Teiljahren sind es die Summen des gewählten Teiljahres. Ein Doppelklick auf
+einen Einzelrekord öffnet weiterhin die Tour. In der Standardauswahl werden
+Saisonstand, Ziel und Soll-Stand als Text berücksichtigt.
 
-Oben stehen zwei Listen:
+Falls Aktivitäten ein Datum nach heute tragen (z. B. 2046), steht dazu ein Hinweis.
+Die Standardachse wird dadurch nicht verlängert. Quelldaten werden nicht ungefragt
+umgeschrieben; prüfen Sie auffällige Touren bei Bedarf in der Tabelle.
 
-- **Jahresrekorde:** der höchste Jahreswert für **Kilometer**, **Anzahl Einheiten**, **Höhenmeter** und **Fahrzeit**, jeweils mit dem Jahr.
-- **Einzelrekorde:** **Längste Tour**, **Meiste Höhenmeter**, **Längste Fahrzeit**, **Höchste Ø-Geschwindigkeit**, **Höchste Geschwindigkeit** und **Höchster Punkt**, jeweils mit Wert, Datum und Name der Einheit.
+#### Pulsbereiche und Garmin-Zonen
 
-Jede Zeile nennt links die Bezeichnung mit Doppelpunkt, daneben rechtsbündig den Wert und dahinter das Jahr bzw. Datum und Name der Einheit.
+1. Optional **Garmin-Zonen aktualisieren** anklicken. Der API-Key wird aus den
+   persönlichen Einstellungen verwendet.
+2. Gewünschtes Garmin-Sportprofil prüfen/auswählen, z. B. **Radfahren (CYCLING)**.
+3. **Pulsanalyse laden** liest die FIT-Messpunkte der Aktivitäten im Zeitraum.
+4. Diagramm und Tabelle zeigen Minuten und Anteile je Zeitraum sowie konkrete
+   bpm-Grenzen einschließlich Garmin-Zonennummer.
 
-Hält das laufende Jahr einen Rekord, ist die ganze Zeile fett und blau hervorgehoben, im selben Blau wie die Linie des Diagramms. Haben mehrere Jahre oder Einheiten denselben Rekordwert, gilt der frühere.
+Die Garmin-Grenzen stammen aus dem **aktuellen Profil beim angezeigten Abrufdatum**.
+Sie werden als Referenz auf die Messwerte angewendet; historische Zonengrenzen
+einer damaligen Aktivität sind damit nicht nachgewiesen. Die Profile werden im
+Datenordner zwischengespeichert. Nach Änderungen bei Garmin erneut aktualisieren.
 
-Möchten Sie die Einheit eines Einzelrekords ansehen, doppelklicken Sie auf die Zeile. Über den Einzelrekorden wird der Mauszeiger zur Hand, und ein Hinweis sagt **Doppelklick öffnet die Einheit**. Das Bearbeitungsfenster der Einheit öffnet sich.
+Ohne passendes Profil oder mit **10-bpm-Bereiche statt Garmin-Zonen** werden reine
+bpm-Bereiche ausgewertet, ausdrücklich ohne Garmin-Zuordnung.
 
-#### Diagramm der Jahressummen
+Pulszeiten entstehen aus dem tatsächlichen zeitlichen Abstand gültiger
+FIT-Messpunkte und der aktiven Zeitmessung, nicht aus dem Durchschnittspuls ganzer
+Touren. Pausen, Fehlwerte, Aufzeichnungslücken über 60 Sekunden und die unbekannte
+Zeit nach dem letzten Messpunkt werden nicht aufgefüllt. Die Tabelle bezieht
+Prozente nur auf die auswertbare Messzeit der jeweiligen Periode. Aktivitäten ohne
+auswertbaren FIT-Puls werden gezählt, aber nicht geschätzt.
 
-Das Diagramm zeigt die Jahressumme für jedes Jahr mit Einheiten. Das laufende Jahr steht ganz rechts.
+Ändern sich Zeitraum, Aktivität, Kategorie oder Sportprofil, die Pulsanalyse neu
+laden. Die Berechnung läuft im Hintergrund; veraltete Ergebnisse werden nach
+einem zwischenzeitlichen Filterwechsel nicht übernommen.
 
-So wechseln Sie den gezeigten Wert:
-
-1. Klicken Sie in das Diagramm.
-2. Der Wert wechselt der Reihe nach: **Kilometer (Summe Entfernung)** → **Anzahl Einheiten** → **Höhenmeter (Summe Höhenmeter)** → **Fahrzeit** → wieder Kilometer.
-
-Die Überschrift über dem Diagramm nennt den gezeigten Wert. Die waagrechte Achse zeigt die Jahre, die senkrechte Achse die Summe. Ihre Beschriftung nennt die Einheit, zum Beispiel **km** oder **Stunden**.
-
-So lesen Sie das Diagramm:
-
-- Die Jahressummen bilden eine blaue Linie mit hellblau gefüllter Fläche darunter. Jedes Jahr hat einen blauen Punkt.
-- Haben Sie Saisonziele festgelegt, erscheint das Ziel eines Jahres als kurze rote gestrichelte Linie über diesem Jahr.
-- Im laufenden Jahr markiert eine rote Raute den Soll-Stand für heute.
-
-#### Kennzahlen des laufenden Jahres
-
-Unter der Überschrift stehen zwei Zeilen zum laufenden Jahr:
-
-- Mit Saisonziel: Stand, Ziel, Anteil in Prozent, **Soll heute** und **Vorsprung** oder **Rückstand**, zum Beispiel **2026: 4.321,5 km von 6.000 km (72 %) · Soll heute 4.900,3 km · 578,8 km Rückstand**. Darunter steht grau die nötige Leistung bis zum 31. Dezember, zum Beispiel **noch 1.678,5 km – 167,9 km pro Woche**. Ist das Ziel erreicht, steht dort **Ziel erreicht** mit dem Überschuss.
-- Ohne Saisonziel: nur der Stand und der Hinweis **kein Saisonziel – unter Extras → Saisonziele… festlegen**.
-- Für die Fahrzeit gibt es kein Saisonziel. Dort steht nur der Stand.
-
-Der Soll-Stand ist das Ziel anteilig zu den bereits vergangenen Tagen des Jahres.
-
-Enthält die Auswahl keine Einheiten, erscheint **Keine Einheiten in dieser Auswahl.**
+Details, Messmethode, Grenzen und Abnahmeliste:
+[Aktivitäts- und Pulsbereichsauswertung](docs/aktivitaetsauswertung.md).
 
 <a id="k4-4"></a>
 ### 4.4 Karteikarte „Trainingseinheiten“

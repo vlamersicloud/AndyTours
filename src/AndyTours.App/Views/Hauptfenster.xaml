@@ -82,7 +82,7 @@
         <!-- 2. Werkzeugleiste: Filter für Jahr und Aktivität mit den Summen der Auswahl -->
         <ToolBarTray DockPanel.Dock="Top">
             <ToolBar>
-                <Label Content="Jahr:" VerticalAlignment="Center" />
+                <Label Content="Tabellenjahr:" VerticalAlignment="Center" />
                 <ComboBox Width="110"
                           ItemsSource="{Binding Jahre}"
                           SelectedItem="{Binding AusgewaehltesJahr}" />

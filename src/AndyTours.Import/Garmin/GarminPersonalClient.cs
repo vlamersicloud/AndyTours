@@ -1,4 +1,5 @@
 using System.Globalization;
+using AndyTours.Core.Modell;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -99,6 +100,17 @@ public sealed class GarminPersonalClient(HttpClient http, string apiKey)
             $"/download-service/files/activity/{id.ToString(CultureInfo.InvariantCulture)}", cancellationToken).ConfigureAwait(false);
         await using Stream quelle = await antwort.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         await KopiereBegrenztAsync(quelle, ziel, 64 * 1024 * 1024, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Liest explizit konfigurierte aktuelle Garmin-Pulsprofile, ohne generierte Standardgrenzen.</summary>
+    public async Task<IReadOnlyList<GarminPulsprofil>> LesePulsprofileAsync(CancellationToken cancellationToken = default)
+    {
+        using var zeitlimit = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        zeitlimit.CancelAfter(TimeSpan.FromMinutes(2));
+        using HttpResponseMessage antwort = await SendeAsync(
+            "/biometric-service/heartRateZones/v2?generateDefaults=false", zeitlimit.Token).ConfigureAwait(false);
+        using JsonDocument json = JsonDocument.Parse(await antwort.Content.ReadAsStringAsync(zeitlimit.Token).ConfigureAwait(false));
+        return LeseGarminPulsprofile.Ausfuehren(json.RootElement);
     }
 
     /// <summary>Kopiert auch bei fehlender oder falscher Content-Length nur bis zur erlaubten Größe.</summary>

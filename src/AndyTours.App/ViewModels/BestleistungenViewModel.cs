@@ -32,8 +32,17 @@ public partial class BestleistungenViewModel : ObservableObject
     /// <param name="aktivitaetId">Aktivität der Werkzeugleiste; <c>null</c> = alle Aktivitäten.</param>
     /// <param name="kategorie">Kategorie der Filterleiste; <c>null</c> = alle.</param>
     /// <param name="heute">Das heutige Datum (für die Hervorhebung des laufenden Jahres).</param>
-    public void Aktualisiere(Datenbestand bestand, long? aktivitaetId, string? kategorie, DateOnly heute)
+    /// <param name="von">Inklusive Startgrenze der Übersicht.</param>
+    /// <param name="bis">Inklusive Endgrenze der Übersicht.</param>
+    public void Aktualisiere(Datenbestand bestand, long? aktivitaetId, string? kategorie, DateOnly heute, DateOnly? von = null, DateOnly? bis = null)
     {
+        // Gleiche Datumsgrenzen für Rekorde und Diagramme, keine ungeprüfte Korrektur zukünftiger Quelldaten.
+        bestand = new Datenbestand
+        {
+            Aktivitaeten = bestand.Aktivitaeten, Kategorien = bestand.Kategorien,
+            Trainingseinheiten = von is DateOnly v && bis is DateOnly b && v <= b
+                ? bestand.Trainingseinheiten.Where(e => e.Datum >= v && e.Datum <= b).ToList() : [],
+        };
         (Jahresrekorde, Einzelrekorde) = BeschreibeBestleistungen.Ausfuehren(ErmittleBestleistungen.Ausfuehren(bestand, aktivitaetId, kategorie), heute);
 
         // Gibt es Einheiten, hat mindestens ein Jahr eine Anzahl größer 0 und damit einen Jahresrekord

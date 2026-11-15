@@ -60,6 +60,7 @@ public partial class HauptfensterViewModel : ObservableObject
         // Jede Änderung der Filterleiste baut nur die Tabelle neu auf; die Auswahllisten bleiben, wie sie sind
         Filter.Geaendert += (_, _) => AktualisiereSummen(listenNeu: false);
 
+        Jahresfortschritt.ZeitraumGeaendert += (_, _) => AktualisiereBestleistungen();
         LadeDatenbank(datenordner);
     }
 
@@ -405,9 +406,9 @@ public partial class HauptfensterViewModel : ObservableObject
             ? "Noch keine Touren vorhanden."
             : string.Format(deutsch, "{0:N0} Einheiten · {1:N2} km · {2:N0} hm", summe.Anzahl, summe.DistanzKm, summe.Hoehenmeter);
 
-        // Karteikarte „Aktuell“: alle Jahre, nur Aktivität und Kategorie wirken
+        // Karteikarte „Aktuell“: eigener Zeitraum; Aktivität und Kategorie wirken mit
         AktualisiereJahresfortschritt();
-        Bestleistungen.Aktualisiere(_bestand, GewaehlteAktivitaetId(), Filter.ErstelleFilter().Kategorie, DateOnly.FromDateTime(DateTime.Today));
+
 
         // Karteikarte „Wartung“: Räder und km-Stände können sich mit dem Datenbestand geändert haben;
         // ein bloßer Filterwechsel lässt sie unberührt (die Markierung der Wartungstabelle bleibt so erhalten)
@@ -425,7 +426,12 @@ public partial class HauptfensterViewModel : ObservableObject
     /// und nach dem Speichern der Saisonziele.
     /// </remarks>
     private void AktualisiereJahresfortschritt() =>
-        Jahresfortschritt.Aktualisiere(_bestand, GewaehlteAktivitaetId(), Filter.ErstelleFilter().Kategorie, DateOnly.FromDateTime(DateTime.Today));
+        Jahresfortschritt.Aktualisiere(_bestand, GewaehlteAktivitaetId(), Filter.ErstelleFilter().Kategorie, DateOnly.FromDateTime(DateTime.Today), Datenordner);
+
+    /// <summary>Rekorde verwenden denselben ausdrücklichen Zeitraum wie die Diagramme.</summary>
+    private void AktualisiereBestleistungen() =>
+        Bestleistungen.Aktualisiere(_bestand, GewaehlteAktivitaetId(), Filter.ErstelleFilter().Kategorie,
+            DateOnly.FromDateTime(DateTime.Today), Jahresfortschritt.Von, Jahresfortschritt.Bis);
 
     /// <summary>
     /// Befehl „Extras → Einstellungen…“: öffnet das Einstellungsfenster.

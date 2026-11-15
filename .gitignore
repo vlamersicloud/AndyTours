@@ -32,3 +32,6 @@ sdd-workflow-beispiel.docx
 
 # Beobachtungen des handbuch-fotograf am laufenden Programm (Arbeitsdatei, kann Rückschlüsse auf den Datenbestand zulassen)
 /handbuch-beobachtungen.md
+
+# Keine kompilierten EXE-Dateien im Repository bereitstellen
+/releases/**/*.exe

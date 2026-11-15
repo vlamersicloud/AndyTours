@@ -10,6 +10,9 @@ namespace AndyTours.Core.Modell;
 /// </remarks>
 public record Verlaufspunkt
 {
+    /// <summary>Tatsächlicher UTC-Messzeitpunkt für die Erkennung von Aufzeichnungslücken.</summary>
+    public DateTime? ZeitpunktUtc { get; init; }
+
     /// <summary>Zurückgelegte Distanz seit dem Start in Kilometern.</summary>
     public double DistanzKm { get; init; }
 

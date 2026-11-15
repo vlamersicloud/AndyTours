@@ -18,3 +18,7 @@
 - `specs/<NNN-feature>/` — Spec, Plan und Aufgaben je eigenständigem Feature
 - `specs/<area>/map.md` — Feature-Map eines großen Bereichs (z. B. `specs/tourenverwaltung/map.md`)
 - `specs/<area>/<NNN-feature>/` — Spec, Plan und Aufgaben je Feature dieses Bereichs
+
+Die aktuelle Kalender- und Pulsbereichsauswertung ist in [aktivitaetsauswertung.md](aktivitaetsauswertung.md) beschrieben.
+Core berechnet Kalenderabschnitte und Messzeiten; Import liest FIT und offizielle Garmin-Profilgrenzen;
+Daten speichert die Profilreferenz; die WPF-ViewModels stellen Auswahl, asynchrone Abläufe und OxyPlot-Diagramme bereit.

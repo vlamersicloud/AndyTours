@@ -11,20 +11,18 @@ einen einzelnen Benutzer gedacht.
 - **Import vom Garmin Edge 1040** per USB (Mediengerät/MTP), FIT-Dateien über das Garmin FIT SDK
 - **Garmin Connect live**: eigener Personal API-Key, inkrementeller Radaktivitäten-Import mit lokalem Originalarchiv, optional automatisch alle 20er-Pakete laden ([Einrichtung](docs/garmin-connect.md))
 - **Höhenprofil und Streckenkarte**, Mehrtagestouren, Track bearbeiten, GPX-Export
-- **Statistiken** über die Jahre: Jahresfortschritt, Saisonziele, Bestleistungen
+- **Aktivitätsübersicht**: Zeitraum frei wählbar, Jahr/Monat/ISO-Woche/Tag, km/hm/Fahrzeit/Anzahl und Bestleistungen im Zeitraum
+- **Pulsbereiche** aus FIT-Messpunkten mit aktuellen Garmin-Referenzzonen (bpm-Grenzen und Abrufdatum), alternativ 10-bpm-Bereiche; Saisonziele bleiben erhalten
 - **Wartung der Räder**: Wartungen erfassen, Wartungsalarme, Haltbarkeit von Teilen, Einsatz der Equipments
 - **Tourenplanung** auf der Karte mit BRouter oder openrouteservice, Overlays, Übertragen von Courses auf den Edge
 - **Datensicherung** und Wiederherstellung
 - **Einmalige Übernahme** von Altdaten mit einem eigenen Kommandozeilenprogramm (Werkzeug für den Entwickler, nicht Teil der Installation)
 
-## Fertige Windows-EXE
+## Verteilung
 
-[AndyTours.App.exe herunterladen](https://raw.githubusercontent.com/vlamersicloud/AndyTours/main/releases/win-x64/AndyTours.App.exe)
-
-Benötigt **.NET 10 Desktop Runtime (x64)**. Die EXE enthält die App-Bibliotheken,
-aber keine .NET-Laufzeit und keinen API-Key. Voraussetzungen, Prüfsumme und
-Buildhinweise: [releases/win-x64](releases/win-x64/README.md).
-Windows-Start und Garmin-Live-Abnahme sind noch offen.
+Keine fertige EXE im Repository. Unter Windows aus dem Quellcode bauen und starten
+(siehe unten). Die neue [Aktivitäts- und Pulsbereichsauswertung](docs/aktivitaetsauswertung.md)
+ist dort ebenfalls dokumentiert.
 
 ## Benutzerhandbuch
 

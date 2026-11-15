@@ -95,6 +95,7 @@ public static class LeseFitVerlauf
 
                 verlauf.Add(new Verlaufspunkt
                 {
+                    ZeitpunktUtc = System.DateTime.SpecifyKind(zeit.GetDateTime(), DateTimeKind.Utc),
                     DistanzKm = distanzKm,
                     Fahrzeit = fahrzeit,
                     Hoehe = (punkt.GetEnhancedAltitude() ?? punkt.GetAltitude()) is float hoehe ? hoehe : null,

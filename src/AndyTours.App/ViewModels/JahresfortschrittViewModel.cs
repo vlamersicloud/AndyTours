@@ -9,188 +9,167 @@ using AndyTours.Core.Modell;
 
 namespace AndyTours.App.ViewModels;
 
-/// <summary>
-/// ViewModel der Karteikarte „Aktuell“: Kennzahlen des laufenden Jahres und Diagramm der Jahressummen.
-/// </summary>
-/// <remarks>
-/// Das Diagramm ist ein OxyPlot-Datenmodell (<see cref="Diagramm"/>, siehe
-/// <c>docs/adr/0001-diagrammbibliothek.md</c>); die Ansicht bindet es nur an. Es entsteht einmal und
-/// bekommt bei jeder Aktualisierung nur neue Daten, weil es bei jeder Filteränderung neu berechnet wird.
-/// <para>
-/// Reihen von unten nach oben: Fläche mit Linie und Punkten, gestrichelte Ziellinie je Jahr mit Ziel,
-/// Soll-Markierung im laufenden Jahr. Einen Hinweis beim Überfahren gibt es nicht.
-/// </para>
-/// Der gezeigte Wert bleibt bis zum Programmende erhalten und beginnt mit Kilometern.
-/// </remarks>
+/// <summary>Zeitraumbezogene Aktivitätsübersicht mit expliziten Kalender- und Kennzahlfiltern.</summary>
 public partial class JahresfortschrittViewModel : ObservableObject
 {
-    /// <summary>Hauptfarbe der Linie, Fläche und Punkte.</summary>
-    private static readonly OxyColor Linienfarbe = OxyColor.FromRgb(0x2E, 0x6D, 0xB4);
+    private static readonly CultureInfo Deutsch = CultureInfo.GetCultureInfo("de-DE");
+    private Datenbestand? _bestand;
+    private long? _aktivitaetId;
+    private string? _kategorie;
+    private string _datenordner = string.Empty;
+    private DateOnly _heute = DateOnly.FromDateTime(DateTime.Today);
+    private bool _standardZeitraum = true, _ladeAuswahl;
+    private int _generation;
+    private readonly CategoryAxis _zeitachse = new() { Position = AxisPosition.Bottom, IsPanEnabled = false, IsZoomEnabled = false };
+    private readonly LinearAxis _wertachse = new() { Position = AxisPosition.Left, Minimum = 0, MajorGridlineStyle = LineStyle.Dot, IsPanEnabled = false, IsZoomEnabled = false };
 
-    /// <summary>Farbe der Ziellinie und der Soll-Markierung.</summary>
-    private static readonly OxyColor Zielfarbe = OxyColor.FromRgb(0xC0, 0x39, 0x2B);
+    /// <summary>Aktivität und Kategorie wirken wie bisher; der Zeitraum wird hier ausdrücklich unabhängig vom Tabellen-Jahresfilter eingestellt.</summary>
+    public event EventHandler? ZeitraumGeaendert;
 
-    /// <summary>Halbe Breite der Ziellinie über einem Jahr (in Jahren).</summary>
-    private const double HalbeZielbreite = 0.35;
+    /// <summary>Explizite Kennzahlen mit lokalisierter Anzeige.</summary>
+    public IReadOnlyList<KeyValuePair<Fortschrittswert, string>> Werte { get; } =
+    [
+        new(Fortschrittswert.Kilometer, "Gesamtkilometer"),
+        new(Fortschrittswert.Hoehenmeter, "Höhenmeter"),
+        new(Fortschrittswert.Fahrzeit, "Fahrzeit"),
+        new(Fortschrittswert.Anzahl, "Anzahl Aktivitäten"),
+    ];
 
-    /// <summary>Senkrechte Achse; ihre Beschriftung nennt die Einheit des Werts.</summary>
-    private readonly LinearAxis _wertachse;
+    /// <summary>ISO-Kalenderwochen beginnen montags; keine gleitenden Siebentagefenster.</summary>
+    public IReadOnlyList<KeyValuePair<Zeitraster, string>> Raster { get; } =
+    [
+        new(Zeitraster.Jahr, "Jahr"), new(Zeitraster.Monat, "Monat"),
+        new(Zeitraster.Woche, "Kalenderwoche (ISO)"), new(Zeitraster.Tag, "Tag"),
+    ];
 
-    /// <summary>Fläche unter der Linie, mit der Linie selbst und einem Punkt je Jahr.</summary>
-    private readonly AreaSeries _flaeche;
+    [ObservableProperty] private DateTime? _vonDatum = new DateTime(DateTime.Today.Year, 1, 1);
+    [ObservableProperty] private DateTime? _bisDatum = DateTime.Today;
+    [ObservableProperty] private Zeitraster _gruppierung = Zeitraster.Monat;
+    [ObservableProperty] private Fortschrittswert _wert = Fortschrittswert.Kilometer;
+    [ObservableProperty] private string _ueberschrift = "Aktivitäten";
+    [ObservableProperty] private string _stand = string.Empty;
+    [ObservableProperty] private string _ausblick = string.Empty;
+    [ObservableProperty] private string _zeitraumHinweis = string.Empty;
+    [ObservableProperty] private bool _hatEinheiten;
 
-    /// <summary>Gestrichelte Ziellinie, je Jahr mit Ziel ein kurzes Stück.</summary>
-    private readonly LineSeries _ziellinie;
+    /// <summary>Balken statt einer scheinbar kontinuierlichen Fläche über voneinander getrennten Jahren.</summary>
+    public PlotModel Diagramm { get; } = new() { Culture = Deutsch, PlotAreaBorderColor = OxyColors.LightGray };
 
-    /// <summary>Soll-Stand zum heutigen Tag im laufenden Jahr.</summary>
-    private readonly ScatterSeries _soll;
-
-    /// <summary>Zuletzt übergebene Auswahl; <c>null</c>, solange noch nicht aktualisiert wurde.</summary>
-    private (Datenbestand Bestand, long? AktivitaetId, string? Kategorie, DateOnly Heute)? _auswahl;
-
-    /// <summary>Der gezeigte Wert; ein Klick ins Diagramm schaltet weiter.</summary>
-    [ObservableProperty]
-    private Fortschrittswert _wert = Fortschrittswert.Kilometer;
-
-    /// <summary>Überschrift des Diagramms, z. B. „Kilometer (Summe Entfernung)“.</summary>
-    [ObservableProperty]
-    private string _ueberschrift = BeschreibeJahresfortschritt.Ueberschrift(Fortschrittswert.Kilometer);
-
-    /// <summary>Erste Kennzahlzeile: Stand, Ziel, Prozent, Soll-Stand, Vorsprung bzw. Rückstand.</summary>
-    [ObservableProperty]
-    private string _stand = string.Empty;
-
-    /// <summary>Zweite Kennzahlzeile: Wochenleistung, „Ziel erreicht“ oder Hinweis auf fehlendes Ziel.</summary>
-    [ObservableProperty]
-    private string _ausblick = string.Empty;
-
-    /// <summary><c>true</c>, wenn die Auswahl Einheiten enthält; sonst erscheint statt des Diagramms ein Hinweis.</summary>
-    [ObservableProperty]
-    private bool _hatEinheiten;
-
-    /// <summary>
-    /// Erzeugt das ViewModel mit leerem Diagramm.
-    /// </summary>
+    /// <summary>Initialisiert die Diagrammachsen.</summary>
     public JahresfortschrittViewModel()
     {
-        Diagramm = new PlotModel { Culture = CultureInfo.GetCultureInfo("de-DE"), PlotAreaBorderColor = OxyColors.LightGray };
-
-        // Waagrecht die Jahre (ganzzahlig, ohne Tausenderpunkt), senkrecht die Summe ab 0; kein Zoomen oder Verschieben
-        Diagramm.Axes.Add(new LinearAxis
-        {
-            Position = AxisPosition.Bottom,
-            MajorStep = 1,
-            MinorStep = 1,
-            StringFormat = "0",
-            MinimumPadding = 0.05,
-            MaximumPadding = 0.05,
-            IsZoomEnabled = false,
-            IsPanEnabled = false,
-        });
-        _wertachse = new LinearAxis
-        {
-            Position = AxisPosition.Left,
-            Minimum = 0,
-            MaximumPadding = 0.1,
-            StringFormat = "#,0",
-            MajorGridlineStyle = LineStyle.Dot,
-            MajorGridlineColor = OxyColors.LightGray,
-            IsZoomEnabled = false,
-            IsPanEnabled = false,
-        };
+        Diagramm.Axes.Add(_zeitachse);
         Diagramm.Axes.Add(_wertachse);
-
-        _flaeche = new AreaSeries
-        {
-            ConstantY2 = 0,
-            Color = Linienfarbe,
-            Fill = OxyColor.FromAColor(70, Linienfarbe),
-            StrokeThickness = 2,
-            MarkerType = MarkerType.Circle,
-            MarkerSize = 5,
-            MarkerFill = Linienfarbe,
-            MarkerStroke = OxyColors.White,
-            MarkerStrokeThickness = 1.5,
-        };
-        _ziellinie = new LineSeries
-        {
-            Color = Zielfarbe,
-            LineStyle = LineStyle.Dash,
-            StrokeThickness = 2,
-        };
-        _soll = new ScatterSeries
-        {
-            MarkerType = MarkerType.Diamond,
-            MarkerSize = 7,
-            MarkerFill = Zielfarbe,
-        };
-        Diagramm.Series.Add(_flaeche);
-        Diagramm.Series.Add(_ziellinie);
-        Diagramm.Series.Add(_soll);
     }
 
-    /// <summary>Das Diagramm; die Ansicht bindet es an ihre <c>PlotView</c>.</summary>
-    public PlotModel Diagramm { get; }
+    /// <summary>Gültiger einschließlich begrenzter Zeitraum für Diagramm, Rekorde und Pulsauswertung.</summary>
+    public DateOnly? Von => VonDatum is DateTime v ? DateOnly.FromDateTime(v) : null;
+    public DateOnly? Bis => BisDatum is DateTime b ? DateOnly.FromDateTime(b) : null;
 
-    /// <summary>
-    /// Berechnet Kennzahlen und Diagramm für eine neue Auswahl.
-    /// </summary>
-    /// <param name="bestand">Der Datenbestand.</param>
-    /// <param name="aktivitaetId">Aktivität der Werkzeugleiste; <c>null</c> = alle Aktivitäten.</param>
-    /// <param name="kategorie">Kategorie der Filterleiste; <c>null</c> = alle.</param>
-    /// <param name="heute">Das heutige Datum.</param>
-    public void Aktualisiere(Datenbestand bestand, long? aktivitaetId, string? kategorie, DateOnly heute)
+    /// <summary>Übernimmt geänderten Datenbestand; ein Datenordnerwechsel verwirft Pulsdaten und Zonen des alten Ordners.</summary>
+    public void Aktualisiere(Datenbestand bestand, long? aktivitaetId, string? kategorie, DateOnly heute, string datenordner)
     {
-        _auswahl = (bestand, aktivitaetId, kategorie, heute);
-        Zeichne();
+        bool ordnerwechsel = _datenordner != datenordner;
+        _bestand = bestand; _aktivitaetId = aktivitaetId; _kategorie = kategorie; _heute = heute; _datenordner = datenordner;
+        if (_standardZeitraum)
+        {
+            _ladeAuswahl = true;
+            VonDatum = new DateTime(heute.Year, 1, 1);
+            BisDatum = heute.ToDateTime(TimeOnly.MinValue);
+            _ladeAuswahl = false;
+        }
+
+        if (ordnerwechsel) { LadeGespeicherteZonen(); }
+        AuswahlGeaendert();
     }
 
-    /// <summary>Klick ins Diagramm: Kilometer → Anzahl → Höhenmeter → Fahrzeit → Kilometer.</summary>
+    partial void OnVonDatumChanged(DateTime? value) { DatumGeaendert(); }
+    partial void OnBisDatumChanged(DateTime? value) { DatumGeaendert(); }
+    partial void OnGruppierungChanged(Zeitraster value) { AuswahlGeaendert(); }
+    partial void OnWertChanged(Fortschrittswert value) { Zeichne(); }
+
+    /// <summary>Datumsentwürfe werden nicht stillschweigend korrigiert; ungültige Auswahl zeigt einen Hinweis.</summary>
+    private void DatumGeaendert()
+    {
+        if (_ladeAuswahl) { return; }
+        _standardZeitraum = false;
+        AuswahlGeaendert();
+    }
+
+    /// <summary>Setzt ausdrücklich auf 1. Januar des aktuellen Jahres bis heute zurück.</summary>
     [RelayCommand]
-    private void WertWechseln()
+    private void AktuellesJahr()
     {
-        Wert = (Fortschrittswert)(((int)Wert + 1) % Enum.GetValues<Fortschrittswert>().Length);
-        Zeichne();
+        _heute = DateOnly.FromDateTime(DateTime.Today);
+        _ladeAuswahl = true;
+        VonDatum = new DateTime(_heute.Year, 1, 1);
+        BisDatum = _heute.ToDateTime(TimeOnly.MinValue);
+        _ladeAuswahl = false;
+        _standardZeitraum = true;
+        AuswahlGeaendert();
     }
 
-    /// <summary>Ermittelt den Jahresfortschritt der gemerkten Auswahl und überträgt ihn in Texte und Diagramm.</summary>
+    /// <summary>Bereitet die ausgewählten Aktivitäten vor; keine Ausweitung auf Zukunftsjahre durch automatische Achsenskalierung.</summary>
+    private List<Trainingseinheit> Auswahl() => _bestand is null ? [] :
+        FiltereUebersicht.Ausfuehren(_bestand, _aktivitaetId, _kategorie);
+
+    /// <summary>Verwirft Pulsanalysen nach Änderung ihrer Eingabedaten; alte Resultate werden nie für neue Filter ausgegeben.</summary>
+    private void AuswahlGeaendert()
+    {
+        _generation++;
+        LeerePulsanalyse();
+        Zeichne();
+        ZeitraumGeaendert?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Zeichnet ausschließlich Summen innerhalb der sichtbaren Datumsgrenzen, einschließlich leerer Perioden.</summary>
     private void Zeichne()
     {
-        Ueberschrift = BeschreibeJahresfortschritt.Ueberschrift(Wert);
-        if (_auswahl is not { } auswahl)
+        OnPropertyChanged(nameof(Von)); OnPropertyChanged(nameof(Bis));
+        Diagramm.Series.Clear(); _zeitachse.Labels.Clear();
+        HatEinheiten = false; Stand = string.Empty; Ausblick = string.Empty;
+        if (Von is not DateOnly von || Bis is not DateOnly bis || von > bis)
         {
+            ZeitraumHinweis = "Bitte einen gültigen Zeitraum mit Von ≤ Bis eingeben.";
+            Diagramm.InvalidatePlot(true);
             return;
         }
 
-        Jahresfortschritt fortschritt = ErmittleJahresfortschritt.Ausfuehren(auswahl.Bestand, auswahl.AktivitaetId, auswahl.Kategorie, Wert, auswahl.Heute);
-        (Stand, Ausblick) = BeschreibeJahresfortschritt.Kennzahlen(fortschritt);
-        HatEinheiten = fortschritt.Punkte.Count > 0;
-
-        // Linie, Fläche und Punkte; die senkrechte Achse nennt die Einheit
-        _wertachse.Title = Wert switch
+        List<Trainingseinheit> auswahl = Auswahl();
+        IReadOnlyList<Aktivitaetsperiode> perioden;
+        try { perioden = BerechneAktivitaetsperioden.Ausfuehren(auswahl, von, bis, Gruppierung); }
+        catch (ArgumentException fehler) { ZeitraumHinweis = fehler.Message; Diagramm.InvalidatePlot(true); return; }
+        HatEinheiten = perioden.Sum(p => p.Anzahl) > 0;
+        string einheit = Wert switch { Fortschrittswert.Kilometer => "km", Fortschrittswert.Hoehenmeter => "hm", Fortschrittswert.Anzahl => "Aktivitäten", _ => "Stunden" };
+        Ueberschrift = Werte.First(w => w.Key == Wert).Value + " je " + Raster.First(r => r.Key == Gruppierung).Value;
+        _wertachse.Title = einheit;
+        _zeitachse.Minimum = -.5; _zeitachse.Maximum = perioden.Count - .5;
+        _zeitachse.Angle = perioden.Count > 16 ? -45 : 0;
+        _zeitachse.GapWidth = .3;
+        var serie = new RectangleBarSeries { FillColor = OxyColor.Parse("#2E6DB4"), StrokeThickness = 0,
+            LabelFormatString = null, TrackerFormatString = "{7}" };
+        double gesamt = 0;
+        for (int i = 0; i < perioden.Count; i++)
         {
-            Fortschrittswert.Kilometer => "km",
-            Fortschrittswert.Anzahl => "Einheiten",
-            Fortschrittswert.Hoehenmeter => "hm",
-            _ => "Stunden",
-        };
-        _flaeche.Points.Clear();
-        _flaeche.Points.AddRange(fortschritt.Punkte.Select(p => new DataPoint(p.Jahr, p.Summe)));
-
-        // Ziellinie: je Jahr mit Ziel ein waagrechtes Stück, getrennt durch Lücken (ungültige Punkte)
-        _ziellinie.Points.Clear();
-        foreach (Jahrespunkt punkt in fortschritt.Punkte.Where(p => p.Ziel is not null))
-        {
-            _ziellinie.Points.Add(new DataPoint(punkt.Jahr - HalbeZielbreite, punkt.Ziel!.Value));
-            _ziellinie.Points.Add(new DataPoint(punkt.Jahr + HalbeZielbreite, punkt.Ziel!.Value));
-            _ziellinie.Points.Add(DataPoint.Undefined);
+            Aktivitaetsperiode p = perioden[i];
+            double y = Wert switch { Fortschrittswert.Kilometer => p.DistanzKm, Fortschrittswert.Hoehenmeter => p.Hoehenmeter, Fortschrittswert.Anzahl => p.Anzahl, _ => p.Fahrzeit.TotalHours };
+            gesamt += y; _zeitachse.Labels.Add(p.Beschriftung);
+            serie.Items.Add(new RectangleBarItem(i - .35, 0, i + .35, y)
+            { Title = p.Beschriftung + ": " + y.ToString("N2", Deutsch) + " " + einheit });
         }
 
-        // Soll-Stand zum heutigen Tag im laufenden Jahr
-        _soll.Points.Clear();
-        if (fortschritt.Kennzahlen.Soll is double soll)
+        Diagramm.Series.Add(serie);
+        Stand = $"{von:dd.MM.yyyy} – {bis:dd.MM.yyyy}: {gesamt.ToString("N2", Deutsch)} {einheit} · {perioden.Sum(p => p.Anzahl)} Aktivitäten";
+        int zukunft = auswahl.Count(e => e.Datum > _heute);
+        ZeitraumHinweis = zukunft > 0 ? $"{zukunft} Aktivität(en) tragen ein Datum nach heute. Daten wurden nicht geändert; nur der gewählte Zeitraum wird ausgewertet." : string.Empty;
+        Ausblick = "Zeitraum gilt für Diagramm, Rekorde und Pulsanalyse. Aktivität/Kategorie wirken mit; der Tabellen-Jahresfilter ist unabhängig.";
+        if (von == new DateOnly(_heute.Year, 1, 1) && bis == _heute && _bestand is not null)
         {
-            _soll.Points.Add(new ScatterPoint(fortschritt.Kennzahlen.Jahr, soll));
+            var begrenzt = new Datenbestand { Trainingseinheiten = _bestand.Trainingseinheiten.Where(e => e.Datum <= _heute).ToList(),
+                Aktivitaeten = _bestand.Aktivitaeten, Kategorien = _bestand.Kategorien, Saisonziele = _bestand.Saisonziele };
+            (string zielstand, string zielausblick) = BeschreibeJahresfortschritt.Kennzahlen(
+                ErmittleJahresfortschritt.Ausfuehren(begrenzt, _aktivitaetId, _kategorie, Wert, _heute));
+            Ausblick += "\nSaison: " + zielstand + " · " + zielausblick;
         }
 
         Diagramm.InvalidatePlot(true);
