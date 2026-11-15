@@ -138,7 +138,7 @@ In Umsetzungsreihenfolge.
   - Status: done → [036-altdaten-aus-installation](036-altdaten-aus-installation/spec.md)
 - `eigenstaendige-darstellung` — AndyTours tritt überall als eigenständiges Programm auf: Beschreibungen, Handbuch, Dokumentation und Code-Kommentare nennen kein Vorbildprogramm mehr, ausgenommen nur das Umwandlungswerkzeug und sein Lesecode.
   - Abhängig von: `altdaten-aus-installation`
-  - Status: specified → [037-eigenstaendige-darstellung](037-eigenstaendige-darstellung/spec.md)
+  - Status: done → [037-eigenstaendige-darstellung](037-eigenstaendige-darstellung/spec.md)
 - `windows-menue` — Das Hauptfenster hat oben eine normale, schlichte Windows-Menüleiste statt großer grauer Menü-Schaltflächen.
   - Abhängig von: `erscheinungsbild-und-icon`
   - Status: open
