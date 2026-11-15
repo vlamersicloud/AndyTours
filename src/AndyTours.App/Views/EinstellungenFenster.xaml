@@ -1,7 +1,7 @@
 <!--
   Einstellungen von AndyTours (Menü „Extras → Einstellungen…“).
 
-  Aufbau: vier Karteikarten, darunter fest die Schaltfläche „Schließen“
+  Aufbau: fünf Karteikarten (zusätzlich „Persönlich“ mit Garmin-Key), darunter fest die Schaltfläche „Schließen“
     1. Karteikarte „Allgemein“
        a) Gruppe „Datenordner“: vollständiger Pfad (nur lesbar) und Schaltfläche „Ändern…“
        b) Hinweis, warum der Ordner in der Entwicklungsversion nicht änderbar ist (nur dort sichtbar)
@@ -75,6 +75,33 @@
                                 <Label Content="Größe _der Oberfläche:" Target="{Binding ElementName=GroesseFeld}" VerticalAlignment="Center" />
                                 <ComboBox x:Name="GroesseFeld" Width="120" ItemsSource="{Binding Oberflaechenstufen}"
                                           SelectedItem="{Binding Oberflaechengroesse}" ItemStringFormat="{}{0} %" />
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Persönliche Zugangsdaten: maskiert, nur auf ausdrückliches Speichern dauerhaft ändern. -->
+            <TabItem Header="Persönlich">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16">
+                        <GroupBox Header="Garmin Connect" Padding="8">
+                            <StackPanel>
+                                <TextBlock Text="Personal API-Key für den Abruf eigener Radaktivitäten."
+                                           TextWrapping="Wrap" />
+                                <Label Content="Garmin API-_Key:" Target="{Binding ElementName=GarminSchluesselFeld}" Margin="0,8,0,0" />
+                                <PasswordBox x:Name="GarminSchluesselFeld" PasswordChanged="GarminSchluesselFeld_PasswordChanged" />
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button Content="Key _speichern" Command="{Binding GarminSchluesselSpeichernCommand}"
+                                            Padding="8,3" MinWidth="110" />
+                                    <Button Content="Key _entfernen" Command="{Binding GarminSchluesselEntfernenCommand}"
+                                            Padding="8,3" MinWidth="110" Margin="8,0,0,0" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding GarminStatus}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                                <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,8,0,0"
+                                           Text="Der Schlüssel wird erst mit „Key speichern“ übernommen. Er liegt unverschlüsselt in der Datenbank des aktuellen Datenordners und ist auch in Datensicherungen enthalten. Entfernen löscht keine alten Sicherungen und widerruft den Key nicht bei Garmin." />
+                                <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,8,0,0"
+                                           Text="Key erstellen: connect.garmin.com/app/settings/personalApiToken. Danach Datei → Von Garmin Connect importieren… wählen. Kein Neustart nötig. Beim Ordnerwechsel gilt der Key des neuen Datenordners." />
                             </StackPanel>
                         </GroupBox>
                     </StackPanel>

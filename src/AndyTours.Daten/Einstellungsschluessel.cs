@@ -9,6 +9,9 @@ namespace AndyTours.Daten;
 /// </remarks>
 public static class Einstellungsschluessel
 {
+    /// <summary>Persönlicher Garmin Personal API-Key. Geheim; enthalten in Datenordner und Sicherungen.</summary>
+    public const string GarminPersonalApiKey = "Persoenlich.Garmin.PersonalApiKey";
+
     /// <summary>Vom Benutzer gewählter Sicherungsordner; fehlt der Eintrag, gilt der Standardordner.</summary>
     public const string Sicherungsordner = "Sicherung.Ordner";
 

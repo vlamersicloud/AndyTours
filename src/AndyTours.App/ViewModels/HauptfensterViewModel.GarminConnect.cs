@@ -32,18 +32,23 @@ public partial class HauptfensterViewModel
             return;
         }
 
-        string? schluessel = Environment.GetEnvironmentVariable("GARMIN_PERSONAL_API_KEY");
-        if (string.IsNullOrWhiteSpace(schluessel))
-        {
-            MessageBox.Show("Bitte einen Personal API-Key auf https://connect.garmin.com/app/settings/personalApiToken erstellen "
-                + "und die Umgebungsvariable GARMIN_PERSONAL_API_KEY setzen. Danach AndyTours neu starten.",
-                Importtitel, MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-
         string zwischenordner = Path.Combine(Path.GetTempPath(), "AndyTours_Connect_" + Guid.NewGuid().ToString("N"));
         try
         {
+            string? schluessel;
+            using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei))
+            {
+                schluessel = GarminEinstellung.Laden(verbindung);
+            }
+
+            if (string.IsNullOrWhiteSpace(schluessel))
+            {
+                MessageBox.Show("Bitte unter „Extras → Einstellungen → Persönlich → Garmin Connect“ "
+                    + "den Personal API-Key eingeben und „Key speichern“ wählen.",
+                    Importtitel, MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             HashSet<long> ids;
             using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei))
             {

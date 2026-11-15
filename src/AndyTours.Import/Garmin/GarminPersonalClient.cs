@@ -121,7 +121,7 @@ public sealed class GarminPersonalClient(HttpClient http, string apiKey)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            throw new InvalidOperationException("GARMIN_PERSONAL_API_KEY fehlt. Bitte vor dem Start von AndyTours setzen.");
+            throw new InvalidOperationException("Garmin Personal API-Key fehlt.");
         }
 
         if (apiKey.Trim().Any(c => !char.IsAsciiLetterOrDigit(c) && !"-._~+/=".Contains(c)))

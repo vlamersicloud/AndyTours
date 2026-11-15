@@ -13,18 +13,32 @@ Schlaf, HRV, Stress und Body Battery sind nicht Teil dieses Tourenimports.
 
 1. In Garmin Connect einen eigenen Personal API-Key erstellen:
    https://connect.garmin.com/app/settings/personalApiToken
-2. Die Benutzer-Umgebungsvariable `GARMIN_PERSONAL_API_KEY` unter Windows setzen:
-   „Umgebungsvariablen für dieses Konto bearbeiten“ → „Benutzervariablen“ → „Neu“.
-   Nur den Schlüssel eintragen, ohne Anführungszeichen und ohne Präfix `ApiKey`.
-3. AndyTours neu starten, damit die Variable im Prozess verfügbar ist.
+2. In AndyTours **Extras → Einstellungen → Persönlich → Garmin Connect** öffnen.
+3. Den API-Key im maskierten Feld eingeben, ohne Anführungszeichen oder Präfix
+   `ApiKey`, und **Key speichern** wählen. Das Schließen des Fensters allein
+   speichert einen Entwurf nicht.
 4. Unter „Extras → Einstellungen“ muss wie bisher eine Hauptaktivität vorhanden sein.
 5. „Datei → Von Garmin Connect importieren…“ aufrufen und die gewünschten Touren
    in der vorhandenen Importauswahl bestätigen. Equipment kann dort zugeordnet werden.
 
-Der API-Key wird weder in SQLite noch im Repository gespeichert. Der Bearer-Token
-lebt nur während des Importlaufs im Speicher. Keine Garmin-Passwörter, SSO-Bibliotheken
-oder inoffiziellen Login-Endpunkte werden verwendet. Der Key ist trotzdem eine
-Zugangsberechtigung: nicht in Supportmeldungen oder Quellcode kopieren.
+Der Key gilt sofort beim nächsten Import; kein Neustart und keine Umgebungsvariable
+sind erforderlich. **Key entfernen** löscht den gespeicherten Wert. Auch das Speichern
+einer leeren Eingabe entfernt ihn. Es gibt bewusst keinen Fallback auf eine
+Umgebungsvariable, damit ein entfernter Key nicht unbemerkt weiterverwendet wird.
+
+Wie der vorhandene Routing-Key liegt der Garmin-Key **unverschlüsselt in SQLite**
+im aktuellen Datenordner (`Persoenlich.Garmin.PersonalApiKey`) und damit auch in
+Datensicherungen. Ein Ordnerwechsel lädt den dort gespeicherten Key; ungespeicherte
+Entwürfe werden verworfen. Alte Sicherungen behalten einen früheren Key auch nach
+dem Entfernen; widerrufen wird er nur bei Garmin. Datenordner und Sicherungen
+entsprechend schützen. Ein Key-Wechsel innerhalb desselben Datenordners soll nur
+für dasselbe Garmin-Konto erfolgen (siehe Einzelkonto-Regel unten).
+
+Der Bearer-Token lebt nur während des Importlaufs im Speicher. Es werden weder
+Garmin-Passwörter noch SSO-Bibliotheken oder inoffizielle Login-Endpunkte verwendet.
+Die Anwendung zeigt und protokolliert den Schlüssel nicht als Klartext.
+Im Quellcode, in Downloads und im Windows-Paket ist kein echter Key hinterlegt;
+den Safety-Store-Key übernimmt die Anwendung nicht automatisch.
 
 ## Verhalten
 
@@ -63,9 +77,11 @@ Zugangsberechtigung: nicht in Supportmeldungen oder Quellcode kopieren.
 
 ## Prüfung / Abnahme
 
-Offline-Tests wurden ergänzt, aber nicht ausgeführt (Abnahme durch den Anwender):
+Offline-Tests für den ursprünglichen Connect-Import wurden ausgeführt; die zusätzlichen Tests der persönlichen Einstellungen wurden nur kompiliert (Abnahme durch den Anwender):
 `tests/AndyTours.Tests/Garmin/GarminPersonalClientTests.cs` und
-`GarminImportZuordnungTests.cs`.
+`GarminImportZuordnungTests.cs`. Zusätzlich: `GarminEinstellungTests.cs`
+für fehlenden Key, Ersetzen, Entfernen, getrennte Datenbestände und unveränderte
+fremde Einstellungen.
 
 Sie decken Authentifizierungsheader und Host, mehr als 100 Aktivitäten, Download,
 begrenzte Token-Erneuerung, Ratenlimit ohne Geheimnisse in Fehlern, wiederholte
@@ -83,7 +99,11 @@ vorübergehend darauf gesetzt und anschließend auf 10.0.402 zurückgesetzt.
 Die versionierte global.json bleibt unverändert.
 WPF-Start und interaktive Abnahme sind nur unter Windows möglich.
 Empfohlene manuelle Fälle:
-- Ohne Key: Einrichtungshinweis; falscher/abgelaufener Key: verständlicher Fehler.
+- Unter Persönlich: Key speichern, Fenster neu öffnen, maskierte Anzeige prüfen;
+  nach Datenordnerwechsel gilt der Key des neuen Ordners.
+- Entwurf ohne Speichern schließen: bisheriger gespeicherter Wert bleibt.
+- Key entfernen: Import zeigt Einrichtungshinweis, auch bei gesetzter alter
+  Umgebungsvariable. Falscher/abgelaufener Key: verständlicher Fehler.
 - Echtes Konto: Radaktivitäten erscheinen, Equipment wählen, Import bestätigen.
 - Erneuter Abruf: keine doppelten Touren, importierte IDs nicht erneut herunterladen.
 - Auswahl abbrechen/teilweise bestätigen und erneut abrufen.

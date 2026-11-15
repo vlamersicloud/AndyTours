@@ -1167,7 +1167,10 @@ Alle offenen Fragen sind beantwortet und eingearbeitet.
 
 Zusätzlich zum USB-Import steht unter **Datei → Von Garmin Connect importieren…**
 ein Online-Abruf eigener Radaktivitäten bereit. Dafür wird ein eigener Personal
-API-Key als Benutzer-Umgebungsvariable `GARMIN_PERSONAL_API_KEY` benötigt.
+API-Key benötigt. Er kann unter **Extras → Einstellungen → Persönlich → Garmin Connect**
+im maskierten Feld eingegeben und mit **Key speichern** hinterlegt werden.
+**Key entfernen** löscht ihn wieder; kein Neustart ist nötig. Der Key wird
+unverschlüsselt im Datenordner und in dessen Sicherungen gespeichert.
 Die vollständige Einrichtung, Hinweise zur lokalen Archivierung und Abnahme
 stehen unter [Garmin Connect – Live-Import](docs/garmin-connect.md).
 

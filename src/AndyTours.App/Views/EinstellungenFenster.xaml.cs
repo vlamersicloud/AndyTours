@@ -28,7 +28,12 @@ public partial class EinstellungenFenster : Window
 
         // Gespeicherten Zugangsschlüssel maskiert anzeigen; nach einem Ordnerwechsel den des neuen Datenordners
         SchluesselFeld.Password = viewModel.Schluessel;
-        viewModel.SchluesselNeuGelesen += (_, _) => SchluesselFeld.Password = viewModel.Schluessel;
+        GarminSchluesselFeld.Password = viewModel.GarminSchluessel;
+        viewModel.SchluesselNeuGelesen += (_, _) =>
+        {
+            SchluesselFeld.Password = viewModel.Schluessel;
+            GarminSchluesselFeld.Password = viewModel.GarminSchluessel;
+        };
     }
 
     /// <summary>
@@ -42,6 +47,15 @@ public partial class EinstellungenFenster : Window
         if (DataContext is EinstellungenViewModel viewModel)
         {
             viewModel.SchluesselGeaendert(SchluesselFeld.Password);
+        }
+    }
+
+    /// <summary>Leitet den Garmin-Key nur als Entwurf weiter; dauerhaft speichern erst per Schaltfläche.</summary>
+    private void GarminSchluesselFeld_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is EinstellungenViewModel viewModel)
+        {
+            viewModel.GarminSchluesselGeaendert(GarminSchluesselFeld.Password);
         }
     }
 

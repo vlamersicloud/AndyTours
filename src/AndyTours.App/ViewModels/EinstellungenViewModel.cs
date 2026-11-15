@@ -18,7 +18,7 @@ namespace AndyTours.App.ViewModels;
 /// ViewModel des Einstellungsfensters.
 /// </summary>
 /// <remarks>
-/// Es enthält fünf Bereiche:
+/// Es enthält sechs Bereiche:
 /// <list type="bullet">
 /// <item><b>Datenordner:</b> Der eigentliche Wechsel (Ordnerwahl, Rückfragen, Kopieren, Laden, Merken)
 /// wird vom Hauptfenster-ViewModel als Funktion übergeben, weil dieses den Datenbestand hält und neu
@@ -31,6 +31,8 @@ namespace AndyTours.App.ViewModels;
 /// (siehe <c>docs/adr/0004-routingdienst.md</c>). Auch sie liegen in der Datenbank des Datenordners und werden
 /// sofort gespeichert, die Adresse nur, wenn sie gültig ist. Der Schlüssel steht in einem maskierten Feld, das das
 /// Code-Behind füllt und meldet (ein Passwortfeld lässt sich nicht binden).</item>
+/// <item><b>Persönlich:</b> Garmin Personal API-Key als maskierter Entwurf mit ausdrücklichem Speichern und Entfernen,
+/// gültig für den aktuellen Datenordner.</item>
 /// <item><b>Overlays:</b> die gemeinsame Overlay-Farbe; sie wird sofort gespeichert und allen offenen Karten gemeldet
 /// (<see cref="Overlaybestand"/>).</item>
 /// <item><b>Auswahllisten:</b> eigenes ViewModel (<see cref="AuswahllistenViewModel"/>), das das
@@ -78,6 +80,7 @@ public partial class EinstellungenViewModel : ObservableObject
         Auswahllisten = auswahllisten;
         ZeigeSicherungseinstellungen();
         ZeigeRoutingeinstellungen();
+        ZeigeGarmineinstellung();
         ZeigeOverlayfarbe();
         ZeigeOberflaechengroesse();
     }
@@ -141,6 +144,7 @@ public partial class EinstellungenViewModel : ObservableObject
             Datenordner = neu;
             ZeigeSicherungseinstellungen();
             ZeigeRoutingeinstellungen();
+            ZeigeGarmineinstellung();
             ZeigeOverlayfarbe();
             ZeigeOberflaechengroesse();
             SchluesselNeuGelesen?.Invoke(this, EventArgs.Empty);
