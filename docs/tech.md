@@ -47,6 +47,7 @@
 - Equipment-Namen immer über `EquipmentAnzeigename.Bilden` bilden (Zusatz „(ausgemustert)“) und über `EquipmentAnzeigename.Passt` vergleichen
 - Einstellungen, die zum Datenbestand gehören, in der Tabelle `Einstellung` (Schlüssel/Wert mit Bereichsvorsilbe, z. B. `Sicherung.Intervall`); unter `%APPDATA%\AndyTours` nur die Merkdatei `datenordner.txt`
 - Die Datenbank speichert nur relative Pfade zu den Aufzeichnungen
+- Änderungen am Datenbankschema: neue Tabellen über `CREATE TABLE IF NOT EXISTS`, alles andere als Umbaustufe beim Öffnen anhand von `PRAGMA user_version`, in einer Transaktion mit Sicherung vorher, siehe `docs/adr/0010-anpassung-des-datenbankschemas.md`
 
 ## Befehle
 - Bauen (inkl. Codeprüfung): `dotnet build AndyTours.slnx`
