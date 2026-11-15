@@ -82,6 +82,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
     {
         Interlocked.Increment(ref _generation);
         _perioden.Clear();
+        AusgewaehlteTour = null;
         Diagramm = new PlotModel { Background = OxyColors.White };
         DistanzKmText = HoehenmeterText = FahrzeitText = AnzahlText = "–";
         ZukunftsHinweis = string.Empty;
@@ -170,6 +171,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
         AktualisierenCommand.NotifyCanExecuteChanged();
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
         VorherigeSeiteCommand.NotifyCanExecuteChanged();
+        BenachrichtigeTourCommands();
     }
 
     private bool KannNaechsteSeite() => !Laedt && _start + 50 < GesamtTouren;
@@ -205,6 +207,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
         SeitenText = page.Gesamt == 0 ? "Keine Touren" : $"Seite {_start / 50 + 1} · {page.Gesamt} Touren";
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
         VorherigeSeiteCommand.NotifyCanExecuteChanged();
+        AusgewaehlteTour = null;
     }
 
     private void ZeichneDiagramm()
