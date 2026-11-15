@@ -1056,6 +1056,8 @@ AndyTours legt vorher eine Sicherung des aktuellen Stands an. Damit lässt sich 
 <a id="k4-10"></a>
 ### 4.10 Menü „Hilfe“
 
+**Hilfe → Benutzerhandbuch** öffnet dieses Handbuch in Ihrem Browser. Es liegt auf der GitHub-Seite des Projekts und ist dort immer auf dem neuesten Stand. Dafür brauchen Sie eine Internetverbindung. Lässt sich der Browser nicht öffnen, nennt eine Meldung die Adresse des Handbuchs.
+
 **Hilfe → Über AndyTours** öffnet ein kleines Fenster mit dem Programmicon, dem Namen, der Versionsnummer und dem Autor. Sie schließen es mit **OK**, **Enter** oder **Esc**.
 
 **Aufbau:** Links im Fenster **Über AndyTours** steht groß das Programmicon, ein Fahrrad vor Bergen. Rechts daneben stehen untereinander **AndyTours**, die Versionsnummer, der Autor und eine kurze Beschreibung des Programms. Unten rechts steht **OK**.

@@ -67,6 +67,8 @@
                 <MenuItem Header="Sicherung _wiederherstellen…" Command="{Binding SicherungWiederherstellenCommand}" />
             </MenuItem>
             <MenuItem Header="_Hilfe">
+                <MenuItem Header="_Benutzerhandbuch" Command="{Binding BenutzerhandbuchOeffnenCommand}" />
+                <Separator />
                 <MenuItem Header="_Über AndyTours" Command="{Binding UeberCommand}" />
             </MenuItem>
         </Menu>

@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -493,6 +495,32 @@ public partial class HauptfensterViewModel : ObservableObject
     private void Beenden()
     {
         Application.Current.Shutdown();
+    }
+
+    /// <summary>Adresse des Benutzerhandbuchs auf GitHub; GitHub stellt die Markdown-Datei lesbar dar.</summary>
+    private const string BenutzerhandbuchAdresse = "https://github.com/AndySeeon/AndyTours/blob/main/HANDBUCH.md";
+
+    /// <summary>
+    /// Befehl "Hilfe → Benutzerhandbuch": öffnet das Benutzerhandbuch auf GitHub im Standardbrowser.
+    /// </summary>
+    /// <remarks>
+    /// Das Handbuch wird nicht mitinstalliert, sondern online gelesen; so ist es immer aktuell, braucht aber
+    /// eine Internetverbindung. Lässt sich kein Browser starten, nennt eine Meldung die Adresse zum Abtippen.
+    /// </remarks>
+    [RelayCommand]
+    private void BenutzerhandbuchOeffnen()
+    {
+        try
+        {
+            // UseShellExecute: Windows öffnet die Adresse mit dem eingestellten Standardbrowser
+            Process.Start(new ProcessStartInfo(BenutzerhandbuchAdresse) { UseShellExecute = true });
+        }
+        catch (Exception fehler) when (fehler is Win32Exception or InvalidOperationException)
+        {
+            MessageBox.Show(
+                $"Der Browser konnte nicht geöffnet werden:\n\n{fehler.Message}\n\nDas Benutzerhandbuch finden Sie unter:\n{BenutzerhandbuchAdresse}",
+                "Benutzerhandbuch", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     /// <summary>
