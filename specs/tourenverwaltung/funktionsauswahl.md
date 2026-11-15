@@ -14,7 +14,7 @@ Bemerkungen zu einer Funktion dürfen Sie hinter die Zeile schreiben, z. B. „�
 ## Bereits bestätigt (bitte nicht löschen)
 
 - Datenordner wählen und in den Einstellungen ändern (Entwicklung: `AppDaten/`, sonst `Dokumente\AndyTours`)
-- Einmalige Umwandlung der BikeXperience-Altdaten (separates Programm, nicht in der App)
+- Einmalige Umwandlung der Altdaten (separates Programm, nicht in der App)
 - Import neuer Touren vom Garmin Edge 1040
 - „Aktuell“: Jahresfortschritt km/hm gegen das Saisonziel und nötige Wochenleistung bis Saisonende
 - „Aktuell“: Bestleistungen mit Rekordjahr
@@ -71,5 +71,5 @@ Bemerkungen zu einer Funktion dürfen Sie hinter die Zeile schreiben, z. B. „�
 45. Bildergalerie mit Geotagging
 ---
 
-## Zusätzliche Funktionen (nicht in BikeXperience)
+## Zusätzliche Funktionen
 - 

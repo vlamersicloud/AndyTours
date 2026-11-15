@@ -28,7 +28,7 @@ Für AndyTours Version 1.0.1
 <a id="kapitel-1"></a>
 ## 1. Was macht das Programm
 
-AndyTours verwaltet Ihre Fahrradtouren auf einem Windows-PC. Es ist der Nachfolger des Programms BikeXperience.
+AndyTours verwaltet Ihre Fahrradtouren auf einem Windows-PC.
 
 Mit AndyTours können Sie:
 
@@ -47,14 +47,13 @@ Nach dem Start sehen Sie das Hauptfenster. Es öffnet die Karteikarte, die beim 
 <a id="nicht-enthalten"></a>
 ### Was das Programm nicht kann
 
-AndyTours übernimmt nur die Funktionen von BikeXperience, die tatsächlich genutzt werden. Folgendes ist bewusst nicht enthalten:
+AndyTours beschränkt sich auf die Funktionen, die tatsächlich genutzt werden. Folgendes ist bewusst nicht enthalten:
 
 - mehrere Benutzer
 - Übernahme von Daten aus anderen Programmen (vorhandene FIT-Dateien vom Garmin lassen sich aber importieren, siehe [Abschnitt 4.2](#k4-2))
-- Rück-Export zu BikeXperience und gleichzeitiger Betrieb mit BikeXperience
 - Schwellwerte mit Farben
 - im Tourdetail: Puls- und Zonenauswertung, Rundenzeiten, Vergleich von Höhenprofilen
-- die Karteikarten „Diagramme“, „Statistik“, „Kalender“, „Trainingsplan“ und „Planung“ aus BikeXperience
+- die Karteikarten „Diagramme“, „Statistik“, „Kalender“, „Trainingsplan“ und „Planung“
 - weitere Auskünfte wie Jahresprognose, Top 50, Gewichtsverlauf, Ruhe- und Erholungspuls, Leistungs- und Trainingskontrolle, Temperaturauswertung, virtuelle Weltumrundung, Vergleich von Aktivitäten und Kategorien
 - bei der Wartung: Kuchendiagramm sowie Export und Import als CSV-Datei
 - bei Equipments: Gewicht, Radumfang, Roll- und Luftwiderstand, Kettenblätter und Ritzel, Bild
@@ -868,7 +867,7 @@ Ein Saisonziel ist Ihr Jahresziel für eine Aktivität: Kilometer, Höhenmeter u
 3. Tragen Sie für jede Aktivität **Kilometer**, **Höhenmeter** und **Anzahl** ein. Ein leeres Feld oder 0 bedeutet „kein Ziel“.
 4. Klicken Sie auf **OK**.
 
-Ein Ziel gilt auch für die folgenden Jahre, bis Sie es dort ändern. Frühere Jahre behalten ihre damaligen Ziele. Die Spalte **Herkunft** zeigt, woher ein Ziel stammt, zum Beispiel **übernommen aus 2025** oder **übernommen aus BikeXperience**. Bei einem eigenen Ziel für das gewählte Jahr bleibt sie leer.
+Ein Ziel gilt auch für die folgenden Jahre, bis Sie es dort ändern. Frühere Jahre behalten ihre damaligen Ziele. Die Spalte **Herkunft** zeigt, woher ein Ziel stammt, zum Beispiel **übernommen aus 2025** oder **Grundziel**. **Grundziel** steht bei einem Ziel, das für die Aktivität schon vor Ihrem ersten eigenen Ziel hinterlegt war. Bei einem eigenen Ziel für das gewählte Jahr bleibt sie leer.
 
 Erlaubt sind ganze Zahlen: Kilometer 0 bis 100.000, Höhenmeter 0 bis 2.000.000, Anzahl 0 bis 1.000. Bei einer ungültigen Eingabe nennt ein roter Hinweis unter der Tabelle Aktivität, Feld und erlaubten Bereich. **OK** und die Auswahl **Jahr:** sind dann ausgegraut.
 
@@ -1014,7 +1013,7 @@ Ein vorhandenes Equipment ändern Sie mit **Bearbeiten…** oder einem Doppelkli
 **Aufbau der Fenster „Neues Equipment“ und „Equipment bearbeiten“:** Oben stehen untereinander die Felder **Name:**, **Aktivität:**, **Standardkategorie:**, **Anschaffungsdatum:** und **Anfangskilometer:**. Darunter folgen die Kontrollkästchen **Standard für diese Aktivität** und **ausgemustert**. Danach kommt die Liste **Gerätezuordnung (beim Import gemerkt):** mit der Schaltfläche **Entfernen** rechts daneben. Bei einer ungültigen Eingabe erscheint darunter ein roter Hinweis. Unten rechts stehen **OK** und **Abbrechen**. **OK** ist nur bei gültigen Eingaben wählbar. **Abbrechen** schließt ohne Rückfrage und ohne zu speichern.
 
 - **ausgemustert:** Haken Sie dies an, wenn Sie ein Rad nicht mehr fahren. Es wird dann für neue Einheiten, Wartungen und Alarme nicht mehr angeboten. Alte Einheiten und Wartungen behalten das Rad. Es trägt überall den Zusatz **(ausgemustert)**. Ein ausgemustertes Rad kann kein Standard-Equipment sein: **Standard für diese Aktivität** ist dann ausgegraut, und ein vorher gesetzter Haken entfällt.
-- **Gerätezuordnung (beim Import gemerkt):** zeigt die Rad-Kennungen und Sensoren, die AndyTours beim Garmin-Import diesem Rad zugeordnet hat. Jede Zeile beginnt mit ihrer Art, zum Beispiel **Rad:** für eine Rad-Kennung oder **Sensor:** für einen Sensor. Aus BikeXperience übernommene Werte beginnen mit **Altwert:**. Mit **Entfernen** löschen Sie einen markierten Eintrag.
+- **Gerätezuordnung (beim Import gemerkt):** zeigt die Rad-Kennungen und Sensoren, die AndyTours beim Garmin-Import diesem Rad zugeordnet hat. Jede Zeile beginnt mit ihrer Art, zum Beispiel **Rad:** für eine Rad-Kennung oder **Sensor:** für einen Sensor. Ältere, aus den Altdaten übernommene Werte beginnen mit **Altwert:**. Mit **Entfernen** löschen Sie einen markierten Eintrag.
 
 **Hinweis:** Ein Equipment, das in Einheiten verwendet wird oder Wartungen hat, lässt sich nicht löschen. Mustern Sie es stattdessen aus.
 

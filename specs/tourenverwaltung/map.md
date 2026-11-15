@@ -1,8 +1,8 @@
 # Tourenverwaltung
 
 ## Umfang
-- Alle Funktionen der App AndyTours nach dem Vorbild BikeXperience, soweit vom Benutzer ausgewählt (siehe `funktionsauswahl.md`)
-- Einmalige Übernahme der BikeXperience-Altdaten in einem separaten Programm
+- Alle Funktionen der App AndyTours, soweit vom Benutzer ausgewählt (siehe `funktionsauswahl.md`)
+- Einmalige Übernahme der Altdaten in einem separaten Programm
 - Erfassen, Auswerten und Importieren von Fahrradtouren; Verwaltung von Rädern und deren Wartung
 
 ## Nicht enthalten
@@ -28,7 +28,7 @@ In Umsetzungsreihenfolge.
 - `datenordner-waehlen` — Der Benutzer wählt in den Einstellungen den Datenordner und kann ihn ändern; die Wahl bleibt beim nächsten Start erhalten (während der Entwicklung `AppDaten/`, sonst anfangs `Dokumente\AndyTours`).
   - Abhängig von: —
   - Status: done → [001-datenordner-waehlen](001-datenordner-waehlen/spec.md)
-- `altdaten-umwandeln` — Ein separates Programm wandelt die BikeXperience-Daten aus `Daten/` einmalig in den Datenordner von AndyTours um und erstellt einen Bericht.
+- `altdaten-umwandeln` — Ein separates Programm wandelt die Altdaten aus `Daten/` einmalig in den Datenordner von AndyTours um und erstellt einen Bericht.
   - Abhängig von: `datenordner-waehlen`
   - Status: done → [002-altdaten-umwandeln](002-altdaten-umwandeln/spec.md)
 - `hauptfenster-auswahl` — Das Hauptfenster bietet eine Jahres- und Aktivitätsauswahl und zeigt die Summen der Auswahl.
@@ -124,7 +124,7 @@ In Umsetzungsreihenfolge.
 - `courses-uebertragen` — Geplante oder gefahrene Strecken lassen sich als Course auf den Garmin Edge 1040 übertragen.
   - Abhängig von: `garmin-import`, `tourenplanung-karte`
   - Status: done → [032-courses-uebertragen](032-courses-uebertragen/spec.md)
-- `installationsprogramm` — Ein Installationsprogramm installiert AndyTours, übernimmt die vorhandenen BikeXperience-Daten mit dem Umwandlungsprogramm und hält alle Änderungen fest, damit das Deinstallationsprogramm sie sauber rückgängig machen kann.
+- `installationsprogramm` — Ein Installationsprogramm installiert AndyTours, übernimmt vorhandene Altdaten mit dem Umwandlungsprogramm und hält alle Änderungen fest, damit das Deinstallationsprogramm sie sauber rückgängig machen kann.
   - Abhängig von: `datenordner-waehlen`, `altdaten-umwandeln`
   - Status: done → [033-installationsprogramm](033-installationsprogramm/spec.md)
 - `erscheinungsbild-und-icon` — Alle Fenster erhalten das moderne, helle Erscheinungsbild von Windows 11, und AndyTours bekommt ein Programmicon (Fahrrad vor Bergsilhouette) für Fenster, Taskleiste, Programmdatei, Verknüpfungen und Installationsprogramm.

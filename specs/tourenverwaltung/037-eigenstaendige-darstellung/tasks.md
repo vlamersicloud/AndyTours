@@ -8,8 +8,8 @@
 - [x] 6. Analysedokument löschen und aus der Projektmappe nehmen
 - [x] 7. Projektregeln bereinigen (`docs/tech.md`, `docs/Konventionen.md`)
 - [x] 8. `docs/product.md` und `README.md` bereinigen
-- [ ] 9. Handbuch bereinigen
-- [ ] 10. Feature-Map und Funktionsauswahl bereinigen
+- [x] 9. Handbuch bereinigen
+- [x] 10. Feature-Map und Funktionsauswahl bereinigen
 - [ ] 11. Specs und Pläne 001–023 bereinigen
 - [ ] 12. Specs und Pläne 027–034 bereinigen
 - [ ] 13. Projektbeschreibung („Beschreibung der fundamentals.md“) bereinigen, außer Abschnitt 9
