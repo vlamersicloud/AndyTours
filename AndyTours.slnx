@@ -1,5 +1,9 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/AndyTours.Contracts/AndyTours.Contracts.csproj" />
+    <Project Path="src/AndyTours.Application/AndyTours.Application.csproj" />
+    <Project Path="src/AndyTours.Api/AndyTours.Api.csproj" />
+    <Project Path="src/AndyTours.Client/AndyTours.Client.csproj" />
     <Project Path="src/AndyTours.App/AndyTours.App.csproj" />
     <Project Path="src/AndyTours.Core/AndyTours.Core.csproj" />
     <Project Path="src/AndyTours.Daten/AndyTours.Daten.csproj" />

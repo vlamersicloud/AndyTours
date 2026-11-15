@@ -77,3 +77,10 @@ gilt ausschließlich für USB/MTP und lokale Benutzerauswahl, nicht für Fachlog
 
 Nach jedem wesentlichen Block committen und diesen Status anhand der tatsächlich
 umgesetzten Abläufe aktualisieren. Teilstände nicht als vollständige Umstellung ausgeben.
+
+## Umgesetzter Zwischenstand (API_FIRST)
+
+- ✅ Grundlage: getrennte Contracts-, Application-, API- und Client-Projekte; API-Statusressource `/api/v1/health`; typisierter HTTP-Verbindungsclient.
+- ⏳ Nicht migriert: sämtliche fachlichen Ressourcen und Anwendungsfälle, Authentifizierung/Zugriffsschutz, Datenbank- und Dateiinfrastruktur, Importaufträge, lokale/zentral betriebene Konfiguration, WPF-Start/Ansichten sowie Geräteadapter.
+- ⏳ Alle Abläufe der obigen Paritätstabelle bleiben offen. Ein Statusendpunkt ist kein Nachweis fachlicher Parität.
+- Buildprüfung auf dem Testserver wurde versucht, scheiterte vor dem Build: `global.json` fordert .NET SDK 10.0.402, installiert ist 10.0.401. Tests wurden entsprechend Vorgabe nicht ausgeführt.

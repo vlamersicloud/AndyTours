@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><ItemGroup><ProjectReference Include="..\AndyTours.Application\AndyTours.Application.csproj" /><ProjectReference Include="..\AndyTours.Contracts\AndyTours.Contracts.csproj" /></ItemGroup><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>
