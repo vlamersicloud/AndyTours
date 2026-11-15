@@ -1161,3 +1161,15 @@ Es gibt keine Rückgängig-Funktion. Sie können aber eine Sicherung wiederherst
 ## Anhang: Offene Fragen
 
 Alle offenen Fragen sind beantwortet und eingearbeitet.
+
+
+## Garmin Connect direkt abrufen
+
+Zusätzlich zum USB-Import steht unter **Datei → Von Garmin Connect importieren…**
+ein Online-Abruf eigener Radaktivitäten bereit. Dafür wird ein eigener Personal
+API-Key als Benutzer-Umgebungsvariable `GARMIN_PERSONAL_API_KEY` benötigt.
+Die vollständige Einrichtung, Hinweise zur lokalen Archivierung und Abnahme
+stehen unter [Garmin Connect – Live-Import](docs/garmin-connect.md).
+
+Der Abruf erfolgt manuell, nicht dauerhaft im Hintergrund. Gesundheitsdaten
+wie Schlaf oder HRV werden nicht importiert.

@@ -177,7 +177,9 @@ public static class TrainingseinheitenTabelle
     /// <param name="verbindung">Geöffnete Verbindung.</param>
     /// <param name="einheit">Die neue Einheit (ihre Nummer wird nicht verwendet).</param>
     /// <returns>Die vergebene Nummer und die Nummer des Sportlers.</returns>
-    public static (long Id, long FahrerId) Einfuegen(SqliteConnection verbindung, Trainingseinheit einheit)
+    /// <param name="nachEinfuegen">Optionale Herkunftszuordnung innerhalb der Einfügetransaktion; Fehler rollen alles zurück.</param>
+    public static (long Id, long FahrerId) Einfuegen(SqliteConnection verbindung, Trainingseinheit einheit,
+        Action<SqliteConnection, SqliteTransaction, long>? nachEinfuegen = null)
     {
         using SqliteTransaction transaktion = verbindung.BeginTransaction();
         long fahrerId = einheit.FahrerId > 0 ? einheit.FahrerId : FahrerTabelle.Standardfahrer(verbindung, transaktion);
@@ -204,6 +206,8 @@ public static class TrainingseinheitenTabelle
 
         SchreibeKategorien(verbindung, transaktion, id, einheit.KategorieIds);
         SchreibeNeueAnhaenge(verbindung, transaktion, id, einheit.Anhaenge);
+        // Zusätzliche Herkunftszuordnungen werden gemeinsam mit der Einheit bestätigt oder zurückgerollt.
+        nachEinfuegen?.Invoke(verbindung, transaktion, id);
         transaktion.Commit();
         return (id, fahrerId);
     }

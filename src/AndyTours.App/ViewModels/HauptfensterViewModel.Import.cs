@@ -356,7 +356,10 @@ public partial class HauptfensterViewModel
         // Einheit samt Anhängen einfügen
         Trainingseinheit einheit = ErstelleImportierteEinheit.Ausfuehren(_bestand, aufzeichnung, equipmentId, relativerPfad);
         (long Id, long FahrerId) neu = default;
-        if (!Schreibe(verbindung => neu = TrainingseinheitenTabelle.Einfuegen(verbindung, einheit),
+        if (!Schreibe(verbindung => neu = TrainingseinheitenTabelle.Einfuegen(verbindung, einheit,
+                    _garminConnectIds.TryGetValue(zeile.Quelldatei, out long garminId)
+                        ? (db, transaktion, einheitId) => GarminImportZuordnung.Speichern(db, transaktion, garminId, einheitId)
+                        : null),
                 $"Die Tour {aufzeichnung.Dateiname} konnte nicht gespeichert werden"))
         {
             return false;
