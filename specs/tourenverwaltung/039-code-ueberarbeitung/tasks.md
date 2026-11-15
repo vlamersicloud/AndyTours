@@ -14,8 +14,8 @@ Abschnitt 1 – ungenutzte Werte aus dem Datenbestand
 - [x] 11. Bauen, testen, Umbau mit einer Kopie von `AppDaten` prüfen, committen
 
 Abschnitt 2 – Core
-- [ ] 12. Fundliste `funde-2-core.md` schreiben und freigeben lassen
-- [ ] 13. Freigegebene Funde umsetzen, bauen, testen, committen
+- [x] 12. Fundliste `funde-2-core.md` schreiben und freigeben lassen
+- [x] 13. Freigegebene Funde umsetzen, bauen, testen, committen
 
 Abschnitt 3 – Daten
 - [ ] 14. Fundliste `funde-3-daten.md` schreiben und freigeben lassen

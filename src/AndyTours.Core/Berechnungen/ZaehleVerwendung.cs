@@ -36,7 +36,7 @@ public static class ZaehleVerwendung
         List<string> equipments = name.Length == 0
             ? []
             : bestand.Equipments
-                .Where(e => string.Equals(e.StandardKategorie.Trim(), name, StringComparison.OrdinalIgnoreCase))
+                .Where(e => VergleicheNamen.Ausfuehren(e.StandardKategorie, name))
                 .Select(e => e.Name)
                 .ToList();
         return (einheiten, equipments);

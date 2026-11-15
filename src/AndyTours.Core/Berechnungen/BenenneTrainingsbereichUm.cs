@@ -21,13 +21,12 @@ public static class BenenneTrainingsbereichUm
     /// <returns>Die Anzahl der geänderten Einheiten.</returns>
     public static int Ausfuehren(IEnumerable<Trainingseinheit> einheiten, string alt, string neu)
     {
-        string gesucht = alt.Trim();
         int anzahl = 0;
         foreach (Trainingseinheit einheit in einheiten)
         {
-            if (string.Equals(einheit.Trainingsbereich.Trim(), gesucht, StringComparison.OrdinalIgnoreCase))
+            if (VergleicheNamen.Ausfuehren(einheit.Trainingsbereich, alt))
             {
-                einheit.Trainingsbereich = neu;
+                einheit.Trainingsbereich = neu.Trim();
                 anzahl++;
             }
         }

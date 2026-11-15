@@ -20,6 +20,7 @@ Verbindliche Regeln für den Quellcode. Grundlage ist die Projektvorgabe in `CLA
 
 - **Eigenständige Fachfunktionen** (Berechnungen, Import-Schritte, Prüfungen) werden als `static class` mit genau **einer** öffentlichen Methode `Ausfuehren(...)` geschrieben. Der Klassenname beschreibt die Funktion als Verb:
   `Berechnungen/BerechneDurchschnittsgeschwindigkeit.cs` → `BerechneDurchschnittsgeschwindigkeit.Ausfuehren(distanzKm, fahrzeit)`
+  Varianten derselben Aufgabe dürfen statt `Ausfuehren` als benannte Methoden in derselben Klasse stehen, z. B. `ErmittleLoeschsperre.Equipment(…)` und `ErmittleLoeschsperre.Kategorie(…)`.
 - **Zusammengehörige Funktionen**, die dasselbe Format oder dieselbe Tabelle teilen, stehen gemeinsam in einer `static class`, deren Name das Thema als Substantiv nennt. Die Methoden heißen nach ihrer Tätigkeit:
   - Tabellen der Datenbank: `…Tabelle` mit `Laden`/`Speichern`, z. B. `TrainingseinheitenTabelle.Laden(verbindung)`
   - Einstellungen (Tabelle `Einstellung`): `…Einstellung` mit `Laden`/`Speichern`, z. B. `FensterpositionEinstellung.Speichern(verbindung, position)`

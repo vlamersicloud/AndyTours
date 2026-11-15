@@ -4,7 +4,7 @@ using AndyTours.Core.Modell;
 namespace AndyTours.Tests.Berechnungen;
 
 /// <summary>
-/// Tests für <see cref="BildeGpxDateiname"/>.
+/// Tests für <see cref="BildeGpxDateiname"/>, samt der Ersetzung unzulässiger Zeichen (<see cref="BereinigeDateiname"/>).
 /// </summary>
 public class BildeGpxDateinameTests
 {

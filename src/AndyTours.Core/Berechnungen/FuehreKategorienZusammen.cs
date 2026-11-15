@@ -47,15 +47,7 @@ public static class FuehreKategorienZusammen
             ziel.IstStandard = true;
         }
 
-        string alterName = ursprung.Name.Trim();
-        foreach (Equipment equipment in bestand.Equipments)
-        {
-            if (string.Equals(equipment.StandardKategorie.Trim(), alterName, StringComparison.OrdinalIgnoreCase))
-            {
-                equipment.StandardKategorie = ziel.Name;
-            }
-        }
-
+        ErsetzeStandardkategorie.Ausfuehren(bestand.Equipments, ursprung.Name, ziel.Name);
         bestand.Kategorien.Remove(ursprung);
         return anzahl;
     }

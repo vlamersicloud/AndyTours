@@ -27,20 +27,8 @@ public static class BenenneKategorieUm
             return 0;
         }
 
-        string alt = kategorie.Name.Trim();
-        string neu = neuerName.Trim();
-        kategorie.Name = neu;
-
-        int anzahl = 0;
-        foreach (Equipment equipment in bestand.Equipments)
-        {
-            if (string.Equals(equipment.StandardKategorie.Trim(), alt, StringComparison.OrdinalIgnoreCase))
-            {
-                equipment.StandardKategorie = neu;
-                anzahl++;
-            }
-        }
-
-        return anzahl;
+        string alt = kategorie.Name;
+        kategorie.Name = neuerName.Trim();
+        return ErsetzeStandardkategorie.Ausfuehren(bestand.Equipments, alt, kategorie.Name);
     }
 }

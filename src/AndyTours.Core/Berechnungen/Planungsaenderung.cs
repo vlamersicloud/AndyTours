@@ -11,7 +11,7 @@ namespace AndyTours.Core.Berechnungen;
 /// werden <c>null</c> („noch zu ermitteln“); alle übrigen bleiben erhalten, damit der Routingdienst nur das Nötige neu
 /// berechnet.
 /// </remarks>
-public static class AenderePlanung
+public static class Planungsaenderung
 {
     /// <summary>
     /// Hängt einen Wegpunkt als neues Ziel an.

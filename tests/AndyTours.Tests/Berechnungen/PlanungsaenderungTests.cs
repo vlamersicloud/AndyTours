@@ -4,9 +4,9 @@ using AndyTours.Core.Modell;
 namespace AndyTours.Tests.Berechnungen;
 
 /// <summary>
-/// Tests für <see cref="AenderePlanung"/>.
+/// Tests für <see cref="Planungsaenderung"/>.
 /// </summary>
-public class AenderePlanungTests
+public class PlanungsaenderungTests
 {
     private static readonly Geoposition A = new(48.0, 11.0);
     private static readonly Geoposition B = new(48.1, 11.1);
@@ -28,7 +28,7 @@ public class AenderePlanungTests
     [Fact]
     public void Erster_Punkt_ergibt_kein_Teilstueck()
     {
-        Tourenplanung planung = AenderePlanung.Anhaengen(Tourenplanung.Leer(Fahrprofil.Rennrad), A);
+        Tourenplanung planung = Planungsaenderung.Anhaengen(Tourenplanung.Leer(Fahrprofil.Rennrad), A);
 
         Assert.Equal([A], planung.Wegpunkte);
         Assert.Empty(planung.Teilstuecke);
@@ -38,7 +38,7 @@ public class AenderePlanungTests
     [Fact]
     public void Anhaengen_setzt_neues_Ziel_mit_offenem_Teilstueck()
     {
-        Tourenplanung planung = AenderePlanung.Anhaengen(Dreipunkte(), D);
+        Tourenplanung planung = Planungsaenderung.Anhaengen(Dreipunkte(), D);
 
         Assert.Equal([A, B, C, D], planung.Wegpunkte);
         Assert.Equal([1, 2, null], Kennungen(planung));
@@ -47,7 +47,7 @@ public class AenderePlanungTests
     [Fact]
     public void Einfuegen_teilt_das_Teilstueck_in_zwei_offene()
     {
-        Tourenplanung planung = AenderePlanung.Einfuegen(Dreipunkte(), 2, D);
+        Tourenplanung planung = Planungsaenderung.Einfuegen(Dreipunkte(), 2, D);
 
         Assert.Equal([A, B, D, C], planung.Wegpunkte);
         Assert.Equal([1, null, null], Kennungen(planung));
@@ -58,13 +58,13 @@ public class AenderePlanungTests
     [InlineData(3)]
     public void Einfuegen_nur_zwischen_zwei_Wegpunkten(int nummer)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => AenderePlanung.Einfuegen(Dreipunkte(), nummer, D));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Planungsaenderung.Einfuegen(Dreipunkte(), nummer, D));
     }
 
     [Fact]
     public void Verschieben_oeffnet_nur_die_angrenzenden_Teilstuecke()
     {
-        Tourenplanung planung = AenderePlanung.Verschieben(AenderePlanung.Anhaengen(Dreipunkte(), D), 1, D);
+        Tourenplanung planung = Planungsaenderung.Verschieben(Planungsaenderung.Anhaengen(Dreipunkte(), D), 1, D);
 
         Assert.Equal([A, D, C, D], planung.Wegpunkte);
         Assert.Equal([null, null, null], Kennungen(planung));
@@ -73,7 +73,7 @@ public class AenderePlanungTests
     [Fact]
     public void Verschieben_des_Starts_oeffnet_nur_das_erste_Teilstueck()
     {
-        Tourenplanung planung = AenderePlanung.Verschieben(Dreipunkte(), 0, D);
+        Tourenplanung planung = Planungsaenderung.Verschieben(Dreipunkte(), 0, D);
 
         Assert.Equal([D, B, C], planung.Wegpunkte);
         Assert.Equal([null, 2], Kennungen(planung));
@@ -82,7 +82,7 @@ public class AenderePlanungTests
     [Fact]
     public void Verschieben_des_Ziels_oeffnet_nur_das_letzte_Teilstueck()
     {
-        Tourenplanung planung = AenderePlanung.Verschieben(Dreipunkte(), 2, D);
+        Tourenplanung planung = Planungsaenderung.Verschieben(Dreipunkte(), 2, D);
 
         Assert.Equal([A, B, D], planung.Wegpunkte);
         Assert.Equal([1, null], Kennungen(planung));
@@ -91,7 +91,7 @@ public class AenderePlanungTests
     [Fact]
     public void Entfernen_in_der_Mitte_verbindet_die_Nachbarn_mit_einem_offenen_Teilstueck()
     {
-        Tourenplanung planung = AenderePlanung.Entfernen(Dreipunkte(), 1);
+        Tourenplanung planung = Planungsaenderung.Entfernen(Dreipunkte(), 1);
 
         Assert.Equal([A, C], planung.Wegpunkte);
         Assert.Equal([null], Kennungen(planung));
@@ -100,7 +100,7 @@ public class AenderePlanungTests
     [Fact]
     public void Entfernen_des_Starts_laesst_das_uebrige_Teilstueck()
     {
-        Tourenplanung planung = AenderePlanung.Entfernen(Dreipunkte(), 0);
+        Tourenplanung planung = Planungsaenderung.Entfernen(Dreipunkte(), 0);
 
         Assert.Equal([B, C], planung.Wegpunkte);
         Assert.Equal([2], Kennungen(planung));
@@ -109,7 +109,7 @@ public class AenderePlanungTests
     [Fact]
     public void Letzten_Punkt_entfernen_nimmt_Ziel_und_sein_Teilstueck()
     {
-        Tourenplanung planung = AenderePlanung.EntferneLetzten(Dreipunkte());
+        Tourenplanung planung = Planungsaenderung.EntferneLetzten(Dreipunkte());
 
         Assert.Equal([A, B], planung.Wegpunkte);
         Assert.Equal([1], Kennungen(planung));
@@ -121,7 +121,7 @@ public class AenderePlanungTests
         Tourenplanung planung = Dreipunkte();
         for (int i = 0; i < 4; i++)
         {
-            planung = AenderePlanung.EntferneLetzten(planung);
+            planung = Planungsaenderung.EntferneLetzten(planung);
         }
 
         Assert.Empty(planung.Wegpunkte);
@@ -133,14 +133,14 @@ public class AenderePlanungTests
     [InlineData(3)]
     public void Unbekannter_Wegpunkt_wirft_eine_Ausnahme(int nummer)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => AenderePlanung.Entfernen(Dreipunkte(), nummer));
-        Assert.Throws<ArgumentOutOfRangeException>(() => AenderePlanung.Verschieben(Dreipunkte(), nummer, D));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Planungsaenderung.Entfernen(Dreipunkte(), nummer));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Planungsaenderung.Verschieben(Dreipunkte(), nummer, D));
     }
 
     [Fact]
     public void Profilwechsel_oeffnet_alle_Teilstuecke_und_laesst_die_Wegpunkte()
     {
-        Tourenplanung planung = AenderePlanung.WechsleProfil(Dreipunkte(), Fahrprofil.Mountainbike);
+        Tourenplanung planung = Planungsaenderung.WechsleProfil(Dreipunkte(), Fahrprofil.Mountainbike);
 
         Assert.Equal(Fahrprofil.Mountainbike, planung.Profil);
         Assert.Equal([A, B, C], planung.Wegpunkte);
@@ -150,9 +150,9 @@ public class AenderePlanungTests
     [Fact]
     public void Ermitteltes_Teilstueck_wird_eingetragen()
     {
-        Tourenplanung offen = AenderePlanung.Anhaengen(Dreipunkte(), D);
+        Tourenplanung offen = Planungsaenderung.Anhaengen(Dreipunkte(), D);
 
-        Tourenplanung planung = AenderePlanung.SetzeTeilstueck(offen, 2, Stueck(3));
+        Tourenplanung planung = Planungsaenderung.SetzeTeilstueck(offen, 2, Stueck(3));
 
         Assert.Equal([1, 2, 3], Kennungen(planung));
     }
@@ -162,9 +162,9 @@ public class AenderePlanungTests
     {
         Tourenplanung alt = Dreipunkte();
 
-        AenderePlanung.Verschieben(alt, 1, D);
-        AenderePlanung.Entfernen(alt, 1);
-        AenderePlanung.Einfuegen(alt, 1, D);
+        Planungsaenderung.Verschieben(alt, 1, D);
+        Planungsaenderung.Entfernen(alt, 1);
+        Planungsaenderung.Einfuegen(alt, 1, D);
 
         Assert.Equal([A, B, C], alt.Wegpunkte);
         Assert.Equal([1, 2], Kennungen(alt));

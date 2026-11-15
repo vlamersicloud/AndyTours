@@ -8,7 +8,7 @@ namespace AndyTours.Core.Modell;
 /// <item>Zwischen je zwei benachbarten Wegpunkten liegt genau ein Teilstück; bei n Wegpunkten sind es n − 1
 /// (bei keinem oder einem Wegpunkt keines).</item>
 /// <item>Ein Teilstück <c>null</c> ist noch zu ermitteln, z. B. nach dem Setzen oder Verschieben eines Wegpunkts.</item>
-/// <item>Die Planung wird nie verändert; jede Änderung (<see cref="Berechnungen.AenderePlanung"/>) liefert eine neue.</item>
+/// <item>Die Planung wird nie verändert; jede Änderung (<see cref="Berechnungen.Planungsaenderung"/>) liefert eine neue.</item>
 /// </list>
 /// </remarks>
 /// <param name="Profil">Das Fahrprofil, mit dem die Teilstücke ermittelt werden.</param>

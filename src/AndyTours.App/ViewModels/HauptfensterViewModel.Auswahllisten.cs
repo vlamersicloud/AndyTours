@@ -57,7 +57,7 @@ public partial class HauptfensterViewModel : IAuswahllistenSpeicher
         List<string>? liste = AuswahllisteEinstellung.Laden(verbindung, Auswahlliste.Trainingsbereich);
         if (liste is null)
         {
-            liste = ErmittleTrainingsbereiche.Ausfuehren(bestand.Trainingseinheiten);
+            liste = ErmittleNamensliste.Ausfuehren(bestand.Trainingseinheiten.Select(e => e.Trainingsbereich));
             AuswahllisteEinstellung.Speichern(verbindung, null, Auswahlliste.Trainingsbereich, liste);
         }
 
@@ -81,7 +81,7 @@ public partial class HauptfensterViewModel : IAuswahllistenSpeicher
         List<string>? liste = AuswahllisteEinstellung.Laden(verbindung, Auswahlliste.Taetigkeit);
         if (liste is null)
         {
-            liste = ErmittleTaetigkeiten.Ausfuehren(bestand.Wartungen);
+            liste = ErmittleNamensliste.Ausfuehren(bestand.Wartungen.Select(w => w.Taetigkeit));
             AuswahllisteEinstellung.Speichern(verbindung, null, Auswahlliste.Taetigkeit, liste);
         }
 
@@ -165,12 +165,12 @@ public partial class HauptfensterViewModel : IAuswahllistenSpeicher
     /// </remarks>
     (int Einheiten, int Equipments) IAuswahllistenSpeicher.ZaehleVerwendung(Auswahlliste liste, string name) => liste switch
     {
-        Auswahlliste.Trainingsbereich => (ZaehleTrainingsbereich.Ausfuehren(_bestand.Trainingseinheiten, name), 0),
+        Auswahlliste.Trainingsbereich => (ZaehleNamen.Ausfuehren(_bestand.Trainingseinheiten.Select(e => e.Trainingsbereich), name), 0),
         Auswahlliste.Aktivitaet => FindeAktivitaet(name) is { } a ? ZaehleVerwendung.Aktivitaet(_bestand, a.Id) : (0, 0),
         Auswahlliste.Kategorie => FindeKategorie(name) is { } k ? (ZaehleVerwendung.Kategorie(_bestand, k.Id).Einheiten, 0) : (0, 0),
         Auswahlliste.Equipment => FindeEquipment(name) is { } e ? (ZaehleVerwendung.Equipment(_bestand, e.Id).Einheiten, 0) : (0, 0),
-        Auswahlliste.Taetigkeit => (ZaehleTaetigkeit.Ausfuehren(_bestand.Wartungen, name, WartungsTyp.Wartung),
-            ZaehleTaetigkeit.Ausfuehren(_bestand.Wartungen, name, WartungsTyp.Alarm)),
+        Auswahlliste.Taetigkeit => (ZaehleNamen.Ausfuehren(_bestand.Wartungen.Where(w => w.Typ == WartungsTyp.Wartung).Select(w => w.Taetigkeit), name),
+            ZaehleNamen.Ausfuehren(_bestand.Wartungen.Where(w => w.Typ == WartungsTyp.Alarm).Select(w => w.Taetigkeit), name)),
         _ => throw new ArgumentOutOfRangeException(nameof(liste), liste, null),
     };
 
@@ -180,7 +180,7 @@ public partial class HauptfensterViewModel : IAuswahllistenSpeicher
         switch (liste)
         {
             case Auswahlliste.Trainingsbereich:
-                int anzahl = ZaehleTrainingsbereich.Ausfuehren(_bestand.Trainingseinheiten, name);
+                int anzahl = ZaehleNamen.Ausfuehren(_bestand.Trainingseinheiten.Select(e => e.Trainingsbereich), name);
                 return anzahl == 0
                     ? null
                     : string.Format(CultureInfo.GetCultureInfo("de-DE"), "‚{0}‘ wird in {1:N0} {2} verwendet und kann nicht gelöscht werden.",
@@ -192,8 +192,8 @@ public partial class HauptfensterViewModel : IAuswahllistenSpeicher
             case Auswahlliste.Equipment:
                 return FindeEquipment(name) is { } e ? ErmittleLoeschsperre.Equipment(_bestand, e.Id) : null;
             case Auswahlliste.Taetigkeit:
-                int wartungen = ZaehleTaetigkeit.Ausfuehren(_bestand.Wartungen, name, WartungsTyp.Wartung);
-                int alarme = ZaehleTaetigkeit.Ausfuehren(_bestand.Wartungen, name, WartungsTyp.Alarm);
+                int wartungen = ZaehleNamen.Ausfuehren(_bestand.Wartungen.Where(w => w.Typ == WartungsTyp.Wartung).Select(w => w.Taetigkeit), name);
+                int alarme = ZaehleNamen.Ausfuehren(_bestand.Wartungen.Where(w => w.Typ == WartungsTyp.Alarm).Select(w => w.Taetigkeit), name);
                 return wartungen + alarme == 0
                     ? null
                     : $"‚{name}‘ wird in {AuswahllistenViewModel.BeschreibeTaetigkeitsverwendung(wartungen, alarme)} verwendet und kann nicht gelöscht werden.";
@@ -267,7 +267,7 @@ public partial class HauptfensterViewModel : IAuswahllistenSpeicher
                 }
 
                 eintraege[stelle] = neuerName;
-                bool verwendet = ZaehleTrainingsbereich.Ausfuehren(_bestand.Trainingseinheiten, alt) > 0;
+                bool verwendet = ZaehleNamen.Ausfuehren(_bestand.Trainingseinheiten.Select(e => e.Trainingsbereich), alt) > 0;
                 return SpeichereTrainingsbereiche(eintraege, verwendet ? (alt, neuerName) : null);
             }
 

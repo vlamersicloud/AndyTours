@@ -8,9 +8,6 @@ namespace AndyTours.Core.Berechnungen;
 /// </summary>
 public static class BildeGpxDateiname
 {
-    /// <summary>Zeichen, die Windows in Dateinamen nicht erlaubt.</summary>
-    private const string Unzulaessig = "\\/:*?\"<>|";
-
     /// <summary>
     /// Bildet den Dateinamen aus Datum und Name, z. B. „2026-05-01 Bründlingalm.gpx“.
     /// </summary>
@@ -35,9 +32,7 @@ public static class BildeGpxDateiname
         DateOnly letztes = etappen.Max(e => e.Einheit.Datum);
         string datum = erstes == letztes ? Datum(erstes) : $"{Datum(erstes)} bis {Datum(letztes)}";
 
-        string name = new(etappen[0].Einheit.Name.Trim()
-            .Select(zeichen => Unzulaessig.Contains(zeichen) || char.IsControl(zeichen) ? '-' : zeichen)
-            .ToArray());
+        string name = BereinigeDateiname.Ausfuehren(etappen[0].Einheit.Name);
         string zusatz = bearbeitet ? " (bearbeitet)" : string.Empty;
         return (name.Length == 0 ? datum : $"{datum} {name}") + zusatz + ".gpx";
     }

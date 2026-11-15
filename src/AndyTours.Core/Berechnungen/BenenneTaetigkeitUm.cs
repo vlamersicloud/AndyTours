@@ -21,11 +21,10 @@ public static class BenenneTaetigkeitUm
     /// <returns>Die Anzahl der geänderten Wartungen.</returns>
     public static int Ausfuehren(IEnumerable<Wartung> wartungen, string alt, string neu)
     {
-        string gesucht = alt.Trim();
         int anzahl = 0;
         foreach (Wartung wartung in wartungen)
         {
-            if (string.Equals(wartung.Taetigkeit.Trim(), gesucht, StringComparison.OrdinalIgnoreCase))
+            if (VergleicheNamen.Ausfuehren(wartung.Taetigkeit, alt))
             {
                 wartung.Taetigkeit = neu.Trim();
                 anzahl++;

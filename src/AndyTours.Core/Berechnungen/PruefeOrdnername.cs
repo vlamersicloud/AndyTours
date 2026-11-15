@@ -30,7 +30,7 @@ public static class PruefeOrdnername
         }
 
         bool vorhanden = ordner.Any(o => o.ElternId == elternId && o.Id != eigeneId
-            && string.Equals(o.Name.Trim(), bereinigt, StringComparison.OrdinalIgnoreCase));
+            && VergleicheNamen.Ausfuehren(o.Name, bereinigt));
         return vorhanden ? $"Einen Ordner „{bereinigt}“ gibt es hier schon." : null;
     }
 }

@@ -4,8 +4,8 @@ namespace AndyTours.Core.Modell;
 /// Aufsummierte Kennwerte aller Trainingseinheiten eines Jahres.
 /// </summary>
 /// <remarks>
-/// Ergebnis von <see cref="Berechnungen.BerechneJahressummen"/>. Wird u. a. verwendet, um nach der
-/// Übernahme der Altdaten zu prüfen, dass die Summen mit den Altdaten übereinstimmen.
+/// Ergebnis von <see cref="Berechnungen.BerechneJahressummen"/>; Grundlage der Jahresrekorde
+/// (<see cref="Berechnungen.ErmittleBestleistungen"/>).
 /// </remarks>
 /// <param name="Jahr">Kalenderjahr.</param>
 /// <param name="Anzahl">Anzahl der Trainingseinheiten.</param>

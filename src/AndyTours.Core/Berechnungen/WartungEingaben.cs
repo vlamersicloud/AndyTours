@@ -69,7 +69,7 @@ public static class WartungEingaben
         if (datum is DateOnly tag && eingaben.EquipmentId is long radId && taetigkeit.Length > 0
             && bestand.Wartungen.FirstOrDefault(w => w.Typ == WartungsTyp.Wartung && w.Id != basis.Id
                 && w.EquipmentId == radId && w.Datum == tag
-                && string.Equals(w.Taetigkeit.Trim(), taetigkeit, StringComparison.OrdinalIgnoreCase)) is Wartung vorhanden)
+                && VergleicheNamen.Ausfuehren(w.Taetigkeit, taetigkeit)) is Wartung vorhanden)
         {
             fehler.Add(Wartungsfeld.Taetigkeit);
             string rad = bestand.Equipments.FirstOrDefault(e => e.Id == radId)?.Name ?? string.Empty;

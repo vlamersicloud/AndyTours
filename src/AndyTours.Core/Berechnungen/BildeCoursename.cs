@@ -7,9 +7,6 @@ namespace AndyTours.Core.Berechnungen;
 /// </summary>
 public static class BildeCoursename
 {
-    /// <summary>Zeichen, die in Dateinamen nicht erlaubt sind.</summary>
-    private const string Unzulaessig = "\\/:*?\"<>|";
-
     /// <summary>
     /// Vorschlag für eine Planung: der Dateiname ohne Endung, bei einer ungespeicherten Planung „Planung JJJJ-MM-TT“.
     /// </summary>
@@ -32,12 +29,11 @@ public static class BildeCoursename
     /// Der Dateiname eines Course auf dem Garmin: der Name mit der Endung „.fit“.
     /// </summary>
     /// <remarks>
-    /// Zeichen, die in Dateinamen nicht erlaubt sind, sowie Steuerzeichen werden durch „-“ ersetzt; Leerzeichen und
-    /// Punkte am Ende entfallen, weil Windows sie nicht zulässt.
+    /// Unzulässige Zeichen ersetzt <see cref="BereinigeDateiname"/>; Leerzeichen und Punkte am Ende entfallen,
+    /// weil Windows sie nicht zulässt.
     /// </remarks>
     /// <param name="name">Name des Course; nicht leer.</param>
     /// <returns>Der Dateiname, z. B. „2026-05-01 Bründlingalm.fit“.</returns>
     public static string Dateiname(string name) =>
-        new string([.. name.Trim().Select(zeichen => Unzulaessig.Contains(zeichen) || char.IsControl(zeichen) ? '-' : zeichen)])
-            .TrimEnd(' ', '.') + ".fit";
+        BereinigeDateiname.Ausfuehren(name).TrimEnd(' ', '.') + ".fit";
 }

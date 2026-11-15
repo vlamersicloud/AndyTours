@@ -60,7 +60,7 @@ public static class AlarmEingaben
         // Schon ein Alarm für dieses Rad und diese Tätigkeit?
         if (eingaben.EquipmentId is long radId && taetigkeit.Length > 0
             && bestand.Wartungen.FirstOrDefault(w => w.Typ == WartungsTyp.Alarm && w.Id != basis.Id && w.EquipmentId == radId
-                && string.Equals(w.Taetigkeit.Trim(), taetigkeit, StringComparison.OrdinalIgnoreCase)) is Wartung vorhanden)
+                && VergleicheNamen.Ausfuehren(w.Taetigkeit, taetigkeit)) is Wartung vorhanden)
         {
             fehler.Add(Alarmfeld.Taetigkeit);
             string rad = bestand.Equipments.FirstOrDefault(e => e.Id == radId)?.Name ?? string.Empty;

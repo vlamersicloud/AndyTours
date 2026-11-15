@@ -12,7 +12,7 @@ namespace AndyTours.App.ViewModels;
 /// ViewModel des Fensters „Tour planen“.
 /// </summary>
 /// <remarks>
-/// Es hält die <see cref="Tourenplanung"/> und ändert sie über <see cref="AenderePlanung"/>. Nach jeder Änderung werden
+/// Es hält die <see cref="Tourenplanung"/> und ändert sie über <see cref="Planungsaenderung"/>. Nach jeder Änderung werden
 /// die offenen Teilstücke nacheinander beim Routingdienst ermittelt (<see cref="ErmittleOffeneTeilstuecke"/>); eine neue
 /// Änderung bricht eine laufende Ermittlung ab und startet sie neu. Ein Teilstück, das der Dienst nicht liefert, wird
 /// eine Luftlinie, und ein Hinweis erscheint. Die Karte zeichnet das Code-Behind (Mapsui kennt keine Bindungen); es
@@ -127,7 +127,7 @@ public partial class TourenplanungViewModel : ObservableObject
     /// Hängt einen Wegpunkt als neues Ziel an (Klick in die Karte neben die Strecke).
     /// </summary>
     /// <param name="position">Ort des Klicks.</param>
-    public void Anhaengen(Geoposition position) => Aendere(AenderePlanung.Anhaengen(Planung, position));
+    public void Anhaengen(Geoposition position) => Aendere(Planungsaenderung.Anhaengen(Planung, position));
 
     /// <summary>
     /// Fügt einen Wegpunkt in ein Teilstück ein (Linie weggezogen).
@@ -135,20 +135,20 @@ public partial class TourenplanungViewModel : ObservableObject
     /// <param name="teilstueck">Nummer des Teilstücks, dessen Linie gezogen wurde.</param>
     /// <param name="position">Ort, an dem die Linie losgelassen wurde.</param>
     public void Einfuegen(int teilstueck, Geoposition position) =>
-        Aendere(AenderePlanung.Einfuegen(Planung, teilstueck + 1, position));
+        Aendere(Planungsaenderung.Einfuegen(Planung, teilstueck + 1, position));
 
     /// <summary>
     /// Verschiebt einen Wegpunkt (Wegpunkt gezogen und losgelassen).
     /// </summary>
     /// <param name="nummer">Nummer des Wegpunkts.</param>
     /// <param name="position">Neuer Ort.</param>
-    public void Verschieben(int nummer, Geoposition position) => Aendere(AenderePlanung.Verschieben(Planung, nummer, position));
+    public void Verschieben(int nummer, Geoposition position) => Aendere(Planungsaenderung.Verschieben(Planung, nummer, position));
 
     /// <summary>
     /// Entfernt einen Wegpunkt (Rechtsklick auf den Wegpunkt).
     /// </summary>
     /// <param name="nummer">Nummer des Wegpunkts.</param>
-    public void Entfernen(int nummer) => Aendere(AenderePlanung.Entfernen(Planung, nummer));
+    public void Entfernen(int nummer) => Aendere(Planungsaenderung.Entfernen(Planung, nummer));
 
     /// <summary>
     /// Merkt den beim Schließen gezeigten Kartenausschnitt für das nächste Öffnen.
@@ -160,7 +160,7 @@ public partial class TourenplanungViewModel : ObservableObject
 
     /// <summary>Befehl „Letzten Punkt entfernen“.</summary>
     [RelayCommand(CanExecute = nameof(HatWegpunkte))]
-    private void LetztenPunktEntfernen() => Aendere(AenderePlanung.EntferneLetzten(Planung));
+    private void LetztenPunktEntfernen() => Aendere(Planungsaenderung.EntferneLetzten(Planung));
 
     /// <summary>Befehl „Alles löschen“: nach einer Rückfrage ist die Planung leer.</summary>
     [RelayCommand(CanExecute = nameof(HatWegpunkte))]
@@ -180,7 +180,7 @@ public partial class TourenplanungViewModel : ObservableObject
         Merke(_einstellungen with { Profil = value });
         if (!_wirdGeladen)
         {
-            Aendere(AenderePlanung.WechsleProfil(Planung, value), geaendert: HatWegpunkte);
+            Aendere(Planungsaenderung.WechsleProfil(Planung, value), geaendert: HatWegpunkte);
         }
     }
 
@@ -248,7 +248,7 @@ public partial class TourenplanungViewModel : ObservableObject
                 if (nummer < Planung.Teilstuecke.Count && Planung.Teilstuecke[nummer] is null
                     && Planung.Wegpunkte[nummer] == von && Planung.Wegpunkte[nummer + 1] == nach)
                 {
-                    Uebernimm(AenderePlanung.SetzeTeilstueck(Planung, nummer, teilstueck));
+                    Uebernimm(Planungsaenderung.SetzeTeilstueck(Planung, nummer, teilstueck));
                 }
                 else
                 {

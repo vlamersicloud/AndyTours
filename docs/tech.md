@@ -30,7 +30,7 @@
 - `Directory.Build.props` für alle Projekte: `LangVersion latest`, `Nullable enable`, `ImplicitUsings enable`, `GenerateDocumentationFile true`, `NoWarn CS1591`, `AnalysisLevel latest-recommended`, `EnforceCodeStyleInBuild true`, `Version` (einzige Stelle der Versionsnummer), `Product AndyTours`, `Authors Andreas Hensel`, `Company AndyTours`, `Copyright © Andreas Hensel` (Autor in der exe und in „Über AndyTours“), `NeutralLanguage de-DE`
 - `.editorconfig`: `utf-8-bom`, `crlf`, abschließende Leerzeile, 4 Leerzeichen; `csproj/props/slnx/xml/xaml` mit 2 Leerzeichen; dateibezogene Namespaces; `var` nur bei offensichtlichem Typ; geschweifte Klammern immer; private Felder `_camelCase`; CA1707 in `tests/**.cs` aus; CA1822 in `src/AndyTours.App/ViewModels/**.cs` aus
 - Eine Datei je Aufgabe; Dateiname = Klassenname
-- Eigenständige Fachfunktionen: `static class` mit Verb als Namen und genau einer öffentlichen Methode `Ausfuehren(...)` (z. B. `BerechneAuswahlsummen`)
+- Eigenständige Fachfunktionen: `static class` mit Verb als Namen und genau einer öffentlichen Methode `Ausfuehren(...)` (z. B. `BerechneAuswahlsummen`); Varianten derselben Aufgabe dürfen als benannte Methoden in derselben Klasse stehen (z. B. `ErmittleLoeschsperre.Equipment`/`.Kategorie`, `BildeCourse.AusPlanung`/`.AusVerlauf`)
 - Zusammengehöriges: `static class` mit Substantiv als Namen (`…Tabelle.Laden/Speichern`, `…Einstellung.Laden/Speichern`, `DatumSpalte.Lesen/AlsText`)
 - Modelle, ViewModels, Fenster: je eine Klasse pro Datei, ohne eigene Fachlogik
 - Bezeichner deutsch ohne Umlaute; Oberfläche und Kommentare mit Umlauten

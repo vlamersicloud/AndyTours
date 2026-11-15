@@ -32,7 +32,7 @@ public static class BerechneAlarmstand
         DateOnly bezugstag = bestand.Wartungen
             .Where(w => w.Typ == WartungsTyp.Wartung
                 && w.EquipmentId == alarm.EquipmentId
-                && string.Equals(w.Taetigkeit.Trim(), taetigkeit, StringComparison.OrdinalIgnoreCase))
+                && VergleicheNamen.Ausfuehren(w.Taetigkeit, taetigkeit))
             .Select(w => (DateOnly?)w.Datum)
             .Max() ?? alarm.Datum;
 

@@ -11,7 +11,7 @@ namespace AndyTours.Core.Modell;
 /// </remarks>
 public class Einheitszeile
 {
-    /// <summary>Nummer der Einheit in der Datenbank (für spätere Funktionen wie Bearbeiten).</summary>
+    /// <summary>Nummer der Einheit in der Datenbank (zum Bearbeiten, Löschen und Markieren).</summary>
     public long Id { get; init; }
 
     /// <summary>Datum der Einheit.</summary>

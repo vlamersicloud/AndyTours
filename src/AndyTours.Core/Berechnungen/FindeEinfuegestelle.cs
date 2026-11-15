@@ -18,7 +18,7 @@ public static class FindeEinfuegestelle
     /// Ein noch nicht ermitteltes Teilstück zählt als gerade Linie zwischen seinen Wegpunkten, so wie es auch auf der
     /// Karte erscheint. Gerechnet wird in Metern auf einer örtlichen Ebene um die Stelle. Ob die Stelle nah genug an
     /// der Linie liegt, entscheidet der Aufrufer anhand des Abstands. Der neue Wegpunkt bekommt die Nummer
-    /// <c>Teilstueck + 1</c> (siehe <see cref="AenderePlanung.Einfuegen"/>).
+    /// <c>Teilstueck + 1</c> (siehe <see cref="Planungsaenderung.Einfuegen"/>).
     /// </remarks>
     /// <param name="planung">Die Planung.</param>
     /// <param name="stelle">Die Stelle, an der die Linie gegriffen wurde.</param>

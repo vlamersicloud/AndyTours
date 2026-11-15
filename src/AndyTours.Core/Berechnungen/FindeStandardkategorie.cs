@@ -23,6 +23,6 @@ public static class FindeStandardkategorie
         string name = bestand.Equipments.FirstOrDefault(e => e.Id == equipmentId)?.StandardKategorie.Trim() ?? string.Empty;
         return name.Length == 0
             ? null
-            : bestand.Kategorien.FirstOrDefault(k => string.Equals(k.Name.Trim(), name, StringComparison.OrdinalIgnoreCase))?.Id;
+            : bestand.Kategorien.FirstOrDefault(k => VergleicheNamen.Ausfuehren(k.Name, name))?.Id;
     }
 }

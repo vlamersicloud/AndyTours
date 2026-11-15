@@ -17,7 +17,7 @@ public static class OrdneTaetigkeitenNachHaeufigkeit
     /// </summary>
     /// <remarks>
     /// Gezählt werden nur durchgeführte Wartungen, keine Alarme, ohne Unterschied zwischen Groß- und
-    /// Kleinschreibung und ohne Leerzeichen am Rand – so wie <see cref="ZaehleTaetigkeit"/> zählt.
+    /// Kleinschreibung und ohne Leerzeichen am Rand – so wie <see cref="VergleicheNamen"/> vergleicht.
     /// Die Sortierung ist stabil, deshalb bleibt bei Gleichstand die Reihenfolge der Liste erhalten.
     /// </remarks>
     /// <param name="taetigkeiten">Die Liste „Tätigkeit“ in der Reihenfolge der Einstellungen.</param>

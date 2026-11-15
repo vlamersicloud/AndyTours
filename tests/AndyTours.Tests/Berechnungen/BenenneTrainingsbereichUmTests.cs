@@ -4,9 +4,9 @@ using AndyTours.Core.Modell;
 namespace AndyTours.Tests.Berechnungen;
 
 /// <summary>
-/// Tests für <see cref="ZaehleTrainingsbereich"/> und <see cref="BenenneTrainingsbereichUm"/>.
+/// Tests für <see cref="BenenneTrainingsbereichUm"/>.
 /// </summary>
-public class ZaehleUndBenenneTrainingsbereichTests
+public class BenenneTrainingsbereichUmTests
 {
     /// <summary>Einheiten mit GA2 (zwei Schreibweisen), GA1 und ohne Bereich.</summary>
     private static List<Trainingseinheit> Einheiten() =>
@@ -17,22 +17,12 @@ public class ZaehleUndBenenneTrainingsbereichTests
         new() { Id = 4, Trainingsbereich = "" },
     ];
 
-    [Theory]
-    [InlineData("GA2", 2)]
-    [InlineData("ga2", 2)]
-    [InlineData("GA1", 1)]
-    [InlineData("WSA", 0)]
-    public void Zaehlt_ohne_Unterschied_der_Schreibweise(string bereich, int erwartet)
-    {
-        Assert.Equal(erwartet, ZaehleTrainingsbereich.Ausfuehren(Einheiten(), bereich));
-    }
-
     [Fact]
     public void Umbenennen_aendert_alle_Schreibweisen_und_sonst_nichts()
     {
         List<Trainingseinheit> einheiten = Einheiten();
 
-        int anzahl = BenenneTrainingsbereichUm.Ausfuehren(einheiten, "GA2", "GA 2");
+        int anzahl = BenenneTrainingsbereichUm.Ausfuehren(einheiten, "GA2", " GA 2 ");
 
         Assert.Equal(2, anzahl);
         Assert.Equal(["GA 2", "GA1", "GA 2", ""], einheiten.Select(e => e.Trainingsbereich));

@@ -44,7 +44,7 @@ public static class BerechneHaltbarkeit
         Wartung? vorherige = bestand.Wartungen
             .Where(w => w.Typ == WartungsTyp.Wartung
                 && w.EquipmentId == rad.Id
-                && string.Equals(w.Taetigkeit.Trim(), taetigkeit, StringComparison.OrdinalIgnoreCase)
+                && VergleicheNamen.Ausfuehren(w.Taetigkeit, taetigkeit)
                 && (w.Datum < wartung.Datum || (w.Datum == wartung.Datum && w.Id < wartung.Id)))
             .OrderByDescending(w => w.Datum)
             .ThenByDescending(w => w.Id)

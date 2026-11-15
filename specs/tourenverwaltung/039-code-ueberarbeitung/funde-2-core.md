@@ -2,7 +2,7 @@
 
 Geprüft: alle 189 Dateien unter `src/AndyTours.Core` (Modell und Berechnungen).
 
-Freigabe: _offen_
+Freigabe: alle Punkte freigegeben am 15.11.2026, Frage 1: A1
 
 ## Ungenutzter Code
 Kein Fund. Jede öffentliche Klasse, Methode, Eigenschaft und Konstante wird außerhalb ihrer Datei
