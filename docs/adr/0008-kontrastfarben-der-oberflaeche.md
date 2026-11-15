@@ -1,4 +1,5 @@
 # 0008 · Kontrastfarben der Oberfläche
+Teilweise ersetzt durch [0009](0009-hauptmenueleiste.md) (Hauptmenüpunkte ohne eigene Flächen)
 
 ## Entscheidung
 Auf dem Fluent-Design (ADR 0006) setzt AndyTours app-weit in `App.xaml` eigene Farben für mehr Kontrast. Sie gelten für alle Fenster, auch künftige:

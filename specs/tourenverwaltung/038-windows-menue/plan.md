@@ -14,8 +14,8 @@
 - `docs/tech.md` (ändern) — Kontrastfarben ohne Hauptmenü, Hinweis auf ADR 0009
 - `CLAUDE.md` (ändern) — dieselbe Zeile zu den Kontrastfarben
 - `Beschreibung der fundamentals.md` (ändern) — Abschnitte zu Technik, Regeln und Erscheinungsbild (die wörtliche Kopie von ADR 0008 bleibt als Verlauf)
-- `docs/adr/0009-…md` (neu, hängt ab von: Wie sieht die Hauptmenüleiste aus?) — wird mit `/sdd-adr` angelegt
-- `docs/adr/0008-kontrastfarben-der-oberflaeche.md` (ändern, hängt ab von: Wie sieht die Hauptmenüleiste aus?) — Vermerk „teilweise ersetzt durch 0009“
+- `docs/adr/0009-hauptmenueleiste.md` (neu) — mit `/sdd-adr` angelegt
+- `docs/adr/0008-kontrastfarben-der-oberflaeche.md` (ändern) — Vermerk „teilweise ersetzt durch 0009“
 
 ## Abdeckung der Kriterien
 Alle Kriterien betreffen das Aussehen bzw. unveränderte Bedienung und werden manuell mit `dotnet run --project src/AndyTours.App` geprüft. Dass sich das Verhalten nicht ändert, sichern zusätzlich Build ohne Warnungen und alle Tests mit `dotnet test AndyTours.slnx`.
@@ -35,7 +35,7 @@ Alle Kriterien betreffen das Aussehen bzw. unveränderte Bedienung und werden ma
 - Die Farbe der Hervorhebung bleibt `#CDD4DC` für Hauptmenü und aufklappende Menüs; eine zweite, hellere Farbe nur für das Hauptmenü wäre ein weiterer Wert ohne erkennbaren Nutzen.
 
 ## Offene Entscheidungen
-- Wie sieht die Hauptmenüleiste aus (schlichte Leiste ohne eigene Flächen; löst ADR 0008 für die Hauptmenüpunkte ab)? → /sdd-adr
+- Wie sieht die Hauptmenüleiste aus (schlichte Leiste ohne eigene Flächen; löst ADR 0008 für die Hauptmenüpunkte ab)? → decided in docs/adr/0009-hauptmenueleiste.md
 
 ## Risiken
 - Wie die Fluent-Vorlage den Hauptmenüpunkt ohne eigene Farben genau zeichnet (Abstände, Rundung der Hervorhebung), zeigt sich erst im laufenden Programm. Weicht es von der Spec ab, werden nur Eigenschaften im Stil ergänzt, keine eigene Vorlage.
