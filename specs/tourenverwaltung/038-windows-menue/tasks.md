@@ -7,5 +7,5 @@
 - [x] 5. Bauen und Testen ohne Fehler und Warnungen
 - [x] 6. Handbuch, Abschnitt 3.3: Aussehen der Menüleiste
 - [x] 7. Projektbeschreibung: Abschnitte zu Technik, Regeln und Erscheinungsbild
-- [ ] 8. Manuelle Prüfung: Aussehen, Hervorhebung, Trennlinie, aufklappende Menüs und Kontextmenüs
-- [ ] 9. Manuelle Prüfung: Tastatur (Alt, Alt+Buchstabe, Strg+N, Entf), ausgegraute Einträge, Größe der Oberfläche
+- [x] 8. Manuelle Prüfung: Aussehen, Hervorhebung, Trennlinie, aufklappende Menüs und Kontextmenüs
+- [x] 9. Manuelle Prüfung: Tastatur (Alt, Alt+Buchstabe, Strg+N, Entf), ausgegraute Einträge, Größe der Oberfläche
