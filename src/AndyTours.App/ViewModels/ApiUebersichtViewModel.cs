@@ -54,7 +54,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
     public IReadOnlyList<KeyValuePair<Auswertungsraster, string>> RasterOptionen { get; } =
     [
         new(Auswertungsraster.Jahr, "Jahr"), new(Auswertungsraster.Monat, "Monat"),
-        new(Auswertungsraster.Woche, "Woche"), new(Auswertungsraster.Tag, "Tag")
+        new(Auswertungsraster.Woche, "Kalenderwoche (ISO)"), new(Auswertungsraster.Tag, "Tag")
     ];
 
     /// <summary>Verfügbare Diagrammkennzahlen.</summary>
@@ -95,13 +95,13 @@ public partial class ApiUebersichtViewModel : ObservableObject
     public async Task AktualisierenAsync(CancellationToken ct = default)
     {
         if (Laedt) return;
-        Laedt = true;
         var generation = Interlocked.Increment(ref _generation);
         if (VonDatum is null || BisDatum is null || VonDatum > BisDatum)
         {
             StatusText = "Bitte einen gültigen Zeitraum auswählen.";
             return;
         }
+        Laedt = true;
         StatusText = "Daten werden geladen …";
         try
         {
@@ -206,7 +206,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
     private void ZeichneDiagramm()
     {
         var model = new PlotModel { Background = OxyColors.White };
-        var zeitachse = new CategoryAxis { Position = AxisPosition.Bottom, Minimum = -0.5, Maximum = _perioden.Count - 0.5 };
+        var zeitachse = new CategoryAxis { Position = AxisPosition.Bottom, Minimum = -0.5, Maximum = _perioden.Count - 0.5, IsPanEnabled = false, IsZoomEnabled = false, Angle = _perioden.Count > 16 ? -45 : 0, MajorStep = _perioden.Count > 16 ? 2 : 1 };
         var einheit = Kennzahl switch
         {
             ApiDiagrammkennzahl.Kilometer => "km",
@@ -215,7 +215,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
             _ => "Touren"
         };
         model.Axes.Add(zeitachse);
-        model.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Title = einheit });
+        model.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Title = einheit, IsPanEnabled = false, IsZoomEnabled = false });
         var bars = new RectangleBarSeries { FillColor = OxyColor.FromRgb(0, 102, 204), StrokeThickness = 0 };
         for (var i = 0; i < _perioden.Count; i++)
         {
