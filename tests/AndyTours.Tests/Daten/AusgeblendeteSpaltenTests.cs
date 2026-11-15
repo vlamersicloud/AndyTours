@@ -81,11 +81,11 @@ public class AusgeblendeteSpaltenTests
     public void Sicherungseinstellungen_bleiben_unberuehrt()
     {
         using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(":memory:");
-        SicherungEinstellungen.Speichern(verbindung, new Sicherungseinstellungen { Intervall = 5 });
+        SicherungEinstellung.Speichern(verbindung, new Sicherungseinstellungen { Intervall = 5 });
 
         AusgeblendeteSpaltenEinstellung.Speichern(verbindung, new HashSet<Einheitenspalte> { Einheitenspalte.Name });
         AusgeblendeteSpaltenEinstellung.Speichern(verbindung, new HashSet<Einheitenspalte>());
 
-        Assert.Equal(5, SicherungEinstellungen.Laden(verbindung).Intervall);
+        Assert.Equal(5, SicherungEinstellung.Laden(verbindung).Intervall);
     }
 }

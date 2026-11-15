@@ -34,14 +34,14 @@ public partial class HauptfensterViewModel
     [RelayCommand]
     private void TourPlanen()
     {
-        Planungseinstellungen einstellungen = LadeEinstellung(PlanungseinstellungenEinstellung.Laden) ?? Planungseinstellungen.Standard;
+        Planungseinstellungen einstellungen = LadeEinstellung(PlanungEinstellung.Laden) ?? Planungseinstellungen.Standard;
         (Geoposition suedWest, Geoposition nordOst) = einstellungen is { SuedWest: Geoposition sw, NordOst: Geoposition no }
             ? (sw, no)
             : GebietDerLetztenTour() ?? (DeutschlandSuedWest, DeutschlandNordOst);
 
         var viewModel = new TourenplanungViewModel(einstellungen, suedWest, nordOst,
             () => LadeEinstellung(RoutingEinstellung.Laden) ?? Routingeinstellungen.Standard,
-            neu => SpeichereStill(verbindung => PlanungseinstellungenEinstellung.Speichern(verbindung, neu)));
+            neu => SpeichereStill(verbindung => PlanungEinstellung.Speichern(verbindung, neu)));
         new TourenplanungFenster(viewModel) { Owner = Application.Current.MainWindow }.Show();
     }
 

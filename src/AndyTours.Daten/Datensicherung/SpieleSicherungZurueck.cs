@@ -67,7 +67,7 @@ public static class SpieleSicherungZurueck
             Sicherungseinstellungen einstellungen;
             using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(datenbankdatei))
             {
-                einstellungen = SicherungEinstellungen.Laden(verbindung);
+                einstellungen = SicherungEinstellung.Laden(verbindung);
             }
 
             string sicherungsordner = ErmittleSicherungsordner.Ausfuehren(datenordner, einstellungen);
@@ -84,9 +84,9 @@ public static class SpieleSicherungZurueck
             }
 
             // 3. Vorbereiten
-            LoescheZwischendatei(zwischendatei); // Rest eines früher abgebrochenen Versuchs
-            using (var quelle = new SqliteConnection(Verbindungstext(sicherung, SqliteOpenMode.ReadOnly)))
-            using (var ziel = new SqliteConnection(Verbindungstext(zwischendatei, SqliteOpenMode.ReadWriteCreate)))
+            Sicherungsdatei.LoescheZwischendatei(zwischendatei); // Rest eines früher abgebrochenen Versuchs
+            using (var quelle = new SqliteConnection(Sicherungsdatei.Verbindungstext(sicherung, SqliteOpenMode.ReadOnly)))
+            using (var ziel = new SqliteConnection(Sicherungsdatei.Verbindungstext(zwischendatei, SqliteOpenMode.ReadWriteCreate)))
             {
                 quelle.Open();
                 ziel.Open();
@@ -95,7 +95,7 @@ public static class SpieleSicherungZurueck
 
             using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(zwischendatei, vorUmbauSichern: false))
             {
-                SicherungEinstellungen.Speichern(verbindung, einstellungen with { StartsSeitSicherung = 0 });
+                SicherungEinstellung.Speichern(verbindung, einstellungen with { StartsSeitSicherung = 0 });
             }
 
             // 4. Austauschen
@@ -115,7 +115,7 @@ public static class SpieleSicherungZurueck
         }
         catch (Exception fehler) when (IstErwartet(fehler))
         {
-            LoescheZwischendatei(zwischendatei);
+            Sicherungsdatei.LoescheZwischendatei(zwischendatei);
             return new Wiederherstellungsergebnis(Wiederherstellungsstatus.Fehlgeschlagen, zusaetzlicheSicherung,
                 BeschreibeFehler(fehler));
         }
@@ -141,21 +141,4 @@ public static class SpieleSicherungZurueck
             $"Die Datenbank im Datenordner konnte nicht ersetzt werden (wird sie gerade von einem anderen Programm verwendet?).\n\n{fehler.Message}",
         _ => $"Unerwarteter Fehler: {fehler.Message}",
     };
-
-    /// <summary>Verbindungstext für eine Datei mit der angegebenen Zugriffsart, ohne Verbindungs-Wiederverwendung.</summary>
-    private static string Verbindungstext(string datei, SqliteOpenMode modus) =>
-        new SqliteConnectionStringBuilder { DataSource = datei, Mode = modus, Pooling = false }.ToString();
-
-    /// <summary>Entfernt die Zwischendatei, falls vorhanden; Fehler dabei werden ignoriert.</summary>
-    private static void LoescheZwischendatei(string zwischendatei)
-    {
-        try
-        {
-            File.Delete(zwischendatei);
-        }
-        catch (Exception fehler) when (fehler is IOException or UnauthorizedAccessException)
-        {
-            // Der eigentliche Fehler ist wichtiger; die Zwischendatei wird beim nächsten Versuch ersetzt
-        }
-    }
 }

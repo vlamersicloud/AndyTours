@@ -213,7 +213,7 @@ public partial class EinstellungenViewModel : ObservableObject
         try
         {
             using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
-            einstellungen = SicherungEinstellungen.Laden(verbindung);
+            einstellungen = SicherungEinstellung.Laden(verbindung);
         }
         catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)
         {
@@ -248,7 +248,7 @@ public partial class EinstellungenViewModel : ObservableObject
         try
         {
             using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
-            SicherungEinstellungen.Speichern(verbindung, aenderung(SicherungEinstellungen.Laden(verbindung)));
+            SicherungEinstellung.Speichern(verbindung, aenderung(SicherungEinstellung.Laden(verbindung)));
             return true;
         }
         catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)

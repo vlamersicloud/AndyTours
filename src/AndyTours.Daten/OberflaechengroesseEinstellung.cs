@@ -29,10 +29,8 @@ public static class OberflaechengroesseEinstellung
     /// <returns>Die Größe in Prozent, z. B. 125.</returns>
     public static int Laden(SqliteConnection verbindung)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = $schluessel;";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.DarstellungGroesse);
-        return befehl.ExecuteScalar() is string wert
+        string? wert = EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.DarstellungGroesse);
+        return wert is not null
             && int.TryParse(wert, NumberStyles.Integer, CultureInfo.InvariantCulture, out int prozent)
             && Stufen.Contains(prozent)
             ? prozent
@@ -52,10 +50,6 @@ public static class OberflaechengroesseEinstellung
             throw new ArgumentOutOfRangeException(nameof(prozent), prozent, "Die Größe muss eine der festen Stufen sein.");
         }
 
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.DarstellungGroesse);
-        befehl.Parameters.AddWithValue("$wert", prozent.ToString(CultureInfo.InvariantCulture));
-        befehl.ExecuteNonQuery();
+        EinstellungTabelle.Schreiben(verbindung, null, Einstellungsschluessel.DarstellungGroesse, prozent.ToString(CultureInfo.InvariantCulture));
     }
 }

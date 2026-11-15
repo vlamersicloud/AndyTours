@@ -6,7 +6,7 @@ using AndyTours.Tests.Datenordner;
 namespace AndyTours.Tests.Daten;
 
 /// <summary>
-/// Tests für <see cref="PlanungseinstellungenEinstellung"/>.
+/// Tests für <see cref="PlanungEinstellung"/>.
 /// </summary>
 public class PlanungseinstellungenTests
 {
@@ -15,7 +15,7 @@ public class PlanungseinstellungenTests
     {
         using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(":memory:");
 
-        Assert.Equal(new Planungseinstellungen(Fahrprofil.Trekking, null, null, null), PlanungseinstellungenEinstellung.Laden(verbindung));
+        Assert.Equal(new Planungseinstellungen(Fahrprofil.Trekking, null, null, null), PlanungEinstellung.Laden(verbindung));
     }
 
     [Fact]
@@ -27,23 +27,23 @@ public class PlanungseinstellungenTests
             Fahrprofil.Mountainbike, new Geoposition(47.123456789, 11.5), new Geoposition(48.25, 12.987654321), @"D:\Touren\Planungen");
         using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(datei))
         {
-            PlanungseinstellungenEinstellung.Speichern(verbindung, einstellungen);
+            PlanungEinstellung.Speichern(verbindung, einstellungen);
         }
 
         using SqliteConnection wieder = OeffneDatenbank.Ausfuehren(datei);
-        Assert.Equal(einstellungen, PlanungseinstellungenEinstellung.Laden(wieder));
+        Assert.Equal(einstellungen, PlanungEinstellung.Laden(wieder));
     }
 
     [Fact]
     public void Ohne_Ausschnitt_und_Ordner_werden_die_Eintraege_geloescht()
     {
         using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(":memory:");
-        PlanungseinstellungenEinstellung.Speichern(verbindung,
+        PlanungEinstellung.Speichern(verbindung,
             new Planungseinstellungen(Fahrprofil.Rennrad, new Geoposition(47, 11), new Geoposition(48, 12), @"C:\A"));
 
-        PlanungseinstellungenEinstellung.Speichern(verbindung, new Planungseinstellungen(Fahrprofil.Rennrad, null, null, null));
+        PlanungEinstellung.Speichern(verbindung, new Planungseinstellungen(Fahrprofil.Rennrad, null, null, null));
 
-        Assert.Equal(new Planungseinstellungen(Fahrprofil.Rennrad, null, null, null), PlanungseinstellungenEinstellung.Laden(verbindung));
+        Assert.Equal(new Planungseinstellungen(Fahrprofil.Rennrad, null, null, null), PlanungEinstellung.Laden(verbindung));
     }
 
     [Theory]
@@ -63,6 +63,6 @@ public class PlanungseinstellungenTests
             befehl.ExecuteNonQuery();
         }
 
-        Assert.Equal(Planungseinstellungen.Standard, PlanungseinstellungenEinstellung.Laden(verbindung));
+        Assert.Equal(Planungseinstellungen.Standard, PlanungEinstellung.Laden(verbindung));
     }
 }

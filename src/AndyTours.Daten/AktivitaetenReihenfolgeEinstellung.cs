@@ -24,10 +24,8 @@ public static class AktivitaetenReihenfolgeEinstellung
     /// <returns>Die Ids in der Reihenfolge des Benutzers; leer, wenn nie gespeichert. Ungültige Teile werden übergangen.</returns>
     public static List<long> Laden(SqliteConnection verbindung)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = $schluessel;";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.AktivitaetenReihenfolge);
-        if (befehl.ExecuteScalar() is not string text)
+        string? wert = EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.AktivitaetenReihenfolge);
+        if (wert is not string text)
         {
             return [];
         }
@@ -52,11 +50,6 @@ public static class AktivitaetenReihenfolgeEinstellung
     /// <param name="ids">Die Ids der Aktivitäten in der Reihenfolge des Benutzers.</param>
     public static void Speichern(SqliteConnection verbindung, SqliteTransaction? transaktion, IEnumerable<long> ids)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.Transaction = transaktion;
-        befehl.CommandText = "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.AktivitaetenReihenfolge);
-        befehl.Parameters.AddWithValue("$wert", string.Join(Trenner, ids.Select(id => id.ToString(CultureInfo.InvariantCulture))));
-        befehl.ExecuteNonQuery();
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.AktivitaetenReihenfolge, string.Join(Trenner, ids.Select(id => id.ToString(CultureInfo.InvariantCulture))));
     }
 }

@@ -51,8 +51,8 @@ public static class ErstelleSicherung
             {
             }
 
-            using (var quelle = new SqliteConnection(Verbindungstext(datenbankdatei, SqliteOpenMode.ReadOnly)))
-            using (var kopie = new SqliteConnection(Verbindungstext(zwischendatei, SqliteOpenMode.ReadWrite)))
+            using (var quelle = new SqliteConnection(Sicherungsdatei.Verbindungstext(datenbankdatei, SqliteOpenMode.ReadOnly)))
+            using (var kopie = new SqliteConnection(Sicherungsdatei.Verbindungstext(zwischendatei, SqliteOpenMode.ReadWrite)))
             {
                 quelle.Open();
                 kopie.Open();
@@ -64,27 +64,10 @@ public static class ErstelleSicherung
         }
         catch
         {
-            LoescheZwischendatei(zwischendatei);
+            Sicherungsdatei.LoescheZwischendatei(zwischendatei);
             throw;
         }
 
         return ziel;
-    }
-
-    /// <summary>Verbindungstext für eine Datei mit der angegebenen Zugriffsart, ohne Verbindungs-Wiederverwendung.</summary>
-    private static string Verbindungstext(string datei, SqliteOpenMode modus) =>
-        new SqliteConnectionStringBuilder { DataSource = datei, Mode = modus, Pooling = false }.ToString();
-
-    /// <summary>Entfernt eine übrig gebliebene Zwischendatei; Fehler dabei werden ignoriert.</summary>
-    private static void LoescheZwischendatei(string zwischendatei)
-    {
-        try
-        {
-            File.Delete(zwischendatei);
-        }
-        catch (Exception fehler) when (fehler is IOException or UnauthorizedAccessException)
-        {
-            // Der eigentliche Fehler ist wichtiger; eine .tmp-Datei gilt ohnehin nie als Sicherung
-        }
     }
 }

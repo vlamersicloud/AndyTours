@@ -20,10 +20,8 @@ public static class KarteikarteEinstellung
     /// <returns>Die Nummer der Karteikarte oder <c>null</c>.</returns>
     public static int? Laden(SqliteConnection verbindung)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = $schluessel;";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.Karteikarte);
-        if (befehl.ExecuteScalar() is not string text
+        string? wert = EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.Karteikarte);
+        if (wert is not string text
             || !int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out int nummer))
         {
             return null;
@@ -41,10 +39,6 @@ public static class KarteikarteEinstellung
     {
         ArgumentOutOfRangeException.ThrowIfNegative(nummer);
 
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.Karteikarte);
-        befehl.Parameters.AddWithValue("$wert", nummer.ToString(CultureInfo.InvariantCulture));
-        befehl.ExecuteNonQuery();
+        EinstellungTabelle.Schreiben(verbindung, null, Einstellungsschluessel.Karteikarte, nummer.ToString(CultureInfo.InvariantCulture));
     }
 }

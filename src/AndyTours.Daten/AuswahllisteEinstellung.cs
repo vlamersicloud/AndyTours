@@ -25,10 +25,8 @@ public static class AuswahllisteEinstellung
     /// <returns>Die Einträge in gespeicherter Reihenfolge; <c>null</c>, wenn die Liste noch nie angelegt wurde.</returns>
     public static List<string>? Laden(SqliteConnection verbindung, Auswahlliste liste)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = $schluessel;";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.Auswahlliste(liste));
-        if (befehl.ExecuteScalar() is not string text)
+        string? wert = EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.Auswahlliste(liste));
+        if (wert is not string text)
         {
             return null;
         }
@@ -46,11 +44,6 @@ public static class AuswahllisteEinstellung
     /// <param name="eintraege">Die Einträge.</param>
     public static void Speichern(SqliteConnection verbindung, SqliteTransaction? transaktion, Auswahlliste liste, IEnumerable<string> eintraege)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.Transaction = transaktion;
-        befehl.CommandText = "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.Auswahlliste(liste));
-        befehl.Parameters.AddWithValue("$wert", string.Join(Trenner, eintraege.Select(e => e.Trim())));
-        befehl.ExecuteNonQuery();
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.Auswahlliste(liste), string.Join(Trenner, eintraege.Select(e => e.Trim())));
     }
 }

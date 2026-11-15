@@ -1,4 +1,3 @@
-using System.Globalization;
 using AndyTours.Core.Modell;
 using Microsoft.Data.Sqlite;
 
@@ -43,13 +42,9 @@ public static class DatenbestandTabellen
     public static void Speichern(SqliteConnection verbindung, Datenbestand bestand)
     {
         // Schutz vor doppeltem Einspielen: Ids würden sonst kollidieren.
-        using (SqliteCommand pruefung = verbindung.CreateCommand())
+        if (TrainingseinheitenTabelle.Zaehlen(verbindung) > 0)
         {
-            pruefung.CommandText = "SELECT COUNT(*) FROM Trainingseinheit;";
-            if (Convert.ToInt64(pruefung.ExecuteScalar(), CultureInfo.InvariantCulture) > 0)
-            {
-                throw new InvalidOperationException("Die Datenbank enthält bereits Trainingseinheiten.");
-            }
+            throw new InvalidOperationException("Die Datenbank enthält bereits Trainingseinheiten.");
         }
 
         using SqliteTransaction transaktion = verbindung.BeginTransaction();

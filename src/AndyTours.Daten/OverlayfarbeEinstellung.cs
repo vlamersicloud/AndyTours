@@ -21,10 +21,8 @@ public static class OverlayfarbeEinstellung
     /// <returns>Die Farbe; ohne (gültigen) Eintrag <see cref="Standard"/>.</returns>
     public static Overlayfarbe Laden(SqliteConnection verbindung)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = $schluessel;";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.OverlayFarbe);
-        return befehl.ExecuteScalar() is string wert && Enum.TryParse(wert, out Overlayfarbe farbe) && Enum.IsDefined(farbe)
+        string? wert = EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.OverlayFarbe);
+        return wert is not null && Enum.TryParse(wert, out Overlayfarbe farbe) && Enum.IsDefined(farbe)
             ? farbe
             : Standard;
     }
@@ -36,10 +34,6 @@ public static class OverlayfarbeEinstellung
     /// <param name="farbe">Die Farbe.</param>
     public static void Speichern(SqliteConnection verbindung, Overlayfarbe farbe)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.OverlayFarbe);
-        befehl.Parameters.AddWithValue("$wert", farbe.ToString());
-        befehl.ExecuteNonQuery();
+        EinstellungTabelle.Schreiben(verbindung, null, Einstellungsschluessel.OverlayFarbe, farbe.ToString());
     }
 }

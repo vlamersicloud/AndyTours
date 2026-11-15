@@ -50,13 +50,13 @@ public static class FuehreStartsicherungDurch
             using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(datenbankdatei);
 
             // 1. Start zählen
-            Sicherungseinstellungen einstellungen = SicherungEinstellungen.Laden(verbindung);
+            Sicherungseinstellungen einstellungen = SicherungEinstellung.Laden(verbindung);
             einstellungen = einstellungen with { StartsSeitSicherung = einstellungen.StartsSeitSicherung + 1 };
-            SicherungEinstellungen.Speichern(verbindung, einstellungen);
+            SicherungEinstellung.Speichern(verbindung, einstellungen);
             sicherungsordner = ErmittleSicherungsordner.Ausfuehren(datenordner, einstellungen);
 
             // 2. Fällig?
-            if (!IstSicherungFaellig.Ausfuehren(einstellungen.StartsSeitSicherung, einstellungen.Intervall, ZaehleEinheiten(verbindung)))
+            if (!IstSicherungFaellig.Ausfuehren(einstellungen.StartsSeitSicherung, einstellungen.Intervall, TrainingseinheitenTabelle.Zaehlen(verbindung)))
             {
                 return new Startsicherungsergebnis(Startsicherungsstatus.NichtFaellig, sicherungsordner);
             }
@@ -71,7 +71,7 @@ public static class FuehreStartsicherungDurch
             }).WaitAsync(limit);
 
             // 4. Erfolg: Zählung beginnt von vorn
-            SicherungEinstellungen.Speichern(verbindung, einstellungen with { StartsSeitSicherung = 0 });
+            SicherungEinstellung.Speichern(verbindung, einstellungen with { StartsSeitSicherung = 0 });
             return new Startsicherungsergebnis(Startsicherungsstatus.Gesichert, sicherungsordner, sicherung);
         }
         catch (Exception fehler) when (fehler is IOException or UnauthorizedAccessException or SqliteException or TimeoutException)
@@ -79,13 +79,5 @@ public static class FuehreStartsicherungDurch
             return new Startsicherungsergebnis(Startsicherungsstatus.Fehlgeschlagen, sicherungsordner,
                 Fehlergrund: BeschreibeSicherungsfehler.Ausfuehren(fehler, limit));
         }
-    }
-
-    /// <summary>Anzahl der Trainingseinheiten in der Datenbank.</summary>
-    private static int ZaehleEinheiten(SqliteConnection verbindung)
-    {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT COUNT(*) FROM Trainingseinheit;";
-        return Convert.ToInt32(befehl.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
     }
 }

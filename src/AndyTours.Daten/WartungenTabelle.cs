@@ -1,3 +1,4 @@
+using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
 using Microsoft.Data.Sqlite;
 
@@ -149,7 +150,6 @@ public static class WartungenTabelle
     /// <returns>Die Anzahl der geänderten Wartungen.</returns>
     public static int ErsetzeTaetigkeit(SqliteConnection verbindung, SqliteTransaction transaktion, string alt, string neu)
     {
-        string gesucht = alt.Trim();
         List<long> betroffen = [];
         using (SqliteCommand lesen = verbindung.CreateCommand())
         {
@@ -158,7 +158,7 @@ public static class WartungenTabelle
             using SqliteDataReader leser = lesen.ExecuteReader();
             while (leser.Read())
             {
-                if (string.Equals(leser.GetString(1).Trim(), gesucht, StringComparison.OrdinalIgnoreCase))
+                if (VergleicheNamen.Ausfuehren(leser.GetString(1), alt))
                 {
                     betroffen.Add(leser.GetInt64(0));
                 }

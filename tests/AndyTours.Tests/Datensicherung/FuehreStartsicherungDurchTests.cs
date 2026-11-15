@@ -33,14 +33,14 @@ public class FuehreStartsicherungDurchTests
     private static void Stelle(string datenordner, Sicherungseinstellungen einstellungen)
     {
         using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Path.Combine(datenordner, DatenordnerInhalt.Datenbankdatei));
-        SicherungEinstellungen.Speichern(verbindung, einstellungen);
+        SicherungEinstellung.Speichern(verbindung, einstellungen);
     }
 
     /// <summary>Liest die Einstellungen aus der Datenbank des Datenordners.</summary>
     private static Sicherungseinstellungen Lies(string datenordner)
     {
         using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Path.Combine(datenordner, DatenordnerInhalt.Datenbankdatei));
-        return SicherungEinstellungen.Laden(verbindung);
+        return SicherungEinstellung.Laden(verbindung);
     }
 
     [Fact]

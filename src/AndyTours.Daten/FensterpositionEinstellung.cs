@@ -21,10 +21,8 @@ public static class FensterpositionEinstellung
     /// <returns>Die gemerkte Position oder <c>null</c>.</returns>
     public static Fensterposition? Laden(SqliteConnection verbindung)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = $schluessel;";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.Fensterposition);
-        if (befehl.ExecuteScalar() is not string text)
+        string? wert = EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.Fensterposition);
+        if (wert is not string text)
         {
             return null;
         }
@@ -62,11 +60,7 @@ public static class FensterpositionEinstellung
         string text = string.Join(";",
             Zahl(position.Links), Zahl(position.Oben), Zahl(position.Breite), Zahl(position.Hoehe), position.Maximiert ? "1" : "0");
 
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.Fensterposition);
-        befehl.Parameters.AddWithValue("$wert", text);
-        befehl.ExecuteNonQuery();
+        EinstellungTabelle.Schreiben(verbindung, null, Einstellungsschluessel.Fensterposition, text);
     }
 
     /// <summary>Zahl mit einer Nachkommastelle und Punkt (unabhängig von der Spracheinstellung).</summary>

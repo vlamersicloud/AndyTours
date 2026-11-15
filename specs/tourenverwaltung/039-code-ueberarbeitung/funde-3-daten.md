@@ -2,7 +2,7 @@
 
 Geprüft: alle 55 Dateien unter `src/AndyTours.Daten` (Tabellen, Einstellungen, Datenordner, Datensicherung).
 
-Freigabe: _offen_
+Freigabe: alle Punkte freigegeben am 15.11.2026
 
 ## Ungenutzter Code
 Kein Fund. Alles Öffentliche wird außerhalb seiner Datei verwendet, alles Private in seiner Datei, und

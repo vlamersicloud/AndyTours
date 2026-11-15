@@ -41,7 +41,7 @@ public static class OeffneDatenbank
         {
             DataSource = dateipfad,
             // Keine Verbindungs-Wiederverwendung: Sonst bleibt die Datei nach dem Schließen gesperrt
-            // und könnte z. B. für eine erneute Migration nicht gelöscht werden.
+            // und ließe sich z. B. beim Wiederherstellen einer Sicherung nicht ersetzen.
             Pooling = false,
         }.ToString();
 
@@ -90,7 +90,7 @@ public static class OeffneDatenbank
     {
         Sicherungseinstellungen einstellungen =
             Abfrage(verbindung, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'Einstellung';") is long anzahl and > 0
-                ? SicherungEinstellungen.Laden(verbindung)
+                ? SicherungEinstellung.Laden(verbindung)
                 : new Sicherungseinstellungen();
         string datenordner = Path.GetDirectoryName(Path.GetFullPath(dateipfad))!;
         string sicherungsordner = ErmittleSicherungsordner.Ausfuehren(datenordner, einstellungen);

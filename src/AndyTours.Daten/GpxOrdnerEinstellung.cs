@@ -17,10 +17,8 @@ public static class GpxOrdnerEinstellung
     /// <returns>Der Ordner oder <c>null</c>, wenn noch keiner gespeichert ist.</returns>
     public static string? Laden(SqliteConnection verbindung)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = $schluessel;";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.GpxOrdner);
-        return befehl.ExecuteScalar() is string ordner && ordner.Length > 0 ? ordner : null;
+        string? wert = EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.GpxOrdner);
+        return wert is string ordner && ordner.Length > 0 ? ordner : null;
     }
 
     /// <summary>
@@ -30,10 +28,6 @@ public static class GpxOrdnerEinstellung
     /// <param name="ordner">Der Ordner, in den zuletzt exportiert wurde.</param>
     public static void Speichern(SqliteConnection verbindung, string ordner)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.GpxOrdner);
-        befehl.Parameters.AddWithValue("$wert", ordner);
-        befehl.ExecuteNonQuery();
+        EinstellungTabelle.Schreiben(verbindung, null, Einstellungsschluessel.GpxOrdner, ordner);
     }
 }

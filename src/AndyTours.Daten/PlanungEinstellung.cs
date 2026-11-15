@@ -7,7 +7,7 @@ namespace AndyTours.Daten;
 /// <summary>
 /// Liest und schreibt, was sich das Fenster „Tour planen“ merkt: Fahrprofil, Kartenausschnitt und Ordner.
 /// </summary>
-public static class PlanungseinstellungenEinstellung
+public static class PlanungEinstellung
 {
     /// <summary>
     /// Liest die Planungseinstellungen aus der Tabelle <c>Einstellung</c>.
@@ -20,7 +20,7 @@ public static class PlanungseinstellungenEinstellung
     /// <returns>Die Einstellungen.</returns>
     public static Planungseinstellungen Laden(SqliteConnection verbindung)
     {
-        Dictionary<string, string> werte = LiesWerte(verbindung);
+        Dictionary<string, string> werte = EinstellungTabelle.LesenMitVorsilbe(verbindung, "Tourenplanung.");
         Planungseinstellungen standard = Planungseinstellungen.Standard;
 
         Fahrprofil profil = Enum.TryParse(werte.GetValueOrDefault(Einstellungsschluessel.PlanungProfil), out Fahrprofil p) && Enum.IsDefined(p)
@@ -46,9 +46,9 @@ public static class PlanungseinstellungenEinstellung
             : null;
 
         using SqliteTransaction transaktion = verbindung.BeginTransaction();
-        Schreibe(verbindung, transaktion, Einstellungsschluessel.PlanungProfil, einstellungen.Profil.ToString());
-        Schreibe(verbindung, transaktion, Einstellungsschluessel.PlanungAusschnitt, ausschnitt);
-        Schreibe(verbindung, transaktion, Einstellungsschluessel.PlanungOrdner, einstellungen.Ordner);
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.PlanungProfil, einstellungen.Profil.ToString());
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.PlanungAusschnitt, ausschnitt);
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.PlanungOrdner, einstellungen.Ordner);
         transaktion.Commit();
     }
 
@@ -65,37 +65,5 @@ public static class PlanungseinstellungenEinstellung
         }
 
         return (new Geoposition(zahlen[0], zahlen[1]), new Geoposition(zahlen[2], zahlen[3]));
-    }
-
-    /// <summary>Liest alle Einträge der Tourenplanung.</summary>
-    private static Dictionary<string, string> LiesWerte(SqliteConnection verbindung)
-    {
-        var werte = new Dictionary<string, string>(StringComparer.Ordinal);
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT Schluessel, Wert FROM Einstellung WHERE Schluessel LIKE 'Tourenplanung.%';";
-        using SqliteDataReader leser = befehl.ExecuteReader();
-        while (leser.Read())
-        {
-            werte[leser.GetString(0)] = leser.GetString(1);
-        }
-
-        return werte;
-    }
-
-    /// <summary>Schreibt einen Eintrag; <c>null</c> löscht ihn.</summary>
-    private static void Schreibe(SqliteConnection verbindung, SqliteTransaction transaktion, string schluessel, string? wert)
-    {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.Transaction = transaktion;
-        befehl.CommandText = wert is null
-            ? "DELETE FROM Einstellung WHERE Schluessel = $schluessel;"
-            : "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", schluessel);
-        if (wert is not null)
-        {
-            befehl.Parameters.AddWithValue("$wert", wert);
-        }
-
-        befehl.ExecuteNonQuery();
     }
 }

@@ -309,6 +309,16 @@ public static class TrainingseinheitenTabelle
         transaktion.Commit();
     }
 
+    /// <summary>Anzahl der Trainingseinheiten in der Datenbank.</summary>
+    /// <param name="verbindung">Geöffnete Verbindung.</param>
+    /// <returns>Die Anzahl.</returns>
+    public static int Zaehlen(SqliteConnection verbindung)
+    {
+        using SqliteCommand befehl = verbindung.CreateCommand();
+        befehl.CommandText = "SELECT COUNT(*) FROM Trainingseinheit;";
+        return Convert.ToInt32(befehl.ExecuteScalar(), CultureInfo.InvariantCulture);
+    }
+
     /// <summary>
     /// Ersetzt einen Trainingsbereich in allen Einheiten durch einen neuen (Umbenennen in den Auswahllisten).
     /// </summary>

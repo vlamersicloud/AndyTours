@@ -24,10 +24,8 @@ public static class SpaltenanordnungEinstellung
     /// <returns>Alle Spalten genau einmal, in Anzeigereihenfolge.</returns>
     public static List<Spalteneinstellung> Laden(SqliteConnection verbindung)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = $schluessel;";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.Spaltenanordnung);
-        string text = befehl.ExecuteScalar() as string ?? string.Empty;
+        string? wert = EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.Spaltenanordnung);
+        string text = wert ?? string.Empty;
 
         var gespeichert = new List<Spalteneinstellung>();
         foreach (string teil in text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -61,10 +59,6 @@ public static class SpaltenanordnungEinstellung
         string text = string.Join(",", anordnung.Select(a =>
             a.Spalte + ":" + (a.Breite is double breite ? Math.Round(breite, 1).ToString(CultureInfo.InvariantCulture) : string.Empty)));
 
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.Spaltenanordnung);
-        befehl.Parameters.AddWithValue("$wert", text);
-        befehl.ExecuteNonQuery();
+        EinstellungTabelle.Schreiben(verbindung, null, Einstellungsschluessel.Spaltenanordnung, text);
     }
 }

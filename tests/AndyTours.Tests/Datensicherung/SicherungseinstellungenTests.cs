@@ -5,7 +5,7 @@ using AndyTours.Daten;
 namespace AndyTours.Tests.Datensicherung;
 
 /// <summary>
-/// Tests für <see cref="SicherungEinstellungen.Laden"/> und <see cref="SicherungEinstellungen.Speichern"/>.
+/// Tests für <see cref="SicherungEinstellung.Laden"/> und <see cref="SicherungEinstellung.Speichern"/>.
 /// </summary>
 public class SicherungseinstellungenTests
 {
@@ -14,7 +14,7 @@ public class SicherungseinstellungenTests
     {
         using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(":memory:");
 
-        Sicherungseinstellungen geladen = SicherungEinstellungen.Laden(verbindung);
+        Sicherungseinstellungen geladen = SicherungEinstellung.Laden(verbindung);
 
         Assert.Null(geladen.Sicherungsordner);
         Assert.Equal(3, geladen.Intervall);
@@ -31,9 +31,9 @@ public class SicherungseinstellungenTests
             Sicherungsordner = @"\\NAS\Sicherung\Böhmerwald", Intervall = 1, Hoechstzahl = 99, StartsSeitSicherung = 2,
         };
 
-        SicherungEinstellungen.Speichern(verbindung, einstellungen);
+        SicherungEinstellung.Speichern(verbindung, einstellungen);
 
-        Assert.Equal(einstellungen, SicherungEinstellungen.Laden(verbindung));
+        Assert.Equal(einstellungen, SicherungEinstellung.Laden(verbindung));
     }
 
     [Fact]
@@ -45,12 +45,12 @@ public class SicherungseinstellungenTests
 
         using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(datei))
         {
-            SicherungEinstellungen.Speichern(verbindung, einstellungen);
+            SicherungEinstellung.Speichern(verbindung, einstellungen);
         }
 
         using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(datei))
         {
-            Assert.Equal(einstellungen, SicherungEinstellungen.Laden(verbindung));
+            Assert.Equal(einstellungen, SicherungEinstellung.Laden(verbindung));
         }
     }
 
@@ -58,11 +58,11 @@ public class SicherungseinstellungenTests
     public void Zurueck_auf_Standardordner_entfernt_den_gewaehlten_Ordner()
     {
         using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(":memory:");
-        SicherungEinstellungen.Speichern(verbindung, new Sicherungseinstellungen { Sicherungsordner = @"D:\Sicherung" });
+        SicherungEinstellung.Speichern(verbindung, new Sicherungseinstellungen { Sicherungsordner = @"D:\Sicherung" });
 
-        SicherungEinstellungen.Speichern(verbindung, new Sicherungseinstellungen { Sicherungsordner = null });
+        SicherungEinstellung.Speichern(verbindung, new Sicherungseinstellungen { Sicherungsordner = null });
 
-        Assert.Null(SicherungEinstellungen.Laden(verbindung).Sicherungsordner);
+        Assert.Null(SicherungEinstellung.Laden(verbindung).Sicherungsordner);
     }
 
     [Fact]
@@ -79,6 +79,6 @@ public class SicherungseinstellungenTests
             befehl.ExecuteNonQuery();
         }
 
-        Assert.Equal(new Sicherungseinstellungen(), SicherungEinstellungen.Laden(verbindung));
+        Assert.Equal(new Sicherungseinstellungen(), SicherungEinstellung.Laden(verbindung));
     }
 }

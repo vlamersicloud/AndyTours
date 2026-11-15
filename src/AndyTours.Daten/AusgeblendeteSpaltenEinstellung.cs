@@ -21,10 +21,8 @@ public static class AusgeblendeteSpaltenEinstellung
     /// <returns>Die ausgeblendeten Spalten (leer = alle sichtbar).</returns>
     public static HashSet<Einheitenspalte> Laden(SqliteConnection verbindung)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = $schluessel;";
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.AusgeblendeteSpalten);
-        string text = befehl.ExecuteScalar() as string ?? string.Empty;
+        string? wert = EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.AusgeblendeteSpalten);
+        string text = wert ?? string.Empty;
 
         var ausgeblendet = new HashSet<Einheitenspalte>();
         foreach (string name in text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -52,18 +50,7 @@ public static class AusgeblendeteSpaltenEinstellung
     /// <param name="ausgeblendet">Die ausgeblendeten Spalten.</param>
     public static void Speichern(SqliteConnection verbindung, IReadOnlySet<Einheitenspalte> ausgeblendet)
     {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.Parameters.AddWithValue("$schluessel", Einstellungsschluessel.AusgeblendeteSpalten);
-        if (ausgeblendet.Count == 0)
-        {
-            befehl.CommandText = "DELETE FROM Einstellung WHERE Schluessel = $schluessel;";
-        }
-        else
-        {
-            befehl.CommandText = "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-            befehl.Parameters.AddWithValue("$wert", string.Join(",", ausgeblendet.Order().Select(s => s.ToString())));
-        }
-
-        befehl.ExecuteNonQuery();
+        EinstellungTabelle.Schreiben(verbindung, null, Einstellungsschluessel.AusgeblendeteSpalten,
+            ausgeblendet.Count == 0 ? null : string.Join(",", ausgeblendet.Order().Select(s => s.ToString())));
     }
 }

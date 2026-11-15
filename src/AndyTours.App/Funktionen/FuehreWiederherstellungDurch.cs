@@ -54,7 +54,7 @@ public static class FuehreWiederherstellungDurch
             Sicherungseinstellungen einstellungen;
             using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(datenbankdatei))
             {
-                einstellungen = SicherungEinstellungen.Laden(verbindung);
+                einstellungen = SicherungEinstellung.Laden(verbindung);
             }
 
             sicherungsordner = ErmittleSicherungsordner.Ausfuehren(datenordner, einstellungen);

@@ -8,7 +8,7 @@ namespace AndyTours.Daten;
 /// <summary>
 /// Liest und schreibt die Einstellungen der automatischen Datensicherung.
 /// </summary>
-public static class SicherungEinstellungen
+public static class SicherungEinstellung
 {
     /// <summary>
     /// Liest Sicherungsordner, Intervall, Höchstzahl und Startzähler.
@@ -22,17 +22,7 @@ public static class SicherungEinstellungen
     /// <returns>Die Einstellungen.</returns>
     public static Sicherungseinstellungen Laden(SqliteConnection verbindung)
     {
-        // Alle Einträge auf einmal lesen; es sind nur wenige
-        var werte = new Dictionary<string, string>(StringComparer.Ordinal);
-        using (SqliteCommand befehl = verbindung.CreateCommand())
-        {
-            befehl.CommandText = "SELECT Schluessel, Wert FROM Einstellung;";
-            using SqliteDataReader leser = befehl.ExecuteReader();
-            while (leser.Read())
-            {
-                werte[leser.GetString(0)] = leser.GetString(1);
-            }
-        }
+        Dictionary<string, string> werte = EinstellungTabelle.LesenMitVorsilbe(verbindung, "Sicherung.");
 
         var standard = new Sicherungseinstellungen();
         string? ordner = werte.GetValueOrDefault(Einstellungsschluessel.Sicherungsordner);
@@ -63,33 +53,14 @@ public static class SicherungEinstellungen
     {
         using SqliteTransaction transaktion = verbindung.BeginTransaction();
 
-        Schreibe(verbindung, transaktion, Einstellungsschluessel.Sicherungsordner, einstellungen.Sicherungsordner);
-        Schreibe(verbindung, transaktion, Einstellungsschluessel.Sicherungsintervall, AlsText(einstellungen.Intervall));
-        Schreibe(verbindung, transaktion, Einstellungsschluessel.Sicherungshoechstzahl, AlsText(einstellungen.Hoechstzahl));
-        Schreibe(verbindung, transaktion, Einstellungsschluessel.StartsSeitSicherung, AlsText(einstellungen.StartsSeitSicherung));
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.Sicherungsordner, einstellungen.Sicherungsordner);
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.Sicherungsintervall, AlsText(einstellungen.Intervall));
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.Sicherungshoechstzahl, AlsText(einstellungen.Hoechstzahl));
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.StartsSeitSicherung, AlsText(einstellungen.StartsSeitSicherung));
 
         transaktion.Commit();
     }
 
     /// <summary>Ganze Zahl als Text ohne Tausenderpunkte (unabhängig von der Spracheinstellung).</summary>
     private static string AlsText(int zahl) => zahl.ToString(CultureInfo.InvariantCulture);
-
-    /// <summary>
-    /// Ersetzt einen Eintrag oder löscht ihn, wenn <paramref name="wert"/> <c>null</c> ist.
-    /// </summary>
-    private static void Schreibe(SqliteConnection verbindung, SqliteTransaction transaktion, string schluessel, string? wert)
-    {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.Transaction = transaktion;
-        befehl.CommandText = wert is null
-            ? "DELETE FROM Einstellung WHERE Schluessel = $schluessel;"
-            : "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", schluessel);
-        if (wert is not null)
-        {
-            befehl.Parameters.AddWithValue("$wert", wert);
-        }
-
-        befehl.ExecuteNonQuery();
-    }
 }

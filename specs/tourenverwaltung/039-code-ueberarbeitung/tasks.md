@@ -18,8 +18,8 @@ Abschnitt 2 – Core
 - [x] 13. Freigegebene Funde umsetzen, bauen, testen, committen
 
 Abschnitt 3 – Daten
-- [ ] 14. Fundliste `funde-3-daten.md` schreiben und freigeben lassen
-- [ ] 15. Freigegebene Funde umsetzen, bauen, testen, committen
+- [x] 14. Fundliste `funde-3-daten.md` schreiben und freigeben lassen
+- [x] 15. Freigegebene Funde umsetzen, bauen, testen, committen
 
 Abschnitt 4 – Import
 - [ ] 16. Fundliste `funde-4-import.md` schreiben und freigeben lassen

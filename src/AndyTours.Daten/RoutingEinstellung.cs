@@ -23,16 +23,7 @@ public static class RoutingEinstellung
     /// <returns>Die Einstellungen.</returns>
     public static Routingeinstellungen Laden(SqliteConnection verbindung)
     {
-        var werte = new Dictionary<string, string>(StringComparer.Ordinal);
-        using (SqliteCommand befehl = verbindung.CreateCommand())
-        {
-            befehl.CommandText = "SELECT Schluessel, Wert FROM Einstellung WHERE Schluessel LIKE 'Routing.%';";
-            using SqliteDataReader leser = befehl.ExecuteReader();
-            while (leser.Read())
-            {
-                werte[leser.GetString(0)] = leser.GetString(1);
-            }
-        }
+        Dictionary<string, string> werte = EinstellungTabelle.LesenMitVorsilbe(verbindung, "Routing.");
 
         Routingeinstellungen standard = Routingeinstellungen.Standard;
         Routingdienst dienst = Enum.TryParse(werte.GetValueOrDefault(Einstellungsschluessel.RoutingDienst), out Routingdienst d) && Enum.IsDefined(d)
@@ -58,29 +49,12 @@ public static class RoutingEinstellung
     public static void Speichern(SqliteConnection verbindung, Routingeinstellungen einstellungen)
     {
         using SqliteTransaction transaktion = verbindung.BeginTransaction();
-        Schreibe(verbindung, transaktion, Einstellungsschluessel.RoutingDienst, einstellungen.Dienst.ToString());
-        Schreibe(verbindung, transaktion, Einstellungsschluessel.RoutingBRouterAdresse, Bereinigt(einstellungen.BRouterAdresse));
-        Schreibe(verbindung, transaktion, Einstellungsschluessel.RoutingOpenrouteserviceSchluessel, Bereinigt(einstellungen.OpenrouteserviceSchluessel));
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.RoutingDienst, einstellungen.Dienst.ToString());
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.RoutingBRouterAdresse, Bereinigt(einstellungen.BRouterAdresse));
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Einstellungsschluessel.RoutingOpenrouteserviceSchluessel, Bereinigt(einstellungen.OpenrouteserviceSchluessel));
         transaktion.Commit();
     }
 
     /// <summary>Text ohne Leerzeichen am Rand; leer → <c>null</c>.</summary>
     private static string? Bereinigt(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
-
-    /// <summary>Schreibt einen Eintrag; <c>null</c> löscht ihn.</summary>
-    private static void Schreibe(SqliteConnection verbindung, SqliteTransaction transaktion, string schluessel, string? wert)
-    {
-        using SqliteCommand befehl = verbindung.CreateCommand();
-        befehl.Transaction = transaktion;
-        befehl.CommandText = wert is null
-            ? "DELETE FROM Einstellung WHERE Schluessel = $schluessel;"
-            : "INSERT OR REPLACE INTO Einstellung (Schluessel, Wert) VALUES ($schluessel, $wert);";
-        befehl.Parameters.AddWithValue("$schluessel", schluessel);
-        if (wert is not null)
-        {
-            befehl.Parameters.AddWithValue("$wert", wert);
-        }
-
-        befehl.ExecuteNonQuery();
-    }
 }
