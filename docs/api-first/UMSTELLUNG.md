@@ -1,24 +1,39 @@
-# API_FIRST – vollständige Umstellung
+# API_FIRST – Umstellung mit schrittweiser Funktionsparität
 
 ## Gesicherter Ausgangspunkt
 
-- Branch: API_FIRST, getrennt von main; Änderungen werden ausschließlich hier veröffentlicht.
+- Branch: `API_FIRST`, getrennt von `main`; Änderungen werden ausschließlich hier veröffentlicht.
 - Keine kompilierten EXE-Dateien im Repository.
-- **Entscheidung: WPF bleibt die Hauptoberfläche und wird zum API-Client umgestellt.**
-- Lokales und zentrales Backend sind vorgesehen; derzeit gibt es keine bidirektionale Offline-Synchronisierung.
+- WPF bleibt die Hauptoberfläche und wird schrittweise zum API-Client umgestellt.
+- **Die Gesamtmigration ist nicht abgeschlossen.** Ohne `--api` startet weiterhin die bisherige Legacy-Oberfläche, damit vorhandene Abläufe erhalten bleiben.
+- Lokales und zentrales Backend verwenden denselben Backendcode; bidirektionale Offline-Synchronisierung gibt es nicht.
 
 ## Architekturziel
 
 - Contracts: versionierte Requests, Responses und Fehlerverträge, ohne SQLite-/WPF-Typen.
-- Application: Anwendungsfälle, Transaktionsgrenzen, Validierung und Import-/Analyseaufträge.
-- Core: vorhandene Fachregeln und Berechnungen, unabhängig von HTTP und Oberfläche.
-- Infrastructure: SQLite, Dateiablage, FIT, Garmin, Routing und Sicherungen hinter Application-Schnittstellen.
+- Application/Core: Anwendungsfälle und Fachregeln hinter Ports, unabhängig von HTTP und Oberfläche.
 - API: ASP.NET Core unter `/api/v1`, OpenAPI, ProblemDetails und Zugriffssicherung.
-- Client: typisierte HTTP-Schnittstelle; kein SQL, keine Backend-Dateipfade oder Garmin-Secrets im Frontend.
-- Geräteadapter: ausschließlich lokale USB-/MTP-Kommunikation; Dateien werden über die API übertragen.
-- Lokaler Betrieb nutzt denselben Backend-Code mit eigener lokaler Datenablage.
-- Zentraler Betrieb nutzt denselben Backend-Code mit authentifizierten Clients und serverseitiger Datenablage.
+- Client: typisierte HTTP-Schnittstelle; keine SQL-Aufträge oder beliebigen Backend-Dateipfade über HTTP.
+- Geräteadapter bleiben lokal auf USB-/MTP-Kommunikation beschränkt; Dateien werden über die API übertragen.
+- Lokaler Betrieb startet einen eigenen Backendprozess mit lokaler Datenablage. Zentralbetrieb nutzt authentifizierte Clients und serverseitige Datenablage.
 - Änderungen paralleler Clients dürfen nicht durch unversioniertes Vollbestands-Speichern überschrieben werden.
+
+## Aktueller benutzbarer Einstieg
+
+Die neue API-WPF-Migrationsansicht kann mit folgendem Kommando gestartet werden:
+
+```powershell
+dotnet run --project src/AndyTours.App -c Release -- --api
+```
+
+Der normale Start ohne `--api` bleibt Legacy und unverändert. Der API-Modus öffnet einen Verbindungsdialog für lokales oder zentrales Backend und danach eine Übersicht mit:
+
+- Zeitraumfiltern, Raster- und Kennzahlauswahl
+- vier Kennzahlen (Distanz, Höhenmeter, Fahrzeit, Anzahl)
+- Aktivitätsstatistik-Diagramm samt Zukunftshinweis
+- nur lesender Tourentabelle mit serverseitiger Seitennavigation
+
+Die Ansicht deckt noch keine Schreibabläufe oder übrigen Fachmodule ab. Sie ist eine Migrationsansicht, keine abgeschlossene Migration.
 
 ## Funktionsinventar / Paritätsprüfung
 
@@ -26,13 +41,13 @@ Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutz
 
 | Bereich | Zu erhaltende Abläufe | Status |
 |---|---|---|
-| Start / Verbindung | lokal/zentral konfiguriertes Backend, Fehler-/Erreichbarkeitsanzeige | offen |
-| Touren | Lesen, Filtern, Sortieren, Anlegen, Bearbeiten, Kopieren, Löschen, Mehrfachbearbeitung | teilweise: Backend-CRUD mit Versionen, WPF-Abläufe noch nicht migriert |
+| Start / Verbindung | lokal/zentral, Fehler- und Erreichbarkeitsanzeige | teilweise: `--api`-Start und Verbindungsdialog; kein Windows-Start-/Renderingtest |
+| Touren | Lesen, Filtern, Sortieren, Anlegen, Bearbeiten, Kopieren, Löschen, Mehrfachbearbeitung | teilweise: API-CRUD mit Versionen; API-Ansicht liest und paginiert; Bearbeitungsabläufe noch offen |
+| Aktivitätsstatistik | freie Datumsgrenzen, Kalender-/Kennzahlauswahl, Saisonziele, Bestleistungen | teilweise: Statistikroute/typisierter Client und API-Übersicht für Zeitraum, Raster, Kennzahl, KPIs und Diagramm; Saisonziele/Bestleistungen noch offen |
 | Zuordnungen | Kategorien, Equipment, Aktivitäten, Trainingsbereiche, Zusammenführen | offen |
-| Aktivitätsstatistik | freie Datumsgrenzen, Kalender-/Kennzahlauswahl, Saisonziele, Bestleistungen | offen |
 | Pulsauswertung | FIT-Messzeiten, aktuelle Garmin-Referenz mit Abrufdatum, Lückenkennzeichnung | offen |
 | Tourdetail | Höhenprofil, Messreihen, Karte, Mehrtagestouren, Trackbearbeitung | offen |
-| Garmin Connect | Key-Verwaltung ohne Rückgabe des Werts, 20er-Pakete, Hintergrundauftrag, Duplikatschutz | offen |
+| Garmin Connect | Key-Verwaltung ohne Rückgabe des Werts, 20er-Pakete, Hintergrundauftrag, Duplikatschutz | offen; separates Garmin-Key-/Secret-Management nicht in die API-Ansicht migriert |
 | USB / FIT | lokaler Geräteadapter, Datei-Upload, Vorauswahl, Equipment-Zuordnung, atomarer Import | offen |
 | Equipment | Stammdaten, Rad-/Sensorzuordnung, Ausmusterung, Einsatz/Haltbarkeit | offen |
 | Wartung | Erfassen, Bearbeiten, Löschen, Alarme, Kilometer-/Zeitbezug | offen |
@@ -46,20 +61,18 @@ Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutz
 | Bestandsübernahme | SQLite und relative FIT-/Anhangpfade erhalten; explizit importieren, keine ungefragte Migration | offen |
 | Altdatenwerkzeug | vorhandenes Entwicklerwerkzeug weiter kompatibel halten oder explizit ersetzen | offen |
 
-## Erkennbarer Ausgangsbestand direkter Frontend-Abhängigkeiten
+Die vier Statistik-Regressionsfälle sind noch offen. Sieben SQLite-Tests wurden ergänzt und kompiliert, aber nicht ausgeführt. Tests bleiben durch den Auftraggeber auszuführen.
 
-Inventar beim Branchstart (ohne bin/obj):
-- 11 Dateien rufen OeffneDatenbank.Ausfuehren auf.
-- 12 Dateien verwenden SqliteConnection.
+## Direkte Frontend-Abhängigkeiten
+
+Inventar beim Branchstart (ohne `bin/obj`):
+- 11 Dateien rufen `OeffneDatenbank.Ausfuehren` auf.
+- 12 Dateien verwenden `SqliteConnection`.
 - 4 Dateien verwenden FIT-Lesefunktionen.
-- 2 Dateien verwenden GarminPersonalClient.
-- Je 6 Dateien verwenden direkte File-/Directory-Zugriffe; Geräte- und bewusst
-  lokale Export-/Downloadoperationen sind getrennt von Backendzugriffen zu bewerten.
+- 2 Dateien verwenden `GarminPersonalClient`.
+- Je 6 Dateien verwenden direkte File-/Directory-Zugriffe; Geräte- und bewusst lokale Export-/Downloadoperationen sind getrennt von Backendzugriffen zu bewerten.
 
-Abschlussprüfung: Das produktive WPF-Frontend darf weder AndyTours.Daten noch
-AndyTours.Import bzw. Microsoft.Data.Sqlite referenzieren oder beliebige
-Server-Dateipfade/SQL-Aufträge über HTTP übertragen. Die Geräteadapter-Ausnahme
-gilt ausschließlich für USB/MTP und lokale Benutzerauswahl, nicht für Fachlogik.
+Abschlussprüfung: Das produktive WPF-Frontend darf weder `AndyTours.Daten` noch `AndyTours.Import` bzw. `Microsoft.Data.Sqlite` referenzieren oder beliebige Server-Dateipfade/SQL-Aufträge über HTTP übertragen. Die Geräteadapter-Ausnahme gilt ausschließlich für USB/MTP und lokale Benutzerauswahl, nicht für Fachlogik.
 
 ## Backend-Konfiguration (Platzhalter)
 
@@ -71,18 +84,27 @@ Backend__Zugriffstoken=<ZUFÄLLIGES_GEHEIMNIS_MIT_MINDESTENS_32_BYTES>
 ASPNETCORE_URLS=<OPTIONALE_BINDUNG; Standard: http://localhost:5000>
 ```
 
-Die OpenAPI-Beschreibung und alle Fachrouten verlangen Bearer-Authentifizierung; Health ist anonym erreichbar. Nicht-loopback Zugriffe sind nur über HTTPS zulässig. Das Zugriffstoken gewährt vollen Zugriff auf den konfigurierten Datenbestand; es gibt derzeit keine Mehrbenutzerverwaltung. Es ist kein Garmin-Schlüssel. Für den Backendbetrieb wird die .NET 10 ASP.NET Core Runtime benötigt; die Desktop Runtime allein reicht nicht.
+Die API verlangt Bearer-Authentifizierung; Health ist anonym erreichbar. Nicht-loopback-Zugriffe sind nur über HTTPS zulässig. Das Zugriffstoken gewährt vollen Zugriff auf den konfigurierten Datenbestand; es gibt derzeit keine Mehrbenutzerverwaltung. Es ist kein Garmin-Schlüssel.
 
-## Umgesetzter Zwischenstand (API_FIRST)
+## Build, lokaler Start und Laufzeit
 
-- ✅ Versionierte Touren-DTOs ohne Core-/SQLite-Typen oder Dateipfade.
-- ✅ Application-Port und serverseitige Wertevalidierung.
-- ✅ SQLite-Tourenspeicher: Liste/Detail/Anlegen/Ändern/Löschen; Versionsprüfung und Mutation unter SQLite-Schreibtransaktion; Anhänge bleiben bei Änderung erhalten.
-- ✅ ASP.NET REST-Routen für Touren, Bearer-Schutz, HTTPS-Anforderung für Remotezugriffe, ProblemDetails und geschützte OpenAPI-Beschreibung.
-- ✅ Typisierter asynchroner Touren-HTTP-Client.
-- ✅ Sechs Tourenspeicher-Regressionstests wurden hinzugefügt, aber **nicht ausgeführt**.
-- ✅ Testserver verwendet .NET SDK 10.0.402 unter `/opt/dotnet-sdk-10.0.402/dotnet`; die bisherigen relevanten Builds waren erfolgreich und warnungsfrei.
-- ⏳ Die WPF-App verwendet die neuen API-Abläufe noch nicht; ihre direkten Daten-/Import-Abhängigkeiten und bisherigen Benutzerabläufe sind noch nicht umgestellt.
-- ⏳ Alle weiteren Fachmodule und deren Clientabläufe in der Paritätstabelle bleiben offen. Diese Teilabdeckung ist keine vollständige Umstellung.
+Voraussetzung für Source-Builds: Windows und ein zur `global.json` passendes .NET SDK (10.0.402 im verifizierten Testserver-Build). Unter Windows:
 
-Keine EXE-Dateien wurden erstellt oder eingecheckt.
+```powershell
+dotnet build AndyTours.slnx -c Release
+dotnet run --project src/AndyTours.App -c Release -- --api
+```
+
+Der Installer-Publish veröffentlicht App und API als self-contained `win-x64`; im Installer ist daher keine separate .NET Runtime erforderlich. In einem Source-Checkout startet die lokale API aus `src/AndyTours.Api/bin/{Debug|Release}/net10.0/AndyTours.Api.dll` und benötigt die passende .NET Runtime bzw. das SDK. Ein zentrales Backend kann auch dann gewählt werden, wenn die lokale Backenddatei fehlt.
+
+Für ein zentrales Backend sind HTTPS und ein Zugriffstoken mit mindestens 32 Bytes erforderlich. Das Token ist datasetweit voll berechtigt. Das separat verwendete Garmin-Key-Secret ist nicht in die Frontendmigration einbezogen. Keine echten Tokens oder Schlüssel in Dokumentation oder Repository eintragen.
+
+## Verifikation und verbleibende Lücken
+
+- Testserver-Builds und Windows-`win-x64`-Cross-Publish von App und API waren erfolgreich.
+- Der Installer (einschließlich ISCC) wurde nicht ausgeführt.
+- Windows-Start, Dialogverbindung und Rendering der API-Ansicht wurden nicht getestet.
+- Die sieben neuen SQLite-Tests wurden kompiliert, aber nicht ausgeführt; vier Statistik-Regressionsfälle fehlen noch.
+- Keine vollständige Migration behaupten, bis alle offenen Paritätsbereiche umgesetzt und verifiziert sind.
+
+Keine EXE-Dateien werden eingecheckt.

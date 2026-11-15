@@ -2,6 +2,11 @@
 
 Windows-Desktop-App zur Verwaltung der eigenen Fahrradtouren.
 
+Die API-First-Migration wird schrittweise umgesetzt. Der Einstieg über `--api`,
+sein aktueller Umfang und die noch offenen Paritätsbereiche stehen in
+[docs/api-first/UMSTELLUNG.md](docs/api-first/UMSTELLUNG.md). Ohne `--api` bleibt
+der bisherige Legacy-Start erhalten.
+
 Umgesetzt sind die Funktionen, die ich selbst tatsächlich nutze. Die App ist für
 einen einzelnen Benutzer gedacht.
 
@@ -46,7 +51,8 @@ Voraussetzung: Windows und das .NET SDK 10.0.4xx (`winget install Microsoft.DotN
 ```powershell
 dotnet build AndyTours.slnx                 # Bauen
 dotnet test AndyTours.slnx                  # Testen
-dotnet run --project src/AndyTours.App      # Starten
+dotnet run --project src/AndyTours.App      # Legacy-Start
+dotnet run --project src/AndyTours.App -c Release -- --api  # API-Migrationsansicht
 ```
 
 Installationsprogramm bauen (benötigt Inno Setup 6):
