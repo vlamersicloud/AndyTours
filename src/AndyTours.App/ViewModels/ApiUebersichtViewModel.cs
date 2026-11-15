@@ -49,10 +49,10 @@ public partial class ApiUebersichtViewModel : ObservableObject
     public ObservableCollection<TourAntwort> Touren { get; }
 
     /// <summary>Verfügbare Zeitraster und Anzeigenamen.</summary>
-    public IReadOnlyList<(Auswertungsraster Wert, string Name)> RasterOptionen { get; } =
+    public IReadOnlyList<KeyValuePair<Auswertungsraster, string>> RasterOptionen { get; } =
     [
-        (Auswertungsraster.Jahr, "Jahr"), (Auswertungsraster.Monat, "Monat"),
-        (Auswertungsraster.Woche, "Woche"), (Auswertungsraster.Tag, "Tag")
+        new(Auswertungsraster.Jahr, "Jahr"), new(Auswertungsraster.Monat, "Monat"),
+        new(Auswertungsraster.Woche, "Woche"), new(Auswertungsraster.Tag, "Tag")
     ];
 
     /// <summary>Verfügbare Diagrammkennzahlen.</summary>
@@ -182,11 +182,21 @@ public partial class ApiUebersichtViewModel : ObservableObject
     private void ZeichneDiagramm()
     {
         var model = new PlotModel { Background = OxyColors.White };
-        var labels = _perioden.Select(p => p.Beschriftung).ToArray();
-        model.Axes.Add(new CategoryAxis { Position = AxisPosition.Bottom, ItemsSource = labels, Minimum = -0.5, Maximum = labels.Length - 0.5 });
-        var bars = new BarSeries { FillColor = OxyColor.FromRgb(0, 102, 204), StrokeColor = OxyColors.Transparent };
-        foreach (var periode in _perioden)
+        var zeitachse = new CategoryAxis { Position = AxisPosition.Bottom, Minimum = -0.5, Maximum = _perioden.Count - 0.5 };
+        var einheit = Kennzahl switch
         {
+            ApiDiagrammkennzahl.Kilometer => "km",
+            ApiDiagrammkennzahl.Hoehenmeter => "hm",
+            ApiDiagrammkennzahl.Fahrzeit => "Stunden",
+            _ => "Touren"
+        };
+        model.Axes.Add(zeitachse);
+        model.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Minimum = 0, Title = einheit });
+        var bars = new RectangleBarSeries { FillColor = OxyColor.FromRgb(0, 102, 204), StrokeThickness = 0 };
+        for (var i = 0; i < _perioden.Count; i++)
+        {
+            var periode = _perioden[i];
+            zeitachse.Labels.Add(periode.Beschriftung);
             var wert = Kennzahl switch
             {
                 ApiDiagrammkennzahl.Kilometer => periode.DistanzKm,
@@ -195,7 +205,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
                 ApiDiagrammkennzahl.Anzahl => periode.Anzahl,
                 _ => 0d
             };
-            bars.Items.Add(new BarItem(wert));
+            bars.Items.Add(new RectangleBarItem(i - .35, 0, i + .35, wert));
         }
         model.Series.Add(bars);
         Diagramm = model;
