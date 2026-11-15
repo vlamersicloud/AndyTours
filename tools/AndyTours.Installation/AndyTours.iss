@@ -1,14 +1,15 @@
-﻿; Installations- und Deinstallationsprogramm von AndyTours (Spezifikation 033, ADR 0005).
+﻿; Installations- und Deinstallationsprogramm von AndyTours (Spezifikationen 033 und 036, ADR 0005).
 ;
-; Gebaut wird es mit Erstelle-Installation.ps1; das Skript veröffentlicht App und Umwandlungsprogramm und übergibt
-; Version und Quellordner an den Inno-Setup-Compiler (/DAppVersion, /DAppQuelle, /DWerkzeugQuelle).
+; Gebaut wird es mit Erstelle-Installation.ps1; das Skript veröffentlicht die App und übergibt
+; Version und Quellordner an den Inno-Setup-Compiler (/DAppVersion, /DAppQuelle).
 ;
 ; Ablauf der Installation:
 ;   1. Läuft AndyTours, wird gebeten, es zu beenden.
-;   2. Seiten: Datenordner → Übernahme der bisherigen Daten → Verknüpfungen → Zusammenfassung.
-;      Bei einer Aktualisierung (Eintrag unter „Apps“ vorhanden) entfallen Datenordner und Übernahme.
+;   2. Seiten: Datenordner → Verknüpfungen → Zusammenfassung.
+;      Bei einer Aktualisierung (Eintrag unter „Apps“ vorhanden) entfällt der Datenordner.
 ;   3. Programmdateien nach %LOCALAPPDATA%\Programs\AndyTours, Verknüpfungen, Eintrag unter „Apps“.
-;   4. Übernahme über das Umwandlungsprogramm, Merkdatei mit dem Datenordner schreiben.
+;      Ein Umwandlungsprogramm älterer Fassungen wird dabei entfernt (Spezifikation 036).
+;   4. Datenordner anlegen, falls er fehlt, und die Merkdatei mit dem Datenordner schreiben.
 ;   5. Jede Änderung kommt in das lesbare Protokoll installationsprotokoll.txt im Programmordner.
 ; Die Deinstallation entfernt alles, was im Protokoll steht, und fragt, ob der Datenordner gelöscht werden soll.
 
@@ -18,12 +19,10 @@
 #ifndef AppQuelle
   #define AppQuelle "bin\App"
 #endif
-#ifndef WerkzeugQuelle
-  #define WerkzeugQuelle "bin\Werkzeug"
-#endif
 
 #define AppExe "AndyTours.App.exe"
-#define Werkzeug "AndyTours.Altdatenuebernahme.exe"
+; Umwandlungsprogramm, das Fassungen bis 1.0.1 mitinstalliert haben; bei einer Aktualisierung wird es entfernt
+#define AltesWerkzeug "AndyTours.Altdatenuebernahme.exe"
 
 [Setup]
 ; Fester Schlüssel: Daran erkennt eine spätere Fassung die vorhandene Installation (Eintrag „AndyTours_is1“)
@@ -65,9 +64,11 @@ Name: "desktop"; Description: "Verknüpfung auf dem Desktop anlegen"; GroupDescr
 [Files]
 ; Die App mit eingebautem .NET; Debug-Informationen und XML-Dokumentation werden nicht gebraucht
 Source: "{#AppQuelle}\*"; DestDir: "{app}"; Excludes: "*.pdb,AndyTours.*.xml"; Flags: recursesubdirs ignoreversion; BeforeInstall: VorDatei; AfterInstall: NachDatei
-Source: "{#WerkzeugQuelle}\{#Werkzeug}"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: VorDatei; AfterInstall: NachDatei
-; Dieselbe Datei noch einmal zum Entpacken während der Seitenabfrage (--erkennen); sie wird nur einmal gespeichert
-Source: "{#WerkzeugQuelle}\{#Werkzeug}"; Flags: dontcopy
+
+[InstallDelete]
+; Das Umwandlungsprogramm gehört seit Spezifikation 036 nicht mehr zur Installation; das Protokoll vermerkt das
+; Entfernen in CurStepChanged(ssInstall), das vor diesem Abschnitt ausgeführt wird
+Type: files; Name: "{app}\{#AltesWerkzeug}"
 
 [Icons]
 Name: "{autoprograms}\AndyTours"; Filename: "{app}\{#AppExe}"; AfterInstall: NachVerknuepfung('{autoprograms}\AndyTours.lnk')
@@ -84,27 +85,10 @@ const
   Datenbankdatei = 'andytours.db';
   Prozessname = 'AndyTours.App.exe';
 
-  // Rückgabecodes des Umwandlungsprogramms (tools/AndyTours.Altdatenuebernahme/Rueckgabecode.cs)
-  RcErfolg = 0;
-  RcZielHatDaten = 2;
-  RcBikeXperience = 10;
-  RcNurAufzeichnungen = 11;
-  RcNichts = 12;
-
 var
   // Ist AndyTours schon installiert, ist dies eine Aktualisierung: Datenordner und Daten bleiben unangetastet
   IstAktualisierung: Boolean;
   DatenordnerSeite: TInputDirWizardPage;
-  UebernahmeSeite: TWizardPage;
-  UebernahmeHaken: TNewCheckBox;
-  UebernahmeOrdner: TNewEdit;
-  UebernahmeDurchsuchen: TNewButton;
-  // Im Datenordner liegen schon AndyTours-Daten oder andere Dateien – dann entfällt die Übernahme
-  DatenordnerHatInhalt: Boolean;
-  // Was übernommen wird: 0 = nichts, RcBikeXperience oder RcNurAufzeichnungen
-  Uebernahmeart: Integer;
-  AnzahlAufzeichnungen: Integer;
-  WerkzeugEntpackt: Boolean;
   // Gesammelte Zeilen des Protokolls; sie werden am Ende der Installation angehängt
   Protokollzeilen: TArrayOfString;
   DateiWarVorhanden, OrdnerWarVorhanden: Boolean;
@@ -162,14 +146,6 @@ begin
   end;
 end;
 
-// Pfad für die Befehlszeile: ein abschließender „\“ würde das schließende Anführungszeichen maskieren
-function AlsArgument(Pfad: String): String;
-begin
-  if (Length(Pfad) > 0) and (Pfad[Length(Pfad)] = '\') then
-    Pfad := Pfad + '.';
-  Result := '"' + Pfad + '"';
-end;
-
 // Liest eine UTF-8-Textdatei (mit oder ohne Byte-Order-Mark); fehlt sie, ist das Ergebnis leer
 function LiesUtf8(Datei: String): String;
 var
@@ -204,22 +180,6 @@ begin
     Result[Anzahl] := Zeile;
     Anzahl := Anzahl + 1;
   end;
-end;
-
-// Startet das Umwandlungsprogramm unsichtbar und liefert Rückgabecode und Ausgabe (Konsole, UTF-8)
-function StarteWerkzeug(Programm, Parameter: String; var Ausgabe: String): Integer;
-var
-  Ausgabedatei: String;
-  Rc: Integer;
-begin
-  Ausgabedatei := ExpandConstant('{tmp}\werkzeug-ausgabe.txt');
-  DeleteFile(Ausgabedatei);
-  // cmd leitet Ausgabe und Fehlerausgabe in eine Datei um; /S entfernt nur die äußeren Anführungszeichen
-  if not Exec(ExpandConstant('{cmd}'), '/S /C "' + AlsArgument(Programm) + ' ' + Parameter + ' > ' +
-      AlsArgument(Ausgabedatei) + ' 2>&1"', '', SW_HIDE, ewWaitUntilTerminated, Rc) then
-    Rc := -1;
-  Ausgabe := Trim(LiesUtf8(Ausgabedatei));
-  Result := Rc;
 end;
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -328,24 +288,7 @@ begin
   Result := WarteAufBeendeteApp('Installation');
 end;
 
-procedure HakenGeklickt(Sender: TObject);
-begin
-  UebernahmeOrdner.Enabled := UebernahmeHaken.Checked;
-  UebernahmeDurchsuchen.Enabled := UebernahmeHaken.Checked;
-end;
-
-procedure DurchsuchenGeklickt(Sender: TObject);
-var
-  Ordner: String;
-begin
-  Ordner := UebernahmeOrdner.Text;
-  if BrowseForFolder('Ordner mit den bisherigen Daten wählen:', Ordner, False) then
-    UebernahmeOrdner.Text := Ordner;
-end;
-
 procedure InitializeWizard;
-var
-  Hinweis, Bezeichnung: TNewStaticText;
 begin
   // Seite „Datenordner“ mit dem Vorschlag Dokumente\AndyTours
   DatenordnerSeite := CreateInputDirPage(wpWelcome, 'Datenordner', 'Wo sollen Ihre Touren gespeichert werden?',
@@ -353,59 +296,12 @@ begin
     'wenn Sie nichts anderes wählen.', False, 'AndyTours');
   DatenordnerSeite.Add('Datenordner:');
   DatenordnerSeite.Values[0] := ExpandConstant('{userdocs}\AndyTours');
-
-  // Seite „Bisherige Daten übernehmen“: vorgewählt, Ordner ohne Vorschlag
-  UebernahmeSeite := CreateCustomPage(DatenordnerSeite.ID, 'Bisherige Daten übernehmen',
-    'Sollen Ihre bisherigen Touren übernommen werden?');
-
-  UebernahmeHaken := TNewCheckBox.Create(UebernahmeSeite);
-  UebernahmeHaken.Parent := UebernahmeSeite.Surface;
-  UebernahmeHaken.Caption := 'Bisherige Daten übernehmen';
-  UebernahmeHaken.Checked := True;
-  UebernahmeHaken.Width := UebernahmeSeite.SurfaceWidth;
-  UebernahmeHaken.Top := 0;
-  UebernahmeHaken.OnClick := @HakenGeklickt;
-
-  Hinweis := TNewStaticText.Create(UebernahmeSeite);
-  Hinweis.Parent := UebernahmeSeite.Surface;
-  Hinweis.AutoSize := False;
-  Hinweis.WordWrap := True;
-  Hinweis.Width := UebernahmeSeite.SurfaceWidth;
-  Hinweis.Height := ScaleY(56);
-  Hinweis.Top := UebernahmeHaken.Top + UebernahmeHaken.Height + ScaleY(12);
-  Hinweis.Caption := 'Geben Sie den Ordner mit Ihren BikeXperience-Daten an. Liegen dort keine BikeXperience-Daten, ' +
-    'aber Aufzeichnungen im FIT-Format (auch in Unterordnern), können diese als Touren übernommen werden. ' +
-    'Der Ordner wird nur gelesen.';
-
-  Bezeichnung := TNewStaticText.Create(UebernahmeSeite);
-  Bezeichnung.Parent := UebernahmeSeite.Surface;
-  Bezeichnung.Caption := 'Ordner mit den bisherigen Daten:';
-  Bezeichnung.Top := Hinweis.Top + Hinweis.Height + ScaleY(8);
-
-  UebernahmeDurchsuchen := TNewButton.Create(UebernahmeSeite);
-  UebernahmeDurchsuchen.Parent := UebernahmeSeite.Surface;
-  UebernahmeDurchsuchen.Caption := 'Durchsuchen …';
-  UebernahmeDurchsuchen.Width := ScaleX(100);
-  UebernahmeDurchsuchen.Height := ScaleY(23);
-  UebernahmeDurchsuchen.Left := UebernahmeSeite.SurfaceWidth - UebernahmeDurchsuchen.Width;
-  UebernahmeDurchsuchen.Top := Bezeichnung.Top + Bezeichnung.Height + ScaleY(4);
-  UebernahmeDurchsuchen.OnClick := @DurchsuchenGeklickt;
-
-  UebernahmeOrdner := TNewEdit.Create(UebernahmeSeite);
-  UebernahmeOrdner.Parent := UebernahmeSeite.Surface;
-  UebernahmeOrdner.Top := UebernahmeDurchsuchen.Top + ScaleY(1);
-  UebernahmeOrdner.Width := UebernahmeDurchsuchen.Left - ScaleX(8);
-  UebernahmeOrdner.Text := '';
 end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
-  Result := False;
-  // Aktualisierung: Datenordner und Daten bleiben, die Übernahme wird nicht mehr angeboten
-  if IstAktualisierung and ((PageID = DatenordnerSeite.ID) or (PageID = UebernahmeSeite.ID)) then
-    Result := True
-  else if (PageID = UebernahmeSeite.ID) and DatenordnerHatInhalt then
-    Result := True;
+  // Aktualisierung: Datenordner und Daten bleiben unverändert
+  Result := IstAktualisierung and (PageID = DatenordnerSeite.ID);
 end;
 
 function Datenordner: String;
@@ -436,106 +332,24 @@ begin
     Exit;
   end;
 
-  DatenordnerHatInhalt := False;
+  // Vorhandene AndyTours-Daten werden weiter verwendet; ein fremder, nicht leerer Ordner nur nach Rückfrage
   if FileExists(AddBackslash(Ordner) + Datenbankdatei) then
-  begin
-    DatenordnerHatInhalt := True;
-    MsgBox('Im Datenordner liegen bereits AndyTours-Daten. Sie bleiben unverändert, und die Übernahme ' +
-      'bisheriger Daten entfällt.', mbInformation, MB_OK);
-  end
+    MsgBox('Im Datenordner liegen bereits AndyTours-Daten. Sie werden weiter verwendet.', mbInformation, MB_OK)
   else if DirExists(Ordner) and not OrdnerIstLeer(Ordner) then
   begin
-    if MsgBox('Der Ordner enthält bereits andere Dateien. Bisherige Daten lassen sich nur in einen leeren Ordner ' +
-        'übernehmen; die Übernahme entfällt dann.' + #13#10#13#10 + 'Diesen Ordner trotzdem verwenden?',
+    if MsgBox('Der Ordner enthält bereits andere Dateien.' + #13#10#13#10 + 'Diesen Ordner trotzdem verwenden?',
         mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDNO then
       Exit;
-    DatenordnerHatInhalt := True;
   end;
 
   Result := True;
-end;
-
-// Prüft die Seite „Übernahme“ und stellt fest, was im Ordner liegt; false = auf der Seite bleiben
-function PruefeUebernahme: Boolean;
-var
-  Quelle, Ausgabe: String;
-  Rc: Integer;
-begin
-  Result := False;
-  Uebernahmeart := 0;
-  if not UebernahmeHaken.Checked then
-  begin
-    Result := True;
-    Exit;
-  end;
-
-  Quelle := RemoveBackslashUnlessRoot(Trim(UebernahmeOrdner.Text));
-  if Quelle = '' then
-  begin
-    MsgBox('Bitte geben Sie den Ordner mit den bisherigen Daten an, oder entfernen Sie den Haken, um ohne Übernahme ' +
-      'fortzufahren.', mbError, MB_OK);
-    Exit;
-  end;
-  if not DirExists(Quelle) then
-  begin
-    MsgBox('Den Ordner „' + Quelle + '“ gibt es nicht.', mbError, MB_OK);
-    Exit;
-  end;
-  if Ueberlappen(Quelle, Datenordner) then
-  begin
-    MsgBox('Der Ordner mit den bisherigen Daten darf nicht der Datenordner sein und nicht in ihm liegen.', mbError, MB_OK);
-    Exit;
-  end;
-
-  // Das Umwandlungsprogramm einmal entpacken und fragen, was im Ordner liegt
-  if not WerkzeugEntpackt then
-  begin
-    WizardForm.NextButton.Enabled := False;
-    try
-      ExtractTemporaryFile('{#Werkzeug}');
-    finally
-      WizardForm.NextButton.Enabled := True;
-    end;
-    WerkzeugEntpackt := True;
-  end;
-  Rc := StarteWerkzeug(ExpandConstant('{tmp}\{#Werkzeug}'), '--erkennen ' + AlsArgument(Quelle), Ausgabe);
-
-  if Rc = RcBikeXperience then
-  begin
-    Uebernahmeart := RcBikeXperience;
-    Result := True;
-  end
-  else if Rc = RcNurAufzeichnungen then
-  begin
-    AnzahlAufzeichnungen := StrToIntDef(Ausgabe, 0);
-    if MsgBox('Im Ordner liegen keine BikeXperience-Daten, aber ' + IntToStr(AnzahlAufzeichnungen) +
-        ' Aufzeichnungen im FIT-Format (auch in Unterordnern).' + #13#10#13#10 +
-        'Sollen diese als Touren übernommen werden?', mbConfirmation, MB_YESNO) = IDYES then
-      Uebernahmeart := RcNurAufzeichnungen;
-    Result := True;
-  end
-  else if Rc = RcNichts then
-  begin
-    if TaskDialogMsgBox('Keine bisherigen Daten gefunden',
-        'Im Ordner „' + Quelle + '“ liegen weder BikeXperience-Daten noch Aufzeichnungen im FIT-Format.',
-        mbInformation, MB_YESNO, ['Anderen Ordner wählen', 'Ohne Übernahme weiter'], 0) = IDNO then
-    begin
-      UebernahmeHaken.Checked := False;
-      HakenGeklickt(nil);
-      Result := True;
-    end;
-  end
-  else
-    MsgBox('Der Ordner konnte nicht geprüft werden:' + #13#10#13#10 + Ausgabe, mbError, MB_OK);
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
 begin
   Result := True;
   if CurPageID = DatenordnerSeite.ID then
-    Result := PruefeDatenordner
-  else if CurPageID = UebernahmeSeite.ID then
-    Result := PruefeUebernahme;
+    Result := PruefeDatenordner;
 end;
 
 // Seite „Zusammenfassung“ vor dem Start
@@ -549,20 +363,7 @@ begin
     Text := Text + 'Aktualisierung auf Version {#AppVersion}:' + NewLine + Space +
       'Datenordner, Daten und Einstellungen bleiben unverändert.' + NewLine + NewLine
   else
-  begin
     Text := Text + 'Datenordner:' + NewLine + Space + Datenordner + NewLine + NewLine;
-    Text := Text + 'Bisherige Daten:' + NewLine + Space;
-    if DatenordnerHatInhalt then
-      Text := Text + 'keine Übernahme (der Datenordner ist nicht leer)'
-    else if Uebernahmeart = RcBikeXperience then
-      Text := Text + 'BikeXperience-Daten aus „' + Trim(UebernahmeOrdner.Text) + '“ umwandeln'
-    else if Uebernahmeart = RcNurAufzeichnungen then
-      Text := Text + IntToStr(AnzahlAufzeichnungen) + ' Aufzeichnungen aus „' + Trim(UebernahmeOrdner.Text) +
-        '“ als Touren übernehmen'
-    else
-      Text := Text + 'keine Übernahme';
-    Text := Text + NewLine + NewLine;
-  end;
   Text := Text + 'Verknüpfungen:' + NewLine + Space + 'Startmenü';
   if WizardIsTaskSelected('desktop') then
     Text := Text + ', Desktop';
@@ -578,34 +379,8 @@ begin
 end;
 
 // ---------------------------------------------------------------------------------------------------------------
-// Installation: Übernahme, Merkdatei, Protokoll
+// Installation: Merkdatei, Protokoll
 // ---------------------------------------------------------------------------------------------------------------
-
-// Ruft das installierte Umwandlungsprogramm auf und zeigt seine Zusammenfassung oder den Grund des Abbruchs
-procedure UebernimmBisherigeDaten;
-var
-  Parameter, Ausgabe: String;
-  Rc: Integer;
-begin
-  if Uebernahmeart = RcBikeXperience then
-    Parameter := AlsArgument(RemoveBackslashUnlessRoot(Trim(UebernahmeOrdner.Text))) + ' ' + AlsArgument(Datenordner)
-  else
-    Parameter := '--aufzeichnungen ' + AlsArgument(RemoveBackslashUnlessRoot(Trim(UebernahmeOrdner.Text))) + ' ' +
-      AlsArgument(Datenordner);
-
-  WizardForm.StatusLabel.Caption := 'Bisherige Daten werden übernommen … Das kann einige Minuten dauern.';
-  WizardForm.FilenameLabel.Caption := '';
-  Rc := StarteWerkzeug(ExpandConstant('{app}\{#Werkzeug}'), Parameter + ' --ohne-rueckfrage', Ausgabe);
-
-  if Rc = RcErfolg then
-    SuppressibleMsgBox(Ausgabe, mbInformation, MB_OK, IDOK)
-  else if Rc = RcZielHatDaten then
-    SuppressibleMsgBox('Im Datenordner liegen bereits AndyTours-Daten. Sie bleiben unverändert; es wurde nichts ' +
-      'übernommen.', mbInformation, MB_OK, IDOK)
-  else
-    SuppressibleMsgBox('Die Übernahme der bisherigen Daten ist abgebrochen. AndyTours ist trotzdem installiert, und ' +
-      'der Datenordner ist unverändert.' + #13#10#13#10 + 'Grund:' + #13#10 + Ausgabe, mbError, MB_OK, IDOK);
-end;
 
 // Legt die Einstellungsordner der App an und schreibt den Datenordner in die Merkdatei
 procedure SchreibeEinstellungen;
@@ -635,14 +410,15 @@ begin
   begin
     if not DirExists(WizardDirValue) then
       Protokolliere('angelegt', 'Ordner', WizardDirValue);
+    // Das alte Umwandlungsprogramm entfernt gleich danach [InstallDelete]; hier wird es nur protokolliert
+    if FileExists(ExpandConstant('{app}\{#AltesWerkzeug}')) then
+      Protokolliere('entfernt', 'Datei', ExpandConstant('{app}\{#AltesWerkzeug}'));
   end
   else if CurStep = ssPostInstall then
   begin
     if not IstAktualisierung then
     begin
-      if Uebernahmeart <> 0 then
-        UebernimmBisherigeDaten;
-      // Ohne Übernahme (oder nach einem Abbruch) einen leeren Datenordner anlegen, damit die App ihn vorfindet
+      // Einen leeren Datenordner anlegen, falls er fehlt, damit die App ihn vorfindet
       if not DirExists(Datenordner) then
         ForceDirectories(Datenordner);
       SchreibeEinstellungen;

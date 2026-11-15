@@ -28,7 +28,7 @@ Für AndyTours Version 1.0.1
 <a id="kapitel-1"></a>
 ## 1. Was macht das Programm
 
-AndyTours verwaltet Ihre Fahrradtouren auf einem Windows-PC. Es ist der Nachfolger des Programms BikeXperience. Ihre bisherigen BikeXperience-Daten können Sie bei der Installation übernehmen.
+AndyTours verwaltet Ihre Fahrradtouren auf einem Windows-PC. Es ist der Nachfolger des Programms BikeXperience.
 
 Mit AndyTours können Sie:
 
@@ -50,7 +50,7 @@ Nach dem Start sehen Sie das Hauptfenster. Es öffnet die Karteikarte, die beim 
 AndyTours übernimmt nur die Funktionen von BikeXperience, die tatsächlich genutzt werden. Folgendes ist bewusst nicht enthalten:
 
 - mehrere Benutzer
-- Altdaten-Import innerhalb des Programms (das erledigt das Installationsprogramm, siehe [Kapitel 2](#kapitel-2))
+- Übernahme von Daten aus anderen Programmen (vorhandene FIT-Dateien vom Garmin lassen sich aber importieren, siehe [Abschnitt 4.2](#k4-2))
 - Rück-Export zu BikeXperience und gleichzeitiger Betrieb mit BikeXperience
 - Schwellwerte mit Farben
 - im Tourdetail: Puls- und Zonenauswertung, Rundenzeiten, Vergleich von Höhenprofilen
@@ -85,57 +85,35 @@ Weitere Programme müssen Sie nicht installieren. Sie brauchen auch keine Admini
 
 ### 2.2 AndyTours installieren
 
-Mit dieser Anleitung richten Sie AndyTours ein und übernehmen auf Wunsch Ihre bisherigen Daten.
+Mit dieser Anleitung richten Sie AndyTours ein.
 
 1. Beenden Sie AndyTours, falls es schon läuft.
 2. Starten Sie die Datei **AndyTours-Setup-1.0.1.exe** mit einem Doppelklick. Erscheint die Meldung **Der Computer wurde durch Windows geschützt**, klicken Sie auf **Weitere Informationen** und dann auf **Trotzdem ausführen**.
 3. Auf der Seite **Datenordner** schlägt das Installationsprogramm den Ordner **Dokumente\AndyTours** vor. Übernehmen Sie den Vorschlag oder wählen Sie über die Schaltfläche zum Durchsuchen einen anderen Ordner. Klicken Sie auf **Weiter**.
-4. Auf der Seite **Bisherige Daten übernehmen** ist **Bisherige Daten übernehmen** angehakt. Möchten Sie keine Daten übernehmen, entfernen Sie den Haken und machen bei Schritt 6 weiter.
-5. Tragen Sie unter **Ordner mit den bisherigen Daten:** den Ordner ein, in dem BikeXperience seine Daten ablegt, oder wählen Sie ihn mit **Durchsuchen …**. Klicken Sie auf **Weiter**.
-6. Auf der Seite für die Verknüpfungen können Sie **Verknüpfung auf dem Desktop anlegen** anhaken. Eine Verknüpfung im Startmenü legt das Installationsprogramm immer an.
-7. Prüfen Sie die Zusammenfassung. Sie nennt Programmordner, Datenordner, die Übernahme der bisherigen Daten und die Verknüpfungen.
-8. Klicken Sie auf **Installieren**.
-9. Hatten Sie die Übernahme gewählt, erscheint nach einigen Minuten eine Zusammenfassung der Übernahme. Bestätigen Sie sie mit **OK**.
-10. Lassen Sie auf der letzten Seite **AndyTours starten** angehakt und klicken Sie auf **Fertigstellen**.
+4. Auf der Seite für die Verknüpfungen können Sie **Verknüpfung auf dem Desktop anlegen** anhaken. Eine Verknüpfung im Startmenü legt das Installationsprogramm immer an.
+5. Prüfen Sie die Zusammenfassung. Sie nennt Programmordner, Datenordner und Verknüpfungen.
+6. Klicken Sie auf **Installieren**.
+7. Lassen Sie auf der letzten Seite **AndyTours starten** angehakt und klicken Sie auf **Fertigstellen**.
 
-Danach finden Sie AndyTours im Startmenü und, falls gewählt, auf dem Desktop.
+Danach finden Sie AndyTours im Startmenü und, falls gewählt, auf dem Desktop. Ein neuer Datenordner ist anfangs leer.
 
 **Hinweis:** Der Datenordner darf nicht im Programmordner von AndyTours liegen. Sonst würde er beim Deinstallieren mit entfernt. Das Installationsprogramm weist einen solchen Ordner ab.
 
-**Hinweis:** Liegen im gewählten Datenordner schon AndyTours-Daten, bleiben sie unverändert. Die Übernahme bisheriger Daten entfällt dann, und ein Hinweis sagt das. Liegen dort andere Dateien, fragt das Installationsprogramm, ob Sie den Ordner trotzdem verwenden wollen. Auch dann entfällt die Übernahme, denn sie ist nur in einen leeren Ordner möglich.
+**Hinweis:** Liegen im gewählten Datenordner schon AndyTours-Daten, zum Beispiel nach einer Neuinstallation, weist das Installationsprogramm darauf hin. AndyTours verwendet diese Daten unverändert weiter. Liegen dort andere Dateien, fragt das Installationsprogramm, ob Sie den Ordner trotzdem verwenden wollen.
 
-### 2.3 Was bei der Übernahme der bisherigen Daten passiert
-
-Das Installationsprogramm prüft zuerst, was im angegebenen Ordner liegt. Der Ordner wird dabei nur gelesen und nie verändert.
-
-- **BikeXperience-Daten gefunden:** AndyTours übernimmt Touren, Räder und Ausrüstung, Wartungen, Aktivitäten, Kategorien, persönliche Daten und alle Aufzeichnungen. Beschädigte Umlaute in Texten werden repariert, soweit das eindeutig geht. Zugangsdaten aus BikeXperience (z. B. Dropbox) werden nicht übernommen.
-- **Nur Aufzeichnungen im FIT-Format gefunden:** Das Installationsprogramm nennt die Anzahl der gefundenen Aufzeichnungen, auch aus Unterordnern. Es fragt, ob diese als Touren übernommen werden sollen. Jede lesbare Aufzeichnung wird dann eine Tour mit denselben Werten wie beim Import vom Edge. Die Touren haben noch kein Rad und die Aktivität „Radfahren“. Beides können Sie später in AndyTours ändern.
-- **Nichts gefunden:** Es erscheint der Hinweis **Keine bisherigen Daten gefunden**. Wählen Sie **Anderen Ordner wählen** oder **Ohne Übernahme weiter**.
-
-Nach der Übernahme liegt im Datenordner ein ausführlicher Bericht:
-
-- **migrationsbericht.txt** bei BikeXperience-Daten: übernommene Mengen, Jahressummen (Anzahl, km, hm, Fahrzeit), Hinweise, Warnungen und nicht reparierte Umlaute
-- **aufzeichnungsbericht.txt** bei reinen Aufzeichnungen: Anzahl der übernommenen Touren und jede übersprungene Datei mit Grund
-
-Sie öffnen beide Dateien mit dem Windows-Editor.
-
-Die Zusammenfassung, die das Installationsprogramm am Ende der Übernahme zeigt, nennt die übernommenen Mengen und den Ort des Berichts. Bei BikeXperience-Daten nennt sie außerdem die Anzahl der Warnungen und der nicht reparierten Umlaute.
-
-**Hinweis:** Bricht die Übernahme mit einem Fehler ab, ist AndyTours trotzdem installiert. Der Datenordner bleibt dann so, wie er vorher war. Eine Meldung nennt den Grund.
-
-### 2.4 Neue Version installieren
+### 2.3 Neue Version installieren
 
 Eine neuere Version installieren Sie genauso wie die erste. Das Installationsprogramm erkennt die vorhandene Installation.
 
 - Datenordner, Daten und Einstellungen bleiben erhalten.
-- Die Seiten für den Datenordner und die Übernahme bisheriger Daten entfallen.
+- Die Seite für den Datenordner entfällt.
 - Läuft AndyTours noch, bittet das Installationsprogramm, es zu beenden. Klicken Sie danach auf **Wiederholen**.
 
-### 2.5 Installationsprotokoll
+### 2.4 Installationsprotokoll
 
-Das Installationsprogramm hält jede Änderung an Ihrem Rechner in der Datei **installationsprotokoll.txt** fest. Sie liegt im Programmordner von AndyTours. Den Programmordner finden Sie im Explorer unter **C:\Benutzer\\(Ihr Benutzername)\AppData\Local\Programs\AndyTours**. Jede Zeile nennt Zeitpunkt, Aktion (angelegt oder geändert), Art und Ziel der Änderung.
+Das Installationsprogramm hält jede Änderung an Ihrem Rechner in der Datei **installationsprotokoll.txt** fest. Sie liegt im Programmordner von AndyTours. Den Programmordner finden Sie im Explorer unter **C:\Benutzer\\(Ihr Benutzername)\AppData\Local\Programs\AndyTours**. Jede Zeile nennt Zeitpunkt, Aktion (angelegt, geändert oder entfernt), Art und Ziel der Änderung.
 
-### 2.6 AndyTours deinstallieren
+### 2.5 AndyTours deinstallieren
 
 Mit dieser Anleitung entfernen Sie AndyTours von Ihrem Rechner.
 
@@ -204,6 +182,8 @@ Mit dieser Anleitung holen Sie Ihre neuen Touren vom Radcomputer.
 5. Klicken Sie auf **Importieren**.
 
 Die neuen Touren sind danach auf der Karteikarte **Trainingseinheiten** markiert. Die Statusleiste meldet zum Beispiel **3 Touren importiert.** Einzelheiten finden Sie in [Abschnitt 4.2](#k4-2).
+
+**Hinweis:** Haben Sie ältere Touren schon als FIT-Dateien auf dem Rechner, zum Beispiel aus einer früheren Sicherung des Radcomputers, übernehmen Sie sie mit **Datei → FIT-Dateien importieren…**. Dort können Sie viele Dateien auf einmal auswählen. Touren, die schon in AndyTours sind, werden dabei übersprungen (siehe [Abschnitt 4.2](#k4-2)).
 
 ### 3.6 AndyTours beenden
 
@@ -1139,7 +1119,6 @@ Es gibt keine Rückgängig-Funktion. Sie können aber eine Sicherung wiederherst
 | Aufzeichnung | Datei des Radcomputers mit dem Verlauf einer Tour (Strecke, Höhe, Puls usw.). Liegt im Datenordner im Ordner des Jahres. | [4.2](#k4-2), [4.6](#k4-6) |
 | ausgemustert | Kennzeichen für ein Equipment, das nicht mehr verwendet wird. Es wird nicht mehr angeboten, bleibt aber bei alten Einträgen erhalten. | [4.9.4](#k4-9-4) |
 | Bestwert | Höchster Wert der angezeigten Einheiten in einer Spalte. Rot dargestellt. | [4.4](#k4-4) |
-| BikeXperience | Vorgängerprogramm, dessen Daten AndyTours übernehmen kann. | [2.3](#kapitel-2) |
 | BRouter | Kostenloser Routingdienst, in AndyTours voreingestellt. | [4.9.4](#k4-9-4) |
 | Course | Strecke, die der Garmin Edge beim Nachfahren mit Höhenprofil und Abbiegehinweisen anzeigt. | [4.6](#k4-6), [4.8](#k4-8) |
 | Datenordner | Ordner, in dem alle Daten von AndyTours liegen: Datenbestand, Aufzeichnungen, Sicherungen. | [4.9.4](#k4-9-4) |
