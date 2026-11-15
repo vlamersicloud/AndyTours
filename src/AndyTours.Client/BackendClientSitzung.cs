@@ -42,6 +42,7 @@ public sealed class BackendClientSitzung : IDisposable
         Touren = new TourenHttpClient(_httpClient);
         Auswertung = new AktivitaetsauswertungHttpClient(_httpClient);
         Stammdaten = new StammdatenHttpClient(_httpClient);
+        Aktivitaeten = new AktivitaetenHttpVerwaltung(_httpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
@@ -53,6 +54,8 @@ public sealed class BackendClientSitzung : IDisposable
     public IAktivitaetsauswertung Auswertung { get; }
     /// <summary>Lesezugriff auf die Stammdaten.</summary>
     public IStammdatenLeser Stammdaten { get; }
+    /// <summary>Versionierte Verwaltungsoperationen für Aktivitäten.</summary>
+    public IAktivitaetenVerwaltung Aktivitaeten { get; }
     /// <summary>Verbindungsprüfung.</summary>
     public IBackendVerbindung Verbindung { get; }
 

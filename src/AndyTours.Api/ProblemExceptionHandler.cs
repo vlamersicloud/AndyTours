@@ -1,4 +1,5 @@
 using AndyTours.Application.Touren;
+using AndyTours.Application.Stammdaten;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Data.Sqlite;
 
@@ -10,7 +11,22 @@ public sealed class ProblemExceptionHandler : IExceptionHandler
     /// <inheritdoc />
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        var (status, title) = exception switch
+        if (exception is StammdatenException stammdaten)
+        {
+            var (status, title, code) = stammdaten.Art switch
+            {
+                StammdatenFehlerart.Ungueltig => (400, "Ungültige Stammdatenanforderung.", "stammdaten.ungueltig"),
+                StammdatenFehlerart.NichtGefunden => (404, "Stammdaten nicht gefunden.", "stammdaten.nichtgefunden"),
+                StammdatenFehlerart.Konflikt => (409, "Stammdatenkonflikt.", "stammdaten.konflikt"),
+                _ => (500, "Interner Serverfehler.", (string?)null)
+            };
+            await Results.Problem(statusCode: status, title: title, detail: status == 500 ? null : stammdaten.Message,
+                extensions: new Dictionary<string, object?> { ["traceId"] = httpContext.TraceIdentifier, ["code"] = code })
+                .ExecuteAsync(httpContext);
+            return true;
+        }
+
+        var (legacyStatus, legacyTitle) = exception switch
         {
             UngueltigeTourException => (400, "Ungültige Tourdaten."),
             TourNichtGefundenException => (404, "Tour nicht gefunden."),
@@ -18,7 +34,7 @@ public sealed class ProblemExceptionHandler : IExceptionHandler
             SqliteException { SqliteErrorCode: 19 } => (400, "Ungültige Datenreferenz."),
             _ => (500, "Interner Serverfehler.")
         };
-        await Results.Problem(statusCode: status, title: title,
+        await Results.Problem(statusCode: legacyStatus, title: legacyTitle,
             extensions: new Dictionary<string, object?> { ["traceId"] = httpContext.TraceIdentifier })
             .ExecuteAsync(httpContext);
         return true;
