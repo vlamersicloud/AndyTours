@@ -7,7 +7,7 @@ namespace AndyTours.Tests.Datenordner;
 /// </summary>
 public class IstNetzwerkpfadTests
 {
-    [Theory]
+    [WindowsTheory]
     [InlineData(@"\\AndyNAS-2\Backfast\AndyTours")]
     [InlineData(@"\\?\UNC\AndyNAS-2\Backfast\AndyTours")]
     public void UNC_Pfade_sind_Netzwerkpfade(string pfad)
@@ -21,7 +21,7 @@ public class IstNetzwerkpfadTests
         Assert.False(IstNetzwerkpfad.Ausfuehren(Path.GetTempPath()));
     }
 
-    [Fact]
+    [WindowsFact]
     public void Fehlendes_Laufwerk_ist_kein_Netzwerkpfad()
     {
         string? frei = TestLaufwerke.FreierLaufwerksbuchstabe();
@@ -33,7 +33,7 @@ public class IstNetzwerkpfadTests
         Assert.False(IstNetzwerkpfad.Ausfuehren($@"{frei}:\AndyTours"));
     }
 
-    [Fact]
+    [WindowsFact]
     public void Verbundenes_Netzlaufwerk_wird_erkannt()
     {
         // Nur prüfbar, wenn auf dem Rechner ein Netzlaufwerk verbunden ist (z. B. Z: → NAS)

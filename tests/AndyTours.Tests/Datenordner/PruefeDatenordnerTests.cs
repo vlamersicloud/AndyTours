@@ -30,7 +30,7 @@ public class PruefeDatenordnerTests
         Assert.Equal(DatenordnerZustand.MitDaten, await PruefeDatenordner.Ausfuehren(temp.Pfad));
     }
 
-    [Fact]
+    [WindowsFact]
     public async Task Ordner_auf_fehlendem_Laufwerk_ist_nicht_erreichbar()
     {
         string? frei = TestLaufwerke.FreierLaufwerksbuchstabe();
@@ -42,14 +42,10 @@ public class PruefeDatenordnerTests
         Assert.Equal(DatenordnerZustand.NichtErreichbar, await PruefeDatenordner.Ausfuehren($@"{frei}:\AndyTours"));
     }
 
-    [Fact]
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    [WindowsFact]
     public async Task Ordner_ohne_Schreibrecht_ist_nicht_beschreibbar()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         using var temp = new TempOrdner();
         string ordner = Path.Combine(temp.Pfad, "Gesperrt");
         var info = Directory.CreateDirectory(ordner);

@@ -121,14 +121,10 @@ public class SpieleSicherungZurueckTests
         Assert.Equal(["Alt", "Alt"], Einheiten(temp.Pfad));
     }
 
-    [Fact]
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    [WindowsFact]
     public void Scheitert_die_zusaetzliche_Sicherung_wird_nichts_wiederhergestellt()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         using var temp = new TempOrdner();
         LegeAktuellenStandAn(temp.Pfad);
         string ordner = Standardordner(temp.Pfad);
@@ -189,7 +185,7 @@ public class SpieleSicherungZurueckTests
         Assert.Equal([sicherung], Directory.GetFiles(Standardordner(temp.Pfad)));
     }
 
-    [Fact]
+    [WindowsFact]
     public void Scheitert_der_Austausch_bleibt_der_bisherige_Bestand_erhalten()
     {
         using var temp = new TempOrdner();

@@ -103,7 +103,7 @@ public class FuehreStartsicherungDurchTests
         Assert.False(Directory.Exists(Path.Combine(temp.Pfad, "Sicherungen")));
     }
 
-    [Fact]
+    [WindowsFact]
     public async Task Nicht_erreichbarer_Ordner_meldet_Fehler_und_der_naechste_Start_versucht_es_erneut()
     {
         string? frei = TestLaufwerke.FreierLaufwerksbuchstabe();
@@ -128,14 +128,10 @@ public class FuehreStartsicherungDurchTests
         Assert.Equal(Startsicherungsstatus.Gesichert, (await Starte(temp.Pfad, 1, ersterStart: 4))[0].Status);
     }
 
-    [Fact]
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    [WindowsFact]
     public async Task Ordner_ohne_Schreibrecht_meldet_Fehler()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         using var temp = new TempOrdner();
         TestDatenbestand.SpeichereIn(temp.Pfad, TestDatenbestand.Erzeuge(3));
         string ordner = Path.Combine(temp.Pfad, "Gesperrt");

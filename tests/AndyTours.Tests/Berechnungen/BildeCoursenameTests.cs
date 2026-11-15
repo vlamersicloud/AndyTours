@@ -16,6 +16,12 @@ public class BildeCoursenameTests
     [Fact]
     public void Gespeicherte_Planung_heisst_wie_ihre_Datei()
     {
+        Assert.Equal("Chiemsee-Runde", BildeCoursename.FuerPlanung(Path.Combine(Path.GetTempPath(), "Touren", "Chiemsee-Runde.gpx"), Heute));
+    }
+
+    [WindowsFact]
+    public void Gespeicherte_Planung_heisst_wie_ihre_Datei_unter_Windows()
+    {
         Assert.Equal("Chiemsee-Runde", BildeCoursename.FuerPlanung(@"C:\Touren\Chiemsee-Runde.gpx", Heute));
     }
 

@@ -43,7 +43,7 @@ public class TauscheZielordnerAusTests
         Assert.Equal([ziel], Directory.GetDirectories(temp.Pfad));
     }
 
-    [Fact]
+    [WindowsFact]
     public void Geoeffnete_Datei_im_Ziel_laesst_den_Zielordner_unveraendert()
     {
         using var temp = new TempOrdner();

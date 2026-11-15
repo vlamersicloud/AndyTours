@@ -15,6 +15,15 @@ public class LeseAufrufparameterTests
     [Fact]
     public void Beide_Angaben_werden_als_vollstaendige_Pfade_uebernommen()
     {
+        Aufrufparameter p = LeseAufrufparameter.Ausfuehren([Path.Combine(Path.GetTempPath(), "Alt", "BikeXperience"), Path.Combine(Path.GetTempPath(), "AndyTours-Ziel")], AppContext.BaseDirectory);
+
+        Assert.Equal(Path.Combine(Path.GetTempPath(), "Alt", "BikeXperience"), p.Quellordner);
+        Assert.Equal(Path.Combine(Path.GetTempPath(), "AndyTours-Ziel"), p.Zielordner);
+    }
+
+    [WindowsFact]
+    public void Beide_Angaben_werden_als_vollstaendige_Pfade_uebernommen_unter_Windows()
+    {
         Aufrufparameter p = LeseAufrufparameter.Ausfuehren([@"C:\Alt\BikeXperience", @"\\NAS\AndyTours"], AppContext.BaseDirectory);
 
         Assert.Equal(@"C:\Alt\BikeXperience", p.Quellordner);
@@ -23,6 +32,15 @@ public class LeseAufrufparameterTests
 
     [Fact]
     public void Ohne_Zielordner_wird_AppDaten_im_Projektordner_verwendet()
+    {
+        Aufrufparameter p = LeseAufrufparameter.Ausfuehren([Path.Combine(Path.GetTempPath(), "Alt", "BikeXperience")], AppContext.BaseDirectory);
+
+        Assert.Equal(Path.Combine(Path.GetTempPath(), "Alt", "BikeXperience"), p.Quellordner);
+        Assert.Equal(Path.Combine(Projektordner, "AppDaten"), p.Zielordner);
+    }
+
+    [WindowsFact]
+    public void Ohne_Zielordner_wird_AppDaten_im_Projektordner_verwendet_unter_Windows()
     {
         Aufrufparameter p = LeseAufrufparameter.Ausfuehren([@"C:\Alt\BikeXperience"], AppContext.BaseDirectory);
 
