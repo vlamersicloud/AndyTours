@@ -133,3 +133,18 @@ In Umsetzungsreihenfolge.
 - `oberflaeche-skalieren` — Der Benutzer kann in den Einstellungen die ganze Oberfläche einschließlich der Schrift in festen Stufen von 100 % bis 200 % vergrößern; die Wahl wirkt sofort und bleibt erhalten.
   - Abhängig von: `erscheinungsbild-und-icon`
   - Status: done → [035-oberflaeche-skalieren](035-oberflaeche-skalieren/spec.md)
+- `altdaten-aus-installation` — Das Installationsprogramm bietet keine Übernahme von Altdaten mehr an, und das Handbuch erwähnt sie nicht mehr; das Umwandlungsprogramm bleibt als eigenständiges Werkzeug für den Entwickler im Projekt.
+  - Abhängig von: `installationsprogramm`
+  - Status: open
+- `eigenstaendige-darstellung` — AndyTours tritt überall als eigenständiges Programm auf: Beschreibungen, Handbuch, Dokumentation und Code-Kommentare nennen kein Vorbildprogramm mehr, ausgenommen nur das Umwandlungswerkzeug und sein Lesecode.
+  - Abhängig von: `altdaten-aus-installation`
+  - Status: open
+- `windows-menue` — Das Hauptfenster hat oben eine normale, schlichte Windows-Menüleiste statt großer grauer Menü-Schaltflächen.
+  - Abhängig von: `erscheinungsbild-und-icon`
+  - Status: open
+- `vollstaendige-datensicherung` — Die automatische Sicherung umfasst alle Daten, die bei der Nutzung entstehen oder sich ändern, also auch die Aufzeichnungen und die übrigen Dateien im Datenordner, und lässt sich vollständig wiederherstellen.
+  - Abhängig von: `datensicherung`
+  - Status: open
+- `code-ueberarbeitung` — Das Programm verhält sich unverändert, sein Code samt Tests ist aber geprüft, verschlankt und gut verständlich.
+  - Abhängig von: `eigenstaendige-darstellung`, `windows-menue`, `vollstaendige-datensicherung`
+  - Status: open
