@@ -17,6 +17,15 @@ einen einzelnen Benutzer gedacht.
 - **Datensicherung** und Wiederherstellung
 - **Einmalige Übernahme** von Altdaten mit einem eigenen Kommandozeilenprogramm (Werkzeug für den Entwickler, nicht Teil der Installation)
 
+## Fertige Windows-EXE
+
+[AndyTours.App.exe herunterladen](https://raw.githubusercontent.com/vlamersicloud/AndyTours/main/releases/win-x64/AndyTours.App.exe)
+
+Benötigt **.NET 10 Desktop Runtime (x64)**. Die EXE enthält die App-Bibliotheken,
+aber keine .NET-Laufzeit und keinen API-Key. Voraussetzungen, Prüfsumme und
+Buildhinweise: [releases/win-x64](releases/win-x64/README.md).
+Windows-Start und Garmin-Live-Abnahme sind noch offen.
+
 ## Benutzerhandbuch
 
 Installation und Bedienung beschreibt das [Benutzerhandbuch](HANDBUCH.md).
