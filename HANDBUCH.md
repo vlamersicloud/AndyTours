@@ -1,6 +1,6 @@
 # AndyTours – Benutzerhandbuch
 
-Für AndyTours Version 1.0.1
+Für AndyTours Version 1.1.0
 
 ## Inhaltsverzeichnis
 
@@ -76,7 +76,7 @@ AndyTours beschränkt sich auf die Funktionen, die tatsächlich genutzt werden. 
 
 - einen PC mit Windows 10 (ab Version 2004) oder Windows 11, jeweils in der 64-Bit-Ausgabe
 - etwa 400 MB freien Speicherplatz für das Programm, dazu Platz für Ihre Touren und Aufzeichnungen
-- das Installationsprogramm **AndyTours-Setup-1.0.1.exe**; Sie erhalten es vom Autor
+- das Installationsprogramm **AndyTours-Setup-1.1.0.exe**; Sie erhalten es vom Autor
 - für Karten und Tourenplanung eine Internetverbindung
 - für den Import neuer Touren einen Garmin Edge 1040, Edge 1000 oder Edge 800 mit USB-Kabel
 
@@ -87,7 +87,7 @@ Weitere Programme müssen Sie nicht installieren. Sie brauchen auch keine Admini
 Mit dieser Anleitung richten Sie AndyTours ein.
 
 1. Beenden Sie AndyTours, falls es schon läuft.
-2. Starten Sie die Datei **AndyTours-Setup-1.0.1.exe** mit einem Doppelklick. Erscheint die Meldung **Der Computer wurde durch Windows geschützt**, klicken Sie auf **Weitere Informationen** und dann auf **Trotzdem ausführen**.
+2. Starten Sie die Datei **AndyTours-Setup-1.1.0.exe** mit einem Doppelklick. Erscheint die Meldung **Der Computer wurde durch Windows geschützt**, klicken Sie auf **Weitere Informationen** und dann auf **Trotzdem ausführen**.
 3. Auf der Seite **Datenordner** schlägt das Installationsprogramm den Ordner **Dokumente\AndyTours** vor. Übernehmen Sie den Vorschlag oder wählen Sie über die Schaltfläche zum Durchsuchen einen anderen Ordner. Klicken Sie auf **Weiter**.
 4. Auf der Seite für die Verknüpfungen können Sie **Verknüpfung auf dem Desktop anlegen** anhaken. Eine Verknüpfung im Startmenü legt das Installationsprogramm immer an.
 5. Prüfen Sie die Zusammenfassung. Sie nennt Programmordner, Datenordner und Verknüpfungen.

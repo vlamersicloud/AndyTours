@@ -1,6 +1,6 @@
 ﻿# AndyTours – vollständige Projektbeschreibung
 
-Stand: 27.10.2026 · Version 1.0.1 (Commit `0312424`) · 35 Funktionen umgesetzt, 1078 Tests grün, 0 Analyzer-Warnungen
+Stand: 15.11.2026 · Version 1.1.0 · 39 Funktionen umgesetzt, 1054 Tests grün, 0 Analyzer-Warnungen
 
 Diese Datei fasst alles zusammen, was im Lauf des Projekts entschieden wurde. Sie enthält den ursprünglichen Auftrag,
 alle Antworten auf Rückfragen, die Auswahl der Funktionen (umgesetzt und gestrichen), Technik, Struktur, Konventionen,
@@ -122,8 +122,8 @@ zusätzlich als ADR (z. B. 0008) und in `docs/tech.md`. Ändert sich ein Kriteri
 - `LangVersion latest`, `Nullable enable`, `ImplicitUsings enable`
 - `GenerateDocumentationFile true`, `NoWarn CS1591`
 - `AnalysisLevel latest-recommended`, `EnforceCodeStyleInBuild true`
-- `Version 1.0.1`: die einzige Stelle der Versionsnummer, gültig für App, Umwandlungsprogramm, Setup und „Über AndyTours“
-  (Versionen: 1.0.0 mit 033, 1.0.1 nach 034/035)
+- `Version 1.1.0`: die einzige Stelle der Versionsnummer, gültig für App, Umwandlungsprogramm, Setup und „Über AndyTours“
+  (Versionen: 1.0.0 mit 033, 1.0.1 nach 034/035, 1.1.0 nach 036–039)
 - `Product AndyTours`, `Authors Andreas Hensel`, `Company AndyTours`, `Copyright © Andreas Hensel` (Autor in der exe und in „Über AndyTours“), `NeutralLanguage de-DE`
 
 ### `.editorconfig`
@@ -143,8 +143,7 @@ zusätzlich als ADR (z. B. 0008) und in `docs/tech.md`. Ändert sich ein Kriteri
   - Ablauf des Skripts:
     1. Version aus `Directory.Build.props` lesen und `bin/` leeren.
     2. App self-contained für win-x64 nach `bin\App` veröffentlichen.
-    3. Umwandlungsprogramm self-contained als einzelne Datei nach `bin\Werkzeug` veröffentlichen.
-    4. `ISCC.exe` mit `/DAppVersion /DAppQuelle /DWerkzeugQuelle /O bin\Setup` auf `AndyTours.iss` aufrufen.
+    3. `ISCC.exe` mit `/DAppVersion /DAppQuelle /O bin\Setup` auf `AndyTours.iss` aufrufen (das Umwandlungsprogramm gehört seit 036 nicht mehr zur Installation).
   - Aufruf immer so, ohne `-ExecutionPolicy Bypass` (vom Benutzer nicht freigegeben).
 - Programmicon neu erzeugen (nur nach Änderung von `Programmicon.xaml`): `powershell tools/AndyTours.Programmicon/Erstelle-Programmicon.ps1`
 - Hinweis: Nach Änderungen an `App.xaml` (Stile, Ressourcen) ggf. `dotnet build AndyTours.slnx --no-incremental`, damit sicher neu übersetzt wird.
@@ -311,16 +310,17 @@ gelöscht. Spätere Änderungen sind unten vermerkt.
 - `erscheinungsbild-und-icon` (034): modernes, helles Windows-11-Erscheinungsbild (Fluent) und Programmicon, „Über AndyTours“ als eigenes Fenster
 - `oberflaeche-skalieren` (035): Größe der Oberfläche 100–200 %; dabei die Einstellungen in Karteikarten gegliedert und Kontrastfarben (ADR 0008) ergänzt
 - Nach 034: Die Auswahl „Tätigkeit“ im Wartungs- und Alarmfenster ist nach der bisherigen Häufigkeit geordnet (021, 022)
-- Stand nach 035: Die Map enthält 36 Einträge, alle `done`; offene Funktionen gibt es nicht.
+- `altdaten-aus-installation` (036), `eigenstaendige-darstellung` (037), `windows-menue` (038) und `code-ueberarbeitung` (039): Überarbeitung zu Version 1.1.0; dabei „Hilfe → Benutzerhandbuch“ ergänzt
+- Stand nach 039: Die Map enthält 40 Einträge, alle `done`; offene Funktionen gibt es nicht.
 
-## 8. Bedienoberfläche (Stand 1.0.1)
+## 8. Bedienoberfläche (Stand 1.1.0)
 
 ### Menüs
 - **Datei:** Vom Garmin importieren… · FIT-Dateien importieren… · Beenden
 - **Einheit:** Neue Einheit… (Strg+N) · Bearbeiten… · Kopieren… · Tourdetail… · Kategorien zuordnen… · Aktivität ändern… · Equipment ändern… · Löschen (Entf)
 - **Tourenplanung:** Tour planen… · Overlays…
 - **Extras:** Persönliche Daten… · Saisonziele… · Equipment-Einsatz… · Einstellungen… · Sicherung wiederherstellen…
-- **Hilfe:** Über AndyTours (eigenes Fenster mit großem Icon, Name, Version und Autor; schließt mit OK, Enter oder Esc)
+- **Hilfe:** Benutzerhandbuch (öffnet `HANDBUCH.md` im Browser) · Über AndyTours (eigenes Fenster mit großem Icon, Name, Version und Autor; schließt mit OK, Enter oder Esc)
 
 ### Fenster
 - **Karteikarten des Hauptfensters:** Aktuell · Trainingseinheiten · Wartung (Titel zeigt Alarme an)
@@ -2182,3 +2182,107 @@ Der Benutzer kann in den Einstellungen die ganze Oberfläche von AndyTours einsc
   Einheit bearbeiten, Equipment bearbeiten, Equipment-Einsatz, Persönliche Daten, Saisonziele, Wartung) haben jetzt unten eine
   feste Schaltflächenleiste und darüber rollbaren Inhalt; „Fortschritt“ und „Über AndyTours“ blieben unverändert.
 - Rundgang bei 100 %, 150 % und 200 % ohne Befund; Klicktreffer auf der Karte vom Benutzer bestätigt.
+
+### 036 – Installation ohne Altdatenübernahme
+
+Abhängig von: `installationsprogramm`
+
+#### Was und warum
+Das Installationsprogramm und das Handbuch richten sich an normale Anwender. Die Übernahme von Daten aus einem anderen Programm wurde nur vom Entwickler einmalig gebraucht. Sie verschwindet deshalb aus der Installation und aus dem Handbuch, ebenso die Übernahme eines Ordners mit reinen Garmin-Aufzeichnungen bei der Installation; dafür gibt es in AndyTours den Import von FIT-Dateien. Das Umwandlungswerkzeug bleibt im Projekt und funktioniert für den Entwickler wie bisher.
+
+#### Kriterien
+- Wenn der Benutzer AndyTours neu installiert, dann fragt das Installationsprogramm nur nach dem Datenordner und den Verknüpfungen; eine Seite zur Übernahme bisheriger Daten oder vorhandener Aufzeichnungen gibt es nicht.
+- Wenn der Benutzer vor dem Installieren die Zusammenfassung ansieht, dann nennt sie Programmordner, Datenordner und Verknüpfungen, aber keine Übernahme.
+- Wenn die Installation abgeschlossen ist, dann enthält der Programmordner kein Umwandlungsprogramm, und das Installationsprotokoll erwähnt keins.
+- Wenn der gewählte Datenordner leer ist oder noch nicht existiert, dann startet AndyTours nach der Installation mit einem leeren Datenbestand.
+- Wenn im gewählten Datenordner schon AndyTours-Daten liegen, dann weist das Installationsprogramm kurz darauf hin, dass sie weiter verwendet werden, und AndyTours verwendet sie unverändert.
+- Wenn der gewählte Datenordner andere Dateien, aber keine AndyTours-Daten enthält, dann fragt das Installationsprogramm, ob der Ordner trotzdem verwendet werden soll; die Frage erwähnt keine Übernahme.
+- Wenn auf dem Rechner eine ältere Version mit Umwandlungsprogramm installiert ist und der Benutzer die neue Version installiert, dann ist das Umwandlungsprogramm danach aus dem Programmordner entfernt, und Datenordner und Daten bleiben unverändert.
+- Wenn ein Anwender das Handbuch liest, dann findet er weder eine Anleitung noch einen Hinweis zur Übernahme bisheriger Daten aus einem anderen Programm.
+- Wenn ein Anwender schon Garmin-Aufzeichnungen (FIT-Dateien) auf dem Rechner hat, dann erklärt das Handbuch im Kapitel Installation oder Erste Schritte, dass er sie mit „Datei → FIT-Dateien importieren…“ in AndyTours übernehmen kann.
+- Wenn der Entwickler das Umwandlungswerkzeug aus dem Projekt baut und aufruft, dann wandelt es Altdaten weiterhin wie bisher um.
+
+#### Entscheidungen aus dem Plan
+
+- Die nur für das Installationsprogramm gebauten Aufrufarten des Umwandlungsprogramms (`--erkennen`, `--aufzeichnungen`, `--ohne-rueckfrage`) werden samt Code und Tests entfernt (Entscheidung des Benutzers).
+- Das alte Umwandlungsprogramm wird bei einer Aktualisierung über `[InstallDelete]` entfernt und im Protokoll mit der neuen Aktion `entfernt` vermerkt.
+- Spec 033, Plan 033 und ADR 0005 bleiben als Verlauf unverändert; sie beschreiben den damaligen Stand.
+
+### 037 – Eigenständige Darstellung
+
+Abhängig von: `altdaten-aus-installation`
+
+#### Was und warum
+AndyTours tritt als eigenständiges Programm auf. Weder das Programm noch Handbuch, Dokumentation oder Code nennen ein Vorbild- oder Vorgängerprogramm. Ausgenommen ist nur das Umwandlungswerkzeug für den Entwickler samt seinen Quelldaten, denn sein Zweck ist gerade das Lesen dieser Altdaten. Das Verhalten des Programms bleibt sonst unverändert.
+
+#### Kriterien
+- Wenn der Benutzer „Hilfe → Über AndyTours“ öffnet, dann beschreibt das Fenster AndyTours mit „Tourenverwaltung für Radltouren.“, ohne ein anderes Programm zu nennen.
+- Wenn für eine Aktivität das Grundziel gilt, weil es noch kein eigenes Saisonziel gibt, dann zeigt die Spalte „Herkunft“ dafür „Grundziel“.
+- Wenn der Benutzer Fenster, Menüs, Meldungen oder Hinweise des Programms ansieht, dann nennt keine davon ein Vorbild- oder Vorgängerprogramm.
+- Wenn der Benutzer einen vorhandenen Datenbestand aus einer früheren Version öffnet, dann ist er unverändert nutzbar, und die Grundziele erscheinen mit der Bezeichnung „Grundziel“.
+- Wenn ein Anwender das Handbuch liest, dann beschreibt es AndyTours als eigenständiges Programm und nennt kein anderes Programm als Vorbild oder Vorgänger.
+- Wenn ein Anwender den Abschnitt „Was das Programm nicht kann“ liest, dann sind dort die nicht enthaltenen Funktionen weiter aufgezählt, ohne Bezug auf ein anderes Programm.
+- Wenn jemand README, Projektgrundlagen, Konventionen, Architekturentscheidungen, Feature-Map, Funktionsauswahl, Spezifikationen samt Plänen und Aufgaben oder die vollständige Projektbeschreibung liest, dann nennen sie kein Vorbildprogramm; ausgenommen sind Stellen, die das Umwandlungswerkzeug oder seine Quelldaten beschreiben (die Spezifikation des Umwandlungswerkzeugs, die Beschreibung des Ordners mit den Altdaten und der Ausschluss der Originalprogrammdatei aus der Versionsverwaltung).
+- Wenn jemand den Programmcode samt Kommentaren, Bezeichnern und Tests liest, dann nennt er kein Vorbildprogramm; ausgenommen sind das Umwandlungswerkzeug, sein Lesecode und dessen Tests.
+- Wenn jemand die Projektregeln liest, dann verlangen sie nicht mehr, bei nachgebildeten Teilen das Vorbild zu nennen.
+- Wenn ältere Spezifikationen, Pläne und Aufgaben bereinigt werden, dann bleibt ihr fachlicher Inhalt erhalten.
+- Wenn der Entwickler das Umwandlungswerkzeug aufruft, dann wandelt es weiterhin wie bisher um.
+- Wenn das Programm nach der Änderung benutzt wird, dann verhalten sich alle Funktionen wie vorher.
+
+#### Entscheidungen aus dem Plan
+
+- `docs/Analyse_und_Plan_Neuprogrammierung.md` wird gelöscht (Entscheidung des Benutzers); es bleibt in der Git-Historie.
+- Im README und in `docs/product.md` wird das Umwandlungswerkzeug neutral als Werkzeug für „Altdaten“ beschrieben, obwohl die Ausnahme den Namen dort erlauben würde. Diese Dateien sind die öffentliche Beschreibung des Projekts.
+- `WirksamesSaisonziel.AusBikeXperience` heißt künftig `IstGrundziel`.
+
+### 038 – Windows-Menüleiste
+
+Abhängig von: `erscheinungsbild-und-icon`
+
+#### Was und warum
+Das Hauptfenster bekommt oben eine schlichte Menüleiste, wie sie die meisten Windows-Programme haben: eine helle, durchgehende Leiste, in der die Hauptmenüpunkte als einfacher Text nebeneinander stehen. Die bisherigen großen grauen Menü-Schaltflächen wirken unelegant. Inhalt und Bedienung des Menüs bleiben gleich, ebenso das Aussehen der aufklappenden Menüs und Kontextmenüs.
+
+#### Kriterien
+- Wenn der Benutzer das Hauptfenster öffnet, dann stehen „Datei“, „Einheit“, „Tourenplanung“, „Extras“ und „Hilfe“ als einfacher Text in einer durchgehenden Leiste in der Farbe des Fensterhintergrunds, ohne einzelne Flächen oder Rahmen.
+- Wenn der Benutzer die Menüleiste ansieht, dann trennt eine feine Linie sie von der Werkzeugleiste darunter.
+- Wenn der Benutzer mit der Maus über einen Hauptmenüpunkt fährt oder dessen Menü geöffnet ist, dann ist der Punkt leicht grau hinterlegt, dezent, aber deutlich erkennbar.
+- Wenn der Benutzer einen Hauptmenüpunkt anklickt, dann klappt dasselbe Menü mit denselben Einträgen und Trennlinien auf wie bisher, und hervorgehobene Einträge darin sind wie bisher etwas dunkler grau.
+- Wenn der Benutzer Alt drückt oder Alt zusammen mit dem unterstrichenen Buchstaben eines Hauptmenüpunkts, dann öffnet bzw. erreicht er das Menü wie bisher; Strg+N und Entf wirken weiter.
+- Wenn ein Menüeintrag gerade nicht möglich ist, dann ist er wie bisher ausgegraut.
+- Wenn der Benutzer die Größe der Oberfläche in den Einstellungen ändert, dann wächst die Menüleiste wie der übrige Fensterinhalt mit.
+- Wenn der Benutzer das Kontextmenü einer Tabelle oder Liste öffnet, dann sieht es aus wie die aufklappenden Menüs der Menüleiste.
+- Wenn ein Anwender das Handbuch liest, dann beschreibt es die Menüleiste so, wie sie jetzt aussieht.
+
+#### Entscheidungen aus dem Plan
+
+- Die Trennlinie ist ein eigener `Border` unter dem Menü statt eines Rahmens am Menü selbst, damit sie nicht von der Fluent-Vorlage des Menüs abhängt.
+- Die Farbe der Hervorhebung bleibt `#CDD4DC` für Hauptmenü und aufklappende Menüs; eine zweite, hellere Farbe nur für das Hauptmenü wäre ein weiterer Wert ohne erkennbaren Nutzen.
+
+### 039 – Code-Überarbeitung
+
+Abhängig von: `eigenstaendige-darstellung`, `windows-menue`
+
+#### Was und warum
+Der gesamte Code samt Oberflächendateien, Tests, Umwandlungswerkzeug sowie Installations- und Bauskripten wird geprüft und verschlankt, damit das Projekt schlank und gut verständlich ist: ungenutzter oder doppelter Code entfällt, umständliche Stellen werden einfacher, veraltete Kommentare werden berichtigt. Dazu gehören auch Werte, die im Datenbestand aufbewahrt, aber nirgends verwendet werden; sie entfallen samt ihrem Platz im Datenbestand. Ansonsten ändert sich für den Anwender nichts. Der Benutzer entscheidet je Bereich anhand einer Liste, welche Änderungen umgesetzt werden.
+
+#### Kriterien
+- Wenn ein Bereich geprüft ist, dann bekommt der Benutzer eine Liste der vorgeschlagenen Änderungen mit kurzer Begründung, bevor etwas geändert wird, und umgesetzt wird nur, was er freigibt.
+- Wenn eine vorgeschlagene Änderung die Projektstruktur oder eine festgehaltene Architekturentscheidung betrifft, dann wird sie vor der Umsetzung als eigene Architekturentscheidung festgehalten.
+- Wenn jemand den Code liest, dann findet er keine Klassen, Methoden, Eigenschaften oder Einstellungen mehr, die nirgends verwendet werden.
+- Wenn zwei Stellen dasselbe leisten, dann gibt es diese Logik nur noch einmal.
+- Wenn jemand die Kommentare liest, dann beschreiben sie den heutigen Stand, ohne Hinweise auf „später“, „Phase …“ oder entfallene Funktionen.
+- Wenn jemand den Code liest, dann folgt er durchgehend den Projektregeln: eine Datei je Aufgabe, Namensregeln, ausführliche deutsche Kommentare.
+- Wenn die Überarbeitung fertig ist, dann ist der Code insgesamt nicht umfangreicher als vorher.
+- Wenn jemand die Tests liest, dann gibt es keine doppelten oder überflüssigen Tests mehr, und jede Fachfunktion hat weiterhin Tests.
+- Wenn das Programm nach der Überarbeitung benutzt wird, dann verhalten sich alle Funktionen wie vorher, alle Tests bestehen und der Build zeigt keine Warnungen.
+- Wenn der Benutzer einen Datenbestand einer früheren Version zum ersten Mal öffnet, dann entfernt AndyTours die nicht mehr verwendeten Werte, und alle übrigen Daten bleiben unverändert und nutzbar.
+- Wenn AndyTours einen Datenbestand einer früheren Version so umbaut, dann legt es vorher eine Sicherung des bisherigen Stands an.
+- Wenn der Benutzer eine Sicherung einer früheren Version wiederherstellt, dann wird sie ebenso umgebaut und ist danach vollständig nutzbar.
+- Wenn das Installationsprogramm gebaut und das Umwandlungswerkzeug aufgerufen werden, dann funktionieren beide wie vorher; das Umwandlungswerkzeug übernimmt die nicht mehr verwendeten Werte nicht mehr.
+
+#### Entscheidungen aus dem Plan
+
+- Scheitert die Sicherung vor dem Umbau, wird nicht umgebaut; der Programmstart zeigt eine Meldung und endet (Entscheidung des Benutzers). Beim nächsten Start wird es erneut versucht.
+- Die Sicherung vor dem Umbau liegt in `OeffneDatenbank`, damit jeder Weg zu einem älteren Datenbestand (Programmstart, Wechsel des Datenordners) sie auslöst. Nur die Zwischendatei beim Wiederherstellen ist davon ausgenommen, weil dort der aktuelle Stand schon gesichert ist und die Quelle selbst eine Sicherung ist.
+- Der Umbau läuft in einer Transaktion, damit ein Abbruch keinen halb umgebauten Datenbestand hinterlässt.
+- Abschnitt 1 kommt vor den übrigen, weil er quer durch alle Projekte geht und die späteren Fundlisten sonst Code bewerten würden, der ohnehin entfällt.
