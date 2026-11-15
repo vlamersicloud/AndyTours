@@ -12,13 +12,13 @@ namespace AndyTours.Core.Berechnungen;
 public static class SaisonzielEingaben
 {
     /// <summary>Höchstes erlaubtes Ziel für Kilometer.</summary>
-    public const int KmMax = 100_000;
+    private const int KmMax = 100_000;
 
     /// <summary>Höchstes erlaubtes Ziel für Höhenmeter.</summary>
-    public const int HmMax = 2_000_000;
+    private const int HmMax = 2_000_000;
 
     /// <summary>Höchstes erlaubtes Ziel für die Anzahl der Einheiten.</summary>
-    public const int AnzahlMax = 1_000;
+    private const int AnzahlMax = 1_000;
 
     /// <summary>Deutsche Kultur für den Tausenderpunkt in den Hinweisen.</summary>
     private static readonly CultureInfo Deutsch = CultureInfo.GetCultureInfo("de-DE");

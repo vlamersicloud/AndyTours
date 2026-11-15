@@ -9,13 +9,13 @@ public static class PruefeDatenordner
     public static readonly TimeSpan Zeitlimit = TimeSpan.FromSeconds(20);
 
     /// <summary>Netzlaufwerk: Wartezeit zwischen Schreiben und Zurücklesen der Probedatei.</summary>
-    public static readonly TimeSpan NetzwerkPufferzeit = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan NetzwerkPufferzeit = TimeSpan.FromSeconds(1);
 
     /// <summary>Netzlaufwerk: Anzahl der Schreibversuche insgesamt.</summary>
-    public const int NetzwerkVersuche = 3;
+    private const int NetzwerkVersuche = 3;
 
     /// <summary>Netzlaufwerk: Pause zwischen zwei Schreibversuchen.</summary>
-    public static readonly TimeSpan NetzwerkPause = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan NetzwerkPause = TimeSpan.FromSeconds(2);
 
     /// <summary>
     /// Legt einen fehlenden Ordner an und ermittelt seinen <see cref="DatenordnerZustand"/>.

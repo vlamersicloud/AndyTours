@@ -9,7 +9,7 @@ namespace AndyTours.Core.Berechnungen;
 public static class WartungEingaben
 {
     /// <summary>Hinweis, wenn das Datum in der Zukunft liegt.</summary>
-    public const string DatumInDerZukunft = "Das Datum liegt in der Zukunft.";
+    private const string DatumInDerZukunft = "Das Datum liegt in der Zukunft.";
 
     /// <summary>
     /// Liefert die Eingaben für das Fenster aus einer vorhandenen oder neuen Wartung.

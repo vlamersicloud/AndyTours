@@ -16,10 +16,10 @@ namespace AndyTours.Core.Modell;
 public record Sicherungseinstellungen
 {
     /// <summary>Standard-Intervall: nach so vielen Programmstarts wird gesichert.</summary>
-    public const int StandardIntervall = 3;
+    private const int StandardIntervall = 3;
 
     /// <summary>Standard-Höchstzahl der aufbewahrten Sicherungen.</summary>
-    public const int StandardHoechstzahl = 10;
+    private const int StandardHoechstzahl = 10;
 
     /// <summary>Name des Standard-Sicherungsordners; er liegt im Datenordner.</summary>
     public const string StandardUnterordner = "Sicherungen";

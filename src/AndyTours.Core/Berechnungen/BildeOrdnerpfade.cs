@@ -12,7 +12,7 @@ public static class BildeOrdnerpfade
     public const string Trenner = " › ";
 
     /// <summary>Angezeigter Name des Eintrags für die oberste Ebene.</summary>
-    public const string ObersteEbene = "(oberste Ebene)";
+    private const string ObersteEbene = "(oberste Ebene)";
 
     /// <summary>
     /// Liefert „(oberste Ebene)“ und danach jeden Ordner mit seinem vollen Pfad, z. B. „Alpen › Tirol“, alphabetisch

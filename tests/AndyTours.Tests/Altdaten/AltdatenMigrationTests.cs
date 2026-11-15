@@ -8,7 +8,7 @@ using AndyTours.Import.Altdaten;
 namespace AndyTours.Tests.Altdaten;
 
 /// <summary>
-/// Abnahmetest der Phase 1: Übernahme der echten Altdaten aus dem Ordner <c>Daten/</c>.
+/// Abnahmetest der Altdatenumwandlung: Übernahme der echten Altdaten aus dem Ordner <c>Daten/</c>.
 /// </summary>
 /// <remarks>
 /// Der Ordner <c>Daten/</c> enthält persönliche Daten und ist nicht im Git-Repository. Fehlt er

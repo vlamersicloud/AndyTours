@@ -8,10 +8,10 @@ namespace AndyTours.Core.Berechnungen;
 public static class PruefeFensterposition
 {
     /// <summary>Breite des Titelleisten-Stücks, das mindestens auf einem Bildschirm liegen muss.</summary>
-    public const double MindestbreiteSichtbar = 100;
+    private const double MindestbreiteSichtbar = 100;
 
     /// <summary>Höhe des Titelleisten-Stücks, das mindestens auf einem Bildschirm liegen muss.</summary>
-    public const double MindesthoeheSichtbar = 30;
+    private const double MindesthoeheSichtbar = 30;
 
     /// <summary>
     /// Liefert die gemerkte Position, wenn das Fenster damit greifbar bleibt, sonst eine Position auf dem Hauptbildschirm.

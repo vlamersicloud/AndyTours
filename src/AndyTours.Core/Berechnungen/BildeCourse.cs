@@ -8,7 +8,7 @@ namespace AndyTours.Core.Berechnungen;
 public static class BildeCourse
 {
     /// <summary>Tempo des virtuellen Partners bei einer Planung in km/h.</summary>
-    public const double PlanungstempoKmh = 15;
+    private const double PlanungstempoKmh = 15;
 
     /// <summary>
     /// Bildet den Course einer Planung.

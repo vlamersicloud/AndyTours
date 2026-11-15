@@ -20,13 +20,13 @@ namespace AndyTours.Core.Berechnungen;
 public static class WaehleStuetzpunkte
 {
     /// <summary>Erlaubte Abweichung beim Ausdünnen in Metern.</summary>
-    public const double ToleranzMeter = 20;
+    private const double ToleranzMeter = 20;
 
     /// <summary>Größter Abstand zweier Stützpunkte entlang der Spur in Metern.</summary>
     public const double HoechstabstandMeter = 1000;
 
     /// <summary>Höchstzahl der Punkte je Anfrage.</summary>
-    public const int Paketgroesse = 25;
+    private const int Paketgroesse = 25;
 
     /// <summary>
     /// Wählt die Stützpunkte und teilt sie in Pakete.

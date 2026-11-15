@@ -24,10 +24,10 @@ namespace AndyTours.Core.Berechnungen;
 public static class UebernimmAbbiegungen
 {
     /// <summary>Größte erlaubte Abweichung der berechneten Strecke von der Spur in Metern.</summary>
-    public const double AbweichungMeter = 30;
+    private const double AbweichungMeter = 30;
 
     /// <summary>Umkreis vor und nach einem Abbiegepunkt, in dem die berechnete Strecke geprüft wird, in Metern.</summary>
-    public const double UmkreisMeter = 150;
+    private const double UmkreisMeter = 150;
 
     /// <summary>
     /// Ordnet die Abbiegungen der berechneten Teilstücke der Spur zu.

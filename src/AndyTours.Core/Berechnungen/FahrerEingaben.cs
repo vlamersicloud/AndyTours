@@ -13,16 +13,16 @@ namespace AndyTours.Core.Berechnungen;
 public static class FahrerEingaben
 {
     /// <summary>Kleinste und größte erlaubte Körpergröße in Zentimetern.</summary>
-    public const int GroesseMin = 100, GroesseMax = 250;
+    private const int GroesseMin = 100, GroesseMax = 250;
 
     /// <summary>Kleinstes und größtes erlaubtes Gewicht in Kilogramm.</summary>
-    public const double GewichtMin = 30, GewichtMax = 250;
+    private const double GewichtMin = 30, GewichtMax = 250;
 
     /// <summary>Kleinster und größter erlaubter Ruhepuls.</summary>
-    public const int RuhepulsMin = 30, RuhepulsMax = 120;
+    private const int RuhepulsMin = 30, RuhepulsMax = 120;
 
     /// <summary>Kleinster und größter erlaubter Maximalpuls.</summary>
-    public const int MaxpulsMin = 100, MaxpulsMax = 230;
+    private const int MaxpulsMin = 100, MaxpulsMax = 230;
 
     /// <summary>
     /// Liefert die Eingaben, mit denen das Fenster für diesen Sportler gefüllt wird.

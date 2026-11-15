@@ -8,7 +8,7 @@ namespace AndyTours.Core.Berechnungen;
 public static class ErmittleEquipmenteinsatz
 {
     /// <summary>Name der Zeile für Einheiten ohne Equipment.</summary>
-    public const string OhneEquipment = "ohne Equipment";
+    private const string OhneEquipment = "ohne Equipment";
 
     /// <summary>Name der Zeile mit den Spaltensummen.</summary>
     public const string Summe = "Summe";
