@@ -17,6 +17,10 @@ einen einzelnen Benutzer gedacht.
 - **Datensicherung** und Wiederherstellung
 - **Einmalige Übernahme** der BikeXperience-Altdaten mit einem eigenen Kommandozeilenprogramm
 
+## Benutzerhandbuch
+
+Installation und Bedienung beschreibt das [Benutzerhandbuch](HANDBUCH.md).
+
 ## Technik
 
 - C# mit .NET 10, WPF mit MVVM (`CommunityToolkit.Mvvm`) im Fluent-Design
