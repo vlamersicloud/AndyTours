@@ -144,4 +144,4 @@ In Umsetzungsreihenfolge.
   - Status: done → [038-windows-menue](038-windows-menue/spec.md)
 - `code-ueberarbeitung` — Das Programm verhält sich unverändert, sein Code samt Tests ist aber geprüft, verschlankt und gut verständlich.
   - Abhängig von: `eigenstaendige-darstellung`, `windows-menue`
-  - Status: open
+  - Status: specified → [039-code-ueberarbeitung](039-code-ueberarbeitung/spec.md)
