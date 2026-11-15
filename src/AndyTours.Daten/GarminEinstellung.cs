@@ -16,4 +16,12 @@ public static class GarminEinstellung
         string? wert = string.IsNullOrWhiteSpace(schluessel) ? null : schluessel.Trim();
         EinstellungTabelle.Schreiben(verbindung, null, Einstellungsschluessel.GarminPersonalApiKey, wert);
     }
+    /// <summary>Ohne Einstellung bleibt die bisherige manuelle Bestätigung zwischen Paketen aktiv.</summary>
+    public static bool AutomatischLaden(SqliteConnection verbindung) =>
+        EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.GarminAllePaketeAutomatisch) == "true";
+
+    /// <summary>Speichert die automatische Folge der 20er-Pakete unabhängig vom persönlichen API-Key.</summary>
+    public static void AutomatischSpeichern(SqliteConnection verbindung, bool automatisch) =>
+        EinstellungTabelle.Schreiben(verbindung, null, Einstellungsschluessel.GarminAllePaketeAutomatisch,
+            automatisch ? "true" : null);
 }

@@ -1177,7 +1177,16 @@ stehen unter [Garmin Connect – Live-Import](docs/garmin-connect.md).
 Der Abruf erfolgt manuell, nicht dauerhaft im Hintergrund. Gesundheitsdaten
 wie Schlaf oder HRV werden nicht importiert.
 
-Der Connect-Abruf lädt nun Pakete mit höchstens 20 Aktivitäten. Nach der
-Importauswahl kannst du weitere 20 laden oder stoppen. Bei Netzfehlern bleiben
+Der Connect-Abruf lädt Pakete mit höchstens 20 Aktivitäten. Standardmäßig kannst
+du nach jeder Importauswahl weitere 20 laden oder stoppen. Unter **Extras →
+Einstellungen → Persönlich → Garmin Connect** kannst du **Alle Pakete automatisch
+herunterladen (je 20 Aktivitäten)** einschalten. Dann lädt AndyTours alle Pakete
+selbstständig nacheinander; die gemeinsame Importauswahl erscheint erst am Ende.
+Touren werden weiterhin erst nach deiner Bestätigung gespeichert. Bei Netzfehlern bleiben
 fertige Touren importierbar; bestätigte Pakete bleiben gespeichert. Später den
 Import erneut aufrufen, um ohne erneuten Download fertiger ZIPs fortzusetzen.
+
+Gleiche Garmin-Aktivitäts-IDs werden vor dem Download und beim Speichern gegen
+einen zweiten Import geschützt. Beim FIT-/USB-Abgleich gelten zusätzlich Datum
+und Startminute als Vergleich; das ist eine Heuristik, keine uneingeschränkte
+Duplikatgarantie bei geänderten Zeitdaten. Details: [Garmin Connect](docs/garmin-connect.md).

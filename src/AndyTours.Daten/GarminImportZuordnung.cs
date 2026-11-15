@@ -29,7 +29,27 @@ public static class GarminImportZuordnung
     public static void Speichern(SqliteConnection verbindung, SqliteTransaction transaktion, long aktivitaetId, long einheitId)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(aktivitaetId);
-        EinstellungTabelle.Schreiben(verbindung, transaktion,
-            Vorsilbe + aktivitaetId.ToString(CultureInfo.InvariantCulture), einheitId.ToString(CultureInfo.InvariantCulture));
+        string schluessel = Vorsilbe + aktivitaetId.ToString(CultureInfo.InvariantCulture);
+        using (SqliteCommand pruefung = verbindung.CreateCommand())
+        {
+            pruefung.Transaction = transaktion;
+            // Innerhalb derselben Schreibtransaktion prüfen: Auch ein zweites Programm mit
+            // veraltetem Speicherbestand darf dieselbe ID keiner zweiten Einheit zuordnen.
+            pruefung.CommandText = """
+                SELECT EXISTS(
+                    SELECT 1 FROM Einstellung e
+                    JOIN Trainingseinheit t ON CAST(t.Id AS TEXT) = e.Wert
+                    WHERE e.Schluessel = $schluessel AND t.Id <> $einheitId
+                );
+                """;
+            pruefung.Parameters.AddWithValue("$schluessel", schluessel);
+            pruefung.Parameters.AddWithValue("$einheitId", einheitId);
+            if ((long)pruefung.ExecuteScalar()! != 0)
+            {
+                throw new InvalidOperationException("Diese Garmin-Aktivität wurde bereits importiert. Bitte den Datenbestand neu öffnen.");
+            }
+        }
+
+        EinstellungTabelle.Schreiben(verbindung, transaktion, schluessel, einheitId.ToString(CultureInfo.InvariantCulture));
     }
 }

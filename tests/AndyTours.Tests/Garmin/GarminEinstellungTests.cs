@@ -50,6 +50,21 @@ public sealed class GarminEinstellungTests
         Assert.Equal("second-key", GarminEinstellung.Laden(zweiter));
     }
 
+    [Fact]
+    public void AutomatikIstStandardmaessigAusUndWirdUnabhaengigVomKeyGespeichert()
+    {
+        using SqliteConnection db = Oeffne();
+        Assert.False(GarminEinstellung.AutomatischLaden(db));
+        GarminEinstellung.AutomatischSpeichern(db, true);
+        Assert.True(GarminEinstellung.AutomatischLaden(db));
+        GarminEinstellung.Speichern(db, "test-key");
+        GarminEinstellung.Speichern(db, null);
+        Assert.True(GarminEinstellung.AutomatischLaden(db));
+        GarminEinstellung.AutomatischSpeichern(db, false);
+        Assert.False(GarminEinstellung.AutomatischLaden(db));
+        Assert.Null(EinstellungTabelle.Lesen(db, Einstellungsschluessel.GarminAllePaketeAutomatisch));
+    }
+
     private static SqliteConnection Oeffne()
     {
         var db = new SqliteConnection("Data Source=:memory:");

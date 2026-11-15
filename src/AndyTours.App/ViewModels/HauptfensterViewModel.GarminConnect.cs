@@ -36,9 +36,11 @@ public partial class HauptfensterViewModel
         try
         {
             string? schluessel;
+            bool automatisch;
             using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei))
             {
                 schluessel = GarminEinstellung.Laden(verbindung);
+                automatisch = GarminEinstellung.AutomatischLaden(verbindung);
             }
 
             if (string.IsNullOrWhiteSpace(schluessel))
@@ -64,10 +66,15 @@ public partial class HauptfensterViewModel
             IAsyncEnumerator<long> aktivitaeten = client.LeseRadaktivitaetsIdsAsync().GetAsyncEnumerator();
             try
             {
+                var gesammelt = new Leseergebnis(true, [], []);
+                List<AndyTours.Core.Modell.Trainingseinheit> vorhanden = [.. _bestand.Trainingseinheiten];
                 while (true)
                 {
-                    _garminConnectIds.Clear();
-                    List<AndyTours.Core.Modell.Trainingseinheit> vorhanden = [.. _bestand.Trainingseinheiten];
+                    if (!automatisch)
+                    {
+                        _garminConnectIds.Clear();
+                        vorhanden = [.. _bestand.Trainingseinheiten];
+                    }
                     GarminDownloadPaket? paket = null;
                     Leseergebnis ergebnis = LeseMitFortschritt("Garmin Connect: Paket mit höchstens 20 Aktivitäten …", fortschritt =>
                     {
@@ -85,6 +92,21 @@ public partial class HauptfensterViewModel
 
                         return gelesen;
                     });
+
+                    if (automatisch)
+                    {
+                        // Der gemeinsame Duplikatbestand wird beim FIT-Lesen fortgeschrieben.
+                        // Temporäre Dateien und ID-Zuordnungen bis zur einmaligen Importauswahl behalten.
+                        gesammelt.Neue.AddRange(ergebnis.Neue);
+                        gesammelt.Uebersprungen.AddRange(ergebnis.Uebersprungen);
+                        if (paket!.Unterbrochen || !paket.WeitereMoeglich)
+                        {
+                            Importiere(gesammelt);
+                            break;
+                        }
+
+                        continue;
+                    }
 
                     // Auch bei Netzwerkabbruch die fertigen Dateien dieses Pakets anbieten.
                     // Abbrechen der Importauswahl oder ein Datenbankfehler beendet die Sitzung.

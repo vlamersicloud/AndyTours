@@ -9,6 +9,9 @@ namespace AndyTours.Daten;
 /// </remarks>
 public static class Einstellungsschluessel
 {
+    /// <summary>Alle Garmin-Pakete ohne Zwischenfrage laden; die endgültige Importauswahl bleibt manuell.</summary>
+    public const string GarminAllePaketeAutomatisch = "Persoenlich.Garmin.AllePaketeAutomatisch";
+
     /// <summary>Persönlicher Garmin Personal API-Key. Geheim; enthalten in Datenordner und Sicherungen.</summary>
     public const string GarminPersonalApiKey = "Persoenlich.Garmin.PersonalApiKey";
 

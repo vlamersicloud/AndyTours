@@ -18,7 +18,10 @@ Schlaf, HRV, Stress und Body Battery sind nicht Teil dieses Tourenimports.
    `ApiKey`, und **Key speichern** wählen. Das Schließen des Fensters allein
    speichert einen Entwurf nicht.
 4. Unter „Extras → Einstellungen“ muss wie bisher eine Hauptaktivität vorhanden sein.
-5. „Datei → Von Garmin Connect importieren…“ aufrufen und die gewünschten Touren
+5. Optional auf derselben Karteikarte **Alle Pakete automatisch herunterladen
+   (je 20 Aktivitäten)** aktivieren. Die Option wird sofort für den Datenordner
+   gespeichert und ist standardmäßig aus.
+6. „Datei → Von Garmin Connect importieren…“ aufrufen und die gewünschten Touren
    in der vorhandenen Importauswahl bestätigen. Equipment kann dort zugeordnet werden.
 
 Der Key gilt sofort beim nächsten Import; kein Neustart und keine Umgebungsvariable
@@ -85,20 +88,60 @@ Schon während der Verarbeitung werden die nächsten IDs nur bei Bedarf geladen.
 Zwischen neuen ZIP-Downloads und Listenseiten liegt eine kurze Pause (500 ms);
 es gibt keine parallelen Downloads und keinen automatischen Retry-Sturm.
 
-Nach jedem Paket erscheint die vorhandene Importauswahl. Erst danach fragt die
-Anwendung, ob die nächsten höchstens 20 Aktivitäten geladen werden sollen.
+**Automatik aus (Standard):** Nach jedem Paket erscheint die vorhandene
+Importauswahl. Erst danach fragt die Anwendung, ob die nächsten höchstens
+20 Aktivitäten geladen werden sollen.
 „Nein“ (Voreinstellung) beendet den Lauf, ebenso „Abbrechen“ in der Importauswahl.
 Auch ein Paket ohne neue Touren (z. B. bereits per USB importiert) kann übersprungen
 werden, um mit dem nächsten Paket weiterzumachen.
 
+**Automatik an:** Alle Pakete werden selbstständig nacheinander geladen – weiterhin
+höchstens 20 Aktivitäten pro Paket, mit denselben Anfragepausen, ohne Parallelabrufe
+und ohne Zwischenfragen. Erst am Ende erscheint **eine gemeinsame Importauswahl**.
+Es werden nicht automatisch Touren gespeichert oder Equipments geraten.
+Der gemeinsame Datum-/Startzeit-Bestand wird beim Lesen jedes Pakets fortgeschrieben,
+damit auch zwischen Paketen keine zweite Auswahl derselben Tour entsteht.
+Die temporären FIT-Dateien und ID-Zuordnungen bleiben bis zur abschließenden Auswahl
+erhalten; bei großer Historie muss ausreichend Speicherplatz vorhanden sein.
+Der Fortschrittsbalken zeigt jeweils das aktuelle Paket, nicht die ganze Historie.
+
+Bei Netzwerkabbruch wird auch im Automatikmodus die bis dahin gesammelte Auswahl
+angeboten. Abbrechen dieser Auswahl speichert keine neuen Touren; fertige Original-ZIPs
+bleiben lokal. Die Option wird unabhängig vom Key gespeichert und beim Wechsel des
+Datenordners neu geladen. Das Entfernen des Keys deaktiviert keinen bereits laufenden
+Import; ein neuer Import ohne hinterlegten Key ist nicht möglich.
+
 Bei HTTP 429, Netzfehler oder Zeitlimit endet der Abruf mit Hinweis. **Fertige
 Aufzeichnungen dieses Pakets bleiben auswählbar**; nur der unfertige Download wird
-entfernt. Bereits bestätigte Pakete bleiben gespeichert. Später den Menüpunkt erneut
+entfernt. Bereits bestätigte Pakete bleiben im manuellen Modus gespeichert; im
+Automatikmodus wird die gesamte bisherige Auswahl erst abschließend bestätigt. Später den Menüpunkt erneut
 aufrufen: gespeicherte IDs werden übersprungen und fertige ZIPs wiederverwendet.
 Abgewählte/unbestätigte Touren werden weiterhin erneut angeboten.
 Die Änderung behebt zwei im Code nachgewiesene Schwächen (Vorabladen der gesamten
 Liste, Verwerfen der aktuellen Ergebnisliste bei Netzfehler); die genaue Ursache
 eines konkreten Garmin-Abbruchs ist ohne dessen Fehlermeldung nicht nachgewiesen.
+
+## Duplikatschutz und Grenzen
+
+- **Identische Garmin-Aktivitäts-ID:** Ein erfolgreicher Import speichert die
+  Zuordnung zur lokalen Tour zusammen mit Tour, Kategorien und Anhängen in derselben
+  SQLite-Transaktion. Vor weiteren Downloads werden diese IDs übersprungen.
+- **Absicherung beim Schreiben:** Noch innerhalb dieser Transaktion wird geprüft,
+  ob dieselbe ID bereits einer anderen noch existierenden Tour gehört. Dann wird
+  die neue Einfügung vollständig zurückgerollt und der Benutzer zum erneuten Öffnen
+  des Datenbestands aufgefordert. Das schützt auch bei veraltetem Speicherbestand
+  einer zweiten Programminstanz. Eine Zuordnung darf nicht einfach überschrieben werden.
+- **Wiederholte API-IDs:** Der Listeniterator gibt jede ID pro Lauf nur einmal aus.
+- **FIT-/USB-Abgleich:** Bereits vorhandene Touren werden über gleiches Datum und
+  gleiche Startzeit **auf Minutenbasis** erkannt. Innerhalb eines Pakets sowie zwischen
+  Paketen wird die Vergleichsliste fortgeschrieben, auch im Automatikmodus.
+- **Grenzen:** Datum/Startminute sind eine Heuristik, kein Inhaltsfingerabdruck:
+  geänderte Startzeiten können einen Abgleich verhindern, zwei verschiedene Touren
+  in derselben Minute können als schon vorhanden gelten. Ohne Startzeit gibt es
+  diesen Zeitabgleich nicht. Für unterschiedliche Garmin-IDs und veränderte Zeitdaten
+  wird keine absolute Duplikatfreiheit zugesagt. Pro Datenordner gilt ein Garmin-Konto.
+- Absichtlich gelöschte Touren können erneut importiert werden. Abgewählte Touren
+  gelten nicht als importiert. Reine Downloads markieren eine ID niemals als importiert.
 
 ## Prüfung / Abnahme
 
@@ -162,3 +205,21 @@ Manuell prüfen:
 - Netzunterbrechung oder 429 nach einzelnen fertigen Downloads: diese Touren lassen
   sich noch importieren; später fortsetzen.
 - Teilweise abwählen, Importauswahl abbrechen und Touren mit bereits vorhandenem USB-Import.
+
+### Automatik und zusätzlicher Speicherschutz
+
+Zusätzliche Tests (nur kompiliert, nicht ausgeführt):
+- Standard aus, Ein-/Ausschalten und unabhängige Speicherung der Automatikoption.
+- Dieselbe Garmin-ID kann keine zweite lokale Einheit erhalten; Rollback entfernt
+  die bereits unbestätigt eingefügte Zeile und lässt die alte Zuordnung unverändert.
+- Nach absichtlichem Löschen der ursprünglichen Tour ist erneuter Import möglich.
+
+Manuelle Abnahme unter Windows:
+- Automatik aus: bisherige Auswahl und Rückfrage je Paket.
+- Automatik an, mehr als 40 Aktivitäten: keine Zwischenfragen, abschließend eine
+  Auswahl; weiterhin seriell in 20er-Paketen. Erneuter Lauf erzeugt keine zweite Tour.
+- Identische FIT-Aufzeichnung über zwei Pakete bzw. zuvor USB: nur einmal auswählen.
+- Netzabbruch in späterem Paket: alle bisher fertigen neuen Touren zur Auswahl,
+  keine ungefragte Speicherung; fertig geladene ZIPs werden beim nächsten Mal wiederverwendet.
+- Auswahl abbrechen: Datenbestand unverändert, Key/Option beim Neustart und
+  Datenordnerwechsel korrekt laden.

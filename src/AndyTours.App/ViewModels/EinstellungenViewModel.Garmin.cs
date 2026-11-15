@@ -9,6 +9,27 @@ namespace AndyTours.App.ViewModels;
 /// <summary>Persönliche Garmin-Einstellungen: maskierte Eingabe, explizites Speichern und Entfernen.</summary>
 public partial class EinstellungenViewModel
 {
+    /// <summary>Alle 20er-Pakete ohne Zwischenfragen herunterladen; gilt sofort für den Datenordner.</summary>
+    [ObservableProperty]
+    private bool _garminAllePaketeAutomatisch;
+
+    /// <summary>Speichert die Automatikoption sofort und setzt bei einem Fehler die Anzeige zurück.</summary>
+    partial void OnGarminAllePaketeAutomatischChanged(bool value)
+    {
+        if (!_wirdAngezeigt && !SpeichereEinstellung(db => GarminEinstellung.AutomatischSpeichern(db, value)))
+        {
+            _wirdAngezeigt = true;
+            try
+            {
+                GarminAllePaketeAutomatisch = !value;
+            }
+            finally
+            {
+                _wirdAngezeigt = false;
+            }
+        }
+    }
+
     /// <summary>Nur für das Passwortfeld; kein Property-Binding und keine Anzeige als Klartext.</summary>
     public string GarminSchluessel { get; private set; } = string.Empty;
 
@@ -68,11 +89,13 @@ public partial class EinstellungenViewModel
         {
             using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
             GarminSchluessel = GarminEinstellung.Laden(verbindung) ?? string.Empty;
+            GarminAllePaketeAutomatisch = GarminEinstellung.AutomatischLaden(verbindung);
             GarminStatus = GarminSchluessel.Length == 0 ? "Kein Garmin-Key hinterlegt." : "Garmin-Key hinterlegt.";
         }
         catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)
         {
             GarminSchluessel = string.Empty;
+            GarminAllePaketeAutomatisch = false;
             GarminStatus = "Garmin-Einstellung konnte nicht gelesen werden.";
         }
         finally

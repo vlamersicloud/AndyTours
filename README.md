@@ -9,7 +9,7 @@ einen einzelnen Benutzer gedacht.
 
 - **Touren** in einer Tabelle mit Filter, Suche und Mehrfachauswahl, Bearbeiten einzelner Touren
 - **Import vom Garmin Edge 1040** per USB (Mediengerät/MTP), FIT-Dateien über das Garmin FIT SDK
-- **Garmin Connect live**: eigener Personal API-Key, inkrementeller Radaktivitäten-Import mit lokalem Originalarchiv ([Einrichtung](docs/garmin-connect.md))
+- **Garmin Connect live**: eigener Personal API-Key, inkrementeller Radaktivitäten-Import mit lokalem Originalarchiv, optional automatisch alle 20er-Pakete laden ([Einrichtung](docs/garmin-connect.md))
 - **Höhenprofil und Streckenkarte**, Mehrtagestouren, Track bearbeiten, GPX-Export
 - **Statistiken** über die Jahre: Jahresfortschritt, Saisonziele, Bestleistungen
 - **Wartung der Räder**: Wartungen erfassen, Wartungsalarme, Haltbarkeit von Teilen, Einsatz der Equipments
