@@ -4,10 +4,8 @@ namespace AndyTours.Core.Modell;
 /// Eine Sportart, unter der Trainingseinheiten erfasst werden (z. B. „Bike" oder „Laufen").
 /// </summary>
 /// <remarks>
-/// Entspricht im Original dem INI-Abschnitt <c>[Activity]</c>; dort steht je Aktivität eine Zeile
-/// <c>Name=Haupt;Einheit;Ziel km;Ziel hm;Ziel Anzahl</c>.
-/// Die Saisonziele hier sind das <b>Grundziel</b> aus BikeXperience: Es gilt für alle Jahre vor dem ersten
-/// eigenen <see cref="Saisonziel"/> der Aktivität (siehe <see cref="Berechnungen.ErmittleSaisonziel"/>).
+/// Die Saisonziele hier sind das <b>Grundziel</b> der Aktivität (aus den Altdaten übernommen): Es gilt für
+/// alle Jahre vor dem ersten eigenen <see cref="Saisonziel"/> der Aktivität (siehe <see cref="Berechnungen.ErmittleSaisonziel"/>).
 /// </remarks>
 public class Aktivitaet
 {

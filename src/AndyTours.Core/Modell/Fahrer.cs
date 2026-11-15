@@ -4,9 +4,8 @@ namespace AndyTours.Core.Modell;
 /// Ein Sportler, dessen Trainingseinheiten verwaltet werden.
 /// </summary>
 /// <remarks>
-/// Entspricht im Original dem INI-Abschnitt <c>[Biker]</c>. Das Original kennt mehrere Benutzer
-/// nur über getrennte Datenverzeichnisse; AndyTours legt die Sportler stattdessen in einer Tabelle ab
-/// und ordnet jede Trainingseinheit über <see cref="Trainingseinheit.FahrerId"/> einem Sportler zu.
+/// AndyTours legt die Sportler in einer Tabelle ab und ordnet jede Trainingseinheit über
+/// <see cref="Trainingseinheit.FahrerId"/> einem Sportler zu.
 /// </remarks>
 public class Fahrer
 {

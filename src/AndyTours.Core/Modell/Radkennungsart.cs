@@ -11,6 +11,6 @@ public enum Radkennungsart
     /// <summary>Seriennummer eines Geschwindigkeits- oder Trittfrequenzsensors am Rad.</summary>
     Sensor,
 
-    /// <summary>Wert aus BikeXperience (z. B. „Bike1“); wird beim Import nicht verwendet.</summary>
+    /// <summary>Wert aus den Altdaten (z. B. „Bike1“); wird beim Import nicht verwendet.</summary>
     Altwert,
 }

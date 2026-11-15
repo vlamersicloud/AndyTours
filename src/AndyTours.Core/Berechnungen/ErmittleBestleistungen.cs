@@ -6,7 +6,6 @@ namespace AndyTours.Core.Berechnungen;
 /// Ermittelt die Bestleistungen der Karteikarte „Aktuell“: Jahresrekorde und Einzelrekorde.
 /// </summary>
 /// <remarks>
-/// Entspricht den Bestleistungen der Übersicht „Aktuell“ in BikeXperience (<c>core.Overview</c>).
 /// Ausgewertet werden dieselben Einheiten wie im Diagramm (<see cref="FiltereUebersicht"/>).
 /// </remarks>
 public static class ErmittleBestleistungen

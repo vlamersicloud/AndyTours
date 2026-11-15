@@ -4,8 +4,7 @@ namespace AndyTours.Core.Modell;
 /// Eine einzelne Trainingseinheit (Tour, Lauf) mit ihren Kennwerten.
 /// </summary>
 /// <remarks>
-/// Entspricht im Original einer Zeile der Datei <c>workouts.csv</c> (Java-Klasse <c>TourEntry</c>).
-/// Wie im Original bedeutet der Wert 0 bei Puls, Trittfrequenz, Leistung und Erholungspuls
+/// Der Wert 0 bedeutet bei Puls, Trittfrequenz, Leistung und Erholungspuls
 /// „nicht erfasst". Bei der Temperatur ist 0 °C dagegen ein gültiger Messwert.
 /// </remarks>
 public class Trainingseinheit

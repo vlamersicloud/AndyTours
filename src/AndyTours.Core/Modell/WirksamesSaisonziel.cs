@@ -9,15 +9,15 @@ namespace AndyTours.Core.Modell;
 /// <param name="IstEigenes"><c>true</c>, wenn für genau dieses Jahr ein eigenes Ziel eingetragen ist.</param>
 /// <param name="AusJahr">
 /// Jahr, aus dem ein früheres eigenes Ziel übernommen ist; <c>null</c> bei einem eigenen Ziel, beim
-/// Grundziel aus BikeXperience und wenn es kein Ziel gibt.
+/// Grundziel und wenn es kein Ziel gibt.
 /// </param>
-/// <param name="AusBikeXperience"><c>true</c>, wenn das Grundziel aus BikeXperience gilt.</param>
-public record WirksamesSaisonziel(int ZielKm, int ZielHm, int ZielAnzahl, bool IstEigenes, int? AusJahr, bool AusBikeXperience)
+/// <param name="IstGrundziel"><c>true</c>, wenn das Grundziel der Aktivität gilt (noch kein eigenes Ziel).</param>
+public record WirksamesSaisonziel(int ZielKm, int ZielHm, int ZielAnzahl, bool IstEigenes, int? AusJahr, bool IstGrundziel)
 {
     /// <summary>
-    /// Kennzeichnung für die Anzeige: „übernommen aus 2026“, „übernommen aus BikeXperience“ oder leer.
+    /// Kennzeichnung für die Anzeige: „übernommen aus 2026“, „Grundziel“ oder leer.
     /// </summary>
     public string Herkunft => AusJahr is int jahr
         ? $"übernommen aus {jahr}"
-        : AusBikeXperience ? "übernommen aus BikeXperience" : string.Empty;
+        : IstGrundziel ? "Grundziel" : string.Empty;
 }

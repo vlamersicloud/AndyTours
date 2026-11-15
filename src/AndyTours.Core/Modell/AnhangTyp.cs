@@ -4,7 +4,7 @@ namespace AndyTours.Core.Modell;
 /// Art einer an eine Trainingseinheit angehängten Datei.
 /// </summary>
 /// <remarks>
-/// Im Original gibt es drei feste Anhangfelder je Einheit (<c>profile</c>, <c>gpstrack</c>, <c>text</c>).
+/// Je Einheit gibt es höchstens einen Anhang jeder Art.
 /// Bei Garmin-Aufzeichnungen verweisen Höhenprofil und GPS-Track meist auf dieselbe FIT-Datei.
 /// </remarks>
 public enum AnhangTyp

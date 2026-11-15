@@ -28,5 +28,5 @@ public sealed class UeberViewModel
         Programm.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? string.Empty;
 
     /// <summary>Kurze Beschreibung unter dem Namen.</summary>
-    public string Beschreibung { get; } = "Tourenverwaltung für Radltouren – Nachfolger von BikeXperience.";
+    public string Beschreibung { get; } = "Tourenverwaltung für Radltouren.";
 }

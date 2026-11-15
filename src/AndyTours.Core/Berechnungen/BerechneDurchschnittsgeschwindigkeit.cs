@@ -11,7 +11,7 @@ public static class BerechneDurchschnittsgeschwindigkeit
     /// <remarks>
     /// Fehlt die Distanz oder die Fahrzeit (0), lässt sich keine Geschwindigkeit angeben; dann wird
     /// <c>null</c> geliefert und die Zelle bleibt leer (statt „0“ bzw. einer Division durch 0).
-    /// Die Fahrzeit ist die reine Bewegungszeit ohne Pausen, wie bei BikeXperience.
+    /// Die Fahrzeit ist die reine Bewegungszeit ohne Pausen.
     /// </remarks>
     /// <param name="distanzKm">Distanz in Kilometern.</param>
     /// <param name="fahrzeit">Fahrzeit.</param>

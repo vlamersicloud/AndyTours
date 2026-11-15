@@ -6,7 +6,7 @@ namespace AndyTours.Core.Modell;
 /// <remarks>
 /// Ein Ziel gilt für <see cref="AbJahr"/> und alle späteren Jahre, bis für ein späteres Jahr ein eigenes
 /// Ziel eingetragen ist. Für Jahre vor dem ersten eigenen Ziel gilt das Grundziel der Aktivität
-/// (<see cref="Aktivitaet.ZielKm"/> usw., aus BikeXperience übernommen). Der Wert 0 bedeutet „kein Ziel“
+/// (<see cref="Aktivitaet.ZielKm"/> usw.). Der Wert 0 bedeutet „kein Ziel“
 /// und verdeckt ein früheres Ziel.
 /// </remarks>
 public class Saisonziel

@@ -8,7 +8,7 @@ namespace AndyTours.Tests.Berechnungen;
 /// </summary>
 public class ErmittleSaisonzielTests
 {
-    /// <summary>Aktivität mit Grundziel aus BikeXperience.</summary>
+    /// <summary>Aktivität mit Grundziel.</summary>
     private static readonly Aktivitaet Bike = new() { Id = 1, Name = "Bike", ZielKm = 6000.4, ZielHm = 80000, ZielAnzahl = 120 };
 
     /// <summary>Aktivität ohne Grundziel.</summary>
@@ -49,12 +49,12 @@ public class ErmittleSaisonzielTests
     }
 
     [Fact]
-    public void Vor_dem_ersten_eigenen_Ziel_gilt_das_Grundziel_aus_BikeXperience()
+    public void Vor_dem_ersten_eigenen_Ziel_gilt_das_Grundziel()
     {
         WirksamesSaisonziel ziel = ErmittleSaisonziel.Ausfuehren(Bike, Ziele, 2023);
 
         Assert.Equal(new WirksamesSaisonziel(6000, 80000, 120, false, null, true), ziel);
-        Assert.Equal("übernommen aus BikeXperience", ziel.Herkunft);
+        Assert.Equal("Grundziel", ziel.Herkunft);
     }
 
     [Fact]

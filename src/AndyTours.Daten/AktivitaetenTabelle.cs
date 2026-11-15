@@ -9,7 +9,7 @@ namespace AndyTours.Daten;
 public static class AktivitaetenTabelle
 {
     /// <summary>
-    /// Liest alle Aktivitäten, sortiert nach Nummer (entspricht der Reihenfolge im Original).
+    /// Liest alle Aktivitäten, sortiert nach Nummer (entspricht der Reihenfolge, in der sie angelegt wurden).
     /// </summary>
     /// <param name="verbindung">Geöffnete Verbindung.</param>
     /// <returns>Die Aktivitäten.</returns>

@@ -4,7 +4,7 @@ namespace AndyTours.Core.Modell;
 /// Messgröße, für die ein <see cref="Schwellwert"/> gilt.
 /// </summary>
 /// <remarks>
-/// Jede Art entspricht einem INI-Abschnitt des Originals (Kommentar am jeweiligen Wert).
+/// Jede Art entspricht einem Abschnitt der Altdaten (Kommentar am jeweiligen Wert).
 /// </remarks>
 public enum SchwellwertArt
 {

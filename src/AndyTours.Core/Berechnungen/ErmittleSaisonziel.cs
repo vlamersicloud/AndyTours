@@ -10,8 +10,8 @@ namespace AndyTours.Core.Berechnungen;
 /// <list type="number">
 /// <item>Gibt es eigene Ziele der Aktivität bis einschließlich des Jahres, gilt das jüngste davon – für
 /// genau dieses Jahr als eigenes Ziel, sonst als „übernommen aus &lt;Jahr&gt;“.</item>
-/// <item>Sonst gilt das Grundziel der Aktivität (aus BikeXperience übernommen), sofern es mindestens
-/// einen Wert enthält.</item>
+/// <item>Sonst gilt das Grundziel der Aktivität (aus den Altdaten übernommen), sofern es mindestens
+/// einen Wert enthält; es wird als „Grundziel“ gekennzeichnet.</item>
 /// <item>Sonst gibt es kein Ziel (alle Werte 0, keine Kennzeichnung).</item>
 /// </list>
 /// Wird auch von der Ansicht „Aktuell“ für den Jahresfortschritt verwendet.
@@ -38,7 +38,7 @@ public static class ErmittleSaisonziel
                 fuerDiesesJahr, fuerDiesesJahr ? null : eigenes.AbJahr, false);
         }
 
-        // 2. Grundziel aus BikeXperience (dort als Kommazahl gespeichert, hier auf ganze Zahlen gerundet)
+        // 2. Grundziel der Aktivität (als Kommazahl gespeichert, hier auf ganze Zahlen gerundet)
         int km = (int)Math.Round(aktivitaet.ZielKm);
         int hm = (int)Math.Round(aktivitaet.ZielHm);
         int anzahl = aktivitaet.ZielAnzahl;

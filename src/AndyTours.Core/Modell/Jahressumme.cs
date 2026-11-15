@@ -5,7 +5,7 @@ namespace AndyTours.Core.Modell;
 /// </summary>
 /// <remarks>
 /// Ergebnis von <see cref="Berechnungen.BerechneJahressummen"/>. Wird u. a. verwendet, um nach der
-/// Übernahme der Altdaten zu prüfen, dass die Summen mit dem Original übereinstimmen.
+/// Übernahme der Altdaten zu prüfen, dass die Summen mit den Altdaten übereinstimmen.
 /// </remarks>
 /// <param name="Jahr">Kalenderjahr.</param>
 /// <param name="Anzahl">Anzahl der Trainingseinheiten.</param>

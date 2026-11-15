@@ -11,7 +11,7 @@ public static class IstTourVorhanden
     /// Liefert <c>true</c>, wenn es eine Einheit mit gleichem Datum und gleicher Startzeit gibt.
     /// </summary>
     /// <remarks>
-    /// Die Startzeit wird auf die Minute verglichen, weil die aus BikeXperience übernommenen Einheiten nur
+    /// Die Startzeit wird auf die Minute verglichen, weil die aus den Altdaten übernommenen Einheiten nur
     /// Stunde und Minute haben. Einheiten ohne Startzeit zählen nicht.
     /// </remarks>
     /// <param name="einheiten">Die vorhandenen Einheiten.</param>

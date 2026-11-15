@@ -7,7 +7,7 @@ namespace AndyTours.Core.Berechnungen;
 /// Kennzahlen des laufenden Jahres.
 /// </summary>
 /// <remarks>
-/// Entspricht der Übersicht „Aktuell“ in BikeXperience (<c>core.Overview</c>). Berücksichtigt werden nur
+/// Berücksichtigt werden nur
 /// die Aktivität der Werkzeugleiste und die Kategorie der Filterleiste; die Jahresauswahl und die übrigen
 /// Filter wirken hier nicht, weil das Diagramm immer alle Jahre zeigt.
 /// </remarks>

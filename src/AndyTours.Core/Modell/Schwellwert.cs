@@ -5,7 +5,6 @@ namespace AndyTours.Core.Modell;
 /// </summary>
 /// <remarks>
 /// Schwellwerte dienen zum Einfärben von Höhenprofilen und für Auswertungen „Zeit in Zone".
-/// Im Original steht je Bereich eine Zeile <c>Name;von,bis;R,G,B</c>.
 /// Die Bereiche einer Art dürfen sich überschneiden (so ist es auch in den Altdaten).
 /// </remarks>
 public class Schwellwert

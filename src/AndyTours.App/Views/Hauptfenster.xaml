@@ -128,7 +128,7 @@
             </StatusBarItem>
         </StatusBar>
 
-        <!-- 4. Karteikarten (Reihenfolge wie im Original BikeXperience) -->
+        <!-- 4. Karteikarten: Aktuell, Trainingseinheiten, Wartung -->
         <TabControl x:Name="Karteikarten" Margin="4">
             <TabItem Header="Aktuell">
                 <views:AktuellAnsicht />

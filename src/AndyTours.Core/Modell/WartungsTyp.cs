@@ -4,8 +4,7 @@ namespace AndyTours.Core.Modell;
 /// Art eines Eintrags in der Wartungsliste.
 /// </summary>
 /// <remarks>
-/// Im Original steht der Typ als Zahl in der letzten Spalte von <c>maintanence.dat</c>:
-/// 0 = Wartung, 1 = Alarm.
+/// Die Zahlenwerte (0 = Wartung, 1 = Alarm) werden so in der Datenbank gespeichert.
 /// </remarks>
 public enum WartungsTyp
 {

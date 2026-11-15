@@ -3,10 +3,6 @@ namespace AndyTours.Core.Modell;
 /// <summary>
 /// Ein Eintrag in der Wartungsliste: eine durchgeführte Wartung oder ein Kilometer-Alarm.
 /// </summary>
-/// <remarks>
-/// Entspricht im Original einer Zeile der Datei <c>maintanence.dat</c>
-/// (Java-Klasse <c>datamodel.Maintenance</c>).
-/// </remarks>
 public class Wartung
 {
     /// <summary>Eindeutige Nummer in der Datenbank.</summary>

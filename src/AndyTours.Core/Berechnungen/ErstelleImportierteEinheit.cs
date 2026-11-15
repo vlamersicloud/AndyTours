@@ -20,7 +20,7 @@ public static class ErstelleImportierteEinheit
     /// (siehe <see cref="FindeStandardkategorie"/>).</item>
     /// <item>Fahrer: der erste vorhandene, wie bei <see cref="ErstelleNeueEinheit"/>.</item>
     /// <item>Anhänge: Höhenprofil und GPS-Track verweisen beide auf die abgelegte Aufzeichnung – so wie bei den
-    /// aus BikeXperience übernommenen Einheiten.</item>
+    /// aus den Altdaten übernommenen Einheiten.</item>
     /// </list>
     /// Die Nummer ist 0; die Datenbank vergibt sie beim Speichern.
     /// </remarks>

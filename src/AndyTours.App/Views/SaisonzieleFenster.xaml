@@ -4,7 +4,7 @@
   Aufbau von oben nach unten:
     1. Jahresauswahl: laufendes und folgendes Jahr (gesperrt, solange eine Eingabe ungültig ist)
     2. Tabelle: je Aktivität eine Zeile mit Kilometer, Höhenmeter, Anzahl und Herkunft
-       („übernommen aus 2026“ bzw. „übernommen aus BikeXperience“; leer bei einem eigenen Ziel)
+       („übernommen aus 2026“ bzw. „Grundziel“; leer bei einem eigenen Ziel)
     3. Roter Hinweis bei ungültiger Eingabe (nennt Aktivität, Feld und erlaubten Bereich)
     4. „OK“ (nur bei gültigen Eingaben) und „Abbrechen“
 

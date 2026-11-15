@@ -57,8 +57,8 @@ public static class ErstelleSchema
                 ZielAnzahl               INTEGER NOT NULL
             );
 
-            -- Eigene Saisonziele je Aktivität, gültig ab einem Jahr (seit Schemaversion 3); das Grundziel aus
-            -- BikeXperience steht weiter in Aktivitaet. Wird eine Aktivität gelöscht, verschwinden ihre Ziele mit.
+            -- Eigene Saisonziele je Aktivität, gültig ab einem Jahr (seit Schemaversion 3); das Grundziel der
+            -- Aktivität steht weiter in Aktivitaet. Wird eine Aktivität gelöscht, verschwinden ihre Ziele mit.
             CREATE TABLE IF NOT EXISTS Saisonziel (
                 AktivitaetId  INTEGER NOT NULL REFERENCES Aktivitaet(Id) ON DELETE CASCADE,
                 AbJahr        INTEGER NOT NULL,

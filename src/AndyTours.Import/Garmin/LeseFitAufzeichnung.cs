@@ -34,7 +34,7 @@ public static partial class LeseFitAufzeichnung
     /// <item>Fahrzeit: gestoppte Zeit (<c>TotalTimerTime</c>) ohne Pausen, auf ganze Sekunden abgeschnitten
     /// wie in der Anzeige des Edge.</item>
     /// <item>Distanz in km und Höchstgeschwindigkeit in km/h auf zwei Nachkommastellen gerundet, Höhen auf ganze
-    /// Meter abgeschnitten (wie in BikeXperience).</item>
+    /// Meter abgeschnitten (so wie bei den aus den Altdaten übernommenen Einheiten).</item>
     /// <item>Starthöhe: Höhe des ersten Messpunkts; höchster Punkt aus der Sitzung, sonst aus den Messpunkten.</item>
     /// <item>Fehlen in der Sitzung der niedrigste Puls oder die Durchschnittstemperatur (z. B. beim Edge 1000),
     /// werden sie aus den Messpunkten ermittelt.</item>

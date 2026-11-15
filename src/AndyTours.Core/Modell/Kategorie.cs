@@ -6,7 +6,6 @@ namespace AndyTours.Core.Modell;
 /// <remarks>
 /// Eine Trainingseinheit kann mehreren Kategorien zugeordnet sein (n:m-Beziehung,
 /// siehe <see cref="Trainingseinheit.KategorieIds"/>).
-/// Entspricht im Original dem INI-Abschnitt <c>[Category]</c> mit Zeilen <c>Name=Standard</c>.
 /// </remarks>
 public class Kategorie
 {

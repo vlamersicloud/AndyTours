@@ -9,7 +9,7 @@ namespace AndyTours.Core.Berechnungen;
 /// <remarks>
 /// Beide Richtungen stehen zusammen, weil sie dasselbe Format teilen: Die Kennungen stehen durch Strichpunkte
 /// getrennt hintereinander, jede mit ihrer Art davor, z. B. <c>Rad:7af22db6-…; Sensor:3452708077</c>.
-/// Ein Eintrag ohne bekannte Art stammt aus BikeXperience (z. B. „Bike1“) und bleibt als
+/// Ein Eintrag ohne bekannte Art stammt aus den Altdaten (z. B. „Bike1“) und bleibt als
 /// <see cref="Radkennungsart.Altwert"/> erhalten, damit er sichtbar ist und entfernt werden kann.
 /// </remarks>
 public static class GeraetezuordnungText

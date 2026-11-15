@@ -375,7 +375,7 @@ public static class TrainingseinheitenTabelle
     {
         einheitBefehl.Parameters.AddWithValue("$fahrerId", e.FahrerId);
         einheitBefehl.Parameters.AddWithValue("$datum", DatumSpalte.AlsText(e.Datum));
-        // Uhrzeit als „hh:mm"; Sekunden werden im Original nicht erfasst
+        // Uhrzeit als „hh:mm"; Sekunden werden nicht gespeichert
         einheitBefehl.Parameters.AddWithValue("$startzeit",
             e.Startzeit?.ToString("HH:mm", CultureInfo.InvariantCulture) ?? (object)DBNull.Value);
         einheitBefehl.Parameters.AddWithValue("$name", e.Name);
