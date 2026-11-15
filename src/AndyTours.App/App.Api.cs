@@ -17,7 +17,7 @@ public partial class App
         try
         {
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            var dialog = new BackendVerbindungFenster(ErmittleApiProgrammPfad());
+            using var dialog = new BackendVerbindungFenster(ErmittleApiProgrammPfad());
             if (dialog.ShowDialog() != true || dialog.Sitzung is null)
             {
                 Shutdown();
@@ -33,6 +33,7 @@ public partial class App
             var uebergebenesLokalesBackend = lokalesBackend;
             fenster.Closed += async (_, _) =>
             {
+                var bereinigungFehlgeschlagen = false;
                 try
                 {
                     fenster.Dispose();
@@ -43,18 +44,20 @@ public partial class App
                 }
                 catch
                 {
-                    // Kontrolliertes Beenden auch bei einem Fehler beim Ressourcenabbau.
+                    bereinigungFehlgeschlagen = true;
                 }
-                finally
+
+                if (bereinigungFehlgeschlagen)
                 {
-                    Shutdown();
+                    MessageBox.Show("Die Backendverbindung oder der lokale Backendprozess konnte nicht vollständig beendet werden.",
+                        "AndyTours", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+                Shutdown();
             };
 
             MainWindow = fenster;
-            ShutdownMode = ShutdownMode.OnMainWindowClose;
+            // Expliziter Shutdown bleibt aktiv, bis der Closed-Handler die eigenen Ressourcen freigegeben hat.
             fenster.Show();
-            // Ownership liegt ab Show beim Closed-Handler.
             sitzung = null;
             lokalesBackend = null;
             hauptfenster = null;
@@ -62,6 +65,7 @@ public partial class App
         catch
         {
             if (hauptfenster is not null) hauptfenster.Dispose();
+            var bereinigungFehlgeschlagen = false;
             try
             {
                 if (lokalesBackend is not null)
@@ -69,9 +73,12 @@ public partial class App
                 else
                     sitzung?.Dispose();
             }
-            catch { }
-            MessageBox.Show("Der API-Modus konnte nicht gestartet werden. Bitte Backendverbindung und Installation prüfen.",
-                "AndyTours", MessageBoxButton.OK, MessageBoxImage.Error);
+            catch { bereinigungFehlgeschlagen = true; }
+
+            var meldung = bereinigungFehlgeschlagen
+                ? "Der API-Modus konnte nicht gestartet werden; eigene Backendressourcen konnten nicht vollständig beendet werden."
+                : "Der API-Modus konnte nicht gestartet werden. Bitte Backendverbindung und Installation prüfen.";
+            MessageBox.Show(meldung, "AndyTours", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown();
         }
     }
@@ -83,10 +90,15 @@ public partial class App
         installiert = Path.Combine(AppContext.BaseDirectory, "backend", "AndyTours.Api.dll");
         if (File.Exists(installiert)) return installiert;
 
+#if DEBUG
+        var konfigurationen = new[] { "Debug", "Release" };
+#else
+        var konfigurationen = new[] { "Release", "Debug" };
+#endif
         for (var ordner = new DirectoryInfo(AppContext.BaseDirectory); ordner is not null; ordner = ordner.Parent)
         {
             if (!File.Exists(Path.Combine(ordner.FullName, "AndyTours.slnx"))) continue;
-            foreach (var konfiguration in new[] { "Debug", "Release" })
+            foreach (var konfiguration in konfigurationen)
             {
                 var quellcode = Path.Combine(ordner.FullName, "src", "AndyTours.Api", "bin", konfiguration, "net10.0", "AndyTours.Api.dll");
                 if (File.Exists(quellcode)) return quellcode;
@@ -94,7 +106,7 @@ public partial class App
             break;
         }
 
-        // Zentralbetrieb benötigt keine lokale Backenddatei; das lokale Starten weist den fehlenden Pfad ab.
+        // Zentralbetrieb benötigt keine lokale Backenddatei; lokales Starten weist den fehlenden Pfad ab.
         return installiert;
     }
 }
