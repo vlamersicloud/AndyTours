@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using AndyTours.App.Funktionen;
@@ -16,12 +17,14 @@ public partial class BackendVerbindungFenster : Window, IDisposable
     private bool _geschlossen;
     private bool _uebergeben;
     private bool _entsorgt;
+    private bool _schliessenNachAbschluss;
 
     public BackendVerbindungFenster(string backendProgrammPfad)
     {
         InitializeComponent();
         _backendProgrammPfad = Path.GetFullPath(backendProgrammPfad);
         DatenordnerText.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AndyTours");
+        Closing += FensterWirdGeschlossen;
         Closed += FensterGeschlossen;
         AktualisiereVerbindungstyp();
     }
@@ -88,15 +91,35 @@ public partial class BackendVerbindungFenster : Window, IDisposable
         {
             if (!_geschlossen) StatusText.Text = "Verbindung fehlgeschlagen. Adresse, Token und Erreichbarkeit prüfen.";
             ZugriffstokenBox.Clear();
-            await BereinigeEigeneVerbindungAsync();
         }
         finally
         {
+            if (!_uebergeben)
+            {
+                try { await BereinigeEigeneVerbindungAsync(); }
+                catch
+                {
+                    if (!_geschlossen) StatusText.Text = "Verbindung konnte nicht vollständig bereinigt werden.";
+                }
+            }
+            _verbunden = false;
             if (!_geschlossen) SetzeLadezustand(false);
+            if (_schliessenNachAbschluss && !_geschlossen) Close();
         }
     }
 
     private void Abbrechen_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void FensterWirdGeschlossen(object? sender, CancelEventArgs e)
+    {
+        if (_verbunden && !_uebergeben)
+        {
+            e.Cancel = true;
+            _schliessenNachAbschluss = true;
+            StatusText.Text = "Verbindungsaufbau wird abgebrochen …";
+            _connectLifetime.Cancel();
+        }
+    }
 
     public void Dispose()
     {
@@ -111,9 +134,12 @@ public partial class BackendVerbindungFenster : Window, IDisposable
     {
         if (_geschlossen) return;
         _geschlossen = true;
-        _connectLifetime.Cancel();
         ZugriffstokenBox.Clear();
-        if (!_uebergeben) await BereinigeEigeneVerbindungAsync();
+        if (!_uebergeben)
+        {
+            try { await BereinigeEigeneVerbindungAsync(); }
+            catch { /* Aufräumen beim Schließen darf keinen unbehandelten async-void-Fehler auslösen. */ }
+        }
         Dispose();
     }
 
