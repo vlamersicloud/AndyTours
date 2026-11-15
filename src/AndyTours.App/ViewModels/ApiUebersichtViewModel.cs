@@ -35,7 +35,9 @@ public partial class ApiUebersichtViewModel : ObservableObject
     [ObservableProperty] private string _zukunftsHinweis = string.Empty;
     [ObservableProperty] private bool _laedt;
     [ObservableProperty] private int _gesamtTouren;
-    [ObservableProperty] private string _seitenText = "Seite 1";
+    [ObservableProperty] private string _seitenText = "Keine Daten geladen";
+
+    private static readonly CultureInfo Deutsch = CultureInfo.GetCultureInfo("de-DE");
 
     /// <summary>Initialisiert die Übersicht ausschließlich mit typisierten API-Ports.</summary>
     public ApiUebersichtViewModel(IAktivitaetsauswertung auswertung, ITourenSpeicher touren)
@@ -56,8 +58,11 @@ public partial class ApiUebersichtViewModel : ObservableObject
     ];
 
     /// <summary>Verfügbare Diagrammkennzahlen.</summary>
-    public IReadOnlyList<ApiDiagrammkennzahl> KennzahlOptionen { get; } =
-        Enum.GetValues<ApiDiagrammkennzahl>();
+    public IReadOnlyList<KeyValuePair<ApiDiagrammkennzahl, string>> KennzahlOptionen { get; } =
+    [
+        new(ApiDiagrammkennzahl.Kilometer, "Kilometer"), new(ApiDiagrammkennzahl.Hoehenmeter, "Höhenmeter"),
+        new(ApiDiagrammkennzahl.Fahrzeit, "Fahrzeit"), new(ApiDiagrammkennzahl.Anzahl, "Anzahl")
+    ];
 
     partial void OnKennzahlChanged(ApiDiagrammkennzahl value)
     {
@@ -78,20 +83,25 @@ public partial class ApiUebersichtViewModel : ObservableObject
         ZukunftsHinweis = string.Empty;
         Touren.Clear();
         GesamtTouren = 0;
+        _start = 0;
+        SeitenText = "Keine Daten geladen";
+        NaechsteSeiteCommand.NotifyCanExecuteChanged();
+        VorherigeSeiteCommand.NotifyCanExecuteChanged();
         StatusText = "Filter geändert – bitte aktualisieren.";
     }
 
     /// <summary>Lädt Auswertung und erste Tourenseite parallel vom Backend.</summary>
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(KannAktualisieren))]
     public async Task AktualisierenAsync(CancellationToken ct = default)
     {
+        if (Laedt) return;
+        Laedt = true;
         var generation = Interlocked.Increment(ref _generation);
         if (VonDatum is null || BisDatum is null || VonDatum > BisDatum)
         {
             StatusText = "Bitte einen gültigen Zeitraum auswählen.";
             return;
         }
-        Laedt = true;
         StatusText = "Daten werden geladen …";
         try
         {
@@ -108,10 +118,10 @@ public partial class ApiUebersichtViewModel : ObservableObject
             var page = await tourenTask;
             _perioden.Clear();
             foreach (var periode in result.Perioden) _perioden.Add(periode);
-            DistanzKmText = $"{result.DistanzKm:N1} km";
-            HoehenmeterText = $"{result.Hoehenmeter:N0} hm";
+            DistanzKmText = $"{result.DistanzKm.ToString("N1", Deutsch)} km";
+            HoehenmeterText = $"{result.Hoehenmeter.ToString("N0", Deutsch)} hm";
             FahrzeitText = DauerText(result.FahrzeitSekunden);
-            AnzahlText = result.Anzahl.ToString("N0", CultureInfo.CurrentCulture);
+            AnzahlText = result.Anzahl.ToString("N0", Deutsch);
             ZukunftsHinweis = result.ZukuenftigeAktivitaeten > 0
                 ? $"{result.ZukuenftigeAktivitaeten} zukünftige Aktivität(en) im Datenbestand."
                 : string.Empty;
@@ -119,7 +129,10 @@ public partial class ApiUebersichtViewModel : ObservableObject
             ZeichneDiagramm();
             StatusText = page.Gesamt == 0 ? "Keine Touren im gewählten Zeitraum." : string.Empty;
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            if (generation == Interlocked.Read(ref _generation)) StatusText = "Ladevorgang abgebrochen.";
+        }
         catch (Exception)
         {
             if (generation == Interlocked.Read(ref _generation))
@@ -127,8 +140,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
         }
         finally
         {
-            if (generation == Interlocked.Read(ref _generation))
-                Laedt = false;
+            Laedt = false;
         }
     }
 
@@ -148,14 +160,22 @@ public partial class ApiUebersichtViewModel : ObservableObject
         await LadeSeiteAsync(Math.Max(0, _start - 50), ct);
     }
 
+    private bool KannAktualisieren() => !Laedt;
+    partial void OnLaedtChanged(bool value)
+    {
+        AktualisierenCommand.NotifyCanExecuteChanged();
+        NaechsteSeiteCommand.NotifyCanExecuteChanged();
+        VorherigeSeiteCommand.NotifyCanExecuteChanged();
+    }
+
     private bool KannNaechsteSeite() => !Laedt && _start + 50 < GesamtTouren;
     private bool KannVorherigeSeite() => !Laedt && _start > 0;
 
     private async Task LadeSeiteAsync(int start, CancellationToken ct)
     {
-        if (VonDatum is null || BisDatum is null || VonDatum > BisDatum) return;
-        var generation = Interlocked.Read(ref _generation);
+        if (Laedt || VonDatum is null || BisDatum is null || VonDatum > BisDatum) return;
         Laedt = true;
+        var generation = Interlocked.Read(ref _generation);
         try
         {
             var page = await _touren.Liste(start, 50, DateOnly.FromDateTime(VonDatum.Value),
@@ -163,10 +183,14 @@ public partial class ApiUebersichtViewModel : ObservableObject
             if (generation != Interlocked.Read(ref _generation)) return;
             _start = start;
             SetzeSeite(page);
+            StatusText = string.Empty;
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            if (generation == Interlocked.Read(ref _generation)) StatusText = "Ladevorgang abgebrochen.";
+        }
         catch (Exception) { if (generation == Interlocked.Read(ref _generation)) StatusText = "Tourenseite konnte nicht geladen werden."; }
-        finally { if (generation == Interlocked.Read(ref _generation)) Laedt = false; }
+        finally { Laedt = false; }
     }
 
     private void SetzeSeite(TourListeAntwort page)
@@ -213,8 +237,9 @@ public partial class ApiUebersichtViewModel : ObservableObject
 
     private static string DauerText(long sekunden)
     {
-        var dauer = TimeSpan.FromSeconds(sekunden);
-        return $"{(long)dauer.TotalHours:N0}:{dauer.Minutes:00} h";
+        var stunden = sekunden / 3600;
+        var minuten = sekunden % 3600 / 60;
+        return $"{stunden.ToString("N0", Deutsch)}:{minuten:00} h";
     }
 }
 
