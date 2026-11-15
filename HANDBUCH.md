@@ -1176,3 +1176,8 @@ stehen unter [Garmin Connect – Live-Import](docs/garmin-connect.md).
 
 Der Abruf erfolgt manuell, nicht dauerhaft im Hintergrund. Gesundheitsdaten
 wie Schlaf oder HRV werden nicht importiert.
+
+Der Connect-Abruf lädt nun Pakete mit höchstens 20 Aktivitäten. Nach der
+Importauswahl kannst du weitere 20 laden oder stoppen. Bei Netzfehlern bleiben
+fertige Touren importierbar; bestätigte Pakete bleiben gespeichert. Später den
+Import erneut aufrufen, um ohne erneuten Download fertiger ZIPs fortzusetzen.

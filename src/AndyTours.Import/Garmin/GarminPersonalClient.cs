@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace AndyTours.Import.Garmin;
@@ -12,24 +13,45 @@ public sealed class GarminPersonalClient(HttpClient http, string apiKey)
     private static readonly Uri Basis = new("https://personal.connectapi.garmin.com");
     private string? _token;
 
-    /// <summary>Liest alle Radaktivitäts-IDs seitenweise, nicht nur die neuesten zwanzig.</summary>
+    /// <summary>Liest die IDs vollständig; für Downloads den verzögerten Stream verwenden.</summary>
     public async Task<IReadOnlyList<long>> LeseRadaktivitaetenAsync(CancellationToken cancellationToken = default)
     {
-        var ids = new HashSet<long>();
         var ergebnis = new List<long>();
-        const int seitengroesse = 100;
+        await foreach (long id in LeseRadaktivitaetsIdsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            ergebnis.Add(id);
+        }
+
+        return ergebnis;
+    }
+
+    /// <summary>Liest erst bei Bedarf die nächste Seite mit höchstens 20 Aktivitäten.</summary>
+    public async IAsyncEnumerable<long> LeseRadaktivitaetsIdsAsync(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var gesehen = new HashSet<long>();
+        const int seitengroesse = 20;
         for (int start = 0; ; start = checked(start + seitengroesse))
         {
+            if (start > 0)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
+            }
+
+            using var zeitlimit = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            zeitlimit.CancelAfter(TimeSpan.FromMinutes(2));
             using HttpResponseMessage antwort = await SendeAsync(
-                $"/activitylist-service/activities/search/activities?start={start.ToString(CultureInfo.InvariantCulture)}&limit=100&activityType=cycling",
-                cancellationToken).ConfigureAwait(false);
-            using JsonDocument json = JsonDocument.Parse(await antwort.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+                $"/activitylist-service/activities/search/activities?start={start.ToString(CultureInfo.InvariantCulture)}&limit=20&activityType=cycling",
+                zeitlimit.Token).ConfigureAwait(false);
+            using JsonDocument json = JsonDocument.Parse(await antwort.Content.ReadAsStringAsync(zeitlimit.Token).ConfigureAwait(false));
             if (json.RootElement.ValueKind != JsonValueKind.Array)
             {
                 throw new InvalidDataException("Garmin hat keine Aktivitätenliste geliefert.");
             }
 
-            int neue = 0;
+            // Ganze Seite vor dem ersten yield prüfen; langsame Importauswahl soll keine HTTP-Verbindung offenhalten.
+            var ids = new List<long>();
+            int anzahl = json.RootElement.GetArrayLength();
             foreach (JsonElement aktivitaet in json.RootElement.EnumerateArray())
             {
                 if (!aktivitaet.TryGetProperty("activityId", out JsonElement wert) || !wert.TryGetInt64(out long id) || id <= 0)
@@ -37,22 +59,29 @@ public sealed class GarminPersonalClient(HttpClient http, string apiKey)
                     throw new InvalidDataException("Garmin hat eine ungültige Aktivitäts-ID geliefert.");
                 }
 
-                if (ids.Add(id))
+                if (gesehen.Add(id))
                 {
-                    ergebnis.Add(id);
-                    neue++;
+                    ids.Add(id);
                 }
             }
 
-            if (json.RootElement.GetArrayLength() < seitengroesse)
-            {
-                return ergebnis;
-            }
-
-            // Schutz gegen einen Server, der den Offset ignoriert: keinen unvollständigen Import als Erfolg melden.
-            if (neue == 0)
+            // Netzwerkressourcen vor einer möglichen längeren Unterbrechung am Importdialog freigeben.
+            antwort.Dispose();
+            json.Dispose();
+            if (anzahl >= seitengroesse && ids.Count == 0)
             {
                 throw new InvalidDataException("Garmin liefert wiederholt dieselbe Seite. Bitte später erneut versuchen.");
+            }
+
+            foreach (long id in ids)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                yield return id;
+            }
+
+            if (anzahl < seitengroesse)
+            {
+                yield break;
             }
         }
     }
@@ -61,6 +90,11 @@ public sealed class GarminPersonalClient(HttpClient http, string apiKey)
     public async Task LadeArchivAsync(long id, Stream ziel, CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
+        // HttpClient.Timeout gilt bei ResponseHeadersRead nicht für das Lesen des Bodys.
+        // Deshalb das vollständige ZIP einschließlich Stream-Übertragung separat begrenzen.
+        using var zeitlimit = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        zeitlimit.CancelAfter(TimeSpan.FromMinutes(2));
+        cancellationToken = zeitlimit.Token;
         using HttpResponseMessage antwort = await SendeAsync(
             $"/download-service/files/activity/{id.ToString(CultureInfo.InvariantCulture)}", cancellationToken).ConfigureAwait(false);
         await using Stream quelle = await antwort.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);

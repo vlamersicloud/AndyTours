@@ -26,23 +26,23 @@ public sealed class GarminPersonalClientTests
             Assert.Equal("Bearer test-token", anfrage.Headers.Authorization!.ToString());
             if (pfad.Contains("start=0&", StringComparison.Ordinal))
             {
-                return Text("[" + string.Join(",", Enumerable.Range(1, 100).Select(id => $"{{\"activityId\":{id}}}")) + "]");
+                return Text("[" + string.Join(",", Enumerable.Range(1, 20).Select(id => $"{{\"activityId\":{id}}}")) + "]");
             }
 
-            if (pfad.Contains("start=100&", StringComparison.Ordinal))
+            if (pfad.Contains("start=20&", StringComparison.Ordinal))
             {
-                return Text("[{\"activityId\":101}]");
+                return Text("[{\"activityId\":21}]");
             }
 
-            Assert.Equal("/download-service/files/activity/101", pfad);
+            Assert.Equal("/download-service/files/activity/21", pfad);
             return Text("zip-bytes");
         });
         using var http = new HttpClient(handler);
         var client = new GarminPersonalClient(http, "test-key");
         IReadOnlyList<long> ids = await client.LeseRadaktivitaetenAsync();
-        Assert.Equal(101, ids.Count);
+        Assert.Equal(21, ids.Count);
         using var ausgabe = new MemoryStream();
-        await client.LadeArchivAsync(101, ausgabe);
+        await client.LadeArchivAsync(21, ausgabe);
         Assert.Equal("zip-bytes", Encoding.UTF8.GetString(ausgabe.ToArray()));
         Assert.Equal(4, anfragen.Count);
     }
@@ -89,7 +89,7 @@ public sealed class GarminPersonalClientTests
     [Fact]
     public async Task WiederholteVolleSeiteBrichtAb()
     {
-        string seite = "[" + string.Join(",", Enumerable.Range(1, 100).Select(id => $"{{\"activityId\":{id}}}")) + "]";
+        string seite = "[" + string.Join(",", Enumerable.Range(1, 20).Select(id => $"{{\"activityId\":{id}}}")) + "]";
         using var handler = new AntwortHandler(anfrage => Text(anfrage.Method == HttpMethod.Post ? "token" : seite));
         using var http = new HttpClient(handler);
         await Assert.ThrowsAsync<InvalidDataException>(() => new GarminPersonalClient(http, "key").LeseRadaktivitaetenAsync());
@@ -122,11 +122,15 @@ public sealed class GarminPersonalClientTests
         var client = new GarminPersonalClient(http, "key");
         try
         {
-            var a = await LadeGarminConnectAufzeichnungen.AusfuehrenAsync(client, Path.Combine(ordner, "archiv"), Path.Combine(ordner, "temp"), new HashSet<long> { 11 });
-            Assert.Single(a);
-            Assert.Equal(12, a[0].Id);
-            Assert.Equal("fit-data", File.ReadAllText(a[0].Pfad));
-            await LadeGarminConnectAufzeichnungen.AusfuehrenAsync(client, Path.Combine(ordner, "archiv"), Path.Combine(ordner, "temp"), new HashSet<long> { 11 });
+            await using var ids = client.LeseRadaktivitaetsIdsAsync().GetAsyncEnumerator();
+            GarminDownloadPaket a = await LadeGarminConnectAufzeichnungen.LadePaketAsync(
+                client, ids, Path.Combine(ordner, "archiv"), Path.Combine(ordner, "temp"), new HashSet<long> { 11 });
+            Assert.Single(a.Dateien);
+            Assert.Equal(12, a.Dateien[0].Id);
+            Assert.Equal("fit-data", File.ReadAllText(a.Dateien[0].Pfad));
+            await using var erneut = client.LeseRadaktivitaetsIdsAsync().GetAsyncEnumerator();
+            await LadeGarminConnectAufzeichnungen.LadePaketAsync(
+                client, erneut, Path.Combine(ordner, "archiv"), Path.Combine(ordner, "temp"), new HashSet<long> { 11 });
             Assert.Equal(1, downloads);
         }
         finally { Directory.Delete(ordner, true); }

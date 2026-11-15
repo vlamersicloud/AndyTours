@@ -46,7 +46,7 @@ den Safety-Store-Key übernimmt die Anwendung nicht automatisch.
 - POST `/personalapitoken-service/personal-api/personal-api-key/token`
   mit `Authorization: ApiKey …`; Antwort als Texttoken.
 - GET `/activitylist-service/activities/search/activities` mit Bearer-Token,
-  `activityType=cycling`, `start` und `limit=100`. Alle Seiten werden gelesen;
+  `activityType=cycling`, `start` und `limit=20`. Seiten werden erst beim Weiterarbeiten abgerufen;
   ältere und nachträglich hochgeladene Aktivitäten werden nicht durch einen
   Datumshochwasserstand ausgeschlossen.
 - GET `/download-service/files/activity/{id}` liefert das Original-ZIP.
@@ -67,13 +67,38 @@ den Safety-Store-Key übernimmt die Anwendung nicht automatisch.
   Dateien werden nicht als fertige Archive übernommen.
 - HTTP-Redirects sind deaktiviert. Fehlerantworttexte werden nicht ausgegeben,
   damit Garmin nicht versehentlich Schlüssel oder Token in Meldungen spiegeln kann.
-- Netzwerkfehler vor der Importauswahl ändern keine Trainingseinheiten.
-  Bereits gespeicherte ZIPs bleiben lokal. Ein Importlauf hat ein Zeitlimit von 30 Minuten.
+- Bei Netzwerkfehlern werden die fertigen Dateien des aktuellen Pakets trotzdem
+  zur Importauswahl angeboten. Frühere bestätigte Pakete sind bereits gespeichert.
+  Bereits gespeicherte ZIPs bleiben lokal. Jeder Listen- und ZIP-Abruf hat ein eigenes Zeitlimit von zwei Minuten,
+  einschließlich des vollständigen Downloads. Es gibt kein gemeinsames
+  30-Minuten-Limit mehr für die gesamte Historie.
 - Nach Löschen einer lokalen Tour ist deren ID wieder importierbar, das Archiv
   bleibt erhalten. Je Datenordner genau ein Garmin-Konto verwenden: API-IDs und
   Archivcache sind nicht als Mehrkontenverwaltung ausgelegt.
 - Garmin liefert persönliche Daten. Beim Weitergeben eines Datenordners oder
   Erstellen einer Sicherung den Archivordner entsprechend berücksichtigen.
+
+## Kleine Downloadpakete und Fortsetzen
+
+Der Abruf verarbeitet **höchstens 20 noch nicht zugeordnete Aktivitäten pro Paket**.
+Schon während der Verarbeitung werden die nächsten IDs nur bei Bedarf geladen.
+Zwischen neuen ZIP-Downloads und Listenseiten liegt eine kurze Pause (500 ms);
+es gibt keine parallelen Downloads und keinen automatischen Retry-Sturm.
+
+Nach jedem Paket erscheint die vorhandene Importauswahl. Erst danach fragt die
+Anwendung, ob die nächsten höchstens 20 Aktivitäten geladen werden sollen.
+„Nein“ (Voreinstellung) beendet den Lauf, ebenso „Abbrechen“ in der Importauswahl.
+Auch ein Paket ohne neue Touren (z. B. bereits per USB importiert) kann übersprungen
+werden, um mit dem nächsten Paket weiterzumachen.
+
+Bei HTTP 429, Netzfehler oder Zeitlimit endet der Abruf mit Hinweis. **Fertige
+Aufzeichnungen dieses Pakets bleiben auswählbar**; nur der unfertige Download wird
+entfernt. Bereits bestätigte Pakete bleiben gespeichert. Später den Menüpunkt erneut
+aufrufen: gespeicherte IDs werden übersprungen und fertige ZIPs wiederverwendet.
+Abgewählte/unbestätigte Touren werden weiterhin erneut angeboten.
+Die Änderung behebt zwei im Code nachgewiesene Schwächen (Vorabladen der gesamten
+Liste, Verwerfen der aktuellen Ergebnisliste bei Netzfehler); die genaue Ursache
+eines konkreten Garmin-Abbruchs ist ohne dessen Fehlermeldung nicht nachgewiesen.
 
 ## Prüfung / Abnahme
 
@@ -83,7 +108,7 @@ Offline-Tests für den ursprünglichen Connect-Import wurden ausgeführt; die zu
 für fehlenden Key, Ersetzen, Entfernen, getrennte Datenbestände und unveränderte
 fremde Einstellungen.
 
-Sie decken Authentifizierungsheader und Host, mehr als 100 Aktivitäten, Download,
+Sie decken Authentifizierungsheader und Host, mehrere Listenseiten, Download,
 begrenzte Token-Erneuerung, Ratenlimit ohne Geheimnisse in Fehlern, wiederholte
 Seiten, Archivcache, Pfadtraversierung, mehrdeutige Archive sowie Commit/Rollback
 der ID-Zuordnung ab. Sie benötigen keine echten Zugangsdaten.
@@ -122,3 +147,18 @@ API-Key erforderlich. Offline-Vertragstests ersetzen diese Live-Abnahme nicht.
 
 Authentifizierung und Aktivitäts-/Download-Endpunkte wurden mit dem offiziellen
 Referenzclient abgeglichen. Es wurde kein Python-Code oder zusätzlicher SDK-Wrapper übernommen.
+
+### Zusätzliche Abnahme der Paketverarbeitung
+
+Neue Regressionen in `GarminDownloadPaketTests.cs` sind bereitgestellt und nur
+kompiliert, nicht ausgeführt: Begrenzung auf 20, verzögerte Folgeseite, Erhalt
+fertiger Dateien bei HTTP 429/503, Entfernen unfertiger Downloads und Listenfehler.
+Bestehende Paging-/Cache-Tests wurden auf die 20er-Verarbeitung angepasst.
+
+Manuell prüfen:
+- Konto mit mehr als 20 Radaktivitäten: erste Auswahl erscheint vor weiteren Downloads.
+- Nach Import „Nein“: keine weiteren Downloads; späterer Aufruf vermeidet Duplikate.
+- „Ja“: nächste Auswahl mit höchstens 20 Kandidaten, ohne erneut von vorne zu lesen.
+- Netzunterbrechung oder 429 nach einzelnen fertigen Downloads: diese Touren lassen
+  sich noch importieren; später fortsetzen.
+- Teilweise abwählen, Importauswahl abbrechen und Touren mit bereits vorhandenem USB-Import.

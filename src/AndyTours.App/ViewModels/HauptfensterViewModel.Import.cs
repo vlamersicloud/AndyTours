@@ -265,7 +265,8 @@ public partial class HauptfensterViewModel
     /// <summary>
     /// Zeigt die neuen Touren im Fenster „Garmin-Import“ und importiert die angehakten.
     /// </summary>
-    private void Importiere(Leseergebnis ergebnis)
+    /// <returns>Ob nach der Auswahl weitergearbeitet werden darf; false bei Abbrechen oder Datenbankfehler.</returns>
+    private bool Importiere(Leseergebnis ergebnis)
     {
         if (ergebnis.Neue.Count == 0)
         {
@@ -273,7 +274,7 @@ public partial class HauptfensterViewModel
             string? meldung = BeschreibeImportergebnis.Ausfuehren(0, ergebnis.Uebersprungen).Meldung;
             MessageBox.Show(meldung ?? KeineNeuenTouren, Importtitel, MessageBoxButton.OK,
                 meldung is null ? MessageBoxImage.Information : MessageBoxImage.Warning);
-            return;
+            return true;
         }
 
         List<Auswahleintrag> equipments = _bestand.Equipments
@@ -293,15 +294,17 @@ public partial class HauptfensterViewModel
         var fenster = new GarminImportFenster(viewModel) { Owner = Application.Current.MainWindow };
         if (fenster.ShowDialog() != true)
         {
-            return;
+            return false;
         }
 
+        bool fortsetzen = true;
         List<string> uebersprungen = [.. ergebnis.Uebersprungen];
         List<long> importiert = [];
         foreach (Importzeile zeile in viewModel.Ergebnis)
         {
             if (!ImportiereTour(zeile, uebersprungen, out long? id))
             {
+                fortsetzen = false;
                 break; // Datenbankfehler: Meldung kam schon, weitere Versuche wären vergeblich
             }
 
@@ -327,6 +330,8 @@ public partial class HauptfensterViewModel
         {
             MessageBox.Show(hinweis, Importtitel, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
+
+        return fortsetzen;
     }
 
     /// <summary>

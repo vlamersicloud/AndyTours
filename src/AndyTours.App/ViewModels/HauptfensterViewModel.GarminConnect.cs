@@ -55,39 +55,70 @@ public partial class HauptfensterViewModel
                 ids = GarminImportZuordnung.Laden(verbindung, _bestand.Trainingseinheiten.Select(e => e.Id).ToHashSet());
             }
 
-            List<AndyTours.Core.Modell.Trainingseinheit> vorhanden = [.. _bestand.Trainingseinheiten];
             string archivordner = Path.Combine(Datenordner, "GarminConnect");
-            Leseergebnis ergebnis = LeseMitFortschritt("Garmin Connect: Radaktivitäten werden geladen …", fortschritt =>
+            // Client und Iterator bleiben über die kleinen Pakete hinweg erhalten.
+            // Dadurch wird weder jedes Mal neu angemeldet noch die Liste von vorne abgerufen.
+            using var handler = new HttpClientHandler { AllowAutoRedirect = false };
+            using var http = new HttpClient(handler) { Timeout = TimeSpan.FromMinutes(2) };
+            var client = new GarminPersonalClient(http, schluessel);
+            IAsyncEnumerator<long> aktivitaeten = client.LeseRadaktivitaetsIdsAsync().GetAsyncEnumerator();
+            try
             {
-                // Der vorhandene Fortschrittsdialog führt diese Arbeit auf einem Hintergrundthread aus.
-                // Redirects sind bewusst aus: Zugangsdaten dürfen den offiziellen API-Host nicht verlassen.
-                using var handler = new HttpClientHandler { AllowAutoRedirect = false };
-                using var http = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(60) };
-                using var zeitlimit = new CancellationTokenSource(TimeSpan.FromMinutes(30));
-                var client = new GarminPersonalClient(http, schluessel);
-                var meldung = new Progress<(int Aktuell, int Gesamt)>(p =>
-                    fortschritt.Report(new KopierFortschritt(p.Aktuell, p.Gesamt, 0, 0)));
-                var gelesen = new Leseergebnis(true, [], []);
-                var warnungen = new DirekteImportwarnung(gelesen.Uebersprungen);
-                IReadOnlyList<(long Id, string Pfad)> dateien = LadeGarminConnectAufzeichnungen.AusfuehrenAsync(
-                    client, archivordner, zwischenordner, ids, meldung, warnungen, zeitlimit.Token).GetAwaiter().GetResult();
-                foreach ((long id, string pfad) in dateien)
+                while (true)
                 {
-                    _garminConnectIds.Add(pfad, id);
-                    Lies(pfad, vorhanden, gelesen);
+                    _garminConnectIds.Clear();
+                    List<AndyTours.Core.Modell.Trainingseinheit> vorhanden = [.. _bestand.Trainingseinheiten];
+                    GarminDownloadPaket? paket = null;
+                    Leseergebnis ergebnis = LeseMitFortschritt("Garmin Connect: Paket mit höchstens 20 Aktivitäten …", fortschritt =>
+                    {
+                        var meldung = new Progress<(int Aktuell, int Gesamt)>(p =>
+                            fortschritt.Report(new KopierFortschritt(p.Aktuell, p.Gesamt, 0, 0)));
+                        var gelesen = new Leseergebnis(true, [], []);
+                        var warnungen = new DirekteImportwarnung(gelesen.Uebersprungen);
+                        paket = LadeGarminConnectAufzeichnungen.LadePaketAsync(
+                            client, aktivitaeten, archivordner, zwischenordner, ids, meldung, warnungen).GetAwaiter().GetResult();
+                        foreach ((long id, string pfad) in paket.Dateien)
+                        {
+                            _garminConnectIds.Add(pfad, id);
+                            Lies(pfad, vorhanden, gelesen);
+                        }
+
+                        return gelesen;
+                    });
+
+                    // Auch bei Netzwerkabbruch die fertigen Dateien dieses Pakets anbieten.
+                    // Abbrechen der Importauswahl oder ein Datenbankfehler beendet die Sitzung.
+                    bool fortsetzen = true;
+                    if (ergebnis.Neue.Count > 0 || ergebnis.Uebersprungen.Count > 0 || !paket!.WeitereMoeglich)
+                    {
+                        fortsetzen = Importiere(ergebnis);
+                    }
+
+                    LoescheZwischenordner(zwischenordner);
+                    if (!fortsetzen || paket!.Unterbrochen || !paket.WeitereMoeglich)
+                    {
+                        break;
+                    }
+
+                    if (MessageBox.Show("Dieses Paket ist verarbeitet. Weitere höchstens 20 Aktivitäten laden?\n\n"
+                        + "Bereits importierte Touren bleiben gespeichert. Mit „Nein“ kannst du später fortsetzen.",
+                        Importtitel, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes)
+                    {
+                        break;
+                    }
                 }
-
-                return gelesen;
-            });
-
-            Importiere(ergebnis);
+            }
+            finally
+            {
+                aktivitaeten.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            }
         }
         catch (Exception fehler) when (fehler is HttpRequestException or IOException or UnauthorizedAccessException
             or OperationCanceledException or JsonException or InvalidOperationException or SqliteException or InvalidDataException)
         {
             // Schlüssel/Token und Response-Bodies werden nicht ausgegeben.
             string hinweis = fehler is OperationCanceledException
-                ? "Zeitlimit erreicht. Bitte erneut versuchen; fertige Downloads bleiben erhalten."
+                ? "Zeitlimit beim Download erreicht. Bitte erneut versuchen; fertige Downloads bleiben erhalten."
                 : fehler.Message;
             MessageBox.Show("Garmin Connect konnte nicht importiert werden:\n\n" + hinweis,
                 Importtitel, MessageBoxButton.OK, MessageBoxImage.Error);
