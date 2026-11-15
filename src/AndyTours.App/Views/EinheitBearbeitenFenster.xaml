@@ -70,6 +70,29 @@
     <!-- Reicht die Höhe des Bildschirms nicht (große Oberfläche), rollt der Inhalt;
          die Schaltflächen bleiben unten immer sichtbar -->
     <DockPanel>
+        <DockPanel.Style>
+            <Style TargetType="DockPanel">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Speichert}" Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </DockPanel.Style>
+
+        <TextBlock DockPanel.Dock="Top" Text="Wird gespeichert…" Foreground="#245B91" Margin="16,10,16,0">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Speichert}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
         <!-- Schaltflächen -->
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="16,16,16,16">
             <Button Content="_Speichern" MinWidth="90" Padding="8,3" IsDefault="True" Command="{Binding SpeichernCommand}" />

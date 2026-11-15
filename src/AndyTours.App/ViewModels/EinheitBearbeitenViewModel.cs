@@ -33,7 +33,7 @@ public partial class EinheitBearbeitenViewModel : ObservableObject
     private readonly Trainingseinheit _basis;
 
     /// <summary>Speichert die fertige Einheit; liefert <c>true</c> bei Erfolg.</summary>
-    private readonly Func<Trainingseinheit, bool> _speichern;
+    private readonly Func<Trainingseinheit, Task<bool>> _speichern;
 
     /// <summary>Die Eingaben beim Öffnen; daran wird erkannt, ob etwas geändert wurde.</summary>
     private readonly Einheiteneingaben _anfang;
@@ -66,6 +66,19 @@ public partial class EinheitBearbeitenViewModel : ObservableObject
         IEnumerable<Kategorie> kategorien,
         string titel,
         Func<Trainingseinheit, bool> speichern,
+        Datenbestand bestand,
+        bool istNeu)
+        : this(einheit, listen, kategorien, titel, einheit => Task.FromResult(speichern(einheit)), bestand, istNeu)
+    {
+    }
+
+    /// <summary>Erzeugt das ViewModel mit einem asynchronen Speicher-Callback.</summary>
+    public EinheitBearbeitenViewModel(
+        Trainingseinheit einheit,
+        Eingabelisten listen,
+        IEnumerable<Kategorie> kategorien,
+        string titel,
+        Func<Trainingseinheit, Task<bool>> speichern,
         Datenbestand bestand,
         bool istNeu)
     {
@@ -136,6 +149,10 @@ public partial class EinheitBearbeitenViewModel : ObservableObject
 
     /// <summary>Alle Kategorien mit Häkchen.</summary>
     public IReadOnlyList<Kategorieauswahl> Kategorien { get; }
+
+    /// <summary><c>true</c>, solange der asynchrone Speicher-Callback läuft.</summary>
+    [ObservableProperty]
+    private bool _speichert;
 
     /// <summary><c>true</c>, nachdem erfolgreich gespeichert wurde (das Schließen fragt dann nicht nach).</summary>
     public bool IstGespeichert { get; private set; }
@@ -305,17 +322,29 @@ public partial class EinheitBearbeitenViewModel : ObservableObject
     /// Fenster; sonst bleibt es mit den Eingaben offen (die Fehlermeldung zeigt das Hauptfenster).
     /// </summary>
     [RelayCommand(CanExecute = nameof(KannSpeichern))]
-    private void Speichern()
+    private async Task SpeichernAsync()
     {
-        if (EinheitEingaben.AlsEinheit(AktuelleEingaben(), _basis).Einheit is Trainingseinheit einheit && _speichern(einheit))
+        if (!KannSpeichern()) return;
+        Speichert = true;
+        try
         {
-            IstGespeichert = true;
-            SchliessenAngefordert?.Invoke(this, EventArgs.Empty);
+            if (EinheitEingaben.AlsEinheit(AktuelleEingaben(), _basis).Einheit is Trainingseinheit einheit &&
+                await _speichern(einheit))
+            {
+                IstGespeichert = true;
+                SchliessenAngefordert?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        finally
+        {
+            Speichert = false;
         }
     }
 
-    /// <summary>Wählbarkeit von „Speichern“: keine fehlerhaften Felder.</summary>
-    private bool KannSpeichern() => _fehler.Count == 0;
+    partial void OnSpeichertChanged(bool value) => SpeichernCommand.NotifyCanExecuteChanged();
+
+    /// <summary>Wählbarkeit von „Speichern“: keine fehlerhaften Felder und kein laufender Speichervorgang.</summary>
+    private bool KannSpeichern() => !Speichert && _fehler.Count == 0;
 
     /// <summary>
     /// Prüft nach jeder Änderung eines Feldes alle Eingaben (vom CommunityToolkit über
