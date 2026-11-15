@@ -27,7 +27,7 @@ public partial class KategorienZuordnenViewModel : ObservableObject
         Erklaerung = anzahlEinheiten == 1
             ? "Kategorien der markierten Einheit:"
             : string.Format(CultureInfo.GetCultureInfo("de-DE"),
-                "Kategorien der {0:N0} markierten Einheiten (grau = nur bei manchen; bleibt unverändert):", anzahlEinheiten);
+                "Kategorien der {0:N0} markierten Einheiten (Strich = nur bei manchen; bleibt unverändert):", anzahlEinheiten);
     }
 
     /// <summary>Wird ausgelöst, sobald der Benutzer „OK“ gewählt hat; das Fenster schließt sich dann.</summary>

@@ -522,13 +522,13 @@ Die Aufzeichnungsdateien bleiben im Datenordner erhalten. Nur ihre Zuordnung zur
 
 #### Kategorien zuordnen
 
-**Aufbau des Fensters „Kategorien zuordnen“:** Oben steht ein erklärender Satz, zum Beispiel **Kategorien der 42 markierten Einheiten (grau = nur bei manchen; bleibt unverändert):**. Darunter stehen alle Kategorien alphabetisch, jede mit einem Kontrollkästchen. Unten rechts stehen **OK** und **Abbrechen**.
+**Aufbau des Fensters „Kategorien zuordnen“:** Oben steht ein erklärender Satz, zum Beispiel **Kategorien der 42 markierten Einheiten (Strich = nur bei manchen; bleibt unverändert):**. Darunter stehen alle Kategorien alphabetisch, jede mit einem Kontrollkästchen. Unten rechts stehen **OK** und **Abbrechen**.
 
 Das Kontrollkästchen vor einer Kategorie kann drei Zustände zeigen:
 
 - **Häkchen:** Alle markierten Einheiten haben die Kategorie.
 - **Leeres Kästchen:** Keine markierte Einheit hat die Kategorie.
-- **Blau gefülltes Kästchen mit einem waagrechten Strich:** Nur manche der markierten Einheiten haben die Kategorie. Der Satz oben im Fenster nennt diesen Zustand „grau“. Gemeint ist dieses blaue Kästchen mit Strich.
+- **Blau gefülltes Kästchen mit einem waagrechten Strich:** Nur manche der markierten Einheiten haben die Kategorie.
 
 Mit dieser Anleitung ordnen Sie mehreren Einheiten auf einmal Kategorien zu.
 
