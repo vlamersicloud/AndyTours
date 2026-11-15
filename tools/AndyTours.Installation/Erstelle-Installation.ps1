@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Baut das Installationsprogramm von AndyTours (Spezifikationen 033 und 036).
 
@@ -43,11 +43,11 @@ dotnet publish (Join-Path $Projektordner 'src\AndyTours.App\AndyTours.App.csproj
 if ($LASTEXITCODE -ne 0) { throw 'Die App konnte nicht veröffentlicht werden.' }
 
 # --- 3. Lokales Backend veröffentlichen ---
-Write-Host Lokales Backend wird veröffentlicht …
-dotnet publish (Join-Path $Projektordner src\AndyTours.Api\AndyTours.Api.csproj) `
+Write-Host 'Lokales Backend wird veröffentlicht …'
+dotnet publish (Join-Path $Projektordner 'src\AndyTours.Api\AndyTours.Api.csproj') `
     --configuration Release --runtime win-x64 --self-contained true `
-    --output (Join-Path $AppAusgabe backend) -p:DebugType=none
-if ($LASTEXITCODE -ne 0) { throw Das Backend konnte nicht veröffentlicht werden. }
+    --output (Join-Path $AppAusgabe 'backend') -p:DebugType=none
+if ($LASTEXITCODE -ne 0) { throw 'Das Backend konnte nicht veröffentlicht werden.' }
 
 # --- 4. Inno-Setup-Compiler suchen und aufrufen ---
 $Kandidaten = @(
