@@ -71,7 +71,7 @@ public static class ErstelleZwischenordner
     /// <param name="zielordner">Späterer Zielordner; bestimmt Ort und Namen des Zwischenordners.</param>
     /// <returns>Vollständiger Pfad des leeren Zwischenordners <c>.&lt;Zielname&gt;.umwandlung</c>.</returns>
     /// <exception cref="IOException">Der Zielordner ist ein Laufwerk.</exception>
-    public static string LegeLeerAn(string zielordner)
+    private static string LegeLeerAn(string zielordner)
     {
         string ziel = Path.TrimEndingDirectorySeparator(zielordner);
         string uebergeordnet = Path.GetDirectoryName(ziel)

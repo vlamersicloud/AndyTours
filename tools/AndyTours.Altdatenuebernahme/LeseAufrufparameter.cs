@@ -8,7 +8,7 @@ namespace AndyTours.Altdatenuebernahme;
 public static class LeseAufrufparameter
 {
     /// <summary>Name des Ordners mit den BikeXperience-Altdaten im Projektordner.</summary>
-    public const string StandardQuellordner = "Daten";
+    private const string StandardQuellordner = "Daten";
 
     /// <summary>
     /// Ermittelt Quell- und Zielordner aus den Argumenten.

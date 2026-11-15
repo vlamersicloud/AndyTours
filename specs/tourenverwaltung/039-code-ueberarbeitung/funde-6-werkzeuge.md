@@ -5,7 +5,7 @@ Geprüft: `tools/AndyTours.Altdatenuebernahme` (11 Dateien), `tools/AndyTours.In
 (`Erstelle-Programmicon.ps1`). Das Werkzeug wurde in Spec 036 bereits auf eine einzige Aufrufart
 verkleinert.
 
-Freigabe: _offen_
+Freigabe: freigegeben am 15.11.2026
 
 ## Ungenutzter Code
 | Nr. | Fund | Datei | Vorschlag |

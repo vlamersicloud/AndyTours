@@ -30,8 +30,8 @@ Abschnitt 5 – App
 - [x] 19. Freigegebene Funde umsetzen, bauen, testen, committen
 
 Abschnitt 6 – Umwandlungswerkzeug, Installations- und Bauskripte
-- [ ] 20. Fundliste `funde-6-werkzeuge.md` schreiben und freigeben lassen
-- [ ] 21. Freigegebene Funde umsetzen, bauen, testen, committen
+- [x] 20. Fundliste `funde-6-werkzeuge.md` schreiben und freigeben lassen
+- [x] 21. Freigegebene Funde umsetzen, bauen, testen, committen
 
 Abschnitt 7 – Tests
 - [ ] 22. Fundliste `funde-7-tests.md` schreiben und freigeben lassen
