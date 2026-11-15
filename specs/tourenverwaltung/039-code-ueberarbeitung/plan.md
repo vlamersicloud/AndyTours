@@ -112,7 +112,7 @@ Dokumentation, soweit nötig: `docs/tech.md`, `docs/structure.md`, `Beschreibung
 - Abschnitt 1 kommt vor den übrigen, weil er quer durch alle Projekte geht und die späteren Fundlisten sonst Code bewerten würden, der ohnehin entfällt.
 
 ## Offene Entscheidungen
-- Wie werden ältere Datenbestände an ein geändertes Datenbankschema angepasst (Umbau beim Öffnen anhand der Schemaversion, vorher Sicherung, alles in einer Transaktion)? → /sdd-adr
+- Wie werden ältere Datenbestände an ein geändertes Datenbankschema angepasst (Umbau beim Öffnen anhand der Schemaversion, vorher Sicherung, alles in einer Transaktion)? → decided in docs/adr/0010-anpassung-des-datenbankschemas.md
 
 ## Risiken
 - `ALTER TABLE … DROP COLUMN` braucht SQLite 3.35 oder neuer; das wird mit einem Test der mitgelieferten Version abgesichert.
