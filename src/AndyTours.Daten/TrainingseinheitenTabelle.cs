@@ -49,7 +49,7 @@ public static class TrainingseinheitenTabelle
                         ? null
                         : TimeOnly.ParseExact(leser.GetString(3), "HH:mm", CultureInfo.InvariantCulture),
                     Name = leser.GetString(4),
-                    Fahrzeit = TimeSpan.FromSeconds(leser.GetInt64(5)),
+                    Fahrzeit = TimeSpan.FromTicks(checked(leser.GetInt64(5) * TimeSpan.TicksPerSecond)),
                     DistanzKm = leser.GetDouble(6),
                     Hoehenmeter = leser.GetInt32(7),
                     MaxHoehe = leser.GetInt32(8),
@@ -394,7 +394,7 @@ public static class TrainingseinheitenTabelle
             e.Startzeit?.ToString("HH:mm", CultureInfo.InvariantCulture) ?? (object)DBNull.Value);
         einheitBefehl.Parameters.AddWithValue("$name", e.Name);
         // Dauer als ganze Sekunden; Bruchteile kommen in den Daten nicht vor
-        einheitBefehl.Parameters.AddWithValue("$fahrzeit", (long)e.Fahrzeit.TotalSeconds);
+        einheitBefehl.Parameters.AddWithValue("$fahrzeit", e.Fahrzeit.Ticks / TimeSpan.TicksPerSecond);
         einheitBefehl.Parameters.AddWithValue("$distanz", e.DistanzKm);
         einheitBefehl.Parameters.AddWithValue("$hm", e.Hoehenmeter);
         einheitBefehl.Parameters.AddWithValue("$maxHoehe", e.MaxHoehe);

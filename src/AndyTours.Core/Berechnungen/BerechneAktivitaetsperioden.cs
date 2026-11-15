@@ -23,7 +23,7 @@ public static class BerechneAktivitaetsperioden
             List<Trainingseinheit> daten = gruppen.GetValueOrDefault(start) ?? [];
             punkte.Add(new Aktivitaetsperiode(links, rechts, Beschriftung(start, raster), daten.Count,
                 daten.Sum(e => e.DistanzKm), daten.Sum(e => (long)e.Hoehenmeter),
-                TimeSpan.FromSeconds(daten.Sum(e => e.Fahrzeit.TotalSeconds))));
+                TimeSpan.FromTicks(daten.Aggregate(0L, (sum, e) => checked(sum + e.Fahrzeit.Ticks)))));
             if (ende >= bis) { break; }
             start = ende.AddDays(1);
         }

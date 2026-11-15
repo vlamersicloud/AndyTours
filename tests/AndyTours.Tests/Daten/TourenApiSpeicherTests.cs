@@ -92,6 +92,15 @@ public sealed class TourenApiSpeicherTests : IDisposable
             _speicher.Anlegen(Werte() with { Startzeit = new TimeOnly(8, 15, 1) }));
     }
 
+    [Fact]
+    public async Task Fahrzeit_MaximalSichereSekundenzahl_BleibtBeimLesenErhalten()
+    {
+        var sekunden = TimeSpan.MaxValue.Ticks / TimeSpan.TicksPerSecond;
+        var angelegt = await _speicher.Anlegen(Werte() with { FahrzeitSekunden = sekunden });
+        var gelesen = await _speicher.Lesen(angelegt.Id);
+        Assert.Equal(sekunden, gelesen!.Werte.FahrzeitSekunden);
+    }
+
     private TourWerte Werte() =>
         TourenMapper.ToAntwort(new Trainingseinheit
         {
