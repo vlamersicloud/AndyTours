@@ -135,7 +135,7 @@ In Umsetzungsreihenfolge.
   - Status: done → [035-oberflaeche-skalieren](035-oberflaeche-skalieren/spec.md)
 - `altdaten-aus-installation` — Das Installationsprogramm bietet keine Übernahme von Altdaten mehr an, und das Handbuch erwähnt sie nicht mehr; das Umwandlungsprogramm bleibt als eigenständiges Werkzeug für den Entwickler im Projekt.
   - Abhängig von: `installationsprogramm`
-  - Status: specified → [036-altdaten-aus-installation](036-altdaten-aus-installation/spec.md)
+  - Status: done → [036-altdaten-aus-installation](036-altdaten-aus-installation/spec.md)
 - `eigenstaendige-darstellung` — AndyTours tritt überall als eigenständiges Programm auf: Beschreibungen, Handbuch, Dokumentation und Code-Kommentare nennen kein Vorbildprogramm mehr, ausgenommen nur das Umwandlungswerkzeug und sein Lesecode.
   - Abhängig von: `altdaten-aus-installation`
   - Status: open
