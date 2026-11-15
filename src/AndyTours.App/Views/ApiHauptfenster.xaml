@@ -2,13 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:oxy="http://oxyplot.org/wpf"
-        xmlns:local="clr-namespace:AndyTours.App.Views"
         Title="AndyTours · API-Übersicht" Width="1200" Height="820" MinWidth="900" MinHeight="620"
         Language="de-DE" Background="#F4F6F8" WindowStartupLocation="CenterScreen">
-    <Window.Resources>
-        <local:DauerConverter x:Key="DauerConverter"/>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Key="R" Modifiers="Control" Command="{Binding AktualisierenCommand}" />
     </Window.InputBindings>
@@ -18,7 +13,7 @@
             <RowDefinition Height="*"/><RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="{Binding BackendAdresseAnzeige}" DockPanel.Dock="Right" VerticalAlignment="Center" Foreground="#637083"/>
+            <TextBlock x:Name="BackendAdresseText" DockPanel.Dock="Right" VerticalAlignment="Center" Foreground="#637083"/>
             <TextBlock Text="AndyTours" FontSize="26" FontWeight="Bold" Foreground="#18324F"/>
         </DockPanel>
         <Border Grid.Row="1" Background="#E8F1FB" CornerRadius="8" Padding="12" Margin="0,0,0,16">
