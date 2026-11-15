@@ -13,7 +13,6 @@
 - `Daten/` — BikeXperience-Altdaten, nicht versioniert, nur lesend
 - `AppDaten/` — Datenordner der Entwicklung (Debug-Build), nicht versioniert
 - `HANDBUCH.md` — Benutzerhandbuch für Anwender (Installation und Bedienung)
-- `handbuch-bilder/` — Bildschirmfotos zum Benutzerhandbuch
 - `docs/` — Projektgrundlagen
 - `docs/adr/` — Architekturentscheidungen (ADRs)
 - `specs/<NNN-feature>/` — Spec, Plan und Aufgaben je eigenständigem Feature

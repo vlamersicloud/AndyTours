@@ -21,8 +21,7 @@ Für AndyTours Version 1.0.1
    - [4.10 Menü „Hilfe“](#k4-10)
 5. [Häufige Fragen und Probleme](#kapitel-5)
 6. [Glossar (Stichwortverzeichnis)](#kapitel-6)
-- [Anhang A: Liste der Bildschirmfotos](#anhang-a)
-- [Anhang B: Offene Fragen](#anhang-b)
+- [Anhang: Offene Fragen](#anhang-offene-fragen)
 
 ---
 
@@ -43,7 +42,7 @@ Mit AndyTours können Sie:
 
 AndyTours ist für eine einzelne Person gedacht. Alle Ihre Daten liegen in einem einzigen Ordner, dem **Datenordner**. Diesen Ordner können Sie frei wählen, zum Beispiel auch auf einem NAS (Netzwerkspeicher).
 
-[Bildschirmfoto: Hauptfenster von AndyTours mit geöffneter Karteikarte „Aktuell“, oben Bestleistungen, darunter das Diagramm der Jahressummen]
+Nach dem Start sehen Sie das Hauptfenster. Es öffnet die Karteikarte, die beim letzten Beenden gewählt war. Beim allerersten Start ist das die Karteikarte **Aktuell** mit Ihren Bestleistungen und dem Diagramm der Jahressummen.
 
 <a id="nicht-enthalten"></a>
 ### Was das Programm nicht kann
@@ -101,12 +100,6 @@ Mit dieser Anleitung richten Sie AndyTours ein und übernehmen auf Wunsch Ihre b
 
 Danach finden Sie AndyTours im Startmenü und, falls gewählt, auf dem Desktop.
 
-[Bildschirmfoto: Installationsprogramm, Seite „Datenordner“ mit dem vorgeschlagenen Ordner „Dokumente\AndyTours“]
-
-[Bildschirmfoto: Installationsprogramm, Seite „Bisherige Daten übernehmen“ mit gesetztem Haken und ausgefülltem Feld „Ordner mit den bisherigen Daten:“]
-
-[Bildschirmfoto: Installationsprogramm, Seite mit der Zusammenfassung vor dem Start der Installation]
-
 **Hinweis:** Der Datenordner darf nicht im Programmordner von AndyTours liegen. Sonst würde er beim Deinstallieren mit entfernt. Das Installationsprogramm weist einen solchen Ordner ab.
 
 **Hinweis:** Liegen im gewählten Datenordner schon AndyTours-Daten, bleiben sie unverändert. Die Übernahme bisheriger Daten entfällt dann, und ein Hinweis sagt das. Liegen dort andere Dateien, fragt das Installationsprogramm, ob Sie den Ordner trotzdem verwenden wollen. Auch dann entfällt die Übernahme, denn sie ist nur in einen leeren Ordner möglich.
@@ -126,7 +119,7 @@ Nach der Übernahme liegt im Datenordner ein ausführlicher Bericht:
 
 Sie öffnen beide Dateien mit dem Windows-Editor.
 
-[Bildschirmfoto: Meldungsfenster des Installationsprogramms mit der Zusammenfassung der Übernahme (Mengen, Anzahl der Warnungen, Ort des Berichts)]
+Die Zusammenfassung, die das Installationsprogramm am Ende der Übernahme zeigt, nennt die übernommenen Mengen und den Ort des Berichts. Bei BikeXperience-Daten nennt sie außerdem die Anzahl der Warnungen und der nicht reparierten Umlaute.
 
 **Hinweis:** Bricht die Übernahme mit einem Fehler ab, ist AndyTours trotzdem installiert. Der Datenordner bleibt dann so, wie er vorher war. Eine Meldung nennt den Grund.
 
@@ -153,8 +146,6 @@ Mit dieser Anleitung entfernen Sie AndyTours von Ihrem Rechner.
 
 Das Deinstallationsprogramm entfernt Programmdateien, Verknüpfungen, den Eintrag unter **Apps** und die Einstellungen von AndyTours außerhalb des Datenordners. Behalten Sie den Datenordner, verwendet eine spätere Installation Ihre Daten wieder.
 
-[Bildschirmfoto: Rückfrage „Datenordner löschen?“ beim Deinstallieren mit den Schaltflächen „Datenordner behalten“ und „Datenordner mit allen Touren löschen“]
-
 **Achtung:** Mit **Datenordner mit allen Touren löschen** sind alle Touren, Aufzeichnungen und Wartungen endgültig weg, soweit Sie sie nicht selbst gesichert haben.
 
 ---
@@ -180,16 +171,14 @@ Ist der Datenordner nicht erreichbar, zum Beispiel weil das NAS ausgeschaltet is
 
 ### 3.3 Das Hauptfenster auf einen Blick
 
-Das Hauptfenster besteht von oben nach unten aus vier Teilen:
+**Aufbau:** Das Hauptfenster besteht von oben nach unten aus vier Teilen:
 
-1. **Menüleiste** mit den Menüs **Datei**, **Einheit**, **Tourenplanung**, **Extras** und **Hilfe**
-2. **Werkzeugleiste** mit der Auswahl von **Jahr:** und **Aktivität:** und den Summen dieser Auswahl
-3. **Karteikarten** **Aktuell**, **Trainingseinheiten** und **Wartung**
-4. **Statusleiste** am unteren Rand mit der Anzahl der Einheiten, Meldungen und dem Datenordner
+1. **Menüleiste** ganz oben mit den Menüs **Datei**, **Einheit**, **Tourenplanung**, **Extras** und **Hilfe**. Die Menüs sehen aus wie graue Schaltflächen. Ein Klick klappt das Menü auf.
+2. **Werkzeugleiste** darunter: links die Auswahl **Jahr:**, daneben die Auswahl **Aktivität:**, rechts davon fett die Summen dieser Auswahl, zum Beispiel **80 Einheiten · 7.016,77 km · 66.572 hm**.
+3. **Karteikarten** **Aktuell**, **Trainingseinheiten** und **Wartung**. Sie füllen den größten Teil des Fensters. Die gewählte Karteikarte erkennen Sie an der halbfetten Beschriftung. Ihr Reiter geht nahtlos in die hellgraue Seite darunter über. Die übrigen Reiter sind dunkler grau.
+4. **Statusleiste** am unteren Rand: links die Anzahl der Trainingseinheiten, daneben bei Bedarf eine Meldung zur letzten Aktion, rechts **Datenordner:** mit dem Pfad des Datenordners.
 
 Eine Tour heißt in AndyTours **Einheit** oder **Trainingseinheit**.
-
-[Bildschirmfoto: Hauptfenster mit beschrifteten Bereichen: Menüleiste, Werkzeugleiste mit „Jahr:“ und „Aktivität:“, Karteikarten und Statusleiste]
 
 ### 3.4 Grundeinstellungen prüfen
 
@@ -285,7 +274,7 @@ Mit dieser Anleitung importieren Sie die neuen Touren.
 
 Die neuen Einheiten sind danach in der Tabelle markiert, soweit sie zur aktuellen Auswahl passen. Die Statusleiste meldet die Anzahl, zum Beispiel **3 Touren importiert.**
 
-[Bildschirmfoto: Fenster „Garmin-Import“ mit drei angehakten Touren und der Auswahlliste in der Spalte „Equipment“]
+**Aufbau des Fensters „Garmin-Import“:** Oben steht der Satz **Diese Touren sind noch nicht in AndyTours. Angehakte Touren werden mit dem gewählten Equipment importiert:**. Darunter folgt die Tabelle mit einer Zeile je Tour. Ganz links steht in der Spalte **Import** ein Kontrollkästchen, ganz rechts in der Spalte **Equipment** eine Auswahlliste. Unten rechts stehen die Schaltflächen **Importieren** und **Abbrechen**. **Importieren** ist nur wählbar, solange mindestens eine Tour angehakt ist.
 
 **Was AndyTours übernimmt:** Datum, Startzeit, Fahrzeit, Distanz, Höhenmeter, Höhen, Geschwindigkeiten, Puls, Trittfrequenz, Temperatur und Leistung kommen aus der Aufzeichnung. Die Fahrzeit ist die gestoppte Zeit ohne Pausen, wie sie der Edge als „Zeit“ anzeigt. Der Name bleibt leer. Die Einheit bekommt die Aktivität ihres Equipments, die Standardkategorien und die Standardkategorie des Equipments. Die Aufzeichnung legt AndyTours im Datenordner im Unterordner des Jahres ab, zum Beispiel **2026**.
 
@@ -314,7 +303,7 @@ Haben Sie kein Gerät zur Hand, importieren Sie Aufzeichnungsdateien von der Fes
 
 Die Karteikarte **Aktuell** zeigt Ihre Bestleistungen und Ihren Jahresfortschritt.
 
-[Bildschirmfoto: Karteikarte „Aktuell“ mit den Listen „Jahresrekorde“ und „Einzelrekorde“, einem blau hervorgehobenen Rekord des laufenden Jahres und dem Diagramm „Kilometer (Summe Entfernung)“ mit gestrichelter Ziellinie]
+**Aufbau:** Oben links steht die Liste **Jahresrekorde**, rechts daneben die Liste **Einzelrekorde**. Darunter folgt die Überschrift des Diagramms, zum Beispiel **Kilometer (Summe Entfernung)**. Unter der Überschrift stehen zwei Zeilen mit Kennzahlen des laufenden Jahres. Die erste nennt Stand, Ziel, **Soll heute** und **Vorsprung** bzw. **Rückstand**. Die zweite Zeile ist grau und beginnt meist mit **noch …**. Den restlichen Platz füllt das Diagramm der Jahressummen. Reicht der Platz nicht, zum Beispiel bei großer Oberfläche, können Sie die Karteikarte nach unten rollen.
 
 #### Welche Einheiten zählen
 
@@ -329,9 +318,11 @@ Oben stehen zwei Listen:
 - **Jahresrekorde:** der höchste Jahreswert für **Kilometer**, **Anzahl Einheiten**, **Höhenmeter** und **Fahrzeit**, jeweils mit dem Jahr.
 - **Einzelrekorde:** **Längste Tour**, **Meiste Höhenmeter**, **Längste Fahrzeit**, **Höchste Ø-Geschwindigkeit**, **Höchste Geschwindigkeit** und **Höchster Punkt**, jeweils mit Wert, Datum und Name der Einheit.
 
-Hält das laufende Jahr einen Rekord, ist er fett und blau hervorgehoben. Haben mehrere Jahre oder Einheiten denselben Rekordwert, gilt der frühere.
+Jede Zeile nennt links die Bezeichnung mit Doppelpunkt, daneben rechtsbündig den Wert und dahinter das Jahr bzw. Datum und Name der Einheit.
 
-Möchten Sie die Einheit eines Einzelrekords ansehen, doppelklicken Sie auf die Zeile. Das Bearbeitungsfenster der Einheit öffnet sich.
+Hält das laufende Jahr einen Rekord, ist die ganze Zeile fett und blau hervorgehoben, im selben Blau wie die Linie des Diagramms. Haben mehrere Jahre oder Einheiten denselben Rekordwert, gilt der frühere.
+
+Möchten Sie die Einheit eines Einzelrekords ansehen, doppelklicken Sie auf die Zeile. Über den Einzelrekorden wird der Mauszeiger zur Hand, und ein Hinweis sagt **Doppelklick öffnet die Einheit**. Das Bearbeitungsfenster der Einheit öffnet sich.
 
 #### Diagramm der Jahressummen
 
@@ -342,13 +333,19 @@ So wechseln Sie den gezeigten Wert:
 1. Klicken Sie in das Diagramm.
 2. Der Wert wechselt der Reihe nach: **Kilometer (Summe Entfernung)** → **Anzahl Einheiten** → **Höhenmeter (Summe Höhenmeter)** → **Fahrzeit** → wieder Kilometer.
 
-Die Überschrift über dem Diagramm nennt den gezeigten Wert. Haben Sie Saisonziele festgelegt, erscheint das Ziel als gestrichelte Linie. Im laufenden Jahr ist zusätzlich der Soll-Stand für heute markiert.
+Die Überschrift über dem Diagramm nennt den gezeigten Wert. Die waagrechte Achse zeigt die Jahre, die senkrechte Achse die Summe. Ihre Beschriftung nennt die Einheit, zum Beispiel **km** oder **Stunden**.
+
+So lesen Sie das Diagramm:
+
+- Die Jahressummen bilden eine blaue Linie mit hellblau gefüllter Fläche darunter. Jedes Jahr hat einen blauen Punkt.
+- Haben Sie Saisonziele festgelegt, erscheint das Ziel eines Jahres als kurze rote gestrichelte Linie über diesem Jahr.
+- Im laufenden Jahr markiert eine rote Raute den Soll-Stand für heute.
 
 #### Kennzahlen des laufenden Jahres
 
 Unter der Überschrift stehen zwei Zeilen zum laufenden Jahr:
 
-- Mit Saisonziel: Stand, Ziel, Anteil in Prozent, **Soll heute** und **Vorsprung** oder **Rückstand**. Darunter die nötige Leistung bis zum 31. Dezember, zum Beispiel **noch 2.345 km – 112,4 km pro Woche**. Ist das Ziel erreicht, steht dort **Ziel erreicht** mit dem Überschuss.
+- Mit Saisonziel: Stand, Ziel, Anteil in Prozent, **Soll heute** und **Vorsprung** oder **Rückstand**, zum Beispiel **2026: 4.321,5 km von 6.000 km (72 %) · Soll heute 4.900,3 km · 578,8 km Rückstand**. Darunter steht grau die nötige Leistung bis zum 31. Dezember, zum Beispiel **noch 1.678,5 km – 167,9 km pro Woche**. Ist das Ziel erreicht, steht dort **Ziel erreicht** mit dem Überschuss.
 - Ohne Saisonziel: nur der Stand und der Hinweis **kein Saisonziel – unter Extras → Saisonziele… festlegen**.
 - Für die Fahrzeit gibt es kein Saisonziel. Dort steht nur der Stand.
 
@@ -359,18 +356,18 @@ Enthält die Auswahl keine Einheiten, erscheint **Keine Einheiten in dieser Ausw
 <a id="k4-4"></a>
 ### 4.4 Karteikarte „Trainingseinheiten“
 
-Diese Karteikarte zeigt alle Einheiten der gewählten Jahres- und Aktivitätsauswahl in einer Tabelle. Oben steht die Filterleiste, unten die Summenzeile.
+Diese Karteikarte zeigt alle Einheiten der gewählten Jahres- und Aktivitätsauswahl in einer Tabelle.
 
-[Bildschirmfoto: Karteikarte „Trainingseinheiten“ mit Filterleiste, Tabelle mit mehreren Touren, rot hervorgehobenen Bestwerten in den Spalten „km“ und „hm“ und der fetten Summenzeile am unteren Rand]
+**Aufbau:** Oben steht die Filterleiste mit den Feldern **Kategorie:**, **Equipment:**, **Bereich:**, **km von** … **bis**, **hm von** … **bis**, **Suche:** und ganz rechts der Schaltfläche **Filter zurücksetzen**. Ist das Fenster schmal, bricht die Filterleiste in eine zweite Zeile um. Darunter folgt die Tabelle der Einheiten. Am unteren Rand steht die Summenzeile mit fetter Schrift auf hellgrauem Grund.
 
 #### Die Tabelle
 
 - Jede Zeile ist eine Einheit. Die neueste steht anfangs oben.
 - Spalten: **Datum**, **Start**, **Name**, **Aktivität**, **Kategorien**, **Equipment**, **km**, **hm**, **Fahrzeit**, **Ø km/h**, **max km/h**, **Ø Puls**, **max Puls**, **Trittfrequenz**, **°C**, **max Höhe**, **Bereich**, **Kommentar**.
-- Die höchsten Werte der angezeigten Einheiten in **km**, **hm**, **Fahrzeit**, **Ø km/h** und **max km/h** sind rot. Haben mehrere Einheiten denselben Bestwert, sind alle rot.
+- Die höchsten Werte der angezeigten Einheiten in **km**, **hm**, **Fahrzeit**, **Ø km/h** und **max km/h** sind rot. In einer markierten Zeile erscheinen sie hellrot und halbfett, damit sie auf der Markierungsfarbe lesbar bleiben. Haben mehrere Einheiten denselben Bestwert, sind alle rot.
 - Fehlt ein Wert, bleibt die Zelle leer. Ein fehlender Wert zählt nie als Bestwert.
 - Ausgemustertes Equipment trägt den Zusatz **(ausgemustert)**.
-- Die Summenzeile am unteren Rand nennt die Anzahl der angezeigten Einheiten und die Summen von **km**, **hm** und **Fahrzeit**. Sie bleibt beim Blättern und Sortieren stehen.
+- Die Summenzeile am unteren Rand nennt unter der Spalte **Name** die Anzahl der angezeigten Einheiten und unter **km**, **hm** und **Fahrzeit** deren Summen. Sie bleibt beim Blättern und Sortieren stehen.
 - Enthält die Auswahl keine Einheiten, erscheint **Keine Einheiten in dieser Auswahl.**
 
 #### Sortieren
@@ -383,13 +380,12 @@ Diese Karteikarte zeigt alle Einheiten der gewählten Jahres- und Aktivitätsaus
 Mit dieser Anleitung legen Sie fest, welche Spalten Sie sehen.
 
 1. Klicken Sie mit der rechten Maustaste auf eine Spaltenüberschrift.
-2. Ein Menü zeigt alle Spalten mit Häkchen, zum Beispiel **Distanz (km)**, **Höhenmeter (hm)**, **Temperatur (°C)**, **Maximalhöhe** und **Trainingsbereich**.
-3. Klicken Sie auf die Spalten, die Sie ein- oder ausblenden möchten. Das Menü bleibt dabei offen.
-4. Klicken Sie auf **Übernehmen**, um das Menü zu schließen.
+2. Ein Menü listet alle 18 Spalten in ihrer ursprünglichen Reihenfolge, zum Beispiel **Distanz (km)**, **Höhenmeter (hm)**, **Temperatur (°C)**, **Maximalhöhe** und **Trainingsbereich**. Am Ende steht, durch eine Linie abgetrennt, der fette Eintrag **Übernehmen**.
+3. Klicken Sie auf eine Spalte. Ist sie sichtbar, blendet AndyTours sie aus. Ist sie ausgeblendet, blendet AndyTours sie ein. Die Tabelle hinter dem Menü zeigt die Änderung sofort.
+4. Klicken Sie bei Bedarf weitere Spalten an. Das Menü bleibt dabei offen.
+5. Klicken Sie auf **Übernehmen**, um das Menü zu schließen.
 
-Die letzte sichtbare Spalte lässt sich nicht ausblenden.
-
-[Bildschirmfoto: geöffnetes Spaltenmenü nach Rechtsklick auf die Spaltenüberschriften, mit Häkchen vor den sichtbaren Spalten und dem Eintrag „Übernehmen“ am Ende]
+Ob eine Spalte gerade sichtbar ist, sehen Sie an den Spaltenüberschriften der Tabelle. Die letzte sichtbare Spalte lässt sich nicht ausblenden. Ihr Eintrag im Menü ist dann ausgegraut.
 
 #### Spalten verschieben und Breite ändern
 
@@ -415,13 +411,11 @@ Mit der Filterleiste grenzen Sie die Einheiten der Jahres- und Aktivitätsauswah
 - Sie können **von** oder **bis** auch allein ausfüllen.
 - Mehrere Filter wirken zusammen. Es erscheinen nur Einheiten, die alle Filter erfüllen.
 - Summenzeile und rote Bestwerte beziehen sich dann nur auf die angezeigten Einheiten.
-- Solange ein Filter gesetzt ist, ist die Schaltfläche **Filter zurücksetzen** gelb hervorgehoben.
+- Solange ein Filter gesetzt ist, ist die Schaltfläche **Filter zurücksetzen** gelb hinterlegt und fett beschriftet.
 - Passt keine Einheit, erscheint **Keine Einheiten passen zum Filter.**
 - Die Filter bleiben beim Wechsel von Jahr oder Aktivität erhalten. Nach einem Neustart sind sie leer.
 
-**Hinweis:** Steht bei **km** oder **hm** keine gültige Zahl oder ist „von“ größer als „bis“, wird das Feld rot. Dieser Filter wirkt dann nicht.
-
-[Bildschirmfoto: Filterleiste mit gewähltem Equipment, einem rot umrandeten Feld „km von“ und gelb hervorgehobener Schaltfläche „Filter zurücksetzen“]
+**Hinweis:** Steht bei **km** oder **hm** keine gültige Zahl oder ist „von“ größer als „bis“, bekommt das Feld einen roten Rand und einen hellroten Hintergrund. Dieser Filter wirkt dann nicht. Zeigen Sie mit der Maus auf das Feld, nennt ein Hinweis den Grund.
 
 #### Suchen
 
@@ -478,14 +472,14 @@ Mit dieser Anleitung erfassen Sie eine Tour von Hand, zum Beispiel ohne Aufzeich
 
 Die neue Einheit ist danach in der Tabelle markiert. Passt sie nicht zur aktuellen Auswahl, meldet die Statusleiste **Gespeichert – liegt außerhalb der aktuellen Auswahl.**
 
-[Bildschirmfoto: Fenster „Neue Einheit“ mit den Gruppen „Allgemein“ und „Werte“, dem Kommentarfeld und den Schaltflächen „Speichern“ und „Abbrechen“]
-
 #### Das Bearbeitungsfenster
 
-Das Fenster hat zwei Gruppen und ein Kommentarfeld:
+Dasselbe Fenster dient zum Anlegen, Bearbeiten und Kopieren. Es heißt je nach Befehl **Neue Einheit**, **Einheit bearbeiten** oder **Einheit kopieren**.
 
-- **Allgemein:** **Datum:**, **Startzeit:**, **Name:**, **Aktivität:**, **Equipment:**, **Trainingsbereich:** und **Kategorien:** (mehrere ankreuzbar)
-- **Werte:** **Distanz (km):**, **Höhenmeter:**, **Fahrzeit (h:mm):**, **Ø km/h:** (wird berechnet, nur Anzeige), **max km/h:**, **Starthöhe (m):**, **Maximalhöhe (m):**, **Temperatur (°C):**, **Ø Puls:**, **max Puls:**, **min Puls:**, **Erholungspuls:**, **Trittfrequenz:**, **Leistung (W):**, **Gewicht (kg):**
+**Aufbau:** Links steht die Gruppe **Allgemein**, rechts daneben die Gruppe **Werte**. Darunter folgt über die ganze Breite das Feld **Kommentar:**. Unten rechts stehen die Schaltflächen **Speichern** und **Abbrechen**.
+
+- **Allgemein:** untereinander **Datum:**, **Startzeit:**, **Name:**, **Aktivität:**, **Equipment:**, **Trainingsbereich:** und **Kategorien:**. Die Kategorien stehen in einer Liste mit einem Kontrollkästchen je Kategorie. Sie können mehrere ankreuzen.
+- **Werte:** in zwei Spalten. Links stehen **Distanz (km):**, **Höhenmeter:**, **Fahrzeit (h:mm):**, **Ø km/h:**, **max km/h:**, **Starthöhe (m):**, **Maximalhöhe (m):** und **Temperatur (°C):**. Rechts stehen **Ø Puls:**, **max Puls:**, **min Puls:**, **Erholungspuls:**, **Trittfrequenz:**, **Leistung (W):** und **Gewicht (kg):**. **Ø km/h:** ist kein Eingabefeld. AndyTours berechnet den Wert aus Distanz und Fahrzeit und zeigt ihn grau an.
 - **Kommentar:** freier Text über mehrere Zeilen
 
 Hinweise zur Eingabe:
@@ -493,7 +487,7 @@ Hinweise zur Eingabe:
 - Das Datum geben Sie als TT.MM.JJJJ ein, zum Beispiel 01.05.2026.
 - Die Fahrzeit geben Sie als Stunden und Minuten ein, zum Beispiel **3:45**. Sekunden sind freiwillig, zum Beispiel **3:45:12**.
 - Zahlen dürfen nicht negativ sein. Nur die Temperatur darf unter null liegen.
-- Ein ungültiges oder fehlendes Pflichtfeld wird rot umrandet. **Speichern** ist dann nicht möglich.
+- Ein ungültiges oder fehlendes Pflichtfeld bekommt einen roten Rand, Eingabefelder zusätzlich einen hellroten Hintergrund. **Speichern** ist dann ausgegraut.
 - **Equipment:** bietet **(kein)** und die Equipments an, die zur gewählten Aktivität passen oder keine Aktivität haben. Wechseln Sie bei einer neuen Einheit die Aktivität, wird deren Standard-Equipment gewählt.
 - Wählen Sie ein Equipment mit Standardkategorie, wird diese Kategorie zusätzlich angehakt.
 - **Trainingsbereich:** bietet einen leeren Eintrag und die Einträge der Auswahlliste an. Neue Kürzel legen Sie in den Einstellungen an.
@@ -529,16 +523,23 @@ Die Aufzeichnungsdateien bleiben im Datenordner erhalten. Nur ihre Zuordnung zur
 
 #### Kategorien zuordnen
 
+**Aufbau des Fensters „Kategorien zuordnen“:** Oben steht ein erklärender Satz, zum Beispiel **Kategorien der 42 markierten Einheiten (grau = nur bei manchen; bleibt unverändert):**. Darunter stehen alle Kategorien alphabetisch, jede mit einem Kontrollkästchen. Unten rechts stehen **OK** und **Abbrechen**.
+
+Das Kontrollkästchen vor einer Kategorie kann drei Zustände zeigen:
+
+- **Häkchen:** Alle markierten Einheiten haben die Kategorie.
+- **Leeres Kästchen:** Keine markierte Einheit hat die Kategorie.
+- **Blau gefülltes Kästchen mit einem waagrechten Strich:** Nur manche der markierten Einheiten haben die Kategorie. Der Satz oben im Fenster nennt diesen Zustand „grau“. Gemeint ist dieses blaue Kästchen mit Strich.
+
 Mit dieser Anleitung ordnen Sie mehreren Einheiten auf einmal Kategorien zu.
 
 1. Markieren Sie die Einheiten.
 2. Wählen Sie **Einheit → Kategorien zuordnen…**.
-3. Das Fenster **Kategorien zuordnen** zeigt alle Kategorien. Ein Häkchen bedeutet: alle markierten Einheiten haben sie. Ein leeres Kästchen bedeutet: keine hat sie. Ein grau gefülltes Kästchen bedeutet: nur manche haben sie.
-4. Setzen oder entfernen Sie Häkchen. Eine Kategorie, die grau gefüllt bleibt, ändert sich bei keiner Einheit.
-5. Klicken Sie auf **OK**.
-6. Sind mehrere Einheiten markiert, fragt AndyTours zum Beispiel **42 Einheiten ändern?**. Bestätigen Sie mit **Ja**.
+3. Setzen oder entfernen Sie Häkchen. Bei einer Kategorie, die nur manche Einheiten haben, wechselt das Kästchen bei jedem Klick weiter: vom Strich zu leer, dann zum Häkchen, dann wieder zum Strich.
+4. Klicken Sie auf **OK**.
+5. Sind mehrere Einheiten markiert, fragt AndyTours zum Beispiel **42 Einheiten ändern?**. Bestätigen Sie mit **Ja**.
 
-[Bildschirmfoto: Fenster „Kategorien zuordnen“ mit einer angehakten, einer leeren und einer grau gefüllten Kategorie]
+Eine Kategorie, deren Kästchen den Strich zeigt, ändert sich bei keiner Einheit.
 
 #### Aktivität ändern
 
@@ -549,7 +550,7 @@ Mit dieser Anleitung ordnen Sie mehreren Einheiten auf einmal Kategorien zu.
 
 Die Einheiten behalten ihr Equipment, auch wenn es nicht zur neuen Aktivität passt.
 
-[Bildschirmfoto: Fenster „Aktivität ändern“ mit dem Text „Neue Aktivität für 3 Einheiten:“ und der Liste der Aktivitäten]
+**Aufbau der Fenster „Aktivität ändern“ und „Equipment ändern“:** Oben steht ein kurzer Satz, zum Beispiel **Neue Aktivität für 3 Einheiten:** bzw. **Neues Equipment für 3 Einheiten:**. Bei einer einzigen Einheit heißt es **… für die markierte Einheit:**. Darunter steht die Liste der wählbaren Einträge, unten rechts **OK** und **Abbrechen**. **OK** ist erst wählbar, wenn ein Eintrag markiert ist.
 
 #### Equipment ändern
 
@@ -576,23 +577,25 @@ So öffnen Sie das Tourdetail:
 1. Markieren Sie auf der Karteikarte **Trainingseinheiten** eine Einheit mit Aufzeichnung.
 2. Wählen Sie **Einheit → Tourdetail…** oder im Rechtsklickmenü **Tourdetail…**.
 
-Oben im Fenster stehen Datum, Name, Distanz, Höhenmeter und höchster Punkt der Einheit.
+**Aufbau:** Das Fenster heißt **Tourdetail**. Ganz oben steht halbfett eine Kopfzeile mit Datum, Name, Distanz, Höhenmetern und höchstem Punkt der Einheit. Darunter liegen die zwei Karteikarten **Höhenprofil** und **Karte**.
 
 #### Karteikarte „Höhenprofil“
 
+Oben auf der Karteikarte steht eine Leiste mit **Achse:** und den Optionen **Distanz** und **Fahrzeit**. Rechts daneben folgt **Einblenden:** mit den Kontrollkästchen **Puls**, **Geschwindigkeit**, **Trittfrequenz** und **Temperatur**. Darunter füllt das Höhenprofil den Rest der Karteikarte. Die Höhe erscheint als blaue Linie mit hellblau gefüllter Fläche darunter.
+
 - Die waagrechte Achse zeigt die Distanz in km, die senkrechte die Höhe in m.
 - Unter **Achse:** schalten Sie zwischen **Distanz** und **Fahrzeit** um. Bei **Fahrzeit** werden Pausen herausgelassen.
-- Unter **Einblenden:** setzen Sie Häkchen bei **Puls**, **Geschwindigkeit**, **Trittfrequenz** oder **Temperatur**. Jeder Wert erscheint als zusätzliche Linie mit eigener Skala. Enthält die Aufzeichnung einen Wert nicht, ist sein Häkchen nicht wählbar.
+- Unter **Einblenden:** setzen Sie Häkchen bei **Puls**, **Geschwindigkeit**, **Trittfrequenz** oder **Temperatur**. Jeder Wert erscheint als zusätzliche dünne Linie mit eigener Skala am rechten Rand. Die Farben: Puls rot, Geschwindigkeit grün, Trittfrequenz violett, Temperatur orange. Skala und Beschriftung haben dieselbe Farbe wie ihre Linie. Enthält die Aufzeichnung einen Wert nicht, ist sein Kontrollkästchen ausgegraut.
 - Fahren Sie mit der Maus über das Profil. An dieser Stelle erscheinen Distanz, Fahrzeit, Höhe und die eingeblendeten Werte.
 - Ziehen Sie mit gedrückter linker Maustaste einen Bereich auf, um ihn zu vergrößern. Ein Doppelklick zeigt wieder die ganze Tour.
 
 Enthält die Aufzeichnung keine Höhendaten, zum Beispiel bei einer Fahrt auf der Rolle, erscheint **Die Aufzeichnung enthält keine Höhendaten.**
 
-[Bildschirmfoto: Tourdetail, Karteikarte „Höhenprofil“ mit eingeblendeter Pulslinie und den Werten an der Mausposition]
-
 #### Karteikarte „Karte“
 
-Die Karte zeigt die Strecke als Linie. Ein grüner Punkt markiert den Start, ein rotes Quadrat das Ziel.
+Oben auf der Karteikarte steht eine Leiste. Sie enthält von links nach rechts **Karte:** mit den Optionen **OpenStreetMap** und **OpenTopoMap**, die Schaltflächen **Ganze Strecke**, **Als GPX exportieren…**, **Auf Garmin übertragen…** und **Overlays…** und am Ende eine graue Zeichenerklärung. Darunter füllt die Karte den Platz. Unter der Karte steht die Leiste **Track bearbeiten:** (siehe unten). Ist das Fenster schmal, brechen die Leisten in eine zweite Zeile um.
+
+Die Karte zeigt die Strecke als blaue Linie. Ein grüner Punkt markiert den Start, ein rotes Quadrat das Ziel. Die Zeichenerklärung oben wiederholt diese Zeichen: **● Start** und **■ Ziel**.
 
 - Unter **Karte:** wählen Sie **OpenStreetMap** oder **OpenTopoMap**. OpenTopoMap zeigt zusätzlich Höhenlinien und Wege.
 - Drehen Sie das Mausrad, um an der Mausposition zu vergrößern oder zu verkleinern.
@@ -604,8 +607,6 @@ Die Karte zeigt die Strecke als Linie. Ein grüner Punkt markiert den Start, ein
 Einmal angesehene Kartenausschnitte erscheinen später auch ohne Internet. Fehlt die Internetverbindung bei einem neuen Ausschnitt, zeichnet AndyTours die Strecke trotzdem. Oben erscheint **Die Karte konnte nicht geladen werden. Besteht eine Internetverbindung?**
 
 Enthält die Aufzeichnung keine GPS-Daten, erscheint **Die Aufzeichnung enthält keine GPS-Daten.**
-
-[Bildschirmfoto: Tourdetail, Karteikarte „Karte“ mit OpenTopoMap, der Strecke mit Start- und Zielzeichen und der Leiste „Track bearbeiten“ unter der Karte]
 
 #### Track als GPX-Datei exportieren
 
@@ -621,6 +622,8 @@ Neben der Schaltfläche erscheint zum Beispiel **Track exportiert: 2026-05-01 Br
 
 Unter der Karte steht die Leiste **Track bearbeiten:**. Damit kürzen, drehen und glätten Sie die Strecke, etwa als Vorlage zum Weitergeben. Die Einheit und ihre Aufzeichnung bleiben dabei unverändert.
 
+Die Leiste enthält von links nach rechts: den Regler **Start** mit seiner Stelle in km, den Regler **Ziel** mit seiner Stelle in km, das Kontrollkästchen **Umkehren**, **Glätten:** mit den Optionen **aus**, **schwach** und **stark**, die Schaltfläche **Zurücksetzen** und die Angabe **Länge:**.
+
 1. Ziehen Sie den Regler **Start** nach rechts, um den Anfang der Strecke abzuschneiden. Daneben steht die Stelle in km.
 2. Ziehen Sie den Regler **Ziel** nach links, um das Ende abzuschneiden.
 3. Haken Sie **Umkehren** an, damit die Strecke rückwärts läuft.
@@ -634,7 +637,11 @@ Unter der Karte steht die Leiste **Track bearbeiten:**. Damit kürzen, drehen un
 
 #### Auf Garmin übertragen
 
-Ein Course ist eine Strecke, die der Garmin Edge beim Nachfahren anzeigt, mit Höhenprofil und Abbiegehinweisen. So übertragen Sie die gefahrene Strecke als Course auf den Edge:
+Ein Course ist eine Strecke, die der Garmin Edge beim Nachfahren anzeigt, mit Höhenprofil und Abbiegehinweisen.
+
+**Aufbau des Fensters „Auf Garmin übertragen“:** Oben steht eine kurze Erklärung, wo der Course auf dem Edge erscheint. Darunter folgt das Namensfeld des Course, bei einer Mehrtagestour ein Feld je Etappe. Bei einer gefahrenen Strecke folgt die Auswahl **Fahrprofil:** mit einer grauen Erklärung darunter. Nur bei mehreren angeschlossenen Geräten kommt die Auswahl **Gerät:** hinzu. Unten rechts stehen **Übertragen** und **Abbrechen**.
+
+So übertragen Sie die gefahrene Strecke als Course auf den Edge:
 
 1. Schließen Sie den Edge per USB an.
 2. Klicken Sie auf der Karteikarte **Karte** auf **Auf Garmin übertragen…**.
@@ -646,8 +653,6 @@ Ein Course ist eine Strecke, die der Garmin Edge beim Nachfahren anzeigt, mit H�
 Danach erscheint zum Beispiel **Course „2026-05-01 Bründlingalm“ übertragen. Er erscheint auf dem Edge nach dem Trennen vom Computer unter „Courses“.**
 
 Haben Sie die Strecke vorher bearbeitet, wird die bearbeitete Strecke übertragen.
-
-[Bildschirmfoto: Fenster „Auf Garmin übertragen“ mit Namensfeld „Strecke:“, Auswahl „Fahrprofil:“ und den Schaltflächen „Übertragen“ und „Abbrechen“]
 
 **Hinweis:** Lassen sich die Abbiegungen nicht ermitteln, zum Beispiel ohne Internet, überträgt AndyTours den Course ohne Abbiegehinweise. Ein Hinweis nennt den Grund.
 
@@ -662,23 +667,21 @@ Mehrere Einheiten, zum Beispiel die Etappen einer Radreise, sehen Sie gemeinsam 
 
 Das Tourdetail ordnet die Etappen nach Datum und Startzeit. Oben stehen der Zeitraum, die Anzahl der Etappen, die Summen von Distanz, Höhenmetern und Fahrzeit, die Durchschnittsgeschwindigkeit und der höchste Punkt.
 
-- **Höhenprofil:** Die Etappen folgen hintereinander. Senkrechte Linien markieren jeden Etappenwechsel. Beim Überfahren mit der Maus erscheinen zusätzlich Datum und Name der Etappe.
-- **Karte:** Jede Etappe hat eine eigene Farbe. Ein kleiner Punkt markiert jeden Etappenwechsel.
+- **Höhenprofil:** Die Etappen folgen hintereinander. Senkrechte graue gestrichelte Linien markieren jeden Etappenwechsel. Beim Überfahren mit der Maus erscheinen zusätzlich Datum und Name der Etappe.
+- **Karte:** Jede Etappe hat eine eigene Farbe, der Reihe nach blau, orange, violett und blaugrün. Ab der fünften Etappe wiederholen sich die Farben. Ein kleiner dunkelgrauer Punkt markiert jeden Etappenwechsel. Die Zeichenerklärung nennt dafür zusätzlich **• Etappenwechsel**.
 - **Als GPX exportieren…** speichert alle Etappen in eine Datei, zum Beispiel **2026-05-01 bis 2026-05-04 Alpencross.gpx**.
 - **Auf Garmin übertragen…** überträgt jede Etappe als eigenen Course. Den Namen jeder Etappe können Sie einzeln ändern.
 
-Etappen ohne Aufzeichnung zählen zu den Summen oben. In Profil und Karte fehlen sie, und ein Hinweis nennt sie mit Datum und Name. Hat keine Etappe eine Aufzeichnung, erscheint **Keine der Einheiten hat eine Aufzeichnung.**
+Etappen ohne Aufzeichnung zählen zu den Summen oben. In Profil und Karte fehlen sie, und ein orangebrauner Hinweis unter der Kopfzeile nennt sie mit Datum und Name. Hat keine Etappe eine Aufzeichnung, erscheint **Keine der Einheiten hat eine Aufzeichnung.**
 
 Die Mehrtagestour wird nicht gespeichert. Sie entsteht jedes Mal neu aus den markierten Einheiten.
-
-[Bildschirmfoto: Tourdetail einer Mehrtagestour, Karteikarte „Karte“ mit vier farbig unterschiedenen Etappen und Punkten an den Etappenwechseln]
 
 <a id="k4-7"></a>
 ### 4.7 Karteikarte „Wartung“
 
 Auf dieser Karteikarte erfassen Sie Wartungen Ihrer Räder und richten Wartungsalarme ein. Sind Alarme fällig, steht ihre Anzahl im Titel der Karteikarte, zum Beispiel **Wartung (2)**.
 
-[Bildschirmfoto: Karteikarte „Wartung (2)“ mit der Auswahl „Equipment:“, der Gruppe „Alarme“ mit einer roten und einer orangen Zeile und der Gruppe „Wartungen“ mit der Wartungstabelle]
+**Aufbau:** Ganz oben steht die Auswahl **Equipment:**. Darunter folgt die Gruppe **Alarme** mit den Schaltflächen **Neuer Alarm…**, **Bearbeiten…** und **Löschen** und darunter der Liste der Alarme. Die Liste ist in der Höhe begrenzt, damit die Wartungen sichtbar bleiben. Den restlichen Platz füllt die Gruppe **Wartungen** mit den Schaltflächen **Neue Wartung…**, **Bearbeiten…** und **Löschen** und darunter der Tabelle der Wartungen.
 
 #### Equipment-Auswahl
 
@@ -693,10 +696,12 @@ Ein Wartungsalarm erinnert nach einer bestimmten Kilometerzahl an eine Wartung, 
 Die Liste **Alarme** hat die Spalten **Rad**, **Tätigkeit**, **Alle (km)**, **Gefahren (km)** und **Verbleibend (km)**.
 
 - **Gefahren (km)** zählt ab der letzten Wartung mit derselben Tätigkeit an diesem Rad. Gibt es keine, zählt der Alarm ab dem Tag, an dem Sie ihn angelegt haben.
-- **Rot:** Der Alarm ist fällig. Die verbleibenden km erscheinen als Überschreitung, zum Beispiel **−120**.
-- **Orange:** Der Alarm ist bald fällig. Es sind nur noch höchstens 10 % des Intervalls übrig.
-- **Grau:** Der Alarm ist ausgeschaltet.
-- Gibt es keine Alarme, steht dort **Keine Alarme eingerichtet.**
+- **Rot hinterlegte Zeile mit dunkelroter, halbfetter Schrift:** Der Alarm ist fällig. Das Rad ist seit der letzten passenden Wartung bzw. seit dem Anlegen des Alarms mindestens das Intervall gefahren, **Verbleibend (km)** ist also 0 oder kleiner. Eine Überschreitung erscheint negativ, zum Beispiel **−120**.
+- **Orange hinterlegte Zeile mit brauner Schrift:** Der Alarm ist bald fällig. Es sind nur noch höchstens 10 % des Intervalls übrig, bei 3.000 km also höchstens 300 km.
+- **Graue Schrift ohne Hintergrund:** Der Alarm ist ausgeschaltet oder gehört zu einem ausgemusterten Rad.
+- Eine Zeile ohne Farbe ist eingeschaltet und noch nicht bald fällig.
+- Markieren Sie eine rote oder orange Zeile, wird ihre Farbe kräftiger.
+- Gibt es keine Alarme, steht dort **Keine Alarme eingerichtet.** Ist oben ein Rad gewählt, das keine Alarme hat, steht dort **Keine Alarme für dieses Rad.**
 
 Erfassen Sie die passende Wartung, beginnt der Alarm von selbst neu zu zählen. Sie müssen ihn nicht neu setzen.
 
@@ -709,7 +714,7 @@ Mit dieser Anleitung richten Sie einen Alarm ein.
 5. Lassen Sie **Alarm eingeschaltet** angehakt.
 6. Klicken Sie auf **OK**.
 
-[Bildschirmfoto: Fenster „Neuer Alarm“ mit den Feldern „Rad:“, „Tätigkeit:“, „Alle (km):“ und dem Kontrollkästchen „Alarm eingeschaltet“]
+**Aufbau des Fensters „Neuer Alarm“:** Untereinander stehen die Auswahllisten **Rad:** und **Tätigkeit:** und das Feld **Alle (km):**. Darunter folgt das Kontrollkästchen **Alarm eingeschaltet**. Unten rechts stehen **OK** und **Abbrechen**. Solange ein Pflichtfeld leer oder ungültig ist, hat es einen roten Rand, und **OK** ist ausgegraut. Ein dunkelroter Hinweis über den Schaltflächen erklärt Sonderfälle, zum Beispiel eine leere Liste **Tätigkeit** oder einen schon vorhandenen Alarm. Das Fenster **Alarm bearbeiten** sieht genauso aus.
 
 Weitere Befehle:
 
@@ -723,7 +728,7 @@ Weitere Befehle:
 
 #### Wartungen
 
-Die Tabelle **Wartungen** zeigt alle Wartungen, die neueste oben. Spalten:
+Die Tabelle **Wartungen** zeigt alle Wartungen, die neueste oben. Die Spalten stehen von links nach rechts in der Reihenfolge **Datum**, **Rad**, **km-Stand**, **km seit letzter**, **Tage seit letzter**, **Tätigkeit** und **Kommentar**. Sie bedeuten:
 
 - **Datum**, **Rad**, **Tätigkeit**, **Kommentar**
 - **km-Stand:** Kilometerstand des Rads an diesem Tag. Das ist die Summe aller Touren mit diesem Rad bis zu diesem Tag plus seine Anfangskilometer.
@@ -732,7 +737,7 @@ Die Tabelle **Wartungen** zeigt alle Wartungen, die neueste oben. Spalten:
 
 Bei der ersten Wartung einer Art zählen **km seit letzter** und **Tage seit letzter** ab der Anschaffung des Rads. Ohne Anschaffungsdatum zählen die Tage ab der ersten Tour mit diesem Rad.
 
-Ein Klick auf eine Spaltenüberschrift sortiert, ein zweiter Klick kehrt die Reihenfolge um. Gibt es noch keine Wartung, steht dort **Noch keine Wartungen erfasst.**
+Ein Klick auf eine Spaltenüberschrift sortiert, ein zweiter Klick kehrt die Reihenfolge um. Gibt es noch keine Wartung, steht dort **Noch keine Wartungen erfasst.** Ist oben ein Rad ohne Wartungen gewählt, steht dort **Keine Wartungen für dieses Rad.**
 
 Mit dieser Anleitung erfassen Sie eine Wartung.
 
@@ -745,7 +750,7 @@ Mit dieser Anleitung erfassen Sie eine Wartung.
 
 Die Wartung erscheint sofort in der Tabelle. Ein Alarm mit derselben Tätigkeit an diesem Rad zählt ab jetzt neu.
 
-[Bildschirmfoto: Fenster „Neue Wartung“ mit den Feldern „Datum:“, „Rad:“, „Tätigkeit:“ und „Kommentar:“]
+**Aufbau des Fensters „Neue Wartung“:** Untereinander stehen das Feld **Datum:** und die Auswahllisten **Rad:** und **Tätigkeit:**. Darunter folgt das mehrzeilige Feld **Kommentar:**. Unten rechts stehen **OK** und **Abbrechen**. Solange ein Pflichtfeld leer oder ungültig ist, hat es einen roten Rand, und **OK** ist ausgegraut. Ein dunkelroter Hinweis über den Schaltflächen erklärt Sonderfälle. Das Fenster **Wartung bearbeiten** sieht genauso aus.
 
 Weitere Befehle:
 
@@ -763,7 +768,15 @@ Weitere Befehle:
 
 Im Fenster **Tour planen** klicken Sie eine neue Strecke auf der Karte zusammen. AndyTours führt die Strecke automatisch über Wege, die zum gewählten Fahrprofil passen. Dafür fragt AndyTours einen Routingdienst im Internet. Sie brauchen also eine Internetverbindung.
 
-[Bildschirmfoto: Fenster „Tour planen“ mit einer geplanten Strecke, mehreren Wegpunkten, kleinen Abbiegepunkten, der Leiste mit „Fahrprofil:“ und den Angaben zu Länge und Höhenmetern oben rechts]
+**Aufbau:** Oben steht eine Leiste. Links enthält sie **Fahrprofil:** mit der Auswahl des Profils und die Schaltflächen **Öffnen…**, **Speichern…**, **Auf Garmin übertragen…**, **Letzten Punkt entfernen**, **Alles löschen** und **Overlays…**. Rechts in der Leiste stehen halbfett die Länge, zum Beispiel **42,7 km**, und daneben die Höhenmeter, zum Beispiel **↑ 380 hm  ↓ 375 hm**. Solange der Routingdienst rechnet, steht davor grau **Strecke wird ermittelt …**. Darunter füllt die Karte das Fenster. Am unteren Rand steht grau eine Bedienhilfe: **Klick in die Karte: Wegpunkt anhängen · Wegpunkt ziehen: verschieben · Linie ziehen: Zwischenpunkt einfügen · Rechtsklick auf einen Wegpunkt: entfernen · Karte ziehen: verschieben**. Darunter erscheinen bei Bedarf rote Hinweise.
+
+Auf der Karte erkennen Sie die Planung so:
+
+- Die ermittelte Strecke ist eine blaue Linie.
+- Der Startpunkt ist ein grüner Kreis, der Zielpunkt ein roter Kreis, jeweils mit weißem Rand. Der Zielpunkt ist immer der letzte Wegpunkt der Strecke.
+- Wegpunkte dazwischen sind kleinere weiße Kreise mit blauem Rand.
+- Abbiegepunkte sind kleine orange Punkte mit weißem Rand.
+- Ein Teilstück, das der Routingdienst nicht geliefert hat, ist eine graue gestrichelte gerade Linie.
 
 Mit dieser Anleitung planen Sie eine Tour.
 
@@ -789,9 +802,9 @@ So ändern Sie die Strecke:
 
 Wechseln Sie das Fahrprofil, ermittelt AndyTours die ganze Strecke neu. Die Wegpunkte bleiben an ihrer Stelle.
 
-An jeder Abzweigung, an der die Strecke abbiegt, setzt AndyTours automatisch einen Abbiegepunkt mit der Richtung, zum Beispiel „links“ oder „Kreisverkehr 2. Ausfahrt“. Die Abbiegepunkte erscheinen als kleine Markierungen auf der Karte und werden mitgespeichert.
+An jeder Abzweigung, an der die Strecke abbiegt, setzt AndyTours automatisch einen Abbiegepunkt mit der Richtung, zum Beispiel „links“ oder „Kreisverkehr 2. Ausfahrt“. Die Abbiegepunkte erscheinen als kleine orange Punkte auf der Karte und werden mitgespeichert.
 
-**Hinweis:** Kann der Routingdienst ein Teilstück nicht liefern, zum Beispiel ohne Internet, zeichnet AndyTours dieses Teilstück als gerade Linie. Ein roter Hinweis erscheint. Ein solches Teilstück hat keine Abbiegepunkte.
+**Hinweis:** Kann der Routingdienst ein Teilstück nicht liefern, zum Beispiel ohne Internet, zeichnet AndyTours dieses Teilstück als graue gestrichelte gerade Linie. Ein roter Hinweis erscheint am unteren Rand. Ein solches Teilstück hat keine Abbiegepunkte.
 
 **Planung speichern und öffnen**
 
@@ -816,7 +829,9 @@ Ein Overlay ist eine gespeicherte Strecke, die zusätzlich auf den Karten ersche
 
 Öffnen Sie die Verwaltung mit **Tourenplanung → Overlays…** oder mit der Schaltfläche **Overlays…** neben einer Karte.
 
-[Bildschirmfoto: Fenster „Overlays“ mit einem Ordnerbaum, eingeschalteten und ausgeschalteten Overlays mit Farbfeldern und den Feldern „Name:“ und „Farbe:“]
+**Aufbau:** Das Fenster heißt **Overlays**. Oben stehen die Schaltflächen **Ordner anlegen**, **GPX hinzufügen…**, **Verschieben nach…** und **Löschen**. Darunter folgt der Baum mit Ordnern und Overlays. Jede Zeile beginnt mit einem Kontrollkästchen. Bei einem Overlay folgt ein kurzer farbiger Balken in der Farbe, in der es auf den Karten erscheint. Bei einem Ordner folgt ein Ordnersymbol. Danach steht der Name. Unten im Fenster stehen das Feld **Name:** mit der Schaltfläche **Übernehmen** und darunter die Auswahl **Farbe:**. Ganz unten erklärt eine graue Zeile die Bedienung. Gibt es noch keine Overlays, steht unter dem Baum ein grauer Hinweis.
+
+Das Kontrollkästchen eines Ordners zeigt ein Häkchen, wenn sein ganzer Inhalt eingeblendet ist, und ist leer, wenn nichts davon eingeblendet ist. Ist nur ein Teil eingeblendet, zeigt es den Zwischenzustand: ein blau gefülltes Kästchen mit einem waagrechten Strich, wie im Fenster **Kategorien zuordnen**.
 
 Mit dieser Anleitung nehmen Sie GPX-Dateien als Overlays auf.
 
@@ -860,9 +875,9 @@ Erlaubte Werte:
 - Ruhepuls 30 bis 120, Maximalpuls 100 bis 230, jeweils ganze Zahl
 - Der Ruhepuls muss kleiner als der Maximalpuls sein.
 
-Bei einer ungültigen Eingabe nennt ein roter Hinweis den erlaubten Bereich. **OK** ist dann nicht wählbar.
+Bei einer ungültigen Eingabe nennt ein roter Hinweis den erlaubten Bereich. **OK** ist dann ausgegraut.
 
-[Bildschirmfoto: Fenster „Persönliche Daten“ mit ausgefüllten Feldern und den Schaltflächen „OK“ und „Abbrechen“]
+**Aufbau:** Das Fenster **Persönliche Daten** zeigt die Felder untereinander, von **Vorname:** bis **Heimatort:**. Darunter erscheint bei Bedarf der rote Hinweis. Unten rechts stehen **OK** und **Abbrechen**. **Abbrechen** schließt das Fenster ohne Rückfrage und ohne zu speichern.
 
 <a id="k4-9-2"></a>
 #### 4.9.2 Saisonziele
@@ -876,9 +891,9 @@ Ein Saisonziel ist Ihr Jahresziel für eine Aktivität: Kilometer, Höhenmeter u
 
 Ein Ziel gilt auch für die folgenden Jahre, bis Sie es dort ändern. Frühere Jahre behalten ihre damaligen Ziele. Die Spalte **Herkunft** zeigt, woher ein Ziel stammt, zum Beispiel **übernommen aus 2025** oder **übernommen aus BikeXperience**. Bei einem eigenen Ziel für das gewählte Jahr bleibt sie leer.
 
-Erlaubt sind ganze Zahlen: Kilometer 0 bis 100.000, Höhenmeter 0 bis 2.000.000, Anzahl 0 bis 1.000.
+Erlaubt sind ganze Zahlen: Kilometer 0 bis 100.000, Höhenmeter 0 bis 2.000.000, Anzahl 0 bis 1.000. Bei einer ungültigen Eingabe nennt ein roter Hinweis unter der Tabelle Aktivität, Feld und erlaubten Bereich. **OK** und die Auswahl **Jahr:** sind dann ausgegraut.
 
-[Bildschirmfoto: Fenster „Saisonziele“ mit gewähltem Jahr, Zielen je Aktivität und einer Zeile mit „übernommen aus BikeXperience“ in der Spalte „Herkunft“]
+**Aufbau:** Oben im Fenster **Saisonziele** steht die Auswahl **Jahr:**, rechts daneben grau der Satz **Ein Ziel gilt auch für die folgenden Jahre, bis es dort geändert wird. Leer = kein Ziel.** Darunter folgt die Tabelle mit den Spalten **Aktivität**, **Kilometer**, **Höhenmeter**, **Anzahl** und **Herkunft**, eine Zeile je Aktivität. Die Spalte **Herkunft** ist grau. Unten rechts stehen **OK** und **Abbrechen**. **OK** speichert die Ziele beider Jahre. **Abbrechen** schließt ohne Rückfrage und ändert nichts.
 
 <a id="k4-9-3"></a>
 #### 4.9.3 Equipment-Einsatz
@@ -894,22 +909,22 @@ Spalten:
 
 Zuerst stehen die Equipments im Einsatz, dann die ausgemusterten, jeweils nach **Gesamt (km)** absteigend. Danach folgen **ohne Equipment** und die fette Zeile **Summe**. Leere Zellen bedeuten 0. Ein Klick auf eine Spaltenüberschrift sortiert neu, die Zeile **Summe** bleibt unten.
 
-Schließen Sie das Fenster mit **Schließen**.
-
-[Bildschirmfoto: Fenster „Equipment-Einsatz“ mit mehreren Rädern, einem ausgemusterten Rad, der Zeile „ohne Equipment“ und der fetten Zeile „Summe“]
+Schließen Sie das Fenster mit **Schließen** oder **Esc**. Gibt es noch keine Einheiten, steht statt der Tabelle **Keine Einheiten vorhanden.**
 
 <a id="k4-9-4"></a>
 #### 4.9.4 Einstellungen
 
 **Extras → Einstellungen…** öffnet das Fenster **Einstellungen** mit vier Karteikarten. Jede gültige Änderung ist sofort gespeichert. Sie schließen das Fenster mit **Schließen**.
 
+**Aufbau:** Oben stehen die Reiter der Karteikarten **Allgemein**, **Datensicherung**, **Tourenplanung** und **Auswahllisten**. Darunter folgt der Inhalt der gewählten Karteikarte. Unten rechts steht immer die Schaltfläche **Schließen**. Ein eigenes **OK** gibt es nicht.
+
 Die Einstellungen gehören zum Datenordner. Wechseln Sie den Datenordner oder stellen Sie eine Sicherung wieder her, gelten die dort gespeicherten Einstellungen.
 
 **Karteikarte „Allgemein“**
 
-[Bildschirmfoto: Fenster „Einstellungen“, Karteikarte „Allgemein“ mit der Gruppe „Datenordner“ und der Gruppe „Darstellung“ mit der Auswahl „Größe der Oberfläche:“]
+Die Karteikarte hat zwei Gruppen untereinander: oben **Datenordner**, darunter **Darstellung**.
 
-Die Gruppe **Datenordner** zeigt den vollständigen Pfad des Datenordners.
+Die Gruppe **Datenordner** zeigt in einem Feld den vollständigen Pfad des Datenordners. Rechts neben dem Pfad steht die Schaltfläche **Ändern…**. Den Pfad selbst können Sie nicht eintippen.
 
 Mit dieser Anleitung wechseln Sie den Datenordner, zum Beispiel auf ein NAS.
 
@@ -930,28 +945,28 @@ In der Gruppe **Darstellung** wählen Sie unter **Größe der Oberfläche:** ein
 
 AndyTours sichert Ihren Datenbestand automatisch beim Programmstart. Die Sicherung ist immer eingeschaltet.
 
-- **Sicherungsordner:** Ordner der Sicherungen. Anfangs ist das der Ordner **Sicherungen** im Datenordner. Mit **Ändern…** wählen Sie einen anderen.
-- **Sichern nach Programmstarts:** Nach wie vielen Programmstarts gesichert wird. Anfangs 3.
-- **Höchstens aufbewahren:** Wie viele Sicherungen bleiben. Anfangs 10. Die ältesten werden gelöscht.
+Die Karteikarte enthält die Gruppe **Datensicherung** mit drei Zeilen untereinander. Ganz unten steht grau **Die Sicherung erfolgt automatisch beim Programmstart.**
 
-Erlaubt sind ganze Zahlen von 1 bis 99. Bei einer ungültigen Eingabe nennt ein roter Hinweis den Bereich.
+- **Sicherungsordner:** Ordner der Sicherungen. Der Pfad steht in einem Feld. Anfangs ist das der Ordner **Sicherungen** im Datenordner. Mit der Schaltfläche **Ändern…** rechts daneben wählen Sie einen anderen.
+- **Sichern nach Programmstarts:** Nach wie vielen Programmstarts gesichert wird. Anfangs 3.
+- **Höchstens aufbewahren:** Wie viele Sicherungen bleiben. Anfangs 10. Hinter dem Feld steht **Sicherungen (die ältesten werden gelöscht)**.
+
+Erlaubt sind ganze Zahlen von 1 bis 99. Bei einer ungültigen Eingabe erscheint unter dem Feld der rote Hinweis **Bitte eine ganze Zahl von 1 bis 99 eingeben.**
 
 Eine Sicherung ist eine Datei mit Datum und Uhrzeit im Namen, zum Beispiel **andytours_2026-10-23_07-39-12.db**. Andere Dateien im Sicherungsordner bleiben unberührt. Ohne Touren im Datenbestand legt AndyTours keine Sicherung an.
 
 **Achtung:** Die automatische Sicherung umfasst den Datenbestand mit Touren, Rädern, Wartungen und Einstellungen. Die Aufzeichnungsdateien in den Jahresordnern des Datenordners sind nicht darin enthalten. Sichern Sie den ganzen Datenordner deshalb zusätzlich mit Ihrer üblichen Datensicherung, zum Beispiel regelmäßig auf eine externe Festplatte oder ein NAS.
 
-[Bildschirmfoto: Fenster „Einstellungen“, Karteikarte „Datensicherung“ mit Sicherungsordner, „Sichern nach Programmstarts:“ und „Höchstens aufbewahren:“]
-
 **Karteikarte „Tourenplanung“**
 
-Ein Routingdienst ist ein Internetdienst, der Strecken über Straßen und Wege berechnet. In der Gruppe **Routing** wählen Sie ihn:
+Die Karteikarte hat zwei Gruppen untereinander: oben **Routing**, darunter **Overlays**.
 
-- **BRouter (kostenlos, ohne Zugangsschlüssel):** voreingestellt. Unter **Serveradresse:** steht anfangs **https://brouter.de/brouter**.
-- **openrouteservice (mit Zugangsschlüssel):** Ausweichdienst, falls BRouter nicht erreichbar ist. Tragen Sie unter **Zugangsschlüssel:** Ihren Schlüssel ein. Einen kostenlosen Schlüssel erhalten Sie nach einer Anmeldung auf openrouteservice.org. Der Schlüssel wird nur verdeckt angezeigt.
+Ein Routingdienst ist ein Internetdienst, der Strecken über Straßen und Wege berechnet. In der Gruppe **Routing** wählen Sie ihn mit einer von zwei Optionen. Unter jeder Option steht leicht eingerückt ihr Eingabefeld:
 
-In der Gruppe **Overlays** wählen Sie unter **Gemeinsame Farbe:** die Farbe aller Overlays ohne eigene Farbe. Zur Wahl stehen zwölf Farben. Voreingestellt ist Violett.
+- **BRouter (kostenlos, ohne Zugangsschlüssel):** voreingestellt. Unter **Serveradresse:** steht anfangs **https://brouter.de/brouter**. Ist die Adresse unvollständig, erscheint darunter rot **Bitte eine vollständige Adresse eingeben, z. B. https://brouter.de/brouter.**
+- **openrouteservice (mit Zugangsschlüssel):** Ausweichdienst, falls BRouter nicht erreichbar ist. Tragen Sie unter **Zugangsschlüssel:** Ihren Schlüssel ein. Einen kostenlosen Schlüssel erhalten Sie nach einer Anmeldung auf openrouteservice.org. Der Schlüssel wird nur verdeckt angezeigt, als Reihe von Punkten. Fehlt der Schlüssel, erklärt ein roter Hinweis darunter, dass openrouteservice ohne Schlüssel keine Strecken ermitteln kann.
 
-[Bildschirmfoto: Fenster „Einstellungen“, Karteikarte „Tourenplanung“ mit der Gruppe „Routing“ (BRouter gewählt) und der Gruppe „Overlays“ mit der Farbauswahl]
+In der Gruppe **Overlays** wählen Sie unter **Gemeinsame Farbe:** die Farbe aller Overlays ohne eigene Farbe. Die Auswahlliste zeigt vor jedem Farbnamen ein kleines Farbfeld. Zur Wahl stehen zwölf Farben. Voreingestellt ist Violett.
 
 **Karteikarte „Auswahllisten“**
 
@@ -965,14 +980,14 @@ Hier pflegen Sie die festen Werte, die AndyTours in Eingabefeldern anbietet. Unt
 
 Darunter stehen die Einträge der Liste. Ein Klick auf einen Eintrag übernimmt ihn in das Feld **Eintrag:**.
 
-[Bildschirmfoto: Fenster „Einstellungen“, Karteikarte „Auswahllisten“ mit der Liste „Aktivität“, einem Eintrag mit dem Zusatz „(Hauptaktivität)“ und den Schaltflächen rechts daneben]
+**Aufbau:** Oben steht die Auswahl **Liste:**. Darunter folgt links die Liste der Einträge. Rechts daneben stehen untereinander die Schaltflächen **Nach oben**, **Nach unten** und **Löschen**. Je nach Liste kommen darunter weitere Schaltflächen hinzu: **Als Hauptaktivität** (nur bei **Aktivität**), **Standard** (nur bei **Kategorie**), **Zusammenführen mit…** (bei **Aktivität** und **Kategorie**) und **Bearbeiten…** (nur bei **Equipment**). Unter der Liste stehen das Feld **Eintrag:** und rechts daneben die Schaltflächen **Hinzufügen** und **Umbenennen**. Ganz unten erscheint bei Bedarf ein roter Hinweis.
 
 Einträge bearbeiten (alle Listen außer **Equipment**):
 
 - **Hinzufügen:** Tippen Sie den Namen in **Eintrag:** und klicken Sie auf **Hinzufügen**. Der Eintrag erscheint am Ende der Liste.
 - **Umbenennen:** Markieren Sie den Eintrag, ändern Sie den Text in **Eintrag:** und klicken Sie auf **Umbenennen**. Kommt ein Trainingsbereich in Einheiten oder eine Tätigkeit in Wartungen vor, fragt AndyTours mit der Anzahl, zum Beispiel **In 714 Einheiten ‚GA2‘ durch ‚GA 2‘ ersetzen?**.
 - **Löschen:** Markieren Sie den Eintrag und klicken Sie auf **Löschen**. Ein Eintrag, der noch verwendet wird, lässt sich nicht löschen. Ein roter Hinweis nennt dann die Anzahl der Verwendungen.
-- **Nach oben** und **Nach unten** ändern die Reihenfolge. Bei **Kategorie** und **Equipment** gibt es das nicht, sie stehen alphabetisch.
+- **Nach oben** und **Nach unten** ändern die Reihenfolge. Bei **Kategorie** und **Equipment** sind die beiden Schaltflächen ausgegraut, denn diese Listen stehen alphabetisch.
 
 Leere oder doppelte Namen weist AndyTours mit einem roten Hinweis ab. Groß- und Kleinschreibung zählen dabei nicht.
 
@@ -998,7 +1013,7 @@ Alle Einheiten des ersten Eintrags gehören danach zum zweiten. Der erste Eintra
 
 Liste **Equipment**:
 
-Equipments stehen alphabetisch mit ihrer Aktivität. Ausgemusterte stehen am Ende mit dem Zusatz **(ausgemustert)**, Standard-Equipments tragen den Zusatz **(Standard)**.
+Equipments stehen alphabetisch mit ihrer Aktivität. Ausgemusterte stehen am Ende mit dem Zusatz **(ausgemustert)**, Standard-Equipments tragen den Zusatz **(Standard)**. Bei dieser Liste fehlen das Feld **Eintrag:** und die Schaltfläche **Umbenennen**. Name und alle übrigen Angaben ändern Sie im Fenster des Equipments.
 
 Mit dieser Anleitung legen Sie ein neues Rad an.
 
@@ -1010,15 +1025,15 @@ Mit dieser Anleitung legen Sie ein neues Rad an.
    - **Standardkategorie:** wird bei Einheiten mit diesem Rad zusätzlich angehakt; **(keine)** ist möglich
    - **Anschaffungsdatum:** als TT.MM.JJJJ
    - **Anfangskilometer:** Kilometer, die das Rad vor AndyTours schon gefahren ist
-4. Haken Sie **Standard für diese Aktivität** an, wenn das Rad bei neuen Einheiten vorbelegt sein soll. Pro Aktivität gibt es nur ein Standard-Equipment.
+4. Haken Sie **Standard für diese Aktivität** an, wenn das Rad bei neuen Einheiten vorbelegt sein soll. Pro Aktivität gibt es nur ein Standard-Equipment. Das Kontrollkästchen ist nur wählbar, wenn unter **Aktivität:** eine Aktivität gewählt ist.
 5. Klicken Sie auf **OK**.
-
-[Bildschirmfoto: Fenster „Equipment bearbeiten“ mit den Feldern „Name:“ bis „Anfangskilometer:“, den Kontrollkästchen „Standard für diese Aktivität“ und „ausgemustert“ und der Liste „Gerätezuordnung (beim Import gemerkt):“ mit einer Rad-Kennung und einem Sensor]
 
 Ein vorhandenes Equipment ändern Sie mit **Bearbeiten…** oder einem Doppelklick. Das Fenster heißt dann **Equipment bearbeiten**.
 
-- **ausgemustert:** Haken Sie dies an, wenn Sie ein Rad nicht mehr fahren. Es wird dann für neue Einheiten, Wartungen und Alarme nicht mehr angeboten. Alte Einheiten und Wartungen behalten das Rad. Es trägt überall den Zusatz **(ausgemustert)**.
-- **Gerätezuordnung (beim Import gemerkt):** zeigt die Rad-Kennungen und Sensoren, die AndyTours beim Garmin-Import diesem Rad zugeordnet hat. Mit **Entfernen** löschen Sie einen markierten Eintrag.
+**Aufbau der Fenster „Neues Equipment“ und „Equipment bearbeiten“:** Oben stehen untereinander die Felder **Name:**, **Aktivität:**, **Standardkategorie:**, **Anschaffungsdatum:** und **Anfangskilometer:**. Darunter folgen die Kontrollkästchen **Standard für diese Aktivität** und **ausgemustert**. Danach kommt die Liste **Gerätezuordnung (beim Import gemerkt):** mit der Schaltfläche **Entfernen** rechts daneben. Bei einer ungültigen Eingabe erscheint darunter ein roter Hinweis. Unten rechts stehen **OK** und **Abbrechen**. **OK** ist nur bei gültigen Eingaben wählbar. **Abbrechen** schließt ohne Rückfrage und ohne zu speichern.
+
+- **ausgemustert:** Haken Sie dies an, wenn Sie ein Rad nicht mehr fahren. Es wird dann für neue Einheiten, Wartungen und Alarme nicht mehr angeboten. Alte Einheiten und Wartungen behalten das Rad. Es trägt überall den Zusatz **(ausgemustert)**. Ein ausgemustertes Rad kann kein Standard-Equipment sein: **Standard für diese Aktivität** ist dann ausgegraut, und ein vorher gesetzter Haken entfällt.
+- **Gerätezuordnung (beim Import gemerkt):** zeigt die Rad-Kennungen und Sensoren, die AndyTours beim Garmin-Import diesem Rad zugeordnet hat. Jede Zeile beginnt mit ihrer Art, zum Beispiel **Rad:** für eine Rad-Kennung oder **Sensor:** für einen Sensor. Aus BikeXperience übernommene Werte beginnen mit **Altwert:**. Mit **Entfernen** löschen Sie einen markierten Eintrag.
 
 **Hinweis:** Ein Equipment, das in Einheiten verwendet wird oder Wartungen hat, lässt sich nicht löschen. Mustern Sie es stattdessen aus.
 
@@ -1035,7 +1050,7 @@ Mit dieser Anleitung setzen Sie den Datenbestand auf den Stand einer Sicherung z
 
 AndyTours legt vorher eine Sicherung des aktuellen Stands an. Damit lässt sich auch das Wiederherstellen rückgängig machen. Danach zeigt das Hauptfenster sofort den wiederhergestellten Stand, ohne Neustart. Die Einstellungen der Datensicherung bleiben unverändert.
 
-[Bildschirmfoto: Fenster „Sicherung wiederherstellen“ mit der Liste der Sicherungen, z. B. „Freitag, 23.10.2026, 18:58:22 Uhr“, und den Schaltflächen „Wiederherstellen…“ und „Abbrechen“]
+**Aufbau:** Oben im Fenster **Sicherung wiederherstellen** steht **Wählen Sie die Sicherung, auf deren Stand der Datenbestand zurückgesetzt werden soll:**, darunter grau der Pfad des Sicherungsordners. Darunter folgt die Liste der Sicherungen, eine Zeile je Sicherung, zum Beispiel **Freitag, 23.10.2026, 18:58:22 Uhr**. Unten rechts stehen **Wiederherstellen…** und **Abbrechen**. Ein Doppelklick auf eine Zeile wirkt wie **Wiederherstellen…**.
 
 **Hinweis:** Eine Sicherung aus einer älteren AndyTours-Version wird übernommen. Eine Sicherung aus einer neueren Version lehnt AndyTours ab. Eine beschädigte Sicherung lehnt AndyTours ebenfalls ab. Der Datenbestand bleibt dann unverändert.
 
@@ -1044,7 +1059,7 @@ AndyTours legt vorher eine Sicherung des aktuellen Stands an. Damit lässt sich 
 
 **Hilfe → Über AndyTours** öffnet ein kleines Fenster mit dem Programmicon, dem Namen, der Versionsnummer und dem Autor. Sie schließen es mit **OK**, **Enter** oder **Esc**.
 
-[Bildschirmfoto: Fenster „Über AndyTours“ mit großem Programmicon (Fahrrad vor Bergen), „AndyTours“, Versionsnummer und Autor]
+**Aufbau:** Links im Fenster **Über AndyTours** steht groß das Programmicon, ein Fahrrad vor Bergen. Rechts daneben stehen untereinander **AndyTours**, die Versionsnummer, der Autor und eine kurze Beschreibung des Programms. Unten rechts steht **OK**.
 
 ---
 
@@ -1054,13 +1069,11 @@ AndyTours legt vorher eine Sicherung des aktuellen Stands an. Damit lässt sich 
 Finden Sie hier keine Lösung, melden Sie das Problem auf der GitHub-Seite des Projekts unter **Issues**: <https://github.com/AndySeeon/AndyTours/issues>. Beschreiben Sie, was Sie getan haben und was passiert ist. Geben Sie eine Fehlermeldung im Wortlaut an.
 
 **Beim Start erscheint „AndyTours – Datenordner nicht erreichbar“.**
-Der gespeicherte Datenordner ist nicht erreichbar, zum Beispiel weil das NAS ausgeschaltet oder das Laufwerk getrennt ist. Sie haben drei Möglichkeiten:
+Der gespeicherte Datenordner ist nicht erreichbar, zum Beispiel weil das NAS ausgeschaltet oder das Laufwerk getrennt ist. Das Fenster nennt oben den Pfad des Ordners. Unten rechts stehen die Schaltflächen **Erneut versuchen**, **Anderen Ordner wählen…** und **Beenden**. Sie haben drei Möglichkeiten:
 
 1. Schalten Sie das NAS ein oder verbinden Sie das Laufwerk. Klicken Sie dann auf **Erneut versuchen**.
 2. Klicken Sie auf **Anderen Ordner wählen…**, um mit einem anderen Datenordner zu arbeiten.
-3. Klicken Sie auf **Beenden**.
-
-[Bildschirmfoto: Fenster „AndyTours – Datenordner nicht erreichbar“ mit Ordnerpfad und den Schaltflächen „Erneut versuchen“, „Anderen Ordner wählen…“ und „Beenden“]
+3. Klicken Sie auf **Beenden**. Das Schließen des Fensters über das X oben rechts wirkt ebenso.
 
 **Beim Import erscheint „Kein Garmin-Gerät gefunden. Bitte den Edge per USB anschließen.“**
 Prüfen Sie, ob der Edge eingeschaltet und per USB-Kabel verbunden ist. Warten Sie, bis Windows das Gerät erkannt hat, und versuchen Sie es erneut. Ohne Gerät können Sie FIT-Dateien mit **Datei → FIT-Dateien importieren…** übernehmen.
@@ -1169,50 +1182,7 @@ Es gibt keine Rückgängig-Funktion. Sie können aber eine Sicherung wiederherst
 
 ---
 
-<a id="anhang-a"></a>
-## Anhang A: Liste der Bildschirmfotos
-
-| Nr. | Kapitel | Inhalt |
-|---|---|---|
-| 1 | 1 | Hauptfenster von AndyTours mit geöffneter Karteikarte „Aktuell“, oben Bestleistungen, darunter das Diagramm der Jahressummen |
-| 2 | 2.2 | Installationsprogramm, Seite „Datenordner“ mit dem vorgeschlagenen Ordner „Dokumente\AndyTours“ |
-| 3 | 2.2 | Installationsprogramm, Seite „Bisherige Daten übernehmen“ mit gesetztem Haken und ausgefülltem Feld „Ordner mit den bisherigen Daten:“ |
-| 4 | 2.2 | Installationsprogramm, Seite mit der Zusammenfassung vor dem Start der Installation |
-| 5 | 2.3 | Meldungsfenster des Installationsprogramms mit der Zusammenfassung der Übernahme (Mengen, Anzahl der Warnungen, Ort des Berichts) |
-| 6 | 2.6 | Rückfrage „Datenordner löschen?“ beim Deinstallieren mit den Schaltflächen „Datenordner behalten“ und „Datenordner mit allen Touren löschen“ |
-| 7 | 3.3 | Hauptfenster mit beschrifteten Bereichen: Menüleiste, Werkzeugleiste mit „Jahr:“ und „Aktivität:“, Karteikarten und Statusleiste |
-| 8 | 4.2 | Fenster „Garmin-Import“ mit drei angehakten Touren und der Auswahlliste in der Spalte „Equipment“ |
-| 9 | 4.3 | Karteikarte „Aktuell“ mit den Listen „Jahresrekorde“ und „Einzelrekorde“, einem blau hervorgehobenen Rekord des laufenden Jahres und dem Diagramm „Kilometer (Summe Entfernung)“ mit gestrichelter Ziellinie |
-| 10 | 4.4 | Karteikarte „Trainingseinheiten“ mit Filterleiste, Tabelle mit mehreren Touren, rot hervorgehobenen Bestwerten in den Spalten „km“ und „hm“ und der fetten Summenzeile am unteren Rand |
-| 11 | 4.4 | geöffnetes Spaltenmenü nach Rechtsklick auf die Spaltenüberschriften, mit Häkchen vor den sichtbaren Spalten und dem Eintrag „Übernehmen“ am Ende |
-| 12 | 4.4 | Filterleiste mit gewähltem Equipment, einem rot umrandeten Feld „km von“ und gelb hervorgehobener Schaltfläche „Filter zurücksetzen“ |
-| 13 | 4.5 | Fenster „Neue Einheit“ mit den Gruppen „Allgemein“ und „Werte“, dem Kommentarfeld und den Schaltflächen „Speichern“ und „Abbrechen“ |
-| 14 | 4.5 | Fenster „Kategorien zuordnen“ mit einer angehakten, einer leeren und einer grau gefüllten Kategorie |
-| 15 | 4.5 | Fenster „Aktivität ändern“ mit dem Text „Neue Aktivität für 3 Einheiten:“ und der Liste der Aktivitäten |
-| 16 | 4.6 | Tourdetail, Karteikarte „Höhenprofil“ mit eingeblendeter Pulslinie und den Werten an der Mausposition |
-| 17 | 4.6 | Tourdetail, Karteikarte „Karte“ mit OpenTopoMap, der Strecke mit Start- und Zielzeichen und der Leiste „Track bearbeiten“ unter der Karte |
-| 18 | 4.6 | Fenster „Auf Garmin übertragen“ mit Namensfeld „Strecke:“, Auswahl „Fahrprofil:“ und den Schaltflächen „Übertragen“ und „Abbrechen“ |
-| 19 | 4.6 | Tourdetail einer Mehrtagestour, Karteikarte „Karte“ mit vier farbig unterschiedenen Etappen und Punkten an den Etappenwechseln |
-| 20 | 4.7 | Karteikarte „Wartung (2)“ mit der Auswahl „Equipment:“, der Gruppe „Alarme“ mit einer roten und einer orangen Zeile und der Gruppe „Wartungen“ mit der Wartungstabelle |
-| 21 | 4.7 | Fenster „Neuer Alarm“ mit den Feldern „Rad:“, „Tätigkeit:“, „Alle (km):“ und dem Kontrollkästchen „Alarm eingeschaltet“ |
-| 22 | 4.7 | Fenster „Neue Wartung“ mit den Feldern „Datum:“, „Rad:“, „Tätigkeit:“ und „Kommentar:“ |
-| 23 | 4.8 | Fenster „Tour planen“ mit einer geplanten Strecke, mehreren Wegpunkten, kleinen Abbiegepunkten, der Leiste mit „Fahrprofil:“ und den Angaben zu Länge und Höhenmetern oben rechts |
-| 24 | 4.8 | Fenster „Overlays“ mit einem Ordnerbaum, eingeschalteten und ausgeschalteten Overlays mit Farbfeldern und den Feldern „Name:“ und „Farbe:“ |
-| 25 | 4.9.1 | Fenster „Persönliche Daten“ mit ausgefüllten Feldern und den Schaltflächen „OK“ und „Abbrechen“ |
-| 26 | 4.9.2 | Fenster „Saisonziele“ mit gewähltem Jahr, Zielen je Aktivität und einer Zeile mit „übernommen aus BikeXperience“ in der Spalte „Herkunft“ |
-| 27 | 4.9.3 | Fenster „Equipment-Einsatz“ mit mehreren Rädern, einem ausgemusterten Rad, der Zeile „ohne Equipment“ und der fetten Zeile „Summe“ |
-| 28 | 4.9.4 | Fenster „Einstellungen“, Karteikarte „Allgemein“ mit der Gruppe „Datenordner“ und der Gruppe „Darstellung“ mit der Auswahl „Größe der Oberfläche:“ |
-| 29 | 4.9.4 | Fenster „Einstellungen“, Karteikarte „Datensicherung“ mit Sicherungsordner, „Sichern nach Programmstarts:“ und „Höchstens aufbewahren:“ |
-| 30 | 4.9.4 | Fenster „Einstellungen“, Karteikarte „Tourenplanung“ mit der Gruppe „Routing“ (BRouter gewählt) und der Gruppe „Overlays“ mit der Farbauswahl |
-| 31 | 4.9.4 | Fenster „Einstellungen“, Karteikarte „Auswahllisten“ mit der Liste „Aktivität“, einem Eintrag mit dem Zusatz „(Hauptaktivität)“ und den Schaltflächen rechts daneben |
-| 32 | 4.9.4 | Fenster „Equipment bearbeiten“ mit den Feldern „Name:“ bis „Anfangskilometer:“, den Kontrollkästchen „Standard für diese Aktivität“ und „ausgemustert“ und der Liste „Gerätezuordnung (beim Import gemerkt):“ mit einer Rad-Kennung und einem Sensor |
-| 33 | 4.9.5 | Fenster „Sicherung wiederherstellen“ mit der Liste der Sicherungen, z. B. „Freitag, 23.10.2026, 18:58:22 Uhr“, und den Schaltflächen „Wiederherstellen…“ und „Abbrechen“ |
-| 34 | 4.10 | Fenster „Über AndyTours“ mit großem Programmicon (Fahrrad vor Bergen), „AndyTours“, Versionsnummer und Autor |
-| 35 | 5 | Fenster „AndyTours – Datenordner nicht erreichbar“ mit Ordnerpfad und den Schaltflächen „Erneut versuchen“, „Anderen Ordner wählen…“ und „Beenden“ |
-
----
-
-<a id="anhang-b"></a>
-## Anhang B: Offene Fragen
+<a id="anhang-offene-fragen"></a>
+## Anhang: Offene Fragen
 
 Alle offenen Fragen sind beantwortet und eingearbeitet.
