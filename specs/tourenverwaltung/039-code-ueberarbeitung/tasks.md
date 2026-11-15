@@ -42,4 +42,4 @@ Abschluss
 - [x] 25. Suche nach veraltetem und ungenutztem Code wiederholen
 - [x] 26. Installationsprogramm bauen, Umwandlungswerkzeug mit einer Kopie von `Daten/` prüfen
 - [x] 27. `docs/tech.md`, `docs/structure.md` und Projektbeschreibung nachziehen
-- [ ] 28. Manuelle Prüfung des Programms durch den Benutzer
+- [x] 28. Manuelle Prüfung des Programms durch den Benutzer
