@@ -26,7 +26,7 @@ Die neue API-WPF-Migrationsansicht kann mit folgendem Kommando gestartet werden:
 dotnet run --project src/AndyTours.App -c Release -- --api
 ```
 
-Der normale Start ohne `--api` bleibt Legacy und unverändert. Der API-Modus öffnet einen Verbindungsdialog für lokales oder zentrales Backend und danach eine Übersicht mit:
+Der normale Start ohne `--api` bleibt Legacy und unverändert. Für Touren-Schreibzugriffe verlangt die API vollständige PUT-Repräsentationen einschließlich aller Pflichtfelder (nullable Felder müssen als Schlüssel vorhanden sein, dürfen aber `null` sein); POST benötigt zusätzlich den `Idempotency-Key`-Header. Der API-Modus öffnet einen Verbindungsdialog für lokales oder zentrales Backend und danach eine Übersicht mit:
 
 - Zeitraumfiltern, Raster- und Kennzahlauswahl
 - vier Kennzahlen (Distanz, Höhenmeter, Fahrzeit, Anzahl)

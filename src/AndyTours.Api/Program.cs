@@ -22,6 +22,7 @@ if (string.IsNullOrWhiteSpace(accessToken) || Encoding.UTF8.GetByteCount(accessT
     throw new InvalidOperationException("Backend:Zugriffstoken muss mindestens 32 Bytes umfassen.");
 Directory.CreateDirectory(dataDirectory);
 var expectedTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(accessToken));
+builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.RespectRequiredConstructorParameters = true);
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ProblemExceptionHandler>();
 builder.Services.AddOpenApi("v1");

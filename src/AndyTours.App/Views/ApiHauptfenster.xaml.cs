@@ -55,10 +55,11 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private void TourenDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (sender is not DataGrid grid || e.OriginalSource is not DependencyObject ursprung) return;
-        if (ItemsControl.ContainerFromElement(grid, ursprung) is not DataGridRow { Item: Contracts.V1.TourAntwort } row)
+        if (e.ChangedButton != MouseButton.Left || sender is not DataGrid grid || e.OriginalSource is not DependencyObject ursprung) return;
+        if (ItemsControl.ContainerFromElement(grid, ursprung) is not DataGridRow { Item: Contracts.V1.TourAntwort tour } row)
             return;
 
+        _viewModel.AusgewaehlteTour = tour;
         if (_viewModel.TourBearbeitenCommand.CanExecute(null))
             _viewModel.TourBearbeitenCommand.Execute(null);
         e.Handled = true;
