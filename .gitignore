@@ -29,3 +29,6 @@ sdd-workflow-beispiel.docx
 
 # VS-Code-Arbeitsbereiche (enthalten lokale Pfade)
 *.code-workspace
+
+# Beobachtungen des handbuch-fotograf am laufenden Programm (Arbeitsdatei, kann Rückschlüsse auf den Datenbestand zulassen)
+/handbuch-beobachtungen.md
