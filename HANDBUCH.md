@@ -51,12 +51,6 @@ AndyTours beschränkt sich auf die Funktionen, die tatsächlich genutzt werden. 
 
 - mehrere Benutzer
 - Übernahme von Daten aus anderen Programmen (vorhandene FIT-Dateien vom Garmin lassen sich aber importieren, siehe [Abschnitt 4.2](#k4-2))
-- Schwellwerte mit Farben
-- im Tourdetail: Puls- und Zonenauswertung, Rundenzeiten, Vergleich von Höhenprofilen
-- die Karteikarten „Diagramme“, „Statistik“, „Kalender“, „Trainingsplan“ und „Planung“
-- weitere Auskünfte wie Jahresprognose, Top 50, Gewichtsverlauf, Ruhe- und Erholungspuls, Leistungs- und Trainingskontrolle, Temperaturauswertung, virtuelle Weltumrundung, Vergleich von Aktivitäten und Kategorien
-- bei der Wartung: Kuchendiagramm sowie Export und Import als CSV-Datei
-- bei Equipments: Gewicht, Radumfang, Roll- und Luftwiderstand, Kettenblätter und Ritzel, Bild
 - Berechnung von Leistung und Kalorien
 - Werkzeuge wie Ritzelrechner, Pulsrechner und Marathonzeitenplaner
 - Import von Touren aus GPX- und TCX-Dateien (GPX-Dateien lassen sich aber als Overlay einblenden, siehe [Abschnitt 4.8](#k4-8))
