@@ -379,12 +379,12 @@ Diese Karteikarte zeigt alle Einheiten der gewählten Jahres- und Aktivitätsaus
 Mit dieser Anleitung legen Sie fest, welche Spalten Sie sehen.
 
 1. Klicken Sie mit der rechten Maustaste auf eine Spaltenüberschrift.
-2. Ein Menü listet alle 18 Spalten in ihrer ursprünglichen Reihenfolge, zum Beispiel **Distanz (km)**, **Höhenmeter (hm)**, **Temperatur (°C)**, **Maximalhöhe** und **Trainingsbereich**. Am Ende steht, durch eine Linie abgetrennt, der fette Eintrag **Übernehmen**.
+2. Ein Menü listet alle 18 Spalten in ihrer ursprünglichen Reihenfolge, sichtbare mit Häkchen, zum Beispiel **Distanz (km)**, **Höhenmeter (hm)**, **Temperatur (°C)**, **Maximalhöhe** und **Trainingsbereich**. Am Ende steht, durch eine Linie abgetrennt, der fette Eintrag **Übernehmen**.
 3. Klicken Sie auf eine Spalte. Ist sie sichtbar, blendet AndyTours sie aus. Ist sie ausgeblendet, blendet AndyTours sie ein. Die Tabelle hinter dem Menü zeigt die Änderung sofort.
 4. Klicken Sie bei Bedarf weitere Spalten an. Das Menü bleibt dabei offen.
 5. Klicken Sie auf **Übernehmen**, um das Menü zu schließen.
 
-Ob eine Spalte gerade sichtbar ist, sehen Sie an den Spaltenüberschriften der Tabelle. Die letzte sichtbare Spalte lässt sich nicht ausblenden. Ihr Eintrag im Menü ist dann ausgegraut.
+Vor jeder sichtbaren Spalte steht im Menü ein Häkchen. Die letzte sichtbare Spalte lässt sich nicht ausblenden. Ihr Eintrag im Menü ist dann ausgegraut.
 
 #### Spalten verschieben und Breite ändern
 
