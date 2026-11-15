@@ -1,0 +1,80 @@
+<Window x:Class="AndyTours.App.Views.ApiHauptfenster"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        xmlns:local="clr-namespace:AndyTours.App.Views"
+        Title="AndyTours · API-Übersicht" Width="1200" Height="820" MinWidth="900" MinHeight="620"
+        Language="de-DE" Background="#F4F6F8" WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <local:DauerConverter x:Key="DauerConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Key="R" Modifiers="Control" Command="{Binding AktualisierenCommand}" />
+    </Window.InputBindings>
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="{Binding BackendAdresseAnzeige}" DockPanel.Dock="Right" VerticalAlignment="Center" Foreground="#637083"/>
+            <TextBlock Text="AndyTours" FontSize="26" FontWeight="Bold" Foreground="#18324F"/>
+        </DockPanel>
+        <Border Grid.Row="1" Background="#E8F1FB" CornerRadius="8" Padding="12" Margin="0,0,0,16">
+            <TextBlock Text="API_FIRST – Migrationsansicht; weitere Funktionen werden übernommen"
+                       Foreground="#245B91" FontWeight="SemiBold" TextWrapping="Wrap"/>
+        </Border>
+        <Grid Grid.Row="2" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,12,0"><TextBlock Text="Von" Foreground="#637083"/><DatePicker SelectedDate="{Binding VonDatum, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/></StackPanel>
+            <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="Bis" Foreground="#637083"/><DatePicker SelectedDate="{Binding BisDatum, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/></StackPanel>
+            <StackPanel Grid.Column="2" Margin="0,0,12,0"><TextBlock Text="Gruppierung" Foreground="#637083"/><ComboBox ItemsSource="{Binding RasterOptionen}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Raster}" Margin="0,5,0,0" MinWidth="125"/></StackPanel>
+            <StackPanel Grid.Column="3" Margin="0,0,12,0"><TextBlock Text="Kennzahl" Foreground="#637083"/><ComboBox ItemsSource="{Binding KennzahlOptionen}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Kennzahl}" Margin="0,5,0,0" MinWidth="125"/></StackPanel>
+            <Button Grid.Column="4" Content="Aktualisieren" Command="{Binding AktualisierenCommand}" Padding="18,8" VerticalAlignment="Bottom" Background="#246DB2" Foreground="White" FontWeight="SemiBold"/>
+        </Grid>
+        <Grid Grid.Row="3">
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <UniformGrid Columns="4" Margin="0,0,0,16">
+                <Border Background="White" CornerRadius="8" Padding="16" Margin="0,0,12,0"><StackPanel><TextBlock Text="Distanz" Foreground="#637083"/><TextBlock Text="{Binding DistanzKmText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
+                <Border Background="White" CornerRadius="8" Padding="16" Margin="0,0,12,0"><StackPanel><TextBlock Text="Höhenmeter" Foreground="#637083"/><TextBlock Text="{Binding HoehenmeterText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
+                <Border Background="White" CornerRadius="8" Padding="16" Margin="0,0,12,0"><StackPanel><TextBlock Text="Fahrzeit" Foreground="#637083"/><TextBlock Text="{Binding FahrzeitText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
+                <Border Background="White" CornerRadius="8" Padding="16"><StackPanel><TextBlock Text="Touren" Foreground="#637083"/><TextBlock Text="{Binding AnzahlText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
+            </UniformGrid>
+            <TabControl Grid.Row="1" Background="White">
+                <TabItem Header="Übersicht">
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <oxy:PlotView Model="{Binding Diagramm}" MinHeight="250"/>
+                        <TextBlock Grid.Row="1" Text="{Binding ZukunftsHinweis}" Foreground="#875A12" TextWrapping="Wrap" Margin="0,12,0,0"/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Touren">
+                    <DockPanel Margin="12">
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                            <Button Content="← Vorherige" Command="{Binding VorherigeSeiteCommand}" Padding="12,6" Margin="0,0,10,0"/>
+                            <TextBlock Text="{Binding SeitenText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <Button Content="Nächste →" Command="{Binding NaechsteSeiteCommand}" Padding="12,6"/>
+                        </StackPanel>
+                        <DataGrid ItemsSource="{Binding Touren}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False"
+                                  CanUserDeleteRows="False" SelectionMode="Single" SelectionUnit="FullRow" HeadersVisibility="Column"
+                                  EnableRowVirtualization="True" GridLinesVisibility="Horizontal">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Datum" Binding="{Binding Werte.Datum, StringFormat={}{0:dd.MM.yyyy}}" Width="110"/>
+                                <DataGridTextColumn Header="Startzeit" Binding="{Binding Werte.Startzeit, StringFormat={}{0:HH:mm}}" Width="90"/>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Werte.Name}" Width="*"/>
+                                <DataGridTextColumn Header="Distanz (km)" Binding="{Binding Werte.DistanzKm, StringFormat={}{0:N1}}" Width="120"/>
+                                <DataGridTextColumn Header="Höhenmeter" Binding="{Binding Werte.Hoehenmeter, StringFormat={}{0:N0}}" Width="110"/>
+                                <DataGridTextColumn Header="Fahrzeit" Binding="{Binding Werte.FahrzeitSekunden, Converter={StaticResource DauerConverter}}" Width="110"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </TabItem>
+            </TabControl>
+        </Grid>
+        <StackPanel Grid.Row="4" Margin="0,12,0,0">
+            <ProgressBar Height="3" IsIndeterminate="{Binding Laedt}" Visibility="{Binding Laedt, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <TextBlock Text="{Binding StatusText}" Foreground="#46566A" Margin="0,6,0,0" AutomationProperties.LiveSetting="Polite"/>
+        </StackPanel>
+    </Grid>
+</Window>
