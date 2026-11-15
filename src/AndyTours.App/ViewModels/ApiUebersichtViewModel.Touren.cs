@@ -31,7 +31,11 @@ public partial class ApiUebersichtViewModel
                 return;
             }
 
-            var einheit = ErstelleNeueEinheit.Ausfuehren(bestand, null, DateOnly.FromDateTime(DateTime.Today));
+            var bevorzugteAktivitaetId = AktivitaetAuswahl?.Id;
+            if (bevorzugteAktivitaetId is { } gewaehlt &&
+                !bestand.Aktivitaeten.Any(a => a.Id == gewaehlt))
+                bevorzugteAktivitaetId = null;
+            var einheit = ErstelleNeueEinheit.Ausfuehren(bestand, bevorzugteAktivitaetId, DateOnly.FromDateTime(DateTime.Today));
             var anfrageId = Guid.NewGuid();
             gespeichert = ZeigeEditor(einheit, bestand, stammdaten.Trainingsbereiche, istNeu: true,
                 async (werte, fenster) =>

@@ -23,14 +23,15 @@
             <TextBlock Text="API_FIRST – Migrationsansicht; weitere Funktionen werden übernommen"
                        Foreground="#245B91" FontWeight="SemiBold" TextWrapping="Wrap"/>
         </Border>
-        <Grid Grid.Row="2" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <StackPanel Margin="0,0,12,0"><TextBlock Text="Von" Foreground="#637083"/><DatePicker SelectedDate="{Binding VonDatum, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/></StackPanel>
-            <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="Bis" Foreground="#637083"/><DatePicker SelectedDate="{Binding BisDatum, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/></StackPanel>
-            <StackPanel Grid.Column="2" Margin="0,0,12,0"><TextBlock Text="Gruppierung" Foreground="#637083"/><ComboBox ItemsSource="{Binding RasterOptionen}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Raster}" Margin="0,5,0,0" MinWidth="125"/></StackPanel>
-            <StackPanel Grid.Column="3" Margin="0,0,12,0"><TextBlock Text="Kennzahl" Foreground="#637083"/><ComboBox ItemsSource="{Binding KennzahlOptionen}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Kennzahl}" Margin="0,5,0,0" MinWidth="125"/></StackPanel>
-            <Button Grid.Column="4" Content="Aktualisieren" Command="{Binding AktualisierenCommand}" Padding="18,8" VerticalAlignment="Bottom" Background="#246DB2" Foreground="White" FontWeight="SemiBold"/>
-        </Grid>
+        <WrapPanel Grid.Row="2" Margin="0,0,0,16" IsEnabled="{Binding FilterControlsEnabled}">
+            <StackPanel Width="160" Margin="0,0,12,8"><TextBlock Text="Von" Foreground="#637083"/><DatePicker SelectedDate="{Binding VonDatum, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/></StackPanel>
+            <StackPanel Width="160" Margin="0,0,12,8"><TextBlock Text="Bis" Foreground="#637083"/><DatePicker SelectedDate="{Binding BisDatum, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/></StackPanel>
+            <StackPanel Width="155" Margin="0,0,12,8"><TextBlock Text="Gruppierung" Foreground="#637083"/><ComboBox ItemsSource="{Binding RasterOptionen}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Raster}" Margin="0,5,0,0"/></StackPanel>
+            <StackPanel Width="155" Margin="0,0,12,8"><TextBlock Text="Kennzahl" Foreground="#637083"/><ComboBox ItemsSource="{Binding KennzahlOptionen}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Kennzahl}" Margin="0,5,0,0"/></StackPanel>
+            <StackPanel Width="170" Margin="0,0,12,8"><TextBlock Text="Aktivität" Foreground="#637083"/><ComboBox ItemsSource="{Binding AktivitaetsOptionen}" DisplayMemberPath="Name" SelectedItem="{Binding AktivitaetAuswahl, Mode=TwoWay}" Margin="0,5,0,0"/></StackPanel>
+            <StackPanel Width="170" Margin="0,0,12,8"><TextBlock Text="Kategorie" Foreground="#637083"/><ComboBox ItemsSource="{Binding KategorieOptionen}" DisplayMemberPath="Name" SelectedItem="{Binding KategorieAuswahl, Mode=TwoWay}" Margin="0,5,0,0"/></StackPanel>
+            <Button Content="Aktualisieren" Command="{Binding AktualisierenCommand}" Padding="18,8" VerticalAlignment="Bottom" Margin="0,0,0,8" Background="#246DB2" Foreground="White" FontWeight="SemiBold"/>
+        </WrapPanel>
         <Grid Grid.Row="3">
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
             <UniformGrid Columns="4" Margin="0,0,0,16">
