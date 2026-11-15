@@ -168,25 +168,12 @@
                 <Setter Property="BorderThickness" Value="1" />
             </Style>
 
-            <!-- Hauptmenü: Fluent zeichnet die Hauptmenüpunkte („Datei“, „Einheit“ …) durchsichtig ohne Rahmen, sodass
-                 sie wie die Reiter kaum erkennbar sind. Sie bekommen deshalb die Farben der nicht gewählten Reiter:
-                 hellgraue Fläche mit feinem Rahmen. Die Fluent-Vorlage bleibt (nur Farben über Eigenschaften). -->
-            <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
-                <Style.Triggers>
-                    <Trigger Property="Role" Value="TopLevelHeader">
-                        <Setter Property="Background" Value="{StaticResource KarteikarteReiter}" />
-                        <Setter Property="BorderBrush" Value="#FFC2C9D1" />
-                    </Trigger>
-                    <Trigger Property="Role" Value="TopLevelItem">
-                        <Setter Property="Background" Value="{StaticResource KarteikarteReiter}" />
-                        <Setter Property="BorderBrush" Value="#FFC2C9D1" />
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
+            <!-- Hauptmenü: Die Hauptmenüpunkte („Datei“, „Einheit“ …) bleiben wie in der Fluent-Vorlage schlichter
+                 Text auf der Menüleiste, ohne eigene Fläche und ohne Rahmen (Spezifikation 038, ADR 0009).
 
-            <!-- Hervorgehobener Menüpunkt (Maus darüber, Menü offen, Tastatur), im Hauptmenü und in den aufklappenden
-                 Menüs: Die Fluent-Vorlagen lesen die Farbe über diesen Schlüssel. Wie der Reiter beim Darüberfahren
-                 etwas dunkler grau statt des kaum sichtbaren Fluent-Graus. -->
+                 Hervorgehobener Menüpunkt (Maus darüber, Menü offen, Tastatur), im Hauptmenü, in den aufklappenden
+                 Menüs und in Kontextmenüs: Die Fluent-Vorlagen lesen die Farbe über diesen Schlüssel. Wie der Reiter
+                 beim Darüberfahren etwas dunkler grau statt des kaum sichtbaren Fluent-Graus. -->
             <SolidColorBrush x:Key="MenuBarItemBackgroundSelected" Color="#FFCDD4DC" />
 
             <!-- Tabellen: wie Fluent, aber mit dem Zellstil oben (Fluent setzt sonst seinen eigenen Zellstil ein) -->

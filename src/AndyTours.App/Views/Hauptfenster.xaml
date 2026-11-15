@@ -2,7 +2,8 @@
   Hauptfenster von AndyTours.
 
   Aufbau von oben nach unten (DockPanel):
-    1. Menüleiste (Datei, Einheit, Tourenplanung, Extras, Hilfe); „Einheit → Neue Einheit“ auch mit Strg+N
+    1. Menüleiste (Datei, Einheit, Tourenplanung, Extras, Hilfe) als schlichte Textleiste mit feiner Linie darunter
+       (ADR 0009); „Einheit → Neue Einheit“ auch mit Strg+N
     2. Werkzeugleiste mit Jahres- und Aktivitätsauswahl, daneben die Summen der Auswahl (Anzahl, km, hm)
     3. Statusleiste (am unteren Rand angedockt): links Gesamtzahl der Einheiten und die Meldung zur
        letzten Aktion (Statusmeldung), rechts der Datenordner
@@ -72,6 +73,10 @@
                 <MenuItem Header="_Über AndyTours" Command="{Binding UeberCommand}" />
             </MenuItem>
         </Menu>
+
+        <!-- Feine Linie zwischen Menüleiste und Werkzeugleiste (Spezifikation 038, ADR 0009); ein eigenes Element,
+             damit sie nicht davon abhängt, ob die Fluent-Vorlage des Menüs einen Rahmen zeichnet -->
+        <Border DockPanel.Dock="Top" Height="1" Background="#FFC2C9D1" />
 
         <!-- 2. Werkzeugleiste: Filter für Jahr und Aktivität, wirken später auf alle Karteikarten -->
         <ToolBarTray DockPanel.Dock="Top">
