@@ -13,7 +13,7 @@
 
   Alle Inhalte werden per Datenbindung aus dem HauptfensterViewModel gelesen.
   Das ViewModel wird beim Programmstart von App erzeugt und im Konstruktor übergeben.
-  Die Karteikarten „Diagramme“, „Statistik“ und „Kalender“ des Originals entfallen (siehe
+  Die Karteikarten „Diagramme“, „Statistik“ und „Kalender“ gibt es bewusst nicht (siehe
   specs/tourenverwaltung/map.md, „Nicht enthalten“).
 -->
 <Window x:Class="AndyTours.App.Views.Hauptfenster"

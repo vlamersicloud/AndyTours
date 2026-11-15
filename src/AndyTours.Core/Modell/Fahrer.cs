@@ -27,16 +27,16 @@ public class Fahrer
     /// <summary>Aktuelles Körpergewicht in Kilogramm (Vorschlag für neue Einheiten).</summary>
     public double GewichtKg { get; set; }
 
-    /// <summary>Ruhepuls in Schlägen pro Minute (Original: <c>pulsemin</c>).</summary>
+    /// <summary>Ruhepuls in Schlägen pro Minute (in den Altdaten: <c>pulsemin</c>).</summary>
     public int Ruhepuls { get; set; }
 
-    /// <summary>Maximalpuls in Schlägen pro Minute (Original: <c>pulsemax</c>).</summary>
+    /// <summary>Maximalpuls in Schlägen pro Minute (in den Altdaten: <c>pulsemax</c>).</summary>
     public int Maxpuls { get; set; }
 
-    /// <summary>Untere Grenze des persönlichen Trainingspulses (Original: <c>hfMin</c>).</summary>
+    /// <summary>Untere Grenze des persönlichen Trainingspulses (in den Altdaten: <c>hfMin</c>).</summary>
     public int TrainingspulsVon { get; set; }
 
-    /// <summary>Obere Grenze des persönlichen Trainingspulses (Original: <c>hfMax</c>).</summary>
+    /// <summary>Obere Grenze des persönlichen Trainingspulses (in den Altdaten: <c>hfMax</c>).</summary>
     public int TrainingspulsBis { get; set; }
 
     /// <summary>Name des Heimatorts (Startpunkt der Kartenanzeige).</summary>
