@@ -8,94 +8,38 @@ public sealed class ApiHauptfensterVertragTests
 {
     private static readonly XNamespace Presentation = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
     private static readonly XNamespace Xaml = "http://schemas.microsoft.com/winfx/2006/xaml";
-
-    private static XDocument LadeXaml()
+    private static XDocument LadeXaml() { using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AndyTours.ApiHauptfenster.xaml"); Assert.NotNull(stream); return XDocument.Load(stream!); }
+    [Fact] public void WindowRessourcenDefinierenAlleVerwendetenStaticResources()
     {
-        using var stream = Assembly.GetExecutingAssembly()
-            .GetManifestResourceStream("AndyTours.ApiHauptfenster.xaml");
-        Assert.NotNull(stream);
-        return XDocument.Load(stream!);
+        var document=LadeXaml(); var keys=document.Descendants(Presentation+"Window.Resources").Elements().Select(e=>(string)e.Attribute(Xaml+"Key")!).ToHashSet(StringComparer.Ordinal);
+        Assert.Contains("DauerConverter",keys); Assert.Contains("BoolToVisibilityConverter",keys);
+        var refs=document.Descendants().Attributes().Select(a=>a.Value).Where(v=>v.Contains("{StaticResource ",StringComparison.Ordinal)).SelectMany(v=>v.Split("{StaticResource ",StringSplitOptions.None).Skip(1)).Select(v=>v.Split('}')[0]).ToHashSet(StringComparer.Ordinal);
+        Assert.All(keys,k=>Assert.Contains(k,refs)); Assert.All(refs,k=>Assert.Contains(k,keys));
     }
-
-    [Fact]
-    public void WindowRessourcenDefinierenAlleVerwendetenStaticResources()
+    [Fact] public void TourenCrudUndTastaturbindungenBleibenVorhanden()
     {
-        var document = LadeXaml();
-        var resourceKeys = document.Descendants(Presentation + "Window.Resources")
-            .Elements()
-            .Select(element => (string)element.Attribute(Xaml + "Key")!)
-            .ToHashSet(StringComparer.Ordinal);
-
-        Assert.Contains("DauerConverter", resourceKeys);
-        Assert.Contains("BoolToVisibilityConverter", resourceKeys);
-
-        var staticReferences = document.Descendants()
-            .Attributes()
-            .Select(attribute => attribute.Value)
-            .Where(value => value.Contains("{StaticResource ", StringComparison.Ordinal))
-            .SelectMany(value => value.Split("{StaticResource ", StringSplitOptions.None).Skip(1))
-            .Select(value => value.Split('}', StringSplitOptions.None)[0])
-            .ToHashSet(StringComparer.Ordinal);
-
-        Assert.All(resourceKeys, key => Assert.Contains(key, staticReferences));
-        Assert.All(staticReferences, key => Assert.Contains(key, resourceKeys));
+        var d=LadeXaml(); var buttons=d.Descendants(Presentation+"Button").Select(x=>(string?)x.Attribute("Command")).ToHashSet(StringComparer.Ordinal);
+        Assert.Contains("{Binding NeueTourCommand}",buttons); Assert.Contains("{Binding TourBearbeitenCommand}",buttons); Assert.Contains("{Binding TourKopierenCommand}",buttons); Assert.Contains("{Binding TourLoeschenCommand}",buttons);
+        var grid=Assert.Single(d.Descendants(Presentation+"DataGrid")); Assert.Equal("{Binding AusgewaehlteTour, Mode=TwoWay}",(string?)grid.Attribute("SelectedItem")); Assert.Equal("TourenDataGrid_MouseDoubleClick",(string?)grid.Attribute("MouseDoubleClick"));
+        var keys=grid.Element(Presentation+"DataGrid.InputBindings")!.Elements(Presentation+"KeyBinding").ToDictionary(x=>(string)x.Attribute("Key")!);
+        Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["F2"].Attribute("Command")!); Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["Enter"].Attribute("Command")!); Assert.Equal("{Binding TourLoeschenCommand}",(string)keys["Delete"].Attribute("Command")!);
     }
-
-    [Fact]
-    public void TourenCrudAuswahlDoppelklickUndTastaturbindungenBleibenVorhanden()
+    [Fact] public void FilterDiagrammUndKpisBleibenGebunden()
     {
-        var document = LadeXaml();
-        var buttons = document.Descendants(Presentation + "Button")
-            .Select(button => (string?)button.Attribute("Command"))
-            .Where(value => value is not null)
-            .ToHashSet(StringComparer.Ordinal);
-
-        Assert.Contains("{Binding NeueTourCommand}", buttons);
-        Assert.Contains("{Binding TourBearbeitenCommand}", buttons);
-        Assert.Contains("{Binding TourKopierenCommand}", buttons);
-        Assert.Contains("{Binding TourLoeschenCommand}", buttons);
-
-        var grid = Assert.Single(document.Descendants(Presentation + "DataGrid"));
-        Assert.Equal("{Binding AusgewaehlteTour, Mode=TwoWay}", (string?)grid.Attribute("SelectedItem"));
-        Assert.Equal("TourenDataGrid_MouseDoubleClick", (string?)grid.Attribute("MouseDoubleClick"));
-
-        var keys = grid.Element(Presentation + "DataGrid.InputBindings")!
-            .Elements(Presentation + "KeyBinding")
-            .ToDictionary(binding => (string)binding.Attribute("Key")!, binding => (string)binding.Attribute("Command")!);
-        Assert.Equal("{Binding TourBearbeitenCommand}", keys["F2"]);
-        Assert.Equal("{Binding TourBearbeitenCommand}", keys["Enter"]);
-        Assert.Equal("{Binding TourLoeschenCommand}", keys["Delete"]);
+        var values=LadeXaml().Descendants().Attributes().Select(a=>a.Value).ToHashSet(StringComparer.Ordinal);
+        foreach(var item in new[]{"AktivitaetsOptionen","KategorieOptionen","Diagramm","DistanzKmText","HoehenmeterText","FahrzeitText","AnzahlText"}) Assert.Contains("{Binding "+item+"}",values);
     }
-
-    [Fact]
-    public void AktivitaetsKategorieDiagrammUndKpiBindingsBleibenVorhanden()
+    [Fact] public void RekordUndJahreszielListenSindGebunden()
     {
-        var document = LadeXaml();
-        var values = document.Descendants()
-            .Attributes()
-            .Select(attribute => attribute.Value)
-            .ToHashSet(StringComparer.Ordinal);
-
-        Assert.Contains("{Binding AktivitaetsOptionen}", values);
-        Assert.Contains("{Binding KategorieOptionen}", values);
-        Assert.Contains("{Binding Diagramm}", values);
-        Assert.Contains("{Binding DistanzKmText}", values);
-        Assert.Contains("{Binding HoehenmeterText}", values);
-        Assert.Contains("{Binding FahrzeitText}", values);
-        Assert.Contains("{Binding AnzahlText}", values);
+        var d=LadeXaml(); var bindings=d.Descendants(Presentation+"ListView").Select(x=>(string?)x.Attribute("ItemsSource")).ToArray();
+        Assert.Contains("{Binding Jahresrekorde}",bindings); Assert.Contains("{Binding Einzelrekorde}",bindings); Assert.Contains("{Binding Jahresziele}",bindings);
     }
-    [Fact]
-    public void StammdatenMenuClickHandlerSindEindeutig()
+    [Fact] public void StammdatenMenuHandlerEindeutigUndContainerOhneFreitext()
     {
-        var document = LadeXaml();
-        var menu = Assert.Single(document.Descendants(Presentation + "MenuItem"),
-            item => (string?)item.Attribute("Header") == "Stammdaten");
-        var handlers = menu.Elements(Presentation + "MenuItem")
-            .Select(item => (string?)item.Attribute("Click"))
-            .Where(handler => !string.IsNullOrWhiteSpace(handler))
-            .ToArray();
-        Assert.Equal(handlers.Length, handlers.Distinct(StringComparer.Ordinal).Count());
-        Assert.DoesNotContain(document.Descendants().Where(e => new[] { "Grid", "StackPanel", "DockPanel", "Menu", "MenuItem" }.Contains(e.Name.LocalName)), element => element.Nodes().OfType<XText>().Any(t => !string.IsNullOrWhiteSpace(t.Value)));
+        var d=LadeXaml(); var menu=Assert.Single(d.Descendants(Presentation+"MenuItem"),x=>(string?)x.Attribute("Header")=="Stammdaten");
+        var handlers=menu.Elements(Presentation+"MenuItem").Select(x=>(string?)x.Attribute("Click")).Where(x=>!string.IsNullOrWhiteSpace(x)).ToArray();
+        Assert.Equal(handlers.Length,handlers.Distinct(StringComparer.Ordinal).Count());
+        var containers=new[]{"Grid","StackPanel","DockPanel","Menu","MenuItem"};
+        Assert.DoesNotContain(d.Descendants().Where(x=>containers.Contains(x.Name.LocalName)),x=>x.Nodes().OfType<XText>().Any(t=>!string.IsNullOrWhiteSpace(t.Value)));
     }
-
 }
