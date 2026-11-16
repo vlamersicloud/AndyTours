@@ -73,6 +73,35 @@ public sealed class ApiTourSeitenUebernahmeVertragTests
     }
 
     [Fact]
+    public void Server_total_is_formatted_only_after_page_validation_and_bound_one_way()
+    {
+        var vm = Read("AndyTours.ApiUebersichtViewModel.cs");
+        var refresh = Slice(vm, "public async Task AktualisierenAsync", "private async Task<ApiFilterOptionenPlan?> LadeFilterOptionenAsync");
+        AssertOrder(refresh, "ApiTourSeitenRegeln.Validieren(page, 0, 50)", "ApiTourTabellensummeAnzeige.Erstellen(page)", "LeereAnzeige()");
+
+        var paging = Slice(vm, "private async Task LadeSeiteAsync", "private void SetzeSeite");
+        AssertOrder(paging, "ApiTourSeitenRegeln.Validieren(page, start, 50)", "ApiTourTabellensummeAnzeige.Erstellen(page)", "Tabellenfilter.Uebernehmen(tablePlan)");
+
+        var sortSource = Read("AndyTours.ApiUebersichtViewModel.Sortierung.cs");
+        var sorting = Slice(sortSource, "public async Task<bool> SortiereTourenAsync", "private static void ValidiereSortierantwort");
+        AssertOrder(sorting, "ValidiereSortierantwort(page)", "ApiTourTabellensummeAnzeige.Erstellen(page)", "_tourenSortierung = schluessel");
+
+        XNamespace p = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        var document = XDocument.Parse(Read("AndyTours.ApiHauptfenster.xaml"));
+        var tab = document.Descendants(p + "TabItem").Single(element => (string?)element.Attribute("Header") == "Touren");
+        Assert.Contains(tab.Descendants(p + "TextBlock"), element =>
+            (string?)element.Attribute("Text") == "{Binding TabellensummeText, Mode=OneWay}");
+    }
+
+    private static void AssertOrder(string source, string first, string second, string third)
+    {
+        var firstIndex = source.IndexOf(first, StringComparison.Ordinal);
+        var secondIndex = source.IndexOf(second, StringComparison.Ordinal);
+        var thirdIndex = source.IndexOf(third, StringComparison.Ordinal);
+        Assert.True(firstIndex >= 0 && secondIndex > firstIndex && thirdIndex > secondIndex);
+    }
+
+    [Fact]
     public void Refresh_prepares_candidates_and_validates_before_any_display_commit()
     {
         var vm = Read("AndyTours.ApiUebersichtViewModel.cs");

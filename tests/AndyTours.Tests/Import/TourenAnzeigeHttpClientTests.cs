@@ -19,6 +19,7 @@ public sealed class TourenAnzeigeHttpClientTests
             123.456, 0, 90061, null, 12.3, 0, 0, 0, -5, 0, "GA1", "Note",
             true, false, true, false, true);
         var response = new TourAntwort(7, Version, raw) { Anzeige = display };
+        var summary = new TourenTabellensummeAntwort(1, 123.46, 0, 90061);
         var legacyJson = JsonSerializer.Serialize(new
         {
             Eintraege = new[] { new { response.Id, response.Version, response.Werte } },
@@ -31,7 +32,7 @@ public sealed class TourenAnzeigeHttpClientTests
         {
             captured ??= request;
             var json = contents.Count == 0
-                ? JsonSerializer.Serialize(new TourListeAntwort([response], 1, 0, 50), WebJson)
+                ? JsonSerializer.Serialize(new TourListeAntwort([response], 1, 0, 50) { Tabellensumme = summary }, WebJson)
                 : legacyJson;
             var content = new TrackingContent(json);
             contents.Add(content);
@@ -47,6 +48,7 @@ public sealed class TourenAnzeigeHttpClientTests
         Assert.Equal(Version, actual.Version);
         Assert.Equal(JsonSerializer.Serialize(raw), JsonSerializer.Serialize(actual.Werte));
         Assert.Equal(display, actual.Anzeige);
+        Assert.Equal(summary, page.Tabellensumme);
         Assert.Equal(new DateOnly(2026, 1, 2), actual.Anzeige!.Datum);
         Assert.Equal(new TimeOnly(7, 8), actual.Anzeige.Startzeit);
         Assert.Equal(90061, actual.Anzeige.FahrzeitSekunden);
@@ -57,7 +59,9 @@ public sealed class TourenAnzeigeHttpClientTests
         Assert.True(actual.Anzeige.IstBestFahrzeit);
         Assert.True(actual.Anzeige.IstBestMaxKmh);
 
-        var legacy = Assert.Single((await client.ListeGefiltert(0, 50, new(null, null, null, null))).Eintraege);
+        var legacyPage = await client.ListeGefiltert(0, 50, new(null, null, null, null));
+        var legacy = Assert.Single(legacyPage.Eintraege);
+        Assert.Null(legacyPage.Tabellensumme);
         Assert.Equal(7, legacy.Id);
         Assert.Equal(Version, legacy.Version);
         Assert.Equal(JsonSerializer.Serialize(raw), JsonSerializer.Serialize(legacy.Werte));
