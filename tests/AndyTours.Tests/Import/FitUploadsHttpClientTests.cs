@@ -15,23 +15,25 @@ public sealed class FitUploadsHttpClientTests
     public async Task Hochladen_streamt_unicode_bytes_und_besitzt_caller_stream_nicht()
     {
         var bytes = Encoding.UTF8.GetBytes("synthetic-fit-body");
-        var handler = new RecordingHandler((request, ct) =>
+        var successContent = new TrackingContent(Json(new FitUploadAntwort(Guid.Parse("11111111-2222-3333-4444-555555555555"), "v1", "Grüße.fit", "hash", bytes.Length, FitUploadStatus.Hochgeladen, null, DateTimeOffset.UnixEpoch)).Content!);
+        var handler = new RecordingHandler(async (request, ct) =>
         {
             Assert.Equal(HttpMethod.Put, request.Method);
             Assert.Equal("/api/v1/fit-uploads/11111111-2222-3333-4444-555555555555", request.RequestUri!.AbsolutePath);
             Assert.Equal("Grüße.fit", request.Content!.Headers.ContentDisposition!.FileNameStar);
-            Assert.Equal(bytes, request.Content.ReadAsByteArrayAsync(ct).GetAwaiter().GetResult());
-            return Task.FromResult(Json(new FitUploadAntwort(Guid.Parse("11111111-2222-3333-4444-555555555555"), "v1", "Grüße.fit", "hash", bytes.Length, FitUploadStatus.Hochgeladen, null, DateTimeOffset.UnixEpoch)));
+            Assert.Equal(bytes, await request.Content.ReadAsByteArrayAsync(ct));
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = successContent };
         });
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
         var client = new FitUploadsHttpClient(http);
-        var input = new MemoryStream(bytes);
+        using var input = new MemoryStream(bytes);
 
         var result = await client.Hochladen(Guid.Parse("11111111-2222-3333-4444-555555555555"), "Grüße.fit", input, default);
 
         Assert.Equal("v1", result.Version);
         Assert.True(input.CanRead);
         Assert.Equal(1, handler.Count);
+        Assert.True(successContent.WasDisposed);
     }
 
     [Theory]
@@ -41,7 +43,7 @@ public sealed class FitUploadsHttpClientTests
     {
         var handler = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(status) { Content = new ExplodingContent() }));
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
-        var input = new MemoryStream([1, 2, 3]);
+        using var input = new MemoryStream([1, 2, 3]);
         var client = new FitUploadsHttpClient(http);
 
         if (status == HttpStatusCode.Conflict)
@@ -56,12 +58,13 @@ public sealed class FitUploadsHttpClientTests
     [Fact]
     public async Task Abbruch_propagiert_ohne_retry_und_get_404_gibt_null()
     {
-        var handler = new RecordingHandler((_, _) => throw new OperationCanceledException());
+        using var cts = new CancellationTokenSource();
+        var handler = new RecordingHandler((_, ct) => { cts.Cancel(); ct.ThrowIfCancellationRequested(); return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)); });
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
         var client = new FitUploadsHttpClient(http);
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.Hochladen(Guid.NewGuid(), "x.fit", new MemoryStream([9]), cts.Token));
+        using var input = new MemoryStream([9]);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.Hochladen(Guid.NewGuid(), "x.fit", input, cts.Token));
+        Assert.True(input.CanRead);
         Assert.Equal(1, handler.Count);
 
         var notFound = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)));
@@ -81,6 +84,14 @@ public sealed class FitUploadsHttpClientTests
             Count++;
             return send(request, cancellationToken);
         }
+    }
+
+    private sealed class TrackingContent(HttpContent inner) : HttpContent
+    {
+        public bool WasDisposed { get; private set; }
+        protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context) => inner.CopyToAsync(stream);
+        protected override bool TryComputeLength(out long length) { length = 0; return true; }
+        protected override void Dispose(bool disposing) { WasDisposed = true; inner.Dispose(); base.Dispose(disposing); }
     }
 
     private sealed class ExplodingContent : HttpContent
