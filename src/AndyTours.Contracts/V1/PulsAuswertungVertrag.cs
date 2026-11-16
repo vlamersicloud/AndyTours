@@ -12,7 +12,13 @@ public sealed record PulsAuswertungsAnfrage(
     long? KategorieId,
     string? ProfilSport);
 
-public sealed record PulsperiodeAntwort(DateOnly Von, DateOnly Bis, string Beschriftung);
+/// <summary>Von/Bis sind auf die Anfrage begrenzt; Schluessel ist der volle Kalenderbeginn aus Core
+/// (z. B. 1. Januar bei einem Monatsraster, ISO-Montag bei Wochen). Pulszellen verwenden genau diesen Schlüssel.
+/// Das Backend setzt ihn; Clients berechnen ihn nicht selbst.</summary>
+public sealed record PulsperiodeAntwort(DateOnly Von, DateOnly Bis, string Beschriftung)
+{
+    public DateOnly Schluessel { get; init; }
+}
 
 public sealed record PulsbereichAntwort(int Bereich, string Zone, string Pulsbereich);
 
