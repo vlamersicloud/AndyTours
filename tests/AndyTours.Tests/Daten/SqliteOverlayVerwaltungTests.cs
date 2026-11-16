@@ -133,6 +133,12 @@ public sealed class SqliteOverlayVerwaltungTests
         var canceled = new CancellationToken(true);
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => store.OrdnerLoeschen(parent, visible.Version, canceled));
         Assert.Equal(visible.Version, (await store.Laden(CancellationToken.None)).Version);
+        using (var db = OeffneDatenbank.Ausfuehren(dbPath))
+            Exec(db, "DROP TRIGGER abort_folder_cascade;");
+        var cascade = await store.OrdnerLoeschen(parent, visible.Version, CancellationToken.None);
+        Assert.Empty(cascade.Ordner);
+        Assert.Empty(cascade.Overlays);
+        Assert.Equal("keep", ReadSetting(dbPath, "unrelated"));
     }
 
     private static long AddOverlay(SqliteConnection db, long folder, string name, IReadOnlyList<Geoposition> points) =>
