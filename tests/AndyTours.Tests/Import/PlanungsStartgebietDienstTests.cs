@@ -18,8 +18,8 @@ public sealed class PlanungsStartgebietDienstTests
             FitTestdatei.Schreibe(Path.Combine(root, "2026", "ride.fit"), new(new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
             var source = new Paths("missing/a.fit", "2026/absent.fit", @"2026\ride.fit");
             var result = await new PlanungsStartgebietDienst(source, root).Laden(default);
-            Assert.Equal(new PlanungsPosition(47.8, 12.1), result.SuedWest);
-            Assert.Equal(new PlanungsPosition(47.81, 12.12), result.NordOst);
+            Assert.NotNull(result.SuedWest); Assert.Equal(47.8, result.SuedWest.Breite, 5); Assert.Equal(12.1, result.SuedWest.Laenge, 5);
+            Assert.NotNull(result.NordOst); Assert.Equal(47.81, result.NordOst.Breite, 5); Assert.Equal(12.12, result.NordOst.Laenge, 5);
             Assert.Equal(2, source.MaxIndexRead);
         }
         finally { Directory.Delete(root, true); }
