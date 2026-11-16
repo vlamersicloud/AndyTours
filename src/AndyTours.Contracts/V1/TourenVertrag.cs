@@ -57,7 +57,11 @@ public sealed record TourAntwort(long Id, string Version, TourWerte Werte)
 }
 
 /// <summary>Seite einer gefilterten Tourenliste.</summary>
-public sealed record TourListeAntwort(IReadOnlyList<TourAntwort> Eintraege, int Gesamt, int Start, int Anzahl);
+public sealed record TourListeAntwort(IReadOnlyList<TourAntwort> Eintraege, int Gesamt, int Start, int Anzahl)
+{
+    /// <summary>Optionale Textauswahlwerte für ausschließlich tabellenspezifische Filter.</summary>
+    public TourenTabellenfilterOptionenAntwort? TabellenfilterOptionen { get; init; }
+}
 
 /// <summary>Änderungsanforderung mit der beim Lesen erhaltenen Versionskennung.</summary>
 public sealed record TourAendernAnfrage(string Version, TourWerte Werte);
