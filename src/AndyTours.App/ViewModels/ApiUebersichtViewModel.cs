@@ -25,6 +25,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
     public ObservableCollection<BestleistungszeileAntwort> Einzelrekorde { get; } = [];
     public ObservableCollection<JahreszielAntwort> Jahresziele { get; } = [];
     private long _generation;
+    private long _aktualisierungsstand;
     private int _start;
     private bool _filterAenderungSuspendiert;
     private bool _lookupsGeladen;
@@ -62,6 +63,8 @@ public partial class ApiUebersichtViewModel : ObservableObject
 
     /// <summary>Servergeladene Tourenseite.</summary>
     public ObservableCollection<TourAntwort> Touren { get; }
+
+    public long Aktualisierungsstand => _aktualisierungsstand;
 
     /// <summary>Aktivitätsfilter einschließlich der Option ohne Einschränkung.</summary>
     public ObservableCollection<ApiFilterOption> AktivitaetsOptionen { get; }
@@ -159,6 +162,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
             var auswertungTask = _auswertung.Laden(request, ct);
             var tourenTask = _touren.ListeGefiltert(_start, 50, filter, ct);
             await Task.WhenAll(auswertungTask, tourenTask);
+            ct.ThrowIfCancellationRequested();
             if (generation != Interlocked.Read(ref _generation)) return;
 
             var result = await auswertungTask;
@@ -180,6 +184,8 @@ public partial class ApiUebersichtViewModel : ObservableObject
             StatusText = lookupHinweis ?? (page.Gesamt == 0
                 ? "Keine Touren im gewählten Zeitraum und Filter."
                 : string.Empty);
+            Interlocked.Increment(ref _aktualisierungsstand);
+            OnPropertyChanged(nameof(Aktualisierungsstand));
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

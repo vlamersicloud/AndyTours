@@ -30,8 +30,8 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     public ApiHauptfenster(ApiUebersichtViewModel viewModel, Uri backendAdresse)
     {
-        InitializeComponent();
         _viewModel = viewModel;
+        InitializeComponent();
         DataContext = viewModel;
         BackendAdresseText.Text = backendAdresse.GetLeftPart(UriPartial.Authority);
         Loaded += FensterGeladen;

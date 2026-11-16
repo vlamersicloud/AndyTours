@@ -16,14 +16,26 @@ public sealed class ApiHauptfensterVertragTests
         var refs=document.Descendants().Attributes().Select(a=>a.Value).Where(v=>v.Contains("{StaticResource ",StringComparison.Ordinal)).SelectMany(v=>v.Split("{StaticResource ",StringSplitOptions.None).Skip(1)).Select(v=>v.Split('}')[0]).ToHashSet(StringComparer.Ordinal);
         Assert.All(keys,k=>Assert.Contains(k,refs)); Assert.All(refs,k=>Assert.Contains(k,keys));
     }
-    [Fact] public void TourenCrudUndTastaturbindungenBleibenVorhanden()
+    [Fact] public void TourenauswahlUndMehrfachaktionenSindSicherGebunden()
     {
-        var d=LadeXaml(); var buttons=d.Descendants(Presentation+"Button").Select(x=>(string?)x.Attribute("Command")).ToHashSet(StringComparer.Ordinal);
-        Assert.Contains("{Binding NeueTourCommand}",buttons); Assert.Contains("{Binding TourBearbeitenCommand}",buttons); Assert.Contains("{Binding TourKopierenCommand}",buttons); Assert.Contains("{Binding TourLoeschenCommand}",buttons);
-        var grid=Assert.Single(d.Descendants(Presentation+"DataGrid"),x=>(string?)x.Attribute(Xaml+"Name")=="TourenDataGrid"); Assert.Equal("Extended",(string?)grid.Attribute("SelectionMode")); Assert.Equal("{Binding AusgewaehlteTour, Mode=TwoWay}",(string?)grid.Attribute("SelectedItem")); Assert.Equal("TourenDataGrid_MouseDoubleClick",(string?)grid.Attribute("MouseDoubleClick"));
-        var tourdetails=Assert.Single(d.Descendants(Presentation+"Button"),x=>(string?)x.Attribute("Content")=="Tourdetails…"); Assert.Equal("TourdetailOeffnen_Click",(string?)tourdetails.Attribute("Click"));
+        var d=LadeXaml(); var buttons=d.Descendants(Presentation+"Button").ToArray();
+        var commands=buttons.Select(x=>(string?)x.Attribute("Command")).ToHashSet(StringComparer.Ordinal);
+        Assert.Contains("{Binding NeueTourCommand}",commands); Assert.Contains("{Binding TourBearbeitenCommand}",commands); Assert.Contains("{Binding TourKopierenCommand}",commands);
+        foreach(var click in new[]{"KategorienMehrfach_Click","AktivitaetMehrfach_Click","EquipmentMehrfach_Click","LoeschenMehrfach_Click"})
+        {
+            var button=Assert.Single(buttons,x=>(string?)x.Attribute("Click")==click);
+            Assert.Equal("{Binding HatTourenauswahl}",(string?)button.Attribute("IsEnabled"));
+        }
+        Assert.Contains(buttons,x=>(string?)x.Attribute("Content")=="Auswahl löschen…");
+        Assert.Contains(d.Descendants(Presentation+"TextBlock"),x=>((string?)x.Attribute("Text"))?.Contains("diese Seite",StringComparison.Ordinal)==true && ((string?)x.Attribute("Text"))?.Contains("AuswahlAnzahl",StringComparison.Ordinal)==true);
+        var grid=Assert.Single(d.Descendants(Presentation+"DataGrid"),x=>(string?)x.Attribute(Xaml+"Name")=="TourenDataGrid");
+        Assert.Equal("Extended",(string?)grid.Attribute("SelectionMode")); Assert.Equal("{Binding AusgewaehlteTour, Mode=TwoWay}",(string?)grid.Attribute("SelectedItem"));
+        Assert.Equal("TourenDataGrid_MouseDoubleClick",(string?)grid.Attribute("MouseDoubleClick")); Assert.Equal("TourenDataGrid_SelectionChanged",(string?)grid.Attribute("SelectionChanged"));
+        Assert.Equal("TourenDataGrid_PreviewKeyDownMehrfach",(string?)grid.Attribute("PreviewKeyDown"));
+        var tourdetails=Assert.Single(buttons,x=>(string?)x.Attribute("Content")=="Tourdetails…"); Assert.Equal("TourdetailOeffnen_Click",(string?)tourdetails.Attribute("Click"));
         var keys=grid.Element(Presentation+"DataGrid.InputBindings")!.Elements(Presentation+"KeyBinding").ToDictionary(x=>(string)x.Attribute("Key")!);
-        Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["F2"].Attribute("Command")!); Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["Enter"].Attribute("Command")!); Assert.Equal("{Binding TourLoeschenCommand}",(string)keys["Delete"].Attribute("Command")!);
+        Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["F2"].Attribute("Command")!); Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["Enter"].Attribute("Command")!);
+        Assert.DoesNotContain("Delete",keys.Keys);
     }
     [Fact] public void PulsbereicheTabUndMesswerttabelleSindGebundenUndSchreibgeschuetzt()
     {

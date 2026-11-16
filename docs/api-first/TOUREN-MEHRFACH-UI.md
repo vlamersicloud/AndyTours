@@ -1,9 +1,9 @@
-# Touren-Mehrfachaktionen: WPF-Entwurf
+# Touren-Mehrfachaktionen: WPF-Ablauf
 
-**WPF-Design only; nicht implementiert.**
+**WPF-Implementierung vorhanden; Tests nur kompiliert, nicht ausgeführt.**
 
-Das API-Hauptfenster erfasst beim Start unveränderliche ausgewählte TourAntwort-IDs und -Versionen, bevor es Stammdaten frisch lädt. Danach nutzt es die Auswahl-Dialoge KategorienZuordnenViewModel und EintragWaehlenViewModel weiter als reine Picker. Ein eigenes, dem Hauptfenster gehörendes modales Aktionsfenster zeigt die Zusammenfassung und bietet ausdrückliches Ausführen oder Abbrechen.
+Die Tourentabelle führt eine Auswahl ausschließlich auf der aktuell geladenen Seite. Der Root-Handler kopiert IDs, Versionen und Kategorien vor jedem Lookup; Bearbeiten/Kopieren bleiben Einzelauswahl. Kategorien-, Aktivitäts-, Equipment- und Löschaktionen öffnen zuerst Auswahl/Preview und danach ein eigenes besitzendes Aktionsmodal mit ausdrücklichem Ausführen. Das Modal zeigt Anzahl und Zusammenfassung; es sendet nicht automatisch. Kategorien und Stammdaten-Picker verwenden frische Lookupwerte, aber behalten die ursprünglichen Tourversionen.
 
-Ein testbares, UI-unabhängiges ViewModel besitzt die normalisierte unveränderliche Anfrage samt UUID und kennt bereit, beschäftigt, abgelehnt, ungewiss und bestätigt. Bei ungewissem ACK darf ausschließlich dieselbe Anfrage erneut gesendet werden; Schließen warnt. Nach gültigem ACK ist erneutes Senden dauerhaft gesperrt. Kein DB- oder FIT-Code im UI.
+Das UI-ViewModel hält eine normalisierte Anfrage und stabile UUID. Bei ungewissem ACK kann nur dieselbe Anfrage manuell wiederholt werden; bestätigte oder abgelehnte Aktionen senden nicht erneut. Schließen bei ungewissem Ergebnis warnt. Der Root sperrt konkurrierende Aktionen, aktualisiert danach die Übersicht und unterscheidet Ergebnis von Refreshstatus; Refreshfehler nach ACK wiederholen nie die Mutation. Physische Anhangsdateien bleiben bei Löschen erhalten.
 
-Während Vorbereitung und Dialog sperrt das Hauptfenster konkurrierende Aktionen. Nach Dialogschluss Busy lösen und Übersicht neu laden, auch bei ungewissem Ausgang. Ein Reload-Fehler nach bestätigtem ACK darf nie die Mutation wiederholen. Auswahl- und Löschbefehle in ApiHauptfenster.Tourdetail.cs prüfen; Guards/Lebenszyklus in App.Api.cs. Lokale Referenzen: KategorienZuordnenViewModel.cs und HauptfensterViewModel.Zuordnen.cs.
+Offen: Windows-Rendering/-Bedienung und echte Mehrclient-/Runtimeprüfung. Keine DB-/FIT-Logik in der Oberfläche.

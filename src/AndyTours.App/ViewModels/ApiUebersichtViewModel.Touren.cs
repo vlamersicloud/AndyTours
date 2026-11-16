@@ -214,12 +214,13 @@ public partial class ApiUebersichtViewModel
     }
 
     private bool KannNeueTour() => !Laedt;
-    private bool KannMitAuswahl() => !Laedt && AusgewaehlteTour is not null;
+    private bool KannMitAuswahl() => !Laedt && !EditorOffen && AuswahlAnzahl == 1 && AusgewaehlteTour is not null;
 
     partial void OnAusgewaehlteTourChanged(TourAntwort? value) => BenachrichtigeTourCommands();
 
     private void BenachrichtigeTourCommands()
     {
+        OnPropertyChanged(nameof(HatTourenauswahl));
         NeueTourCommand.NotifyCanExecuteChanged();
         TourBearbeitenCommand.NotifyCanExecuteChanged();
         TourKopierenCommand.NotifyCanExecuteChanged();

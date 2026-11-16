@@ -132,13 +132,13 @@
                 </TabItem>
                 <TabItem Header="Touren">
                     <DockPanel Margin="12">
-                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+                        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10"><TextBlock Text="Ausgewählte Zeilen (diese Seite):" VerticalAlignment="Center"/><TextBlock Text="{Binding AuswahlAnzahl, Mode=OneWay}" VerticalAlignment="Center" Margin="4,0,12,0"/>
                             <Button Content="Neue Tour" Command="{Binding NeueTourCommand}" Padding="12,6" Margin="0,0,8,0"/>
                             <Button Content="Bearbeiten" Command="{Binding TourBearbeitenCommand}" Padding="12,6" Margin="0,0,8,0"/>
                             <Button Content="Kopieren" Command="{Binding TourKopierenCommand}" Padding="12,6" Margin="0,0,8,0"/>
-                            <Button Content="Löschen" Command="{Binding TourLoeschenCommand}" Padding="12,6"/>
+                            <Button Content="Kategorien ändern…" Click="KategorienMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Padding="12,6"/><Button Content="Aktivität ändern…" Click="AktivitaetMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Padding="12,6"/><Button Content="Equipment ändern…" Click="EquipmentMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Padding="12,6"/><Button Content="Auswahl löschen…" Click="LoeschenMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Padding="12,6"/>
                             <Button Content="Tourdetails…" Click="TourdetailOeffnen_Click" ToolTip="Mehrere ausgewählte Touren werden als Etappen geöffnet." Padding="12,6" Margin="8,0,0,0"/>
-                        </StackPanel>
+                        </WrapPanel>
                         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
                             <Button Content="← Vorherige" Command="{Binding VorherigeSeiteCommand}" Padding="12,6" Margin="0,0,10,0"/>
                             <TextBlock Text="{Binding SeitenText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
@@ -147,14 +147,14 @@
                         <DataGrid x:Name="TourenDataGrid" ItemsSource="{Binding Touren}"
                                   SelectedItem="{Binding AusgewaehlteTour, Mode=TwoWay}"
                                   MouseDoubleClick="TourenDataGrid_MouseDoubleClick"
-                                  Sorting="TourenDataGrid_Sorting" CanUserSortColumns="True"
+                                  SelectionChanged="TourenDataGrid_SelectionChanged"
+                                  Sorting="TourenDataGrid_Sorting" PreviewKeyDown="TourenDataGrid_PreviewKeyDownMehrfach" CanUserSortColumns="True"
                                   IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False"
                                   CanUserDeleteRows="False" SelectionMode="Extended" SelectionUnit="FullRow" HeadersVisibility="Column"
                                   EnableRowVirtualization="True" GridLinesVisibility="Horizontal">
                             <DataGrid.InputBindings>
                                 <KeyBinding Key="F2" Command="{Binding TourBearbeitenCommand}"/>
                                 <KeyBinding Key="Enter" Command="{Binding TourBearbeitenCommand}"/>
-                                <KeyBinding Key="Delete" Command="{Binding TourLoeschenCommand}"/>
                             </DataGrid.InputBindings>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Datum" SortMemberPath="Werte.Datum" SortDirection="Descending" Binding="{Binding Werte.Datum, StringFormat={}{0:dd.MM.yyyy}}" Width="110"/>

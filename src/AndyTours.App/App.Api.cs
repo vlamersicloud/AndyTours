@@ -219,6 +219,11 @@ public partial class App
                 admin.ShowDialog();
             };
 
+            fenster.TourenKategorienAngefordert += (auswahl, ct) => ApiTourenMehrfachAnzeige.Kategorien(fenster, auswahl, uebergebeneSitzung.Stammdaten, uebergebeneSitzung.TourenMehrfachverwaltung, ct);
+            fenster.TourenAktivitaetAngefordert += (auswahl, ct) => ApiTourenMehrfachAnzeige.Aktivitaet(fenster, auswahl, uebergebeneSitzung.Stammdaten, uebergebeneSitzung.TourenMehrfachverwaltung, ct);
+            fenster.TourenEquipmentAngefordert += (auswahl, ct) => ApiTourenMehrfachAnzeige.Equipment(fenster, auswahl, uebergebeneSitzung.Stammdaten, uebergebeneSitzung.TourenMehrfachverwaltung, ct);
+            fenster.TourenLoeschenAngefordert += (auswahl, ct) => ApiTourenMehrfachAnzeige.Loeschen(fenster, auswahl, uebergebeneSitzung.TourenMehrfachverwaltung, ct);
+
             fenster.TourdetailAngefordert += (ids, ct) =>
                 ApiTourdetailAnzeige.Oeffnen(fenster, ids, uebergebeneSitzung.Tourdetail,
                     uebergebeneSitzung.CourseExport, ct, overlayHost?.Kontext);

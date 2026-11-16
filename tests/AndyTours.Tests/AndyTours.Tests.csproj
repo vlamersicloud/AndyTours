@@ -25,6 +25,7 @@
                       LogicalName="AndyTours.CourseUebertragenFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\TourenplanungFenster.xaml" LogicalName="AndyTours.TourenplanungFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiRoutingKonfigurationFenster.xaml" LogicalName="AndyTours.ApiRoutingKonfigurationFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiTourenMehrfachFenster.xaml" LogicalName="AndyTours.ApiTourenMehrfachFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.xaml"
                       LogicalName="AndyTours.ApiHauptfenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.Sortierung.cs"
@@ -48,6 +49,7 @@
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiFormularMapper.cs" Link="Presentation\ApiFormularMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourdetailMapper.cs" Link="Presentation\ApiTourdetailMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenMehrfachViewModel*.cs" Link="Presentation\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenMehrfachRueckmeldung.cs" Link="Presentation\ApiTourenMehrfachRueckmeldung.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiPulsDarstellung.cs" Link="Presentation\ApiPulsDarstellung.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiRoutingKonfigurationViewModel.cs" Link="Presentation\ApiRoutingKonfigurationViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiRoutingKonfigurationViewModel.Schreiben.cs" Link="Presentation\ApiRoutingKonfigurationViewModel.Schreiben.cs" />
