@@ -102,7 +102,7 @@ public sealed class SaisonfortschrittAuswertungTests : IDisposable
         Assert.Equal(1, yearEndClock.Reads);
     }
 
-    private Task<AktivitaetsauswertungAntwort> Load(SqliteAktivitaetsauswertung store, DateOnly from, DateOnly to, long? activity, long? category) =>
+    private static Task<AktivitaetsauswertungAntwort> Load(SqliteAktivitaetsauswertung store, DateOnly from, DateOnly to, long? activity, long? category) =>
         store.Laden(new AktivitaetsauswertungAnfrage(from, to, Auswertungsraster.Monat, activity, category));
 
     private static void InsertTour(SqliteConnection connection, SqliteTransaction transaction, long fahrerId, long activity, DateOnly date,
