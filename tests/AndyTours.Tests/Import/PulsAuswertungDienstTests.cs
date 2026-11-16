@@ -45,7 +45,7 @@ public sealed class PulsAuswertungDienstTests : IDisposable
             tour.KategorieIds.Add(categoryId);
             tour.Anhaenge.Add(new Anhang { Typ = AnhangTyp.Hoehenprofil, RelativerPfad = "pulse.fit" });
             tourId = TrainingseinheitenTabelle.Einfuegen(db, tx, tour).Id;
-            GarminPulszonenEinstellung.Speichern(db,
+            GarminPulszonenEinstellung.Speichern(db, tx,
                 new GarminPulszonenStand(new DateTimeOffset(2025, 12, 1, 0, 0, 0, TimeSpan.Zero),
                     [new GarminPulsprofil("CYCLING", [90, 110, 130, 150, 170])]));
             tx.Commit();
