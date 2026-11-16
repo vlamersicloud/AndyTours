@@ -95,6 +95,7 @@ public sealed class ApiHauptfensterVertragTests
             .Where(handler => !string.IsNullOrWhiteSpace(handler))
             .ToArray();
         Assert.Equal(handlers.Length, handlers.Distinct(StringComparer.Ordinal).Count());
+        Assert.DoesNotContain(document.Descendants().Where(e => new[] { "Grid", "StackPanel", "DockPanel", "Menu", "MenuItem" }.Contains(e.Name.LocalName)), element => element.Nodes().OfType<XText>().Any(t => !string.IsNullOrWhiteSpace(t.Value)));
     }
 
 }
