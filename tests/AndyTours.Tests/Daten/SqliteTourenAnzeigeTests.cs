@@ -6,7 +6,7 @@ using Microsoft.Data.Sqlite;
 
 namespace AndyTours.Tests.Daten;
 
-public sealed class SqliteTourenAnzeigeTests : IDisposable
+public sealed partial class SqliteTourenAnzeigeTests : IDisposable
 {
     private static readonly (TourenSortierschluessel Key, bool Descending, int[] Expected)[] SortCases =
     [

@@ -267,10 +267,9 @@ public sealed class DauerConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is not long sekunden) return "–";
-        var stunden = sekunden / 3600;
-        var minuten = sekunden % 3600 / 60;
-        return $"{stunden.ToString("N0", CultureInfo.GetCultureInfo("de-DE"))}:{minuten:00} h";
+        return value is long sekunden && sekunden >= 0
+            ? ApiTourDauerText.Formatiere(sekunden)
+            : string.Empty;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;

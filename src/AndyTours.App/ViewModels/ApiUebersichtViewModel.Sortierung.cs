@@ -48,23 +48,20 @@ public partial class ApiUebersichtViewModel
         {
             return false;
         }
+        catch (ApiTourSeitenException)
+        {
+            if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested)
+                StatusText = "Tourenseite ist unvollständig oder ungültig. Bitte Backend-Version und Verbindung prüfen.";
+            return false;
+        }
         catch (Exception)
         {
             if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested) StatusText = "Sortierte Tourenseite konnte nicht geladen werden; bisherige Sortierung bleibt aktiv.";
             return false;
         }
-        finally
-        {
-            Laedt = false;
-        }
+        finally { Laedt = false; }
     }
 
-    private static void ValidiereSortierantwort(TourListeAntwort? page)
-    {
-        if (page is null || page.Start != 0 || page.Anzahl != 50 || page.Gesamt < 0 ||
-            page.Eintraege is null || page.Eintraege.Count > 50 || page.Eintraege.Count > page.Gesamt ||
-            page.Eintraege.Any(t => t is null || t.Id <= 0) ||
-            page.Eintraege.Select(t => t.Id).Distinct().Count() != page.Eintraege.Count)
-            throw new InvalidOperationException("Ungültige Tourenseitenantwort.");
-    }
+    private static void ValidiereSortierantwort(TourListeAntwort? page) =>
+        ApiTourSeitenRegeln.Validieren(page, 0, 50);
 }

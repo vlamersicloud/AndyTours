@@ -50,7 +50,6 @@ public partial class ApiUebersichtViewModel : ObservableObject
 
     private static readonly CultureInfo Deutsch = CultureInfo.GetCultureInfo("de-DE");
 
-    /// <summary>Initialisiert die Übersicht ausschließlich mit typisierten API-Ports.</summary>
     public ApiUebersichtViewModel(IAktivitaetsauswertung auswertung, ITourenSpeicher touren, IStammdatenLeser stammdatenLeser)
     {
         _auswertung = auswertung;
@@ -61,28 +60,18 @@ public partial class ApiUebersichtViewModel : ObservableObject
         KategorieOptionen = [new ApiFilterOption(null, "Alle Kategorien")];
     }
 
-    /// <summary>Servergeladene Tourenseite.</summary>
     public ObservableCollection<TourAntwort> Touren { get; }
-
     public long Aktualisierungsstand => _aktualisierungsstand;
-
-    /// <summary>Aktivitätsfilter einschließlich der Option ohne Einschränkung.</summary>
     public ObservableCollection<ApiFilterOption> AktivitaetsOptionen { get; }
-
-    /// <summary>Kategorienfilter einschließlich der Option ohne Einschränkung.</summary>
     public ObservableCollection<ApiFilterOption> KategorieOptionen { get; }
-
-    /// <summary>Gibt an, ob die Filtereingaben freigegeben sind.</summary>
     public bool FilterControlsEnabled => !Laedt;
 
-    /// <summary>Verfügbare Zeitraster und Anzeigenamen.</summary>
     public IReadOnlyList<KeyValuePair<Auswertungsraster, string>> RasterOptionen { get; } =
     [
         new(Auswertungsraster.Jahr, "Jahr"), new(Auswertungsraster.Monat, "Monat"),
         new(Auswertungsraster.Woche, "Kalenderwoche (ISO)"), new(Auswertungsraster.Tag, "Tag")
     ];
 
-    /// <summary>Verfügbare Diagrammkennzahlen.</summary>
     public IReadOnlyList<KeyValuePair<ApiDiagrammkennzahl, string>> KennzahlOptionen { get; } =
     [
         new(ApiDiagrammkennzahl.Kilometer, "Kilometer"), new(ApiDiagrammkennzahl.Hoehenmeter, "Höhenmeter"),
@@ -91,21 +80,14 @@ public partial class ApiUebersichtViewModel : ObservableObject
 
     partial void OnKennzahlChanged(ApiDiagrammkennzahl value)
     {
-        if (_perioden.Count > 0)
-            ZeichneDiagramm();
+        if (_perioden.Count > 0) ZeichneDiagramm();
     }
 
     partial void OnVonDatumChanged(DateTime? value) => FilterGeaendert();
     partial void OnBisDatumChanged(DateTime? value) => FilterGeaendert();
     partial void OnRasterChanged(Auswertungsraster value) => FilterGeaendert();
-    partial void OnAktivitaetAuswahlChanged(ApiFilterOption? value)
-    {
-        if (!_filterAenderungSuspendiert) FilterGeaendert();
-    }
-    partial void OnKategorieAuswahlChanged(ApiFilterOption? value)
-    {
-        if (!_filterAenderungSuspendiert) FilterGeaendert();
-    }
+    partial void OnAktivitaetAuswahlChanged(ApiFilterOption? value) { if (!_filterAenderungSuspendiert) FilterGeaendert(); }
+    partial void OnKategorieAuswahlChanged(ApiFilterOption? value) { if (!_filterAenderungSuspendiert) FilterGeaendert(); }
 
     private void FilterGeaendert()
     {
@@ -133,40 +115,51 @@ public partial class ApiUebersichtViewModel : ObservableObject
         VorherigeSeiteCommand.NotifyCanExecuteChanged();
     }
 
-    /// <summary>Lädt Auswertung und erste Tourenseite parallel vom Backend.</summary>
     [RelayCommand(CanExecute = nameof(KannAktualisieren))]
     public async Task AktualisierenAsync(CancellationToken ct = default)
     {
         if (Laedt) return;
         var generation = Interlocked.Increment(ref _generation);
+        var vonSnapshot = VonDatum;
+        var bisSnapshot = BisDatum;
+        var rasterSnapshot = Raster;
+        var vorherAktivitaetId = AktivitaetAuswahl?.Id;
+        var vorherKategorieId = KategorieAuswahl?.Id;
+        var initial = !_lookupsGeladen;
         Laedt = true;
         StatusText = "Filter und Stammdaten werden geladen …";
         try
         {
-            var (lookupsAktuell, lookupHinweis) = await LadeFilterOptionenAsync(generation, ct);
-            if (!lookupsAktuell || generation != Interlocked.Read(ref _generation)) return;
-            if (VonDatum is null || BisDatum is null || VonDatum > BisDatum)
+            if (vonSnapshot is null || bisSnapshot is null || vonSnapshot > bisSnapshot)
             {
                 StatusText = "Bitte einen gültigen Zeitraum auswählen.";
                 return;
             }
 
-            _start = 0;
-            var von = DateOnly.FromDateTime(VonDatum.Value);
-            var bis = DateOnly.FromDateTime(BisDatum.Value);
-            var aktivitaetId = AktivitaetAuswahl?.Id;
-            var kategorieId = KategorieAuswahl?.Id;
-            var request = new AktivitaetsauswertungAnfrage(von, bis, Raster, aktivitaetId, kategorieId);
+            var plan = await LadeFilterOptionenAsync(generation, vorherAktivitaetId, vorherKategorieId, initial, ct);
+            if (plan is null || generation != Interlocked.Read(ref _generation)) return;
+
+            var von = DateOnly.FromDateTime(vonSnapshot.Value);
+            var bis = DateOnly.FromDateTime(bisSnapshot.Value);
+            var aktivitaetId = plan.Aktivitaet.Id;
+            var kategorieId = plan.Kategorie.Id;
+            var request = new AktivitaetsauswertungAnfrage(von, bis, rasterSnapshot, aktivitaetId, kategorieId);
             var filter = new TourenListenfilter(von, bis, aktivitaetId, kategorieId)
             { Sortierung = TourenSortierung, Absteigend = TourenAbsteigend };
             var auswertungTask = _auswertung.Laden(request, ct);
-            var tourenTask = _touren.ListeGefiltert(_start, 50, filter, ct);
+            var tourenTask = _touren.ListeGefiltert(0, 50, filter, ct);
             await Task.WhenAll(auswertungTask, tourenTask);
             ct.ThrowIfCancellationRequested();
             if (generation != Interlocked.Read(ref _generation)) return;
 
             var result = await auswertungTask;
             var page = await tourenTask;
+            ApiTourSeitenRegeln.Validieren(page, 0, 50);
+
+            if (plan.AuswahlGeaendert) LeereAnzeige();
+            UebernehmeFilterOptionen(plan);
+            _start = 0;
+
             _perioden.Clear();
             foreach (var periode in result.Perioden) _perioden.Add(periode);
             Jahresrekorde.Clear(); foreach (var row in result.Jahresrekorde) Jahresrekorde.Add(row);
@@ -181,7 +174,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
                 : string.Empty;
             SetzeSeite(page);
             ZeichneDiagramm();
-            StatusText = lookupHinweis ?? (page.Gesamt == 0
+            StatusText = plan.Hinweis ?? (page.Gesamt == 0
                 ? "Keine Touren im gewählten Zeitraum und Filter."
                 : string.Empty);
             Interlocked.Increment(ref _aktualisierungsstand);
@@ -191,79 +184,47 @@ public partial class ApiUebersichtViewModel : ObservableObject
         {
             if (generation == Interlocked.Read(ref _generation)) StatusText = "Ladevorgang abgebrochen.";
         }
+        catch (ApiTourSeitenException)
+        {
+            if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested)
+                StatusText = "Tourenseite ist unvollständig oder ungültig. Bitte Backend-Version und Verbindung prüfen.";
+        }
         catch (Exception)
         {
-            if (generation == Interlocked.Read(ref _generation))
+            if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested)
                 StatusText = "Backenddaten konnten nicht geladen werden.";
         }
-        finally
-        {
-            Laedt = false;
-        }
+        finally { Laedt = false; }
     }
 
-    private async Task<(bool Aktuell, string? Hinweis)> LadeFilterOptionenAsync(long generation, CancellationToken ct)
+    private async Task<ApiFilterOptionenPlan?> LadeFilterOptionenAsync(long generation,
+        long? vorherAktivitaetId, long? vorherKategorieId, bool initial, CancellationToken ct)
     {
-        var vorherAktivitaetId = AktivitaetAuswahl?.Id;
-        var vorherKategorieId = KategorieAuswahl?.Id;
         var stammdaten = await _stammdatenLeser.Laden(ct);
-        if (generation != Interlocked.Read(ref _generation)) return (false, null);
+        ct.ThrowIfCancellationRequested();
+        if (generation != Interlocked.Read(ref _generation)) return null;
+        return ApiFilterOptionenPlan.Erstellen(stammdaten, vorherAktivitaetId, vorherKategorieId, initial);
+    }
 
-        var aktivitaeten = stammdaten.Aktivitaeten
-            .Select(a => new ApiFilterOption(a.Id, a.Name)).ToArray();
-        var kategorien = stammdaten.Kategorien
-            .OrderBy(k => k.Name, StringComparer.Create(Deutsch, ignoreCase: false))
-            .Select(k => new ApiFilterOption(k.Id, k.Name)).ToArray();
-
-        ApiFilterOption? neueAktivitaetsauswahl = vorherAktivitaetId is { } aktivitaetId
-            ? aktivitaeten.FirstOrDefault(a => a.Id == aktivitaetId)
-            : (!_lookupsGeladen ? aktivitaeten.FirstOrDefault(a =>
-                stammdaten.Aktivitaeten.First(source => source.Id == a.Id).IstHaupt) : null);
-        ApiFilterOption? neueKategorieauswahl = vorherKategorieId is { } kategorieId
-            ? kategorien.FirstOrDefault(k => k.Id == kategorieId)
-            : null;
-
-        string? hinweis = null;
-        if (vorherAktivitaetId.HasValue && neueAktivitaetsauswahl is null)
-            hinweis = "Die zuvor gewählte Aktivität ist nicht mehr vorhanden; es wird jetzt nach allen Aktivitäten gefiltert.";
-        else if (vorherKategorieId.HasValue && neueKategorieauswahl is null)
-            hinweis = "Die zuvor gewählte Kategorie ist nicht mehr vorhanden; es wird jetzt nach allen Kategorien gefiltert.";
-        else if (!_lookupsGeladen && !vorherAktivitaetId.HasValue &&
-                 stammdaten.Aktivitaeten.Count > 0 && neueAktivitaetsauswahl is null)
-            hinweis = "Keine Hauptaktivität vorhanden; es wird nach allen Aktivitäten gefiltert.";
-
-        var lookupFilterGeaendert =
-            vorherAktivitaetId != neueAktivitaetsauswahl?.Id ||
-            vorherKategorieId != neueKategorieauswahl?.Id;
-        if (lookupFilterGeaendert)
-            LeereAnzeige();
-
+    private void UebernehmeFilterOptionen(ApiFilterOptionenPlan plan)
+    {
         _filterAenderungSuspendiert = true;
         try
         {
             AktivitaetsOptionen.Clear();
-            AktivitaetsOptionen.Add(new ApiFilterOption(null, "Alle Aktivitäten"));
-            foreach (var option in aktivitaeten) AktivitaetsOptionen.Add(option);
-
+            foreach (var option in plan.Aktivitaeten) AktivitaetsOptionen.Add(option);
             KategorieOptionen.Clear();
-            KategorieOptionen.Add(new ApiFilterOption(null, "Alle Kategorien"));
-            foreach (var option in kategorien) KategorieOptionen.Add(option);
-
-            AktivitaetAuswahl = neueAktivitaetsauswahl ?? AktivitaetsOptionen[0];
-            KategorieAuswahl = neueKategorieauswahl ?? KategorieOptionen[0];
+            foreach (var option in plan.Kategorien) KategorieOptionen.Add(option);
+            AktivitaetAuswahl = plan.Aktivitaet;
+            KategorieAuswahl = plan.Kategorie;
         }
-        finally
-        {
-            _filterAenderungSuspendiert = false;
-        }
+        finally { _filterAenderungSuspendiert = false; }
 
         _lookupsGeladen = true;
         OnPropertyChanged(nameof(AktivitaetsOptionen));
         OnPropertyChanged(nameof(KategorieOptionen));
-        return (true, hinweis);
     }
 
-    /// <summary>Lädt die nächste Serverseite, falls vorhanden.</summary>
     [RelayCommand(CanExecute = nameof(KannNaechsteSeite))]
     public async Task NaechsteSeiteAsync(CancellationToken ct = default)
     {
@@ -271,7 +232,6 @@ public partial class ApiUebersichtViewModel : ObservableObject
         await LadeSeiteAsync(_start + 50, ct);
     }
 
-    /// <summary>Lädt die vorherige Serverseite, falls vorhanden.</summary>
     [RelayCommand(CanExecute = nameof(KannVorherigeSeite))]
     public async Task VorherigeSeiteAsync(CancellationToken ct = default)
     {
@@ -296,15 +256,17 @@ public partial class ApiUebersichtViewModel : ObservableObject
     private async Task LadeSeiteAsync(int start, CancellationToken ct)
     {
         if (Laedt || VonDatum is null || BisDatum is null || VonDatum > BisDatum) return;
-        Laedt = true;
+        var filter = new TourenListenfilter(DateOnly.FromDateTime(VonDatum.Value),
+            DateOnly.FromDateTime(BisDatum.Value), AktivitaetAuswahl?.Id, KategorieAuswahl?.Id)
+        { Sortierung = TourenSortierung, Absteigend = TourenAbsteigend };
         var generation = Interlocked.Read(ref _generation);
+        Laedt = true;
         try
         {
-            var filter = new TourenListenfilter(DateOnly.FromDateTime(VonDatum.Value),
-                DateOnly.FromDateTime(BisDatum.Value), AktivitaetAuswahl?.Id, KategorieAuswahl?.Id)
-            { Sortierung = TourenSortierung, Absteigend = TourenAbsteigend };
             var page = await _touren.ListeGefiltert(start, 50, filter, ct);
+            ct.ThrowIfCancellationRequested();
             if (generation != Interlocked.Read(ref _generation)) return;
+            ApiTourSeitenRegeln.Validieren(page, start, 50);
             _start = start;
             SetzeSeite(page);
             StatusText = string.Empty;
@@ -313,7 +275,12 @@ public partial class ApiUebersichtViewModel : ObservableObject
         {
             if (generation == Interlocked.Read(ref _generation)) StatusText = "Ladevorgang abgebrochen.";
         }
-        catch (Exception) { if (generation == Interlocked.Read(ref _generation)) StatusText = "Tourenseite konnte nicht geladen werden."; }
+        catch (ApiTourSeitenException)
+        {
+            if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested)
+                StatusText = "Tourenseite ist unvollständig oder ungültig. Bitte Backend-Version und Verbindung prüfen.";
+        }
+        catch (Exception) { if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested) StatusText = "Tourenseite konnte nicht geladen werden."; }
         finally { Laedt = false; }
     }
 
@@ -369,8 +336,4 @@ public partial class ApiUebersichtViewModel : ObservableObject
     }
 }
 
-/// <summary>Vom Benutzer gewählte Kennzahl des Balkendiagramms.</summary>
 public enum ApiDiagrammkennzahl { Kilometer, Hoehenmeter, Fahrzeit, Anzahl }
-
-/// <summary>UI-Auswahlwert mit optionaler Ressourcen-ID für „alle“.</summary>
-public sealed record ApiFilterOption(long? Id, string Name);

@@ -52,6 +52,9 @@
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenMehrfachViewModel*.cs" Link="Presentation\%(Filename)%(Extension)" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenMehrfachRueckmeldung.cs" Link="Presentation\ApiTourenMehrfachRueckmeldung.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiRekordNavigation.cs" Link="Presentation\ApiRekordNavigation.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiFilterOptionenPlan.cs" Link="Presentation\ApiFilterOptionenPlan.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourDauerText.cs" Link="Presentation\ApiTourDauerText.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourSeitenRegeln.cs" Link="Presentation\ApiTourSeitenRegeln.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiPulsDarstellung.cs" Link="Presentation\ApiPulsDarstellung.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiEquipmentEinsatzViewModel.cs" Link="Presentation\ApiEquipmentEinsatzViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiRoutingKonfigurationViewModel.cs" Link="Presentation\ApiRoutingKonfigurationViewModel.cs" />
