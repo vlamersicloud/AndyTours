@@ -145,6 +145,46 @@ public partial class App
                 finally { admin?.Dispose(); }
             };
 
+            fenster.SaisonzieleVerwaltenAngefordert += async () =>
+            {
+                var snapshot = await uebergebeneSitzung.Saisonziele.Laden(CancellationToken.None);
+                var aktivitaeten = snapshot.Aktivitaeten.Select(a => new AndyTours.Core.Modell.Aktivitaet
+                {
+                    Id = a.Id, Name = a.Name, IstHaupt = a.IstHaupt, Geschwindigkeitseinheit = a.Geschwindigkeitseinheit,
+                    ZielKm = a.ZielKm, ZielHm = a.ZielHm, ZielAnzahl = a.ZielAnzahl
+                }).ToList();
+                var ziele = snapshot.Ziele.Select(z => new AndyTours.Core.Modell.Saisonziel
+                {
+                    AktivitaetId = z.AktivitaetId, AbJahr = z.AbJahr, ZielKm = z.ZielKm, ZielHm = z.ZielHm, ZielAnzahl = z.ZielAnzahl
+                }).ToList();
+                SaisonzieleViewModel? editor = null;
+                editor = new SaisonzieleViewModel(aktivitaeten, ziele, DateTime.Today.Year,
+                    async (jahre, geaenderteZiele) =>
+                    {
+                        var request = new AndyTours.Contracts.V1.SaisonzieleSpeichernAnfrage(snapshot.Version, jahre.ToArray(),
+                            geaenderteZiele.Select(z => new AndyTours.Contracts.V1.SaisonzielAntwort(z.AktivitaetId, z.AbJahr, z.ZielKm, z.ZielHm, z.ZielAnzahl)).ToList());
+                        try
+                        {
+                            await uebergebeneSitzung.Saisonziele.Speichern(request, CancellationToken.None);
+                            return true;
+                        }
+                        catch (AndyTours.Application.Stammdaten.StammdatenException ex)
+                        {
+                            editor!.Hinweis = ex.Art == AndyTours.Application.Stammdaten.StammdatenFehlerart.Konflikt
+                                ? ex.Message + " Eingaben bleiben erhalten; bitte schließen und neu laden."
+                                : ex.Message;
+                            return false;
+                        }
+                        catch (Exception)
+                        {
+                            editor!.Hinweis = "Speicherstatus unklar. Bitte Bestand neu laden und prüfen; nicht blind erneut speichern.";
+                            return false;
+                        }
+                    });
+                var admin = new SaisonzieleFenster(editor) { Owner = fenster };
+                admin.ShowDialog();
+            };
+
             fenster.ProfilBearbeitenAngefordert += async () =>
             {
                 try

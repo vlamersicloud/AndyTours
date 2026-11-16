@@ -36,7 +36,7 @@ Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutz
 |---|---|---|
 | Start / Verbindung | lokal/zentral, Fehler- und Erreichbarkeitsanzeige | teilweise; kein Windows-Start-/Renderingtest |
 | Touren | Lesen, Filtern, Sortieren, CRUD, Kopieren, Mehrfachbearbeitung | teilweise: serverseitige Filter/Paging und API-CRUD mit Versionen; Sortierung und Mehrfachbearbeitung offen |
-| Aktivitätsstatistik | Datums-/Aktivitäts-/Kategorienfilter, Kennzahlen, Saisonziele, Bestleistungen | teilweise: Filter, KPIs und Diagramm; Saisonziele/Bestleistungen offen |
+| Aktivitätsstatistik | Datums-/Aktivitäts-/Kategorienfilter, Kennzahlen, Saisonziele, Bestleistungen | teilweise: Filter, KPIs und Diagramm; Saisonzieleingabe angebunden, effektive-Ziele-Diagramm und Anzeige in Datensätzen sowie Bestleistungen offen |
 | Aktivitäten | Stammdatenverwaltung | UI angebunden; sieben Abläufe vorhanden |
 | Kategorien | Stammdatenverwaltung und Zusammenführen | UI angebunden; sechs Abläufe vorhanden |
 | Zuordnungen / Inventar | Equipment, Trainingsbereiche, Reihenfolgen, Zusammenführen | teilweise; Equipment-CRUD und Stammdaten-UI angebunden; typisierte Trainingsbereichsliste angebunden; Einsatz/Haltbarkeit und Bulk-Sortierung offen |
