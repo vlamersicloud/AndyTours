@@ -1,4 +1,3 @@
-using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
@@ -37,6 +36,7 @@ public sealed partial class ApiOverlaysViewModel
             var created = await _verwaltung.OrdnerAnlegen(request, ct);
             ct.ThrowIfCancellationRequested();
             if (_beendet) return;
+            if (created is null || created.Id <= 0) throw new InvalidOperationException();
             var fresh = await AktualisiereNachSchreibenAsync(ct);
             _offeneOrdneranlage = null;
             _neuerOrdnerId = fresh is not null && fresh.Ordner.Any(folder => folder.Id == created.Id) ? created.Id : null;
@@ -47,9 +47,13 @@ public sealed partial class ApiOverlaysViewModel
                 FordereNamensbearbeitungAn();
             }
             if (fresh is null) Hinweis = "Ordneranlage bestätigt, aktueller Bestand konnte aber nicht neu geladen werden.";
+            else if (_neuerOrdnerId is null) Hinweis = "Anfrage bestätigt, der Ordner ist im aktuellen Bestand nicht mehr vorhanden.";
             else Hinweis = _kontext.LastHinweis;
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            if (!_beendet) Hinweis = "Ordneranlage möglicherweise erfolgt. Erneut klicken wiederholt nur dieselbe Anfrage; zuerst Bestand prüfen.";
+        }
         catch (StammdatenException ex) when (!_beendet && ex.Art is StammdatenFehlerart.Ungueltig or StammdatenFehlerart.NichtGefunden or StammdatenFehlerart.Konflikt)
         {
             _offeneOrdneranlage = null;
@@ -80,11 +84,14 @@ public sealed partial class ApiOverlaysViewModel
         var node = Wurzeln.SelectMany(Flatten).FirstOrDefault(item => item.Id == id && item.IstOverlay == overlay);
         if (node is null) { _neuerOrdnerId = null; return; }
         foreach (var item in Wurzeln.SelectMany(Flatten)) item.IstAusgewaehlt = ReferenceEquals(item, node);
-        for (var parent = node; parent is not null;)
+        var folders = BestehenderBestand?.Ordner.ToDictionary(folder => folder.Id) ?? new Dictionary<long, OverlayOrdnerAntwort>();
+        var visited = new HashSet<long>();
+        long? parentId = node.Ordner?.ElternId;
+        while (parentId is { } currentId && visited.Add(currentId) && folders.TryGetValue(currentId, out var parent))
         {
-            if (!parent.IstOrdner) break;
-            parent.IstAufgeklappt = true;
-            break;
+            var parentNode = Wurzeln.SelectMany(Flatten).FirstOrDefault(item => item.IstOrdner && item.Id == currentId);
+            if (parentNode is not null) parentNode.IstAufgeklappt = true;
+            parentId = parent.ElternId;
         }
         node.IstAusgewaehlt = true;
         Ausgewaehlt = node;
@@ -92,8 +99,8 @@ public sealed partial class ApiOverlaysViewModel
 
     private static string EindeutigerOrdnername(OverlayBestandAntwort bestand, long? parent)
     {
-        var comparer = StringComparer.Create(CultureInfo.GetCultureInfo("de-DE"), true);
-        var names = bestand.Ordner.Where(folder => folder.ElternId == parent).Select(folder => folder.Name).ToHashSet(comparer);
+        var names = bestand.Ordner.Where(folder => folder.ElternId == parent)
+            .Select(folder => folder.Name.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase);
         const string stem = "Neuer Ordner";
         if (!names.Contains(stem)) return stem;
         for (int suffix = 2; ; suffix++)
