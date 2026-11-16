@@ -36,7 +36,12 @@ public sealed record FitUploadPruefzeile(
     string Profil,
     long? EmpfohlenesEquipmentId,
     bool BereitsVorhanden,
-    string? Warncode);
+    string? Warncode)
+{
+    public string Dateiname { get; init; } = string.Empty;
+}
+
+public sealed record FitUploadPrueffehler(Guid UploadId, string Dateiname, string Warncode);
 
 public sealed record FitUploadPruefungAntwort(
     string Version,
@@ -44,6 +49,7 @@ public sealed record FitUploadPruefungAntwort(
     IReadOnlyList<EquipmentAntwort> Equipments)
 {
     public string? FallbackZeitzoneId { get; init; }
+    public IReadOnlyList<FitUploadPrueffehler> Fehler { get; init; } = [];
 }
 
 public sealed record FitUploadAuswahl(
