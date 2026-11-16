@@ -1,8 +1,27 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
+using System.Windows.Data;
 using AndyTours.App.ViewModels;
+using AndyTours.Contracts.V1;
 
 namespace AndyTours.App.Views;
+
+public sealed class GarminKandidatStatusConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value switch
+    {
+        GarminImportKandidatStatus.Wartend => "Wartet",
+        GarminImportKandidatStatus.ZipBereit => "Archiv geladen",
+        GarminImportKandidatStatus.FitBereit => "Prüfbereit",
+        GarminImportKandidatStatus.Importiert => "Importiert",
+        GarminImportKandidatStatus.Uebersprungen => "Übersprungen",
+        GarminImportKandidatStatus.Fehler => "Fehler",
+        _ => "Unbekannt"
+    };
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
+}
 
 public partial class ApiGarminImportFenster : Window, IDisposable
 {
@@ -26,11 +45,10 @@ public partial class ApiGarminImportFenster : Window, IDisposable
         {
             await _viewModel.LadenAktuellenAsync(_pollLifetime.Token);
             if (_disposed || !IsLoaded) return;
-            if (_viewModel.Auftrag is not null)
             await PollWhileOpen(_pollLifetime.Token);
         }
         catch (OperationCanceledException) when (_pollLifetime.IsCancellationRequested) { }
-        catch { /* The view model converts expected service errors to safe status text. */ }
+        catch { /* Safe read errors are represented by the view model. */ }
     }
 
     private async Task PollWhileOpen(CancellationToken ct)
