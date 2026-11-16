@@ -109,7 +109,11 @@ public sealed class GarminPersonalClient(HttpClient http, string apiKey)
         zeitlimit.CancelAfter(TimeSpan.FromMinutes(2));
         using HttpResponseMessage antwort = await SendeAsync(
             "/biometric-service/heartRateZones/v2?generateDefaults=false", zeitlimit.Token).ConfigureAwait(false);
-        using JsonDocument json = JsonDocument.Parse(await antwort.Content.ReadAsStringAsync(zeitlimit.Token).ConfigureAwait(false));
+        await using Stream quelle = await antwort.Content.ReadAsStreamAsync(zeitlimit.Token).ConfigureAwait(false);
+        using var inhalt = new MemoryStream();
+        await KopiereBegrenztAsync(quelle, inhalt, 8 * 1024 * 1024, zeitlimit.Token).ConfigureAwait(false);
+        inhalt.Position = 0;
+        using JsonDocument json = await JsonDocument.ParseAsync(inhalt, cancellationToken: zeitlimit.Token).ConfigureAwait(false);
         return LeseGarminPulsprofile.Ausfuehren(json.RootElement);
     }
 
