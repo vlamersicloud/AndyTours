@@ -30,13 +30,15 @@ public sealed class ApiPlanungsProfilSitzungTests
         var port = new ControlledPort { ConflictNext = true };
         using var session = new ApiPlanungsProfilSitzung(port, new(new string('A', 64), CourseFahrprofil.Rennrad), context);
         int events = 0; session.Geaendert += (_, _) => events++;
-        await session.Setzen(CourseFahrprofil.Trekking, default);
+        var first = session.Setzen(CourseFahrprofil.Trekking, default);
+        await context.Posted.Task; context.Drain(); await first;
         Assert.Single(port.Writes); Assert.Equal(0, port.Reads);
-        await session.Setzen(CourseFahrprofil.Mountainbike, default);
+        var second = session.Setzen(CourseFahrprofil.Mountainbike, default);
+        await context.Posted.Task; context.Drain(); await second;
         Assert.Equal(1, port.Reads); Assert.Equal(2, port.Writes.Count);
-        Assert.Equal(0, events); context.Drain(); Assert.True(events > 0);
+        Assert.True(events > 0);
         var queued = session.Setzen(CourseFahrprofil.Rennrad, default);
-        await Task.Yield(); session.Dispose(); context.Drain(); await queued;
+        await context.Posted.Task; session.Dispose(); context.Drain(); await queued;
         int previous = events; context.Drain(); Assert.Equal(previous, events);
     }
 
@@ -57,8 +59,11 @@ public sealed class ApiPlanungsProfilSitzungTests
     }
     private sealed class QueuedContext : SynchronizationContext
     {
-        private readonly Queue<(SendOrPostCallback Callback, object? State)> _queue = new();
-        public override void Post(SendOrPostCallback d, object? state) => _queue.Enqueue((d,state));
-        public void Drain() { while (_queue.TryDequeue(out var x)) x.Callback(x.State); }
+        private readonly System.Collections.Concurrent.ConcurrentQueue<(SendOrPostCallback Callback, object? State)> _queue = new();
+        private TaskCompletionSource _posted = NewSignal();
+        public TaskCompletionSource Posted => Volatile.Read(ref _posted);
+        public override void Post(SendOrPostCallback d, object? state) { _queue.Enqueue((d,state)); _posted.TrySetResult(); }
+        public void Drain() { while (_queue.TryDequeue(out var x)) x.Callback(x.State); Interlocked.Exchange(ref _posted, NewSignal()); }
+        private static TaskCompletionSource NewSignal() => new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 }

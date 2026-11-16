@@ -51,6 +51,7 @@ public sealed class ApiPlanungsProfilSitzung : IDisposable
                 if (linked.IsCancellationRequested || _disposed) return;
                 if (!Valid(current)) { _version = null; await SetHintAsync("Serverantwort zum Planungsprofil ungültig.", generation); return; }
                 Profil = current.Profil; version = current.Version; _version = version;
+                if (generation != Volatile.Read(ref _generation)) return;
                 if (Profil == profil) { await SetHintAsync(string.Empty, generation); return; }
             }
             if (Profil == profil) { await SetHintAsync(string.Empty, generation); return; }
