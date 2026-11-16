@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="OxyPlot.Core" Version="2.2.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
@@ -35,6 +36,7 @@
   <ItemGroup>
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiFormularMapper.cs" Link="Presentation\ApiFormularMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourdetailMapper.cs" Link="Presentation\ApiTourdetailMapper.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiPulsDarstellung.cs" Link="Presentation\ApiPulsDarstellung.cs" />
     <ProjectReference Include="..\..\src\AndyTours.Core\AndyTours.Core.csproj" />
     <ProjectReference Include="..\..\src\AndyTours.Client\AndyTours.Client.csproj" />
     <ProjectReference Include="..\..\src\AndyTours.Daten\AndyTours.Daten.csproj" />
