@@ -77,4 +77,53 @@ public sealed class ApiOverlaysViewModelTests
         Assert.NotNull(context.Anzeige);
         Assert.False(vm.LadenCommand.CanExecute(null));
     }
+
+    [Fact]
+    public async Task Real_store_imports_queued_files_with_fresh_per_file_versions()
+    {
+        using var temp = new TempOrdner();
+        var store = new SqliteOverlaySpeicher(Path.Combine(temp.Pfad, "queue.db"));
+        using var context = new ApiOverlayKontext(store);
+        var snapshot = await store.Laden(default);
+        var a = await store.OrdnerAnlegen(new(snapshot.Version, Guid.NewGuid(), null, "A"), default);
+        var b = await store.OrdnerAnlegen(new(a.Bestand.Version, Guid.NewGuid(), null, "B"), default);
+        var importer = new OverlayGpxImportDienst(store);
+        using var vm = new ApiOverlaysViewModel(context, store, importer, _ => true);
+        await context.LadenAsync(default);
+        var folders = vm.Wurzeln.OrderBy(n => n.Name).ToArray();
+        var folderA = folders.Single(n => n.Name == "A");
+        var folderB = folders.Single(n => n.Name == "B");
+        vm.Ausgewaehlt = folderA;
+
+        string gpx = "<?xml version=\"1.0\"?><gpx version=\"1.1\" creator=\"test\" xmlns=\"http://www.topografix.com/GPX/1/1\"><trk><name>sample</name><trkseg><trkpt lat=\"48.1\" lon=\"11.5\"><ele>520</ele></trkpt><trkpt lat=\"48.2\" lon=\"11.6\" /></trkseg></trk></gpx>";
+        string one = Path.Combine(temp.Pfad, "one.gpx");
+        string two = Path.Combine(temp.Pfad, "two.gpx");
+        await File.WriteAllTextAsync(one, gpx);
+        await File.WriteAllTextAsync(two, gpx);
+        vm.GpxDateienHinzufuegen([one, two]);
+        Assert.Equal(2, vm.Importdateien.Count);
+        Assert.All(vm.Importdateien, row => Assert.Null(row.Anfrage));
+        vm.Ausgewaehlt = folderB;
+
+        await vm.GpxImportierenCommand.ExecuteAsync(null);
+
+        Assert.All(vm.Importdateien, row => Assert.True(row.Fertig));
+        Assert.All(vm.Importdateien, row => Assert.Contains("bestätigt", row.Status, StringComparison.OrdinalIgnoreCase));
+        var final = await store.Laden(default);
+        Assert.Equal(2, final.Overlays.Count);
+        Assert.All(final.Overlays, item => Assert.Equal(a.Id, item.OrdnerId));
+        Assert.All(vm.Importdateien, row => Assert.NotNull(row.Anfrage));
+        Assert.Equal(2, vm.Importdateien.Select(row => row.Anfrage!.AnfrageId).Distinct().Count());
+        Assert.Equal(2, vm.Importdateien.Select(row => row.Anfrage!.Version).Distinct().Count());
+
+        var priorId = vm.Importdateien[0].Anfrage!.AnfrageId;
+        vm.GpxDateienHinzufuegen([one]);
+        Assert.Equal(3, vm.Importdateien.Count);
+        Assert.NotEqual(priorId, vm.Importdateien[2].AnfrageId);
+        Assert.Null(vm.Importdateien[2].Anfrage);
+        vm.Dispose();
+        Assert.True(File.Exists(one));
+        Assert.True(File.Exists(two));
+        Assert.NotNull(context.Anzeige);
+    }
 }
