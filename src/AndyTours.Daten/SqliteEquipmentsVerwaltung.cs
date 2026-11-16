@@ -13,50 +13,77 @@ public sealed class SqliteEquipmentsVerwaltung(string datenbankpfad) : IEquipmen
 {
     private SqliteConnection Oeffnen() => OeffneDatenbank.Ausfuehren(datenbankpfad);
 
+    /// <inheritdoc cref="IEquipmentsVerwaltung.Laden" />
     public Task<EquipmentsAntwort> Laden(CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: true);
-        var result = Antwort(c); ct.ThrowIfCancellationRequested(); tx.Commit(); return Task.FromResult(result);
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: true);
+        var result = Antwort(c);
+        ct.ThrowIfCancellationRequested();
+        tx.Commit();
+        return Task.FromResult(result);
     }
 
+    /// <inheritdoc cref="IEquipmentsVerwaltung.Anlegen" />
     public Task<EquipmentsAntwort> Anlegen(EquipmentSpeichernAnfrage anfrage, CancellationToken ct = default)
     {
-        ct.ThrowIfCancellationRequested(); PruefeAnfrage(anfrage);
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: false); PruefeVersion(c, anfrage.Version);
-        var bestand = DatenbestandTabellen.Laden(c); var werte = PruefeWerte(c, anfrage.Werte, null, null);
+        ct.ThrowIfCancellationRequested();
+        PruefeAnfrage(anfrage);
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: false);
+        PruefeVersion(c, anfrage.Version);
+        var bestand = DatenbestandTabellen.Laden(c);
+        var werte = PruefeWerte(c, anfrage.Werte, null);
         PruefeName(bestand.Equipments, werte.Name);
         var neu = AusModell(werte, 0); neu.IstStandard = neu.IstStandard && neu.AktivitaetId.HasValue && !neu.Ausgemustert;
         var aenderungen = UebernimmEquipment.ErmittleAenderungen(bestand, neu);
-        var id = EquipmentsTabelle.Einfuegen(c, tx, aenderungen[0]); aenderungen[0].Id = id;
+        var id = EquipmentsTabelle.Einfuegen(c, tx, aenderungen[0]);
+        aenderungen[0].Id = id;
         foreach (var anderes in aenderungen.Skip(1)) EquipmentsTabelle.Aendern(c, tx, anderes);
-        var result = Antwort(c); ct.ThrowIfCancellationRequested(); tx.Commit(); return Task.FromResult(result);
+        var result = Antwort(c);
+        ct.ThrowIfCancellationRequested();
+        tx.Commit();
+        return Task.FromResult(result);
     }
 
+    /// <inheritdoc cref="IEquipmentsVerwaltung.Aendern" />
     public Task<EquipmentsAntwort> Aendern(long id, EquipmentSpeichernAnfrage anfrage, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested(); PruefeId(id); PruefeAnfrage(anfrage);
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: false); PruefeVersion(c, anfrage.Version);
-        var bestand = DatenbestandTabellen.Laden(c); var alt = bestand.Equipments.SingleOrDefault(e => e.Id == id)
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: false);
+        PruefeVersion(c, anfrage.Version);
+        var bestand = DatenbestandTabellen.Laden(c);
+        var alt = bestand.Equipments.SingleOrDefault(e => e.Id == id)
             ?? throw new StammdatenException(StammdatenFehlerart.NichtGefunden, "Equipment wurde nicht gefunden.");
-        var werte = PruefeWerte(c, anfrage.Werte, alt, bestand.Kategorien);
+        var werte = PruefeWerte(c, anfrage.Werte, alt);
         PruefeName(bestand.Equipments.Where(e => e.Id != id), werte.Name);
         var neu = AusModell(werte, id); neu.IstStandard = neu.IstStandard && neu.AktivitaetId.HasValue && !neu.Ausgemustert;
         var aenderungen = UebernimmEquipment.ErmittleAenderungen(bestand, neu);
         foreach (var e in aenderungen) EquipmentsTabelle.Aendern(c, tx, e);
-        var result = Antwort(c); ct.ThrowIfCancellationRequested(); tx.Commit(); return Task.FromResult(result);
+        var result = Antwort(c);
+        ct.ThrowIfCancellationRequested();
+        tx.Commit();
+        return Task.FromResult(result);
     }
 
+    /// <inheritdoc cref="IEquipmentsVerwaltung.Loeschen" />
     public Task<EquipmentsAntwort> Loeschen(long id, string version, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested(); PruefeId(id); PruefeVersionEingabe(version);
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: false); PruefeVersion(c, version);
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: false);
+        PruefeVersion(c, version);
         var bestand = DatenbestandTabellen.Laden(c);
         if (!bestand.Equipments.Any(e => e.Id == id)) throw new StammdatenException(StammdatenFehlerart.NichtGefunden, "Equipment wurde nicht gefunden.");
         var sperre = ErmittleLoeschsperre.Equipment(bestand, id);
         if (sperre is not null) throw new StammdatenException(StammdatenFehlerart.Konflikt, sperre);
         EquipmentsTabelle.Loeschen(c, tx, id);
-        var result = Antwort(c); ct.ThrowIfCancellationRequested(); tx.Commit(); return Task.FromResult(result);
+        var result = Antwort(c);
+        ct.ThrowIfCancellationRequested();
+        tx.Commit();
+        return Task.FromResult(result);
     }
 
     private static EquipmentsAntwort Antwort(SqliteConnection c)
@@ -77,7 +104,7 @@ public sealed class SqliteEquipmentsVerwaltung(string datenbankpfad) : IEquipmen
     private static void PruefeId(long id) { if (id <= 0) throw Ungueltig("Equipmentkennung muss positiv sein."); }
     private static void PruefeName(IEnumerable<Equipment> entries, string name)
     { if (entries.Any(e => string.Equals(e.Name.Trim(), name.Trim(), StringComparison.OrdinalIgnoreCase))) throw Ungueltig("Ein Equipment mit diesem Namen existiert bereits."); }
-    private static EquipmentWerte PruefeWerte(SqliteConnection c, EquipmentWerte? w, Equipment? alt, IReadOnlyList<Kategorie>? categories)
+    private static EquipmentWerte PruefeWerte(SqliteConnection c, EquipmentWerte? w, Equipment? alt)
     {
         if (w is null || w.Name is null || w.Geraetezuordnung is null || w.StandardKategorie is null) throw Ungueltig();
         var name = w.Name.Trim(); if (name.Length is < 1 or > 500 || name.Any(char.IsControl)) throw Ungueltig("Equipmentname muss 1 bis 500 Zeichen enthalten und darf keine Steuerzeichen enthalten.");

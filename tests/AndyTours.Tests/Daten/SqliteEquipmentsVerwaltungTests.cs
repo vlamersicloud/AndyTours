@@ -1,6 +1,7 @@
 using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 using AndyTours.Core.Modell;
+using AndyTours.Core.Berechnungen;
 using AndyTours.Daten;
 using Microsoft.Data.Sqlite;
 
@@ -54,6 +55,8 @@ public sealed class SqliteEquipmentsVerwaltungTests : IDisposable
         await Assert.ThrowsAsync<StammdatenException>(() => _sut.Anlegen(Request(before.Version, Values("B", 999999))));
         before = await _sut.Laden(); await Assert.ThrowsAsync<StammdatenException>(() => _sut.Anlegen(Request(before.Version, Values(" a ", _activity1))));
         before = await _sut.Laden(); await Assert.ThrowsAsync<StammdatenException>(() => _sut.Aendern(id, Request(before.Version, Values("A", _activity1, km: double.NaN))));
+        before = await _sut.Laden(); await Assert.ThrowsAsync<StammdatenException>(() => _sut.Aendern(id, Request(before.Version, Values("A", _activity1, km: -1))));
+        before = await _sut.Laden(); await Assert.ThrowsAsync<StammdatenException>(() => _sut.Aendern(id, Request(before.Version, Values("A", _activity1, km: double.PositiveInfinity))));
         using var c = OeffneDatenbank.Ausfuehren(_db); Assert.Equal("A", EquipmentsTabelle.Laden(c).Single().Name);
     }
 
@@ -65,6 +68,23 @@ public sealed class SqliteEquipmentsVerwaltungTests : IDisposable
         var version = (await _sut.Laden()).Version;
         var ex = await Assert.ThrowsAsync<StammdatenException>(() => _sut.Loeschen(id, version));
         Assert.Equal(StammdatenFehlerart.Konflikt, ex.Art); Assert.Single((await _sut.Laden()).Eintraege);
+
+        var maintenanceId = await Add("Maintenance", _activity1);
+        using (var db = OeffneDatenbank.Ausfuehren(_db))
+        {
+            using var tx = db.BeginTransaction();
+            WartungenTabelle.Speichern(db, tx, [new Wartung { Id = 1, EquipmentId = maintenanceId,
+                Datum = new DateOnly(2026, 1, 2), Taetigkeit = "Kette" }]);
+            tx.Commit();
+        }
+        version = (await _sut.Laden()).Version;
+        ex = await Assert.ThrowsAsync<StammdatenException>(() => _sut.Loeschen(maintenanceId, version));
+        Assert.Equal(StammdatenFehlerart.Konflikt, ex.Art);
+        Assert.Contains((await _sut.Laden()).Eintraege, e => e.Id == maintenanceId);
+        using (var db = OeffneDatenbank.Ausfuehren(_db))
+        {
+            Assert.Contains(WartungenTabelle.Laden(db), w => w.EquipmentId == maintenanceId);
+        }
     }
 
     [Fact] public async Task RawLegacyMappingIsPreservedAndOnlyRemovalAllowed()
@@ -79,11 +99,30 @@ public sealed class SqliteEquipmentsVerwaltungTests : IDisposable
         Assert.Equal(StammdatenFehlerart.Ungueltig, fail.Art);
     }
 
+    [Fact] public async Task KategorienWerdenKanonisiertUndVerwaisteAltwerteBewahrt()
+    {
+        using (var c = OeffneDatenbank.Ausfuehren(_db))
+        using (var tx = c.BeginTransaction())
+        {
+            KategorienTabelle.Einfuegen(c, tx, new Kategorie { Name = "Tour" });
+            tx.Commit();
+        }
+        var id = await Add("Legacy", _activity1);
+        await Change(id, Values("Legacy", _activity1, category: " tour "));
+        Assert.Equal("Tour", (await _sut.Laden()).Eintraege.Single().StandardKategorie);
+        await Change(id, Values("Legacy", _activity1, category: "Unknown legacy"));
+        Assert.Equal("Unknown legacy", (await _sut.Laden()).Eintraege.Single().StandardKategorie);
+        var snap = await _sut.Laden();
+        var ex = await Assert.ThrowsAsync<StammdatenException>(() => _sut.Aendern(id, Request(snap.Version, Values("Legacy", _activity1, category: "Unknown new"))));
+        Assert.Equal(StammdatenFehlerart.Ungueltig, ex.Art);
+        Assert.Equal("Unknown legacy", (await _sut.Laden()).Eintraege.Single().StandardKategorie);
+    }
+
     private async Task<long> Add(string name, long? activity, bool standard = false) =>
         (await _sut.Anlegen(Request((await _sut.Laden()).Version, Values(name, activity, standard)))).Eintraege.Single(e => e.Name == name).Id;
     private async Task Change(long id, EquipmentWerte w) => await _sut.Aendern(id, Request((await _sut.Laden()).Version, w));
     private static EquipmentSpeichernAnfrage Request(string v, EquipmentWerte w) => new(v, w);
-    private static EquipmentWerte Values(string n, long? a, bool standard = false, bool retired = false, double km = 0, string mapping = "") => new(n, a, mapping, "", standard, retired, null, km);
+    private static EquipmentWerte Values(string n, long? a, bool standard = false, bool retired = false, double km = 0, string mapping = "", string category = "") => new(n, a, mapping, category, standard, retired, null, km);
     public void Dispose() { SqliteConnection.ClearAllPools(); if (Directory.Exists(_dir)) Directory.Delete(_dir, true); }
 }
 
