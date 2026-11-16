@@ -86,7 +86,10 @@ public partial class ApiUebersichtViewModel
         catch (StammdatenException ex) when (ex.Art == StammdatenFehlerart.Konflikt)
         {
             if (IstPulsOperationAktuell(generation, ct))
+            {
+                _pulsReferenz = null;
                 PulsStatus = "Die Referenz wurde zwischenzeitlich geändert. Bitte Referenz neu laden.";
+            }
         }
         catch (StammdatenException)
         {
