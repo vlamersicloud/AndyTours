@@ -51,6 +51,7 @@ public sealed class BackendClientSitzung : IDisposable
         Saisonziele = new SaisonzieleVerwaltungHttpClient(_httpClient);
         Wartung = new WartungsverwaltungHttpClient(_httpClient);
         GarminEinstellungen = new GarminEinstellungenHttpClient(_httpClient);
+        GarminImportJobs = new GarminImportJobsHttpClient(_httpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
@@ -78,6 +79,8 @@ public sealed class BackendClientSitzung : IDisposable
     public IWartungsverwaltung Wartung { get; }
     /// <summary>Versionierte Garmin-Einstellungen ohne Schlüssel-Lesezugriff.</summary>
     public IGarminEinstellungen GarminEinstellungen { get; }
+    /// <summary>Durable Garmin import jobs.</summary>
+    public IGarminImportJobs GarminImportJobs { get; }
     /// <summary>Verbindungsprüfung.</summary>
     public IBackendVerbindung Verbindung { get; }
 
