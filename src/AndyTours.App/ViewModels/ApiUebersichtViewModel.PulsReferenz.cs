@@ -7,7 +7,7 @@ namespace AndyTours.App.ViewModels;
 public partial class ApiUebersichtViewModel
 {
     [RelayCommand(CanExecute = nameof(KannPulsLaden))]
-    private async Task PulsreferenzLadenAsync()
+    private async Task PulsreferenzLadenAsync(CancellationToken ct)
     {
         if (!KannPulsLaden() || _puls is null) return;
         var generation = _pulsGeneration;
@@ -15,24 +15,32 @@ public partial class ApiUebersichtViewModel
         PulsStatus = "Aktuelle Garmin-Referenz wird vom Backend gelesen …";
         try
         {
-            var answer = await _puls.LadenReferenz(CancellationToken.None);
-            if (generation != _pulsGeneration || _pulsBeendet) return;
+            var answer = await _puls.LadenReferenz(ct);
+            if (!IstPulsOperationAktuell(generation, ct)) return;
             var previous = Pulsprofil?.Sport;
             UebernimmPulsreferenz(answer, previous);
             LeerePulsanzeige();
-            PulsStatus = answer.Abgerufen is null
-                ? "Keine gespeicherte Garmin-Referenz. Ohne Profil werden 10-bpm-Bereiche verwendet."
-                : "Aktuelle Garmin-Referenz geladen; keine historischen Zonen.";
+            if (previous is not null && Pulsprofil is null)
+                PulsStatus = "Das zuvor gewählte Sportprofil ist nicht mehr vorhanden. Bitte bewusst neu wählen.";
+            else
+                PulsStatus = answer.Abgerufen is null
+                    ? "Keine gespeicherte Garmin-Referenz. Ohne Profil werden 10-bpm-Bereiche verwendet."
+                    : "Aktuelle Garmin-Referenz geladen; keine historischen Zonen.";
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (OperationCanceledException)
+        {
+            if (IstPulsOperationAktuell(generation, ct))
+                PulsStatus = "Das Lesen der Pulsreferenz hat das Zeitlimit überschritten.";
+        }
         catch (StammdatenException ex) when (ex.Art == StammdatenFehlerart.Konflikt)
         {
-            if (generation == _pulsGeneration && !_pulsBeendet)
+            if (IstPulsOperationAktuell(generation, ct))
                 PulsStatus = "Die Pulsreferenz wurde geändert. Bitte erneut laden.";
         }
         catch (Exception)
         {
-            if (generation == _pulsGeneration && !_pulsBeendet)
+            if (IstPulsOperationAktuell(generation, ct))
                 PulsStatus = "Die Pulsreferenz konnte nicht geladen werden.";
         }
         finally
@@ -42,13 +50,13 @@ public partial class ApiUebersichtViewModel
     }
 
     [RelayCommand(CanExecute = nameof(KannPulsLaden))]
-    private async Task GarminZonenAktualisierenAsync()
+    private async Task GarminZonenAktualisierenAsync(CancellationToken ct)
     {
         if (!KannPulsLaden() || _puls is null) return;
         if (_pulsReferenz is null)
         {
-            await PulsreferenzLadenAsync();
-            if (_pulsReferenz is null || _pulsBeendet) return;
+            await PulsreferenzLadenAsync(ct);
+            if (!IstPulsOperationAktuell(_pulsGeneration, ct) || _pulsReferenz is null) return;
             PulsStatus = "Referenz wurde offline geladen. Zum ausdrücklichen Garmin-Abruf bitte erneut klicken.";
             return;
         }
@@ -59,27 +67,37 @@ public partial class ApiUebersichtViewModel
         PulsStatus = "Garmin-Referenz wird auf ausdrückliche Anforderung aktualisiert …";
         try
         {
-            var answer = await _puls.AktualisierenReferenz(
-                new PulsReferenzAktualisierenAnfrage(expected), CancellationToken.None);
-            if (generation != _pulsGeneration || _pulsBeendet) return;
-            UebernimmPulsreferenz(answer, Pulsprofil?.Sport);
+            var answer = await _puls.AktualisierenReferenz(new PulsReferenzAktualisierenAnfrage(expected), ct);
+            if (!IstPulsOperationAktuell(generation, ct)) return;
+            var previous = Pulsprofil?.Sport;
+            UebernimmPulsreferenz(answer, previous);
             LeerePulsanzeige();
-            PulsStatus = "Garmin-Referenz aktualisiert; Zonen sind aktuell, nicht historisch.";
+            PulsStatus = previous is not null && Pulsprofil is null
+                ? "Das zuvor gewählte Sportprofil ist nicht mehr vorhanden. Bitte bewusst neu wählen."
+                : "Garmin-Referenz aktualisiert; Zonen sind aktuell, nicht historisch.";
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (OperationCanceledException)
+        {
+            _pulsReferenz = null;
+            if (IstPulsOperationAktuell(generation, ct))
+                PulsStatus = "Der Garmin-Abruf ist unklar fehlgeschlagen. Bitte zuerst die Referenz laden, bevor Sie erneut aktualisieren.";
+        }
         catch (StammdatenException ex) when (ex.Art == StammdatenFehlerart.Konflikt)
         {
-            if (generation == _pulsGeneration && !_pulsBeendet)
+            if (IstPulsOperationAktuell(generation, ct))
                 PulsStatus = "Die Referenz wurde zwischenzeitlich geändert. Bitte Referenz neu laden.";
         }
         catch (StammdatenException)
         {
-            if (generation == _pulsGeneration && !_pulsBeendet)
-                PulsStatus = "Garmin-Key fehlt oder die Referenzanfrage ist ungültig.";
+            _pulsReferenz = null;
+            if (IstPulsOperationAktuell(generation, ct))
+                PulsStatus = "Die Garmin-Referenz konnte nicht aktualisiert werden. Bitte zuerst neu laden.";
         }
         catch (Exception)
         {
-            if (generation == _pulsGeneration && !_pulsBeendet)
+            _pulsReferenz = null;
+            if (IstPulsOperationAktuell(generation, ct))
                 PulsStatus = "Der Garmin-Abruf ist unklar fehlgeschlagen. Bitte zuerst die Referenz laden, bevor Sie erneut aktualisieren.";
         }
         finally
@@ -87,4 +105,7 @@ public partial class ApiUebersichtViewModel
             if (!_pulsBeendet) Laedt = false;
         }
     }
+
+    private bool IstPulsOperationAktuell(long generation, CancellationToken ct) =>
+        !ct.IsCancellationRequested && !_pulsBeendet && generation == _pulsGeneration;
 }
