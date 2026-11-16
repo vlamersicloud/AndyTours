@@ -59,9 +59,17 @@
                     <TextBlock Text="Gruppierung:" VerticalAlignment="Center" Margin="0,0,4,0" />
                     <ComboBox ItemsSource="{Binding Raster}" DisplayMemberPath="Value" SelectedValuePath="Key"
                               SelectedValue="{Binding Gruppierung}" Width="180" Margin="0,0,12,4" />
-                    <TextBlock Text="Kennzahl:" VerticalAlignment="Center" Margin="0,0,4,0" />
-                    <ComboBox ItemsSource="{Binding Werte}" DisplayMemberPath="Value" SelectedValuePath="Key"
-                              SelectedValue="{Binding Wert}" Width="180" Margin="0,0,12,4" />
+                    <TextBlock Text="Diagramminhalt:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <Menu Margin="0,0,12,4">
+                        <MenuItem Header="Werte auswählen">
+                            <MenuItem Header="Strecke" IsCheckable="True" StaysOpenOnClick="True"
+                                      IsChecked="{Binding ZeigeStrecke, Mode=TwoWay}" />
+                            <MenuItem Header="Puls" IsCheckable="True" StaysOpenOnClick="True"
+                                      IsChecked="{Binding ZeigePuls, Mode=TwoWay}" />
+                            <MenuItem Header="Höhenmeter" IsCheckable="True" StaysOpenOnClick="True"
+                                      IsChecked="{Binding ZeigeHoehenmeter, Mode=TwoWay}" />
+                        </MenuItem>
+                    </Menu>
                 </WrapPanel>
                 <TextBlock Text="{Binding ZeitraumHinweis}" TextWrapping="Wrap" Foreground="DarkOrange" />
             </StackPanel>
@@ -121,7 +129,7 @@
                         </TextBlock.Style>
                     </TextBlock>
 
-                    <!-- 4. Diagramm; ein Klick schaltet den Wert weiter -->
+                    <!-- Gemeinsames Diagramm für alle ausgewählten Kennzahlen -->
                     <oxy:PlotView x:Name="Diagramm" Model="{Binding Diagramm}"
                                   Visibility="{Binding HatEinheiten, Converter={StaticResource SichtbarWennWahr}}" />
                 </Grid>
@@ -135,7 +143,6 @@
                     </WrapPanel>
                     <TextBlock Text="{Binding PulsReferenz}" Foreground="DimGray" TextWrapping="Wrap" Margin="0,0,0,4" />
                     <TextBlock Text="{Binding PulsStatus}" TextWrapping="Wrap" Margin="0,0,0,8" />
-                    <oxy:PlotView Model="{Binding PulsDiagramm}" Height="320" />
                     <DataGrid ItemsSource="{Binding Pulszeilen}" IsReadOnly="True" AutoGenerateColumns="False"
                               CanUserAddRows="False" MaxHeight="280" Margin="0,8,0,0">
                         <DataGrid.Columns>

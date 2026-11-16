@@ -21,7 +21,19 @@ public partial class JahresfortschrittViewModel : ObservableObject
     private bool _standardZeitraum = true, _ladeAuswahl;
     private int _generation;
     private readonly CategoryAxis _zeitachse = new() { Position = AxisPosition.Bottom, IsPanEnabled = false, IsZoomEnabled = false };
-    private readonly LinearAxis _wertachse = new() { Position = AxisPosition.Left, Minimum = 0, MajorGridlineStyle = LineStyle.Dot, IsPanEnabled = false, IsZoomEnabled = false };
+    private readonly LinearAxis _wertachse = new() { Key = "strecke", Position = AxisPosition.Left, Minimum = 0, MajorGridlineStyle = LineStyle.Dot, IsPanEnabled = false, IsZoomEnabled = false };
+
+    private readonly LinearAxis _hoehenachse = new() { Key = "hoehe", Position = AxisPosition.Right, Title = "Höhenmeter (hm)", Minimum = 0, IsPanEnabled = false, IsZoomEnabled = false };
+    private readonly LinearAxis _pulsachse = new() { Key = "puls", Position = AxisPosition.Right, PositionTier = 1, Title = "Pulsbereiche (Minuten)", Minimum = 0, IsPanEnabled = false, IsZoomEnabled = false };
+    private readonly List<RectangleBarSeries> _pulsserien = [];
+
+    [ObservableProperty] private bool _zeigeStrecke = true;
+    [ObservableProperty] private bool _zeigeHoehenmeter;
+    [ObservableProperty] private bool _zeigePuls;
+
+    partial void OnZeigeStreckeChanged(bool value) => Zeichne();
+    partial void OnZeigeHoehenmeterChanged(bool value) => Zeichne();
+    partial void OnZeigePulsChanged(bool value) => Zeichne();
 
     /// <summary>Aktivität und Kategorie wirken wie bisher; der Zeitraum wird hier ausdrücklich unabhängig vom Tabellen-Jahresfilter eingestellt.</summary>
     public event EventHandler? ZeitraumGeaendert;
@@ -60,6 +72,12 @@ public partial class JahresfortschrittViewModel : ObservableObject
     {
         Diagramm.Axes.Add(_zeitachse);
         Diagramm.Axes.Add(_wertachse);
+        Diagramm.Axes.Add(_hoehenachse);
+        Diagramm.Axes.Add(_pulsachse);
+        Diagramm.Legends.Add(new OxyPlot.Legends.Legend {
+            LegendPosition = OxyPlot.Legends.LegendPosition.BottomCenter,
+            LegendPlacement = OxyPlot.Legends.LegendPlacement.Outside,
+            LegendOrientation = OxyPlot.Legends.LegendOrientation.Horizontal });
     }
 
     /// <summary>Gültiger einschließlich begrenzter Zeitraum für Diagramm, Rekorde und Pulsauswertung.</summary>
@@ -140,25 +158,29 @@ public partial class JahresfortschrittViewModel : ObservableObject
         try { perioden = BerechneAktivitaetsperioden.Ausfuehren(auswahl, von, bis, Gruppierung); }
         catch (ArgumentException fehler) { ZeitraumHinweis = fehler.Message; Diagramm.InvalidatePlot(true); return; }
         HatEinheiten = perioden.Sum(p => p.Anzahl) > 0;
+        _wertachse.IsAxisVisible = ZeigeStrecke;
+        _hoehenachse.IsAxisVisible = ZeigeHoehenmeter;
+        _pulsachse.IsAxisVisible = ZeigePuls;
         string einheit = Wert switch { Fortschrittswert.Kilometer => "km", Fortschrittswert.Hoehenmeter => "hm", Fortschrittswert.Anzahl => "Aktivitäten", _ => "Stunden" };
-        Ueberschrift = Werte.First(w => w.Key == Wert).Value + " je " + Raster.First(r => r.Key == Gruppierung).Value;
-        _wertachse.Title = einheit;
+        Ueberschrift = "Strecke / Puls / Höhenmeter je " + Raster.First(r => r.Key == Gruppierung).Value;
+        _wertachse.Title = "Strecke (km)";
         _zeitachse.Minimum = -.5; _zeitachse.Maximum = perioden.Count - .5;
         _zeitachse.Angle = perioden.Count > 16 ? -45 : 0;
         _zeitachse.GapWidth = .3;
-        var serie = new RectangleBarSeries { FillColor = OxyColor.Parse("#2E6DB4"), StrokeThickness = 0,
-            LabelFormatString = null, TrackerFormatString = "{7}" };
         double gesamt = 0;
         for (int i = 0; i < perioden.Count; i++)
         {
             Aktivitaetsperiode p = perioden[i];
             double y = Wert switch { Fortschrittswert.Kilometer => p.DistanzKm, Fortschrittswert.Hoehenmeter => p.Hoehenmeter, Fortschrittswert.Anzahl => p.Anzahl, _ => p.Fahrzeit.TotalHours };
             gesamt += y; _zeitachse.Labels.Add(p.Beschriftung);
-            serie.Items.Add(new RectangleBarItem(i - .35, 0, i + .35, y)
-            { Title = p.Beschriftung + ": " + y.ToString("N2", Deutsch) + " " + einheit });
         }
 
-        Diagramm.Series.Add(serie);
+        if (ZeigeStrecke) ZeichneKennzahl(perioden, false);
+        if (ZeigeHoehenmeter) ZeichneKennzahl(perioden, true);
+        if (ZeigePuls)
+        {
+            foreach (var pulsserie in _pulsserien) Diagramm.Series.Add(pulsserie);
+        }
         Stand = $"{von:dd.MM.yyyy} – {bis:dd.MM.yyyy}: {gesamt.ToString("N2", Deutsch)} {einheit} · {perioden.Sum(p => p.Anzahl)} Aktivitäten";
         int zukunft = auswahl.Count(e => e.Datum > _heute);
         ZeitraumHinweis = zukunft > 0 ? $"{zukunft} Aktivität(en) tragen ein Datum nach heute. Daten wurden nicht geändert; nur der gewählte Zeitraum wird ausgewertet." : string.Empty;
@@ -174,4 +196,22 @@ public partial class JahresfortschrittViewModel : ObservableObject
 
         Diagramm.InvalidatePlot(true);
     }
+    private void ZeichneKennzahl(IReadOnlyList<Aktivitaetsperiode> perioden, bool hoehe)
+    {
+        var serie = new RectangleBarSeries {
+            Title = hoehe ? "Höhenmeter (hm)" : "Strecke (km)",
+            YAxisKey = hoehe ? "hoehe" : "strecke",
+            FillColor = hoehe ? OxyColors.ForestGreen : OxyColor.Parse("#2E6DB4"),
+            StrokeThickness = 0, LabelFormatString = null, TrackerFormatString = "{7}" };
+        for (int i = 0; i < perioden.Count; i++)
+        {
+            double wert = hoehe ? perioden[i].Hoehenmeter : perioden[i].DistanzKm;
+            double links = hoehe ? -.12 : -.42;
+            double rechts = hoehe ? .12 : -.15;
+            serie.Items.Add(new RectangleBarItem(i + links, 0, i + rechts, wert) {
+                Title = perioden[i].Beschriftung + ": " + wert.ToString("N2", Deutsch) + (hoehe ? " hm" : " km") });
+        }
+        Diagramm.Series.Add(serie);
+    }
+
 }

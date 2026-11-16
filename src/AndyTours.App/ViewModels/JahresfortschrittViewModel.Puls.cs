@@ -5,9 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Data.Sqlite;
 using OxyPlot;
-using OxyPlot.Axes;
 using OxyPlot.Series;
-using OxyPlot.Legends;
 using AndyTours.App.Funktionen;
 using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
@@ -31,8 +29,6 @@ public partial class JahresfortschrittViewModel
     [NotifyCanExecuteChangedFor(nameof(PulsdatenLadenCommand))]
     private bool _istBeschaeftigt;
 
-    /// <summary>Gestapelte Bereichszeiten in Minuten; keine Mittelwert-Zuordnung ganzer Touren.</summary>
-    public PlotModel PulsDiagramm { get; } = new() { Culture = Deutsch, PlotAreaBorderColor = OxyColors.LightGray };
     private bool KannLaden() => !IstBeschaeftigt;
 
     partial void OnPulsprofilChanged(GarminPulsprofil? value) { _generation++; LeerePulsanalyse(); }
@@ -42,8 +38,8 @@ public partial class JahresfortschrittViewModel
     private void LeerePulsanalyse()
     {
         Pulszeilen = [];
-        PulsDiagramm.Series.Clear(); PulsDiagramm.Axes.Clear(); PulsDiagramm.Legends.Clear();
-        PulsDiagramm.InvalidatePlot(true);
+        _pulsserien.Clear();
+        Zeichne();
         PulsStatus = "Pulsanalyse für den gewählten Zeitraum neu laden.";
     }
 
@@ -144,15 +140,8 @@ public partial class JahresfortschrittViewModel
     private void ZeichnePulszeiten(IReadOnlyList<Aktivitaetsperiode> perioden,
         IReadOnlyDictionary<(DateOnly Periode, int Bereich), double> zeiten, GarminPulsprofil? profil)
     {
-        PulsDiagramm.Series.Clear(); PulsDiagramm.Axes.Clear(); PulsDiagramm.Legends.Clear();
-        var achse = new CategoryAxis { Position = AxisPosition.Bottom, Minimum = -.5, Maximum = perioden.Count - .5,
-            Angle = perioden.Count > 16 ? -45 : 0, IsZoomEnabled = false, IsPanEnabled = false };
-        achse.Labels.AddRange(perioden.Select(p => p.Beschriftung));
-        PulsDiagramm.Axes.Add(achse);
-        PulsDiagramm.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Title = "Minuten", Minimum = 0,
-            IsZoomEnabled = false, IsPanEnabled = false, MajorGridlineStyle = LineStyle.Dot });
-        PulsDiagramm.Legends.Add(new Legend { LegendPosition = LegendPosition.BottomCenter,
-            LegendPlacement = LegendPlacement.Outside, LegendOrientation = LegendOrientation.Horizontal });
+        Diagramm.Series.Clear();
+        _pulsserien.Clear();
         var farben = new[] { OxyColors.Gray, OxyColors.SteelBlue, OxyColors.ForestGreen, OxyColors.Goldenrod, OxyColors.OrangeRed, OxyColors.Purple };
         int[] bereiche = zeiten.Keys.Select(k => k.Bereich).Distinct().OrderBy(z => z).ToArray();
         var summen = zeiten.GroupBy(z => z.Key.Periode).ToDictionary(g => g.Key, g => g.Sum(z => z.Value));
@@ -162,7 +151,7 @@ public partial class JahresfortschrittViewModel
         {
             string zone = profil is null ? "ohne Garmin-Zuordnung" : bereich == 0 ? "Unter Zone 1" : $"Garmin Zone {bereich}";
             string bpm = profil?.Bereich(bereich) ?? $"{bereich}–{bereich + 9} bpm";
-            var serie = new RectangleBarSeries { Title = profil is null ? bpm : zone + " · " + bpm,
+            var serie = new RectangleBarSeries { YAxisKey = "puls", Title = profil is null ? bpm : zone + " · " + bpm,
                 FillColor = farben[profil is null ? (bereich / 10) % farben.Length : bereich], StrokeThickness = 0,
                 LabelFormatString = null, TrackerFormatString = "{7}" };
             for (int i = 0; i < perioden.Count; i++)
@@ -171,18 +160,18 @@ public partial class JahresfortschrittViewModel
                 double sekunden = zeiten.GetValueOrDefault((key, bereich));
                 if (sekunden <= 0) { continue; }
                 double alle = summen.GetValueOrDefault(key);
-                serie.Items.Add(new RectangleBarItem(i - .35, unterkante[i], i + .35, unterkante[i] + sekunden / 60)
+                serie.Items.Add(new RectangleBarItem(i + .15, unterkante[i], i + .42, unterkante[i] + sekunden / 60)
                 { Title = perioden[i].Beschriftung + " · " + zone + " · " + bpm + ": " + (sekunden / 60).ToString("N1", Deutsch) + " min" });
                 unterkante[i] += sekunden / 60;
                 zeilen.Add(new PulsAuswertungszeile(perioden[i].Beschriftung, zone, bpm,
                     TimeSpan.FromSeconds(sekunden).TotalMinutes.ToString("N1", Deutsch) + " min",
                     (sekunden / alle).ToString("P1", Deutsch)));
             }
-            PulsDiagramm.Series.Add(serie);
+            _pulsserien.Add(serie);
         }
 
         var reihenfolge = perioden.Select((p, i) => (p.Beschriftung, Index: i)).ToDictionary(p => p.Beschriftung, p => p.Index);
         Pulszeilen = zeilen.OrderBy(z => reihenfolge[z.Zeitraum]).ToArray();
-        PulsDiagramm.InvalidatePlot(true);
+        Zeichne();
     }
 }

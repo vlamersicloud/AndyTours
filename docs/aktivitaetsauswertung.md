@@ -130,3 +130,9 @@ umzuschreiben. Lokal bauen/starten wie in README beschrieben.
 - Das auf dieser offiziellen Seite eingebettete OpenAPI-Schema
   `HeartRateZonesDTO` dokumentiert Profilart und fünf bpm-Untergrenzen.
 - Bestehende FIT-Auswertung über `Garmin.FIT.Sdk`; keine fremde SSO-Anmeldung.
+
+## Gemeinsames Diagramm
+
+Die Aktivitätsübersicht zeigt ein einziges Diagramm. Unter „Diagramminhalt → Werte auswählen“ lassen sich Strecke, Puls und Höhenmeter unabhängig anhaken; standardmäßig ist Strecke gewählt. Ohne Häkchen werden keine Datenreihen dargestellt. Strecke (km), Höhenmeter (hm) und Pulsbereichszeiten (Minuten) verwenden getrennte, beschriftete Achsen und dieselbe Zeitraumgruppierung.
+
+Für Puls bleibt „Pulsanalyse laden“ erforderlich; die geladenen Garmin-Zonen bzw. 10-bpm-Bereiche erscheinen im gemeinsamen Diagramm. Profil- und Zeitraumänderungen verwerfen die alte Pulsanalyse; die Kennzahlauswahl erhält bereits geladene Ergebnisse. Das zweite Pulsdiagramm entfällt, die Detailtabelle bleibt erhalten.
