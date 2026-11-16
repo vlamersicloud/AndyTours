@@ -21,7 +21,7 @@ public sealed class TourenplanungFensterVertragTests
         var commands = d.Descendants(P + "Button").Select(x => (string?)x.Attribute("Command")).ToArray();
         foreach (var command in new[] { "OeffnenCommand", "SpeichernCommand", "GarminUebertragenCommand", "LetztenPunktEntfernenCommand", "AllesLoeschenCommand" })
             Assert.Contains("{Binding " + command + "}", commands);
-        var keys = d.Descendants(P + "Window.Resources").Elements().Select(x => (string?)x.Attribute(X + "Key")).ToHashSet(StringComparer.Ordinal);
+        var keys = d.Descendants(P + "Window.Resources").Elements().Select(x => (string?)x.Attribute(X + "Key")).OfType<string>().ToHashSet(StringComparer.Ordinal);
         var refs = d.Descendants().Attributes().Select(a => a.Value).Where(v => v.Contains("{StaticResource ", StringComparison.Ordinal)).SelectMany(v => v.Split("{StaticResource ", StringSplitOptions.None).Skip(1)).Select(v => v.Split('}')[0]).ToHashSet(StringComparer.Ordinal);
         Assert.All(refs, key => Assert.Contains(key, keys)); Assert.All(keys, key => Assert.Contains(key, refs));
     }
