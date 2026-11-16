@@ -18,6 +18,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     public event Func<Task>? AktivitaetenVerwaltenAngefordert;
     public event Func<Task>? KategorienVerwaltenAngefordert;
+    public event Func<Task>? EquipmentsVerwaltenAngefordert;
 
     public ApiHauptfenster(ApiUebersichtViewModel viewModel, Uri backendAdresse)
     {
@@ -96,6 +97,16 @@ public partial class ApiHauptfenster : Window, IDisposable
         {
             _verwaltungOffen = false;
         }
+    }
+
+
+    private async void EquipmentsVerwalten_Click(object sender, RoutedEventArgs e)
+    {
+        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        _verwaltungOffen = true;
+        try { if (EquipmentsVerwaltenAngefordert is { } handler) await handler(); }
+        catch (Exception) { _viewModel.StatusText = "Die Equipmentverwaltung konnte nicht geöffnet werden."; }
+        finally { _verwaltungOffen = false; }
     }
 
     private void TourenDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)

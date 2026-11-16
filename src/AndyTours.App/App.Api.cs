@@ -90,6 +90,34 @@ public partial class App
                 }
             };
 
+            fenster.EquipmentsVerwaltenAngefordert += async () =>
+            {
+                ApiEquipmentsFenster? admin = null;
+                try
+                {
+                    var vm = new ApiEquipmentsViewModel(uebergebeneSitzung.Equipments, uebergebeneSitzung.Stammdaten,
+                        text => MessageBox.Show((Window?)admin ?? fenster, text, "Equipment bestätigen",
+                            MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes);
+                    admin = new ApiEquipmentsFenster(vm) { Owner = fenster };
+                    vm.EditorAngefordert += (_, args) =>
+                    {
+                        var editor = new EquipmentBearbeitenFenster(args.ViewModel) { Owner = admin };
+                        editor.ShowDialog();
+                    };
+                    admin.ShowDialog();
+                }
+                catch (Exception) { viewModel.StatusText = "Die Equipmentverwaltung konnte nicht geöffnet werden."; }
+                finally
+                {
+                    admin?.Dispose();
+                    if (fenster.IsVisible)
+                    {
+                        try { await viewModel.AktualisierenAsync(CancellationToken.None); }
+                        catch (Exception) { viewModel.StatusText = "Übersicht konnte nach der Equipmentverwaltung nicht aktualisiert werden."; }
+                    }
+                }
+            };
+
             fenster.Closed += async (_, _) =>
             {
                 var bereinigungFehlgeschlagen = false;
