@@ -31,9 +31,17 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
         _lifetimeToken = _lifetime.Token;
         _vm.ApiOeffnen = Oeffnen; _vm.ApiSpeichern = Speichern; _vm.ApiGarminUebertragen = Garmin;
         _vm.ApiProfilGeaendert = ProfilGeaendert;
+        _vm.ApiProfilSynchronisieren = ProfilSynchronisieren;
         _profile.Geaendert += ProfilAktualisiert;
         _window.Closed += Closed;
         _vm.ApiProfilHinweis = profile.Hinweis;
+    }
+
+    private async Task ProfilSynchronisieren()
+    {
+        try { if (!_disposed) await _profile.Setzen(ToContract(_vm.Profil), _lifetimeToken); }
+        catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested) { }
+        catch { if (!_disposed) _vm.ApiProfilHinweis = "Planungsprofil konnte nicht synchronisiert werden."; }
     }
 
     private async void ProfilGeaendert(Fahrprofil profil)
@@ -112,6 +120,7 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
         if (_vm.ApiSpeichern == Speichern) _vm.ApiSpeichern = null;
         if (_vm.ApiGarminUebertragen == Garmin) _vm.ApiGarminUebertragen = null;
         _vm.ApiProfilGeaendert = null;
+        _vm.ApiProfilSynchronisieren = null;
         _profile.Dispose(); _lifetime.Dispose();
     }
     private static CourseFahrprofil ToContract(Fahrprofil p) => p switch { Fahrprofil.Rennrad => CourseFahrprofil.Rennrad, Fahrprofil.Trekking => CourseFahrprofil.Trekking, Fahrprofil.Mountainbike => CourseFahrprofil.Mountainbike, _ => throw Invalid() };

@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using AndyTours.Core.Berechnungen;
 using AndyTours.Application.Planung;
 using AndyTours.Contracts.V1;
@@ -12,6 +13,7 @@ public partial class TourenplanungViewModel
     internal Func<Task>? ApiOeffnen { get; set; }
     internal Func<Task>? ApiGarminUebertragen { get; set; }
     internal Action<Fahrprofil>? ApiProfilGeaendert { get; set; }
+    internal Func<Task>? ApiProfilSynchronisieren { get; set; }
     public bool IstApiModus => ApiRouting is not null;
 
     private bool _apiDateiBeschaeftigt;
@@ -29,6 +31,9 @@ public partial class TourenplanungViewModel
     private string _apiProfilHinweis = string.Empty;
     public string ApiProfilHinweis { get => _apiProfilHinweis; set => SetProperty(ref _apiProfilHinweis, value); }
     public bool KannApiBedienen => !ApiDateiBeschaeftigt;
+
+    [RelayCommand(CanExecute = nameof(KannApiBedienen))]
+    private async Task ProfilSynchronisieren() { if (ApiProfilSynchronisieren is { } callback) await callback(); }
 
     internal void UebernimmApiPlanung(Tourenplanung planung, string localPfad)
     {

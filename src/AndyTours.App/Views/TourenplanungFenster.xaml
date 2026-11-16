@@ -43,6 +43,8 @@
                 <ComboBox x:Name="ProfilAuswahl" Width="290" VerticalContentAlignment="Center"
                           ItemsSource="{Binding Fahrprofile}" DisplayMemberPath="Value" SelectedValuePath="Key"
                           SelectedValue="{Binding Profil}" />
+                <Button Content="Profil prüfen / speichern" Margin="6,0,0,0" Command="{Binding ProfilSynchronisierenCommand}"
+                        Visibility="{Binding IstApiModus, Converter={StaticResource SichtbarWennWahr}}" />
                 <Button Content="Ö_ffnen…" MinWidth="90" Padding="8,3" Margin="16,0,0,0" Command="{Binding OeffnenCommand}" />
                 <Button Content="_Speichern…" MinWidth="90" Padding="8,3" Margin="6,0,0,0" Command="{Binding SpeichernCommand}" />
                 <Button Content="Auf _Garmin übertragen…" Padding="8,3" Margin="6,0,0,0" Command="{Binding GarminUebertragenCommand}" />
