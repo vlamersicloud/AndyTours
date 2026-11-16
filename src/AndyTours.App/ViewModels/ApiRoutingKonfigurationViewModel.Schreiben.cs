@@ -25,6 +25,7 @@ public partial class ApiRoutingKonfigurationViewModel
     [RelayCommand(CanExecute = nameof(CanWrite))]
     private Task AdresseSpeichernAsync()
     {
+        if (!CanWrite()) return Task.CompletedTask;
         string draft = AdresseEntwurf;
         try { _ = RoutingKonfigurationRegeln.Adresse(draft); }
         catch (StammdatenException) { Hinweis = "BRouter-Adresse ungültig."; return Task.CompletedTask; }
@@ -35,6 +36,7 @@ public partial class ApiRoutingKonfigurationViewModel
     [RelayCommand(CanExecute = nameof(CanWrite))]
     private Task AdresseZuruecksetzenAsync()
     {
+        if (!CanWrite()) return Task.CompletedTask;
         if (Bestaetigung?.Invoke("Gespeicherte BRouter-Adresse zurücksetzen?") != true) return Task.CompletedTask;
         return RunWrite((version, token) => _service.AdresseZuruecksetzen(new(version), token), null, "BRouter-Adresse zurückgesetzt.");
     }
@@ -42,6 +44,7 @@ public partial class ApiRoutingKonfigurationViewModel
     [RelayCommand(CanExecute = nameof(CanWrite))]
     private Task OrsSchluesselSpeichernAsync()
     {
+        if (!CanWrite()) return Task.CompletedTask;
         string draft = OrsSchluesselEntwurf;
         try { _ = RoutingKonfigurationRegeln.OrsSchluessel(draft); }
         catch (StammdatenException) { Hinweis = "ORS-Schlüssel ungültig."; return Task.CompletedTask; }
@@ -53,6 +56,7 @@ public partial class ApiRoutingKonfigurationViewModel
     [RelayCommand(CanExecute = nameof(CanWrite))]
     private Task OrsSchluesselEntfernenAsync()
     {
+        if (!CanWrite()) return Task.CompletedTask;
         if (Bestaetigung?.Invoke("Gespeicherten ORS-Schlüssel entfernen?") != true) return Task.CompletedTask;
         return RunWrite((version, token) => _service.OrsKeyEntfernen(new(version), token),
             () => { OrsSchluesselEntwurf = string.Empty; EntwurfLeeren?.Invoke(this, EventArgs.Empty); },
@@ -107,9 +111,14 @@ public partial class ApiRoutingKonfigurationViewModel
             !response.AdresseAusgeblendet && response.BRouterAdresse is null ||
             response.BRouterAdresse is not null && !RoutingKonfigurationRegeln.IstAdresseSichtbar(response.BRouterAdresse))
             throw new InvalidOperationException();
+        bool preserveDienstDraft = _loaded && Dienst != _confirmedDienst;
         _version = version;
         _loaded = true;
-        Dienst = response.Dienst;
+        _confirmedDienst = response.Dienst;
+        if (!preserveDienstDraft) Dienst = response.Dienst;
+        _gespeicherteAdresse = response.BRouterAdresse;
+        OnPropertyChanged(nameof(GespeicherteAdresse));
+        OnPropertyChanged(nameof(HatEntwuerfe));
         AdresseAusgeblendet = response.AdresseAusgeblendet;
         HatOrsSchluessel = response.HatOrsSchluessel;
     }

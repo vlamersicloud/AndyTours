@@ -14,6 +14,8 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
     private CancellationTokenSource? _operation;
     private string _version = string.Empty;
     private bool _loaded;
+    private RoutingAnbieter _confirmedDienst;
+    private string? _gespeicherteAdresse;
     private bool _disposed;
 
     [ObservableProperty] private RoutingAnbieter _dienst;
@@ -35,12 +37,14 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
     public bool StatusGeladen => _loaded && !_disposed;
     public bool Busy => Laedt || Aendert;
     public bool KannBearbeiten => StatusGeladen && !Busy;
-    public bool HatEntwuerfe => AdresseEntwurf.Length > 0 || OrsSchluesselEntwurf.Length > 0;
+    public string? GespeicherteAdresse => _gespeicherteAdresse;
+    public bool HatEntwuerfe => AdresseEntwurf.Length > 0 || OrsSchluesselEntwurf.Length > 0 || (_loaded && Dienst != _confirmedDienst);
     public Func<string, bool>? Bestaetigung { get; set; }
     public event EventHandler? EntwurfLeeren;
 
     partial void OnLaedtChanged(bool value) => NotifyState();
     partial void OnAendertChanged(bool value) => NotifyState();
+    partial void OnDienstChanged(RoutingAnbieter value) => OnPropertyChanged(nameof(HatEntwuerfe));
     partial void OnAdresseEntwurfChanged(string value) => OnPropertyChanged(nameof(HatEntwuerfe));
     partial void OnOrsSchluesselEntwurfChanged(string value) => OnPropertyChanged(nameof(HatEntwuerfe));
 
@@ -49,6 +53,8 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
         OnPropertyChanged(nameof(Busy));
         OnPropertyChanged(nameof(KannBearbeiten));
         OnPropertyChanged(nameof(StatusGeladen));
+        OnPropertyChanged(nameof(AdresseStatus));
+        OnPropertyChanged(nameof(OrsSchluesselStatus));
         LadenCommand.NotifyCanExecuteChanged();
         AbbrechenCommand.NotifyCanExecuteChanged();
         DienstSpeichernCommand.NotifyCanExecuteChanged();
@@ -75,8 +81,13 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
                 !response.AdresseAusgeblendet && response.BRouterAdresse is null ||
                 response.BRouterAdresse is not null && !RoutingKonfigurationRegeln.IstAdresseSichtbar(response.BRouterAdresse))
                 throw new InvalidOperationException();
+            bool preserveDienstDraft = _loaded && Dienst != _confirmedDienst;
             _version = version;
-            Dienst = response.Dienst;
+            _confirmedDienst = response.Dienst;
+            if (!preserveDienstDraft) Dienst = response.Dienst;
+            _gespeicherteAdresse = response.BRouterAdresse;
+            OnPropertyChanged(nameof(GespeicherteAdresse));
+            OnPropertyChanged(nameof(HatEntwuerfe));
             AdresseAusgeblendet = response.AdresseAusgeblendet;
             HatOrsSchluessel = response.HatOrsSchluessel;
             // Preserve edits: GET refreshes authoritative metadata, never stomps in-progress user drafts.
@@ -114,6 +125,13 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
         try { _operation?.Cancel(); } catch (ObjectDisposedException) { }
         _operation = null;
         _version = string.Empty;
+        _gespeicherteAdresse = null;
+        Laedt = false;
+        Aendert = false;
+        AdresseAusgeblendet = false;
+        HatOrsSchluessel = false;
+        OnPropertyChanged(nameof(GespeicherteAdresse));
+        OnPropertyChanged(nameof(HatEntwuerfe));
         OrsSchluesselEntwurf = string.Empty;
         AdresseEntwurf = string.Empty;
         _loaded = false;
