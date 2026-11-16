@@ -45,7 +45,7 @@ public sealed class GarminImportArtefakte
             try
             {
                 await LadeGarminConnectAufzeichnungen.EntpackeFitAsync(archive, fitTemp, ct).ConfigureAwait(false);
-                var parsed = LeseFitAufzeichnung.Ausfuehren(fitTemp, _fallbackZeitzone);
+                var parsed = LeseFitAufzeichnung.Ausfuehren(fitTemp, _fallbackZeitzone, ct);
                 var record = parsed.Aufzeichnung;
                 if (record is null || !double.IsFinite(record.DistanzKm) || record.DistanzKm < 0 ||
                     record.Fahrzeit < TimeSpan.Zero || record.Fahrzeit.Ticks % TimeSpan.TicksPerSecond != 0)

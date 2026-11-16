@@ -24,7 +24,7 @@ public sealed partial class FitDateiDienst
             await using var stream = new FileStream(temporary, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
             var hash = Convert.ToHexString(await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
             cancellationToken.ThrowIfCancellationRequested();
-            var (points, error) = LeseFitVerlauf.Ausfuehren(temporary);
+            var (points, error) = LeseFitVerlauf.Ausfuehren(temporary, cancellationToken);
             if (points is null || error is not null)
                 throw Invalid();
             return new FitVerlaufSnapshot(points, hash, temporary);

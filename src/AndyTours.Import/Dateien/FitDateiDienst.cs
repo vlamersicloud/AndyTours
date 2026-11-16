@@ -38,7 +38,7 @@ public sealed partial class FitDateiDienst
             await using var stream = new FileStream(temporary, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
             var fileHash = Convert.ToHexString(await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
             var version = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fileHash + "\n" + _zone.ToSerializedString())));
-            var parsed = LeseFitAufzeichnung.Ausfuehren(temporary, _zone).Aufzeichnung;
+            var parsed = LeseFitAufzeichnung.Ausfuehren(temporary, _zone, cancellationToken).Aufzeichnung;
             if (parsed is null || !double.IsFinite(parsed.DistanzKm) || parsed.DistanzKm < 0 ||
                 parsed.Fahrzeit < TimeSpan.Zero || parsed.Fahrzeit.Ticks % TimeSpan.TicksPerSecond != 0)
                 throw new InvalidDataException();
