@@ -18,10 +18,14 @@ public sealed class SqliteWartungsverwaltung(string datenbankpfad) : IWartungsve
         ct.ThrowIfCancellationRequested();
         if (filter is null) throw Invalid();
         if (filter.AktivitaetId is <= 0 || filter.EquipmentId is <= 0) throw Invalid("Filterkennungen müssen positiv sein.");
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: true);
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: true);
         var data = DatenbestandTabellen.Laden(c);
         if (filter.AktivitaetId is long aid && !data.Aktivitaeten.Any(x => x.Id == aid)) throw NotFound("Aktivität wurde nicht gefunden.");
         if (filter.EquipmentId is long eid && !data.Equipments.Any(x => x.Id == eid)) throw NotFound("Equipment wurde nicht gefunden.");
+        if (filter.EquipmentId is long selectedId && filter.AktivitaetId is long activityId &&
+            !Wartungsaktivitaet.Passt(data.Equipments.Single(e => e.Id == selectedId), activityId))
+            throw Invalid("Equipment gehört nicht zur gefilterten Aktivität.");
         var raw = Raw(data);
         var rows = ErstelleWartungszeilen.Ausfuehren(data, filter.EquipmentId, filter.AktivitaetId)
             .Select(x => new WartungszeileAntwort(x.Id, x.Datum, x.Rad, x.KmStand, x.KmSeitLetzter, x.TageSeitLetzter, x.Taetigkeit, x.Kommentar)).ToArray();
@@ -44,9 +48,12 @@ public sealed class SqliteWartungsverwaltung(string datenbankpfad) : IWartungsve
         if (anfrage is null) throw Invalid();
         ValidateRequest(anfrage.Version, false);
         ValidateWartung(anfrage.Datum, anfrage.EquipmentId, anfrage.Taetigkeit, anfrage.Kommentar);
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: false); CheckVersion(c, anfrage.Version);
-        var data = DatenbestandTabellen.Laden(c); ValidateEquipment(data, anfrage.EquipmentId, false);
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: false);
+        CheckVersion(c, anfrage.Version);
+        var data = DatenbestandTabellen.Laden(c); ValidateEquipment(data, anfrage.EquipmentId, null);
         CheckDuplicate(data, null, anfrage.EquipmentId, anfrage.Datum, anfrage.Taetigkeit);
+        ct.ThrowIfCancellationRequested();
         WartungenTabelle.Einfuegen(c, tx, new Wartung { Datum = anfrage.Datum, EquipmentId = anfrage.EquipmentId,
             Taetigkeit = anfrage.Taetigkeit.Trim(), Kommentar = anfrage.Kommentar.Trim(), Typ = WartungsTyp.Wartung, AlarmKm = 0, Aktiv = true });
         return Finish(c, tx, ct);
@@ -54,16 +61,21 @@ public sealed class SqliteWartungsverwaltung(string datenbankpfad) : IWartungsve
 
     public Task<WartungsbestandAntwort> WartungAendern(long id, WartungSpeichernAnfrage anfrage, CancellationToken ct = default)
     {
-        ct.ThrowIfCancellationRequested(); CheckId(id);
+        ct.ThrowIfCancellationRequested();
+        CheckId(id);
         if (anfrage is null) throw Invalid();
         ValidateRequest(anfrage.Version, false);
         ValidateWartung(anfrage.Datum, anfrage.EquipmentId, anfrage.Taetigkeit, anfrage.Kommentar);
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: false); CheckVersion(c, anfrage.Version);
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: false);
+        CheckVersion(c, anfrage.Version);
         var data = DatenbestandTabellen.Laden(c); var old = data.Wartungen.SingleOrDefault(w => w.Id == id) ?? throw NotFound("Wartung wurde nicht gefunden.");
         if (old.Typ != WartungsTyp.Wartung) throw Invalid("Der Eintrag ist keine Wartung.");
-        ValidateEquipment(data, anfrage.EquipmentId, true); CheckDuplicate(data, id, anfrage.EquipmentId, anfrage.Datum, anfrage.Taetigkeit);
+        ValidateEquipment(data, anfrage.EquipmentId, old.EquipmentId); CheckDuplicate(data, id, anfrage.EquipmentId, anfrage.Datum, anfrage.Taetigkeit);
         old.Datum = anfrage.Datum; old.EquipmentId = anfrage.EquipmentId; old.Taetigkeit = anfrage.Taetigkeit.Trim(); old.Kommentar = anfrage.Kommentar.Trim();
-        WartungenTabelle.Aendern(c, tx, old); return Finish(c, tx, ct);
+        ct.ThrowIfCancellationRequested();
+        WartungenTabelle.Aendern(c, tx, old);
+        return Finish(c, tx, ct);
     }
 
     public Task<WartungsbestandAntwort> AlarmAnlegen(AlarmSpeichernAnfrage anfrage, CancellationToken ct = default)
@@ -72,8 +84,11 @@ public sealed class SqliteWartungsverwaltung(string datenbankpfad) : IWartungsve
         if (anfrage is null) throw Invalid();
         ValidateRequest(anfrage.Version, false);
         ValidateAlarm(anfrage.EquipmentId, anfrage.Taetigkeit, anfrage.IntervallKm);
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: false); CheckVersion(c, anfrage.Version);
-        var data = DatenbestandTabellen.Laden(c); ValidateEquipment(data, anfrage.EquipmentId, false); CheckAlarmDuplicate(data, null, anfrage.EquipmentId, anfrage.Taetigkeit);
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: false);
+        CheckVersion(c, anfrage.Version);
+        var data = DatenbestandTabellen.Laden(c); ValidateEquipment(data, anfrage.EquipmentId, null); CheckAlarmDuplicate(data, null, anfrage.EquipmentId, anfrage.Taetigkeit);
+        ct.ThrowIfCancellationRequested();
         WartungenTabelle.Einfuegen(c, tx, new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = anfrage.EquipmentId,
             Taetigkeit = anfrage.Taetigkeit.Trim(), Kommentar = "", Typ = WartungsTyp.Alarm, AlarmKm = anfrage.IntervallKm, Aktiv = anfrage.Eingeschaltet });
         return Finish(c, tx, ct);
@@ -81,34 +96,50 @@ public sealed class SqliteWartungsverwaltung(string datenbankpfad) : IWartungsve
 
     public Task<WartungsbestandAntwort> AlarmAendern(long id, AlarmSpeichernAnfrage anfrage, CancellationToken ct = default)
     {
-        ct.ThrowIfCancellationRequested(); CheckId(id);
+        ct.ThrowIfCancellationRequested();
+        CheckId(id);
         if (anfrage is null) throw Invalid();
         ValidateRequest(anfrage.Version, false);
         ValidateAlarm(anfrage.EquipmentId, anfrage.Taetigkeit, anfrage.IntervallKm);
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: false); CheckVersion(c, anfrage.Version);
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: false);
+        CheckVersion(c, anfrage.Version);
         var data = DatenbestandTabellen.Laden(c); var old = data.Wartungen.SingleOrDefault(w => w.Id == id) ?? throw NotFound("Alarm wurde nicht gefunden.");
         if (old.Typ != WartungsTyp.Alarm) throw Invalid("Der Eintrag ist kein Alarm.");
-        ValidateEquipment(data, anfrage.EquipmentId, true); CheckAlarmDuplicate(data, id, anfrage.EquipmentId, anfrage.Taetigkeit);
+        ValidateEquipment(data, anfrage.EquipmentId, old.EquipmentId); CheckAlarmDuplicate(data, id, anfrage.EquipmentId, anfrage.Taetigkeit);
         old.EquipmentId = anfrage.EquipmentId; old.Taetigkeit = anfrage.Taetigkeit.Trim(); old.AlarmKm = anfrage.IntervallKm; old.Aktiv = anfrage.Eingeschaltet;
-        WartungenTabelle.Aendern(c, tx, old); return Finish(c, tx, ct);
+        ct.ThrowIfCancellationRequested();
+        WartungenTabelle.Aendern(c, tx, old);
+        return Finish(c, tx, ct);
     }
 
     public Task<WartungsbestandAntwort> Loeschen(WartungenAuswahlAnfrage anfrage, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested(); ValidateSelection(anfrage);
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: false); CheckVersion(c, anfrage.Version);
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: false);
+        CheckVersion(c, anfrage.Version);
         var data = DatenbestandTabellen.Laden(c); EnsureSelectionExists(data, anfrage.Ids);
-        WartungenTabelle.Loeschen(c, tx, anfrage.Ids); return Finish(c, tx, ct);
+        ct.ThrowIfCancellationRequested();
+        WartungenTabelle.Loeschen(c, tx, anfrage.Ids);
+        return Finish(c, tx, ct);
     }
 
     public Task<WartungsbestandAntwort> AlarmeUmschalten(WartungenAuswahlAnfrage anfrage, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested(); ValidateSelection(anfrage);
-        using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: false); CheckVersion(c, anfrage.Version);
+        using var c = Oeffnen();
+        using var tx = c.BeginTransaction(deferred: false);
+        CheckVersion(c, anfrage.Version);
         var data = DatenbestandTabellen.Laden(c); var selected = anfrage.Ids.Select(id => data.Wartungen.SingleOrDefault(w => w.Id == id) ?? throw NotFound("Ausgewählter Eintrag wurde nicht gefunden.")).ToArray();
         if (selected.Any(w => w.Typ != WartungsTyp.Alarm)) throw Invalid("Die Auswahl darf nur Alarme enthalten.");
         var active = !selected.Any(w => w.Aktiv);
-        foreach (var alarm in selected) { alarm.Aktiv = active; WartungenTabelle.Aendern(c, tx, alarm); }
+        foreach (var alarm in selected)
+        {
+            ct.ThrowIfCancellationRequested();
+            alarm.Aktiv = active;
+            WartungenTabelle.Aendern(c, tx, alarm);
+        }
         return Finish(c, tx, ct);
     }
 
@@ -129,14 +160,23 @@ public sealed class SqliteWartungsverwaltung(string datenbankpfad) : IWartungsve
     private static void EnsureSelectionExists(Datenbestand data, IReadOnlyList<long> ids)
     { if (!ids.All(id => data.Wartungen.Any(w => w.Id == id))) throw NotFound("Mindestens ein ausgewählter Eintrag wurde nicht gefunden."); }
     private static void CheckId(long id) { if (id <= 0) throw Invalid("ID muss positiv sein."); }
-    private static void ValidateText(string? value, string field, int max, bool required)
-    { if (value is null || value.Trim().Length > max || value.Any(char.IsControl) || (required && value.Trim().Length == 0)) throw Invalid($"{field} ist ungültig."); }
+    private static void ValidateText(string? value, string field, int max, bool required, bool multiline = false)
+    {
+        if (value is null || value.Trim().Length > max || (required && value.Trim().Length == 0) ||
+            value.Any(c => char.IsControl(c) && !(multiline && c is '\r' or '\n' or '\t')))
+            throw Invalid($"{field} ist ungültig.");
+    }
     private static void ValidateWartung(DateOnly date, long? equipmentId, string? task, string? comment)
-    { if (date > DateOnly.FromDateTime(DateTime.Today)) throw Invalid("Wartungsdatum darf nicht in der Zukunft liegen."); if (equipmentId is <= 0) throw Invalid("Equipment-ID muss positiv sein."); ValidateText(task, "Tätigkeit", 500, true); ValidateText(comment, "Kommentar", 20000, false); }
+    { if (date > DateOnly.FromDateTime(DateTime.Today)) throw Invalid("Wartungsdatum darf nicht in der Zukunft liegen."); if (equipmentId is <= 0) throw Invalid("Equipment-ID muss positiv sein."); ValidateText(task, "Tätigkeit", 500, true); ValidateText(comment, "Kommentar", 20000, false, multiline: true); }
     private static void ValidateAlarm(long equipmentId, string? task, int interval)
     { if (equipmentId <= 0 || interval <= 0) throw Invalid("Equipment-ID und Intervall müssen positiv sein."); ValidateText(task, "Tätigkeit", 500, true); }
-    private static void ValidateEquipment(Datenbestand data, long? id, bool allowRetired)
-    { if (id is not long value || !data.Equipments.Any(e => e.Id == value)) throw NotFound("Equipment wurde nicht gefunden."); if (!allowRetired && data.Equipments.Single(e => e.Id == value).Ausgemustert) throw Invalid("Für ausgemusterte Equipments können keine neuen Einträge angelegt werden."); }
+    private static void ValidateEquipment(Datenbestand data, long? id, long? allowRetiredId)
+    {
+        if (id is null) throw Invalid("Equipment muss ausgewählt sein.");
+        var equipment = data.Equipments.SingleOrDefault(e => e.Id == id.Value) ?? throw NotFound("Equipment wurde nicht gefunden.");
+        if (equipment.Ausgemustert && id != allowRetiredId)
+            throw Invalid("Für ausgemusterte Equipments können keine neuen Einträge angelegt werden.");
+    }
     private static void CheckDuplicate(Datenbestand data, long? except, long? equipment, DateOnly date, string task)
     { if (data.Wartungen.Any(w => w.Id != except && w.Typ == WartungsTyp.Wartung && w.EquipmentId == equipment && w.Datum == date && VergleicheNamen.Ausfuehren(w.Taetigkeit, task))) throw Invalid("Eine gleichartige Wartung für dieses Equipment und Datum existiert bereits."); }
     private static void CheckAlarmDuplicate(Datenbestand data, long? except, long equipment, string task)
