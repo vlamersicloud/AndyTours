@@ -17,6 +17,7 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
     private RoutingAnbieter _confirmedDienst;
     private string? _gespeicherteAdresse;
     private bool _disposed;
+    private bool _hatUnklarenSpeicherstatus;
 
     [ObservableProperty] private RoutingAnbieter _dienst;
     [ObservableProperty] private string _adresseEntwurf = string.Empty;
@@ -35,6 +36,7 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
 
     public IReadOnlyList<RoutingAnbieter> DienstOptionen { get; } = Enum.GetValues<RoutingAnbieter>();
     public bool StatusGeladen => _loaded && !_disposed;
+    public bool HatUnklarenSpeicherstatus => _hatUnklarenSpeicherstatus;
     public bool Busy => Laedt || Aendert;
     public bool KannBearbeiten => StatusGeladen && !Busy;
     public string? GespeicherteAdresse => _gespeicherteAdresse;
@@ -92,6 +94,8 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
             HatOrsSchluessel = response.HatOrsSchluessel;
             // Preserve edits: GET refreshes authoritative metadata, never stomps in-progress user drafts.
             _loaded = true;
+            _hatUnklarenSpeicherstatus = false;
+            OnPropertyChanged(nameof(HatUnklarenSpeicherstatus));
             Hinweis = response.AdresseAusgeblendet
                 ? "Gespeicherte BRouter-Adresse ist verborgen. Ersetzen oder zurücksetzen."
                 : "Konfiguration geladen.";

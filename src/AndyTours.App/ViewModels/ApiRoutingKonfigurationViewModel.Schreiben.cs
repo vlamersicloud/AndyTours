@@ -30,7 +30,7 @@ public partial class ApiRoutingKonfigurationViewModel
         try { _ = RoutingKonfigurationRegeln.Adresse(draft); }
         catch (StammdatenException) { Hinweis = "BRouter-Adresse ungültig."; return Task.CompletedTask; }
         return RunWrite((version, token) => _service.AdresseSpeichern(new(version, draft), token),
-            () => AdresseEntwurf = string.Empty, "BRouter-Adresse gespeichert.");
+            () => { if (AdresseEntwurf == draft) AdresseEntwurf = string.Empty; }, "BRouter-Adresse gespeichert.");
     }
 
     [RelayCommand(CanExecute = nameof(CanWrite))]
@@ -49,7 +49,7 @@ public partial class ApiRoutingKonfigurationViewModel
         try { _ = RoutingKonfigurationRegeln.OrsSchluessel(draft); }
         catch (StammdatenException) { Hinweis = "ORS-Schlüssel ungültig."; return Task.CompletedTask; }
         return RunWrite((version, token) => _service.OrsKeySpeichern(new(version, draft), token),
-            () => { OrsSchluesselEntwurf = string.Empty; EntwurfLeeren?.Invoke(this, EventArgs.Empty); },
+            () => { if (OrsSchluesselEntwurf == draft) { OrsSchluesselEntwurf = string.Empty; EntwurfLeeren?.Invoke(this, EventArgs.Empty); } },
             "ORS-Schlüssel gespeichert.");
     }
 
@@ -59,8 +59,7 @@ public partial class ApiRoutingKonfigurationViewModel
         if (!CanWrite()) return Task.CompletedTask;
         if (Bestaetigung?.Invoke("Gespeicherten ORS-Schlüssel entfernen?") != true) return Task.CompletedTask;
         return RunWrite((version, token) => _service.OrsKeyEntfernen(new(version), token),
-            () => { OrsSchluesselEntwurf = string.Empty; EntwurfLeeren?.Invoke(this, EventArgs.Empty); },
-            "ORS-Schlüssel entfernt.");
+            null, "ORS-Schlüssel entfernt.");
     }
 
     private async Task RunWrite(Func<string, CancellationToken, Task<RoutingKonfigurationAntwort>> send, Action? confirmedDraftClear, string success)
@@ -73,8 +72,8 @@ public partial class ApiRoutingKonfigurationViewModel
         try
         {
             var response = await send(version, linked.Token).ConfigureAwait(true);
-            linked.Token.ThrowIfCancellationRequested();
             if (_disposed) return;
+            // A valid server response confirms the committed write even if cancellation raced afterward.
             ApplyPublicMetadata(response);
             confirmedDraftClear?.Invoke();
             Hinweis = success;
@@ -89,11 +88,11 @@ public partial class ApiRoutingKonfigurationViewModel
         }
         catch (OperationCanceledException) when (linked.IsCancellationRequested)
         {
-            if (!_disposed) Invalidate("Speicherstatus unklar. Entwurf bleibt erhalten; bitte ausdrücklich neu laden.");
+            if (!_disposed) Invalidate("Speicherstatus unklar. Entwurf bleibt erhalten; bitte ausdrücklich neu laden.", uncertain: true);
         }
         catch
         {
-            if (!_disposed) Invalidate("Speicherstatus unklar. Entwurf bleibt erhalten; bitte ausdrücklich neu laden.");
+            if (!_disposed) Invalidate("Speicherstatus unklar. Entwurf bleibt erhalten; bitte ausdrücklich neu laden.", uncertain: true);
         }
         finally
         {
@@ -114,6 +113,8 @@ public partial class ApiRoutingKonfigurationViewModel
         bool preserveDienstDraft = _loaded && Dienst != _confirmedDienst;
         _version = version;
         _loaded = true;
+        _hatUnklarenSpeicherstatus = false;
+        OnPropertyChanged(nameof(HatUnklarenSpeicherstatus));
         _confirmedDienst = response.Dienst;
         if (!preserveDienstDraft) Dienst = response.Dienst;
         _gespeicherteAdresse = response.BRouterAdresse;
@@ -123,9 +124,11 @@ public partial class ApiRoutingKonfigurationViewModel
         HatOrsSchluessel = response.HatOrsSchluessel;
     }
 
-    private void Invalidate(string message)
+    private void Invalidate(string message, bool uncertain = false)
     {
         _loaded = false;
+        _hatUnklarenSpeicherstatus = uncertain;
+        OnPropertyChanged(nameof(HatUnklarenSpeicherstatus));
         _version = string.Empty;
         Hinweis = message;
         OnPropertyChanged(nameof(StatusGeladen));
