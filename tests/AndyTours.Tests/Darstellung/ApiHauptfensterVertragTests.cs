@@ -42,6 +42,17 @@ public sealed class ApiHauptfensterVertragTests
         var containers=new[]{"Grid","StackPanel","DockPanel","Menu","MenuItem"};
         Assert.DoesNotContain(d.Descendants().Where(x=>containers.Contains(x.Name.LocalName)),x=>x.Nodes().OfType<XText>().Any(t=>!string.IsNullOrWhiteSpace(t.Value)));
     }
+    [Fact] public void DateiMenuEnthaeltFITUndGarminGeraeteImportEindeutig()
+    {
+        var d = LadeXaml();
+        var datei = Assert.Single(d.Descendants(Presentation + "MenuItem"), x => (string?)x.Attribute("Header") == "Datei");
+        Assert.Single(datei.Descendants(Presentation + "MenuItem"), x => (string?)x.Attribute("Click") == "FitDateienImportieren_Click");
+        Assert.Single(datei.Descendants(Presentation + "MenuItem"), x => (string?)x.Attribute("Click") == "GarminGeraetImportieren_Click");
+        var handlers = datei.Descendants(Presentation + "MenuItem").Select(x => (string?)x.Attribute("Click"))
+            .Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+        Assert.Equal(handlers.Length, handlers.Distinct(StringComparer.Ordinal).Count());
+    }
+
     [Fact] public void GarminImportMenuIstEindeutigUndVerweistAufHandler()
     {
         var d=LadeXaml();
