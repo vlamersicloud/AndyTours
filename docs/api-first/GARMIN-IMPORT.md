@@ -1,23 +1,33 @@
 # Garmin Connect Import im API-Modus
 
-**Status: integrierter, aber nicht vollständiger E2E-Ablauf.** API-Modus unterstützt dauerhafte Downloadaufträge, automatische/manuelle Paketfortsetzung, Abbruch und Resume, ZIP-Cache, serverseitige FIT-Prüfung, Equipmentvorschlag/-auswahl und atomare Tourübernahme mit Garmin-Zuordnung, Sensormerkungen und Idempotenzquittung. WPF-Jobstatus und synchrones Review-/Übernahmefenster sind angebunden. Der Legacy-Start ohne `--api` bleibt Standard. USB/MTP, lokaler FIT-Upload und weitere Garmin-/Tourdetails bleiben offen.
+**Status: integrierter, aber nicht vollständig verifizierter API-E2E-Ablauf; Gesamtmigration offen.** Dauerhafte Downloadjobs, Resume, ZIP-Cache, serverseitige FIT-Prüfung, Equipmentauswahl, atomarer Tourcommit mit Garmin-Zuordnung/Sensorupdates und WPF-Review sind implementiert. USB/MTP, FIT-Upload, vollständige Tourdetails und weitere Produktabläufe bleiben offen. Legacy ohne `--api` bleibt Standard.
 
-Der Garmin Personal-Key bleibt in `Persoenlich.Garmin.PersonalApiKey`; kein Environment-Fallback. Schlüssel, Tokens, Rohantworten, Serverpfade und Exceptiontexte gehören weder in öffentliche DTOs noch Logs/Fehlermeldungen.
+Der Garmin Personal-Key bleibt in der bestehenden Backend-Einstellung `Persoenlich.Garmin.PersonalApiKey`; kein Environment-Fallback. Schlüssel, Tokens, Garmin-Rohantworten, Dateipfade und Exceptiontexte gehören weder in Jobzeilen/API-Antworten noch in Logs oder Fehlertexte.
 
 ## Implementiert
 
-- Contracts in `src/AndyTours.Contracts/V1/GarminImportVertrag.cs` und `GarminImportPruefungVertrag.cs`; Job-, Prüf- und Übernahmeports in Application.
-- SQLite-Jobstore mit idempotentem Start/Mutation, Lease-Fencing, bis zu 20 Kandidaten je Paket, Paketstatus und sicheren Quittungen.
-- API-gehosteter sequenzieller Worker: Garmin-ID-Auflistung, Resume, ZIP-Cache und FIT-Persistenz unter festem Datenordner; keine Worker-Leases oder Schlüssel als HTTP.
-- `GarminImportPruefung` lädt FIT-Dateien serverseitig aus festem Job-/Kandidatenpfad, erstellt isolierte Prüfsnapshots, berechnet Hashes und liefert Preview-DTOs. Der Client übermittelt bei Übernahme nur Auswahl, Equipment und die beobachteten Versionswerte, keine Tourdaten oder Dateipfade.
-- Übernahme prüft Versionen erneut, schreibt Touren, Anhänge, Garmin-Zuordnung, Equipment-/Sensorupdates, Kandidatenstatus und Requestquittung in derselben SQLite-Transaktion. Gleiches Request-Replay liefert die gespeicherte Antwort; Duplikate werden erkannt.
-- API-Routen `/{jobId}/pruefung` und `/{jobId}/uebernehmen`; typed client verwendet getrennten 10-Minuten-Timeout für FIT-Review; übrige API-Calls behalten ihren kurzen Timeout.
-- WPF-Jobfenster und synchrones Review-/Auswahlfenster: unmarkierte Kandidaten werden übersprungen, Originaldateien bleiben bestehen, Fensterabbruch löst keinen serverseitigen Jobabbruch aus.
+- Verträge in `src/AndyTours.Contracts/V1/GarminImportVertrag.cs` und Jobport `src/AndyTours.Application/Garmin/IGarminImportJobs.cs`: idempotenter Start, Status, Kandidatenseiten, Fortsetzen und Abbrechen.
+- SQLite-Schema `src/AndyTours.Daten/GarminImportJobSchema.cs` mit Job-, Kandidaten- und sicheren Steuerungsquittungen. `SqliteGarminImportJobs*.cs` enthält Start/Lesen/Paging, versionierte Mutationen, eindeutige aktive Jobs, Leases mit Owner/Generation/Expiry-Fencing, Kandidatenpersistenz (20 pro Paket) und Paketübergänge. Paketbeobachtungen tragen die dauerhafte Paketnummer.
+- Serverdatenport `src/AndyTours.Application/Garmin/IGarminImportServerdaten.cs` und SQLite-Adapter `src/AndyTours.Daten/SqliteGarminImportServerdaten.cs` lesen den konfigurierten Schlüssel nur intern und berücksichtigen bestehende Garmin-Zuordnungen nur für noch vorhandene Touren.
+- `src/AndyTours.Import/Garmin/GarminImportArtefakte.cs` speichert ZIPs unter dem festgelegten Datenordner mit temporärer Datei und atomarem Move; FIT-Dateien werden mit dem vorhandenen ZIP-Entpacker und `LeseFitAufzeichnung` geprüft. ZIP-Cache und FIT-Pfade werden nicht über HTTP ausgegeben.
+- `src/AndyTours.Import/Garmin/GarminImportPaketWorker.cs` claimt Pakete, erneuert Leases, setzt Kandidaten fort, enumeriert Garmin-IDs ab Anfang und speichert Kandidaten vor Netzwerkdownloads. `src/AndyTours.Api/GarminImportDienst.cs` hosted den sequenziellen Worker. API-DI teilt dieselbe SQLite-Jobstoreinstanz für Job- und Worker-Port.
+- `src/AndyTours.Api/GarminImportEndpunkte.cs` bietet Start, Status, Kandidatenseiten, Fortsetzen und Abbrechen. Worker-Leases und Schlüsselzugriff sind nicht als HTTP-Endpunkte gemappt.
+- `src/AndyTours.Client/GarminImportJobsHttpClient.cs` implementiert den typisierten Job-Client. `GarminImportPruefungHttpClient` nutzt einen separaten längeren Timeout für FIT-Review.
+- `src/AndyTours.Import/Garmin/GarminImportPruefung*.cs` baut sichere Preview-DTOs aus serverseitigen FIT-Snapshots und legt geprüfte Dateien unveränderlich ab. `SqliteGarminImportJobs.Uebernahme.cs` übernimmt Touren/Anhänge, Garmin-Mapping, Sensor-/Equipmentupdates, Kandidaten und Idempotenzquittung in einer SQLite-Transaktion.
+- WPF-Jobstatus und synchrones Review-/Auswahlfenster sind verbunden; Fensterabbruch bricht den serverseitigen Downloadauftrag nicht ab.
 
-## Weiterhin offen / Grenzen
+## Noch offen
 
-Kein vollständiger Abschluss der API-Migration: USB/MTP-Geräteadapter, FIT-Datei-Upload, vollständige Tourdetails (u.a. Puls-/Planungsintegration), Backup-/Restore- und breitere Recovery-/Mehrclient-E2E-Absicherung bleiben offen. Der Legacypfad bleibt verfügbar und Standard.
+- Kein vollständiger Abschluss der Migration: USB/MTP und FIT-Upload, vollständige Tourdetail-/Puls-/Planungsintegration, Backup-/Restore-/Crash-Recovery und breite Mehrclient-E2E-Verifikation bleiben offen.
+- Kein vollständiger Reimport-/Crash-Recovery-Nachweis über Tourcommit und Garmin-Zuordnung hinweg.
+- Die vorbereiteten SQLite- und Worker-Tests wurden kompiliert, aber **nie ausgeführt**. Es gab keine echten Garmin-Zugangsdaten oder Netzwerkaufrufe.
 
-## Verifikation
+## Architektur und nächste Scheibe
 
-Release-Builds für API, Client, WPF und Testprojekt wurden kompiliert; Tests wurden **nie ausgeführt**. Es fanden keine echten Garmin-, API- oder UI-Läufe statt. ZIP/FIT-Testinhalte und Datenbanktests verwenden synthetische Daten/Fake-Schlüssel; Garmin-Netztests sind nicht vorgesehen. Die Build-/Compile-Aussage ist kein Nachweis eines durchgeklickten Produktablaufs.
+Data bleibt unabhängig von Import; SQLite speichert dauerhafte Zustände und fenced Claims. Import/Application orchestriert Garmin-Netzwerkzugriff und FIT-Parsing; API hostet den Worker. Es werden keine Redis-, Cloud- oder sonstigen neuen Infrastrukturkomponenten eingeführt. Der bestehende `GarminImportZuordnung`-Doppelimportschutz und die Aufbewahrung der Original-ZIPs sollen erhalten bleiben; nach Tourlöschung sollen Zuordnungen zu nicht mehr existierenden Touren weiterhin ignoriert werden.
+
+Der Download-/Review-/Übernahmeablauf ist implementiert, aber weder echte Garmin/API-Aufrufe noch UI-Durchklick wurden ausgeführt. Nicht als vollständige API-First-Migration oder Laufzeitverifikation ausgeben; Legacy bleibt Standard.
+
+## Tests
+
+Worker-Tests verwenden synthetische FIT-Dateien und einen Fake-HTTP-Handler; SQLite-Tests verwenden ausschließlich Fake-Schlüssel. Sie sind vorbereitet/kompiliert, **nicht ausgeführt**. Noch erforderlich sind insbesondere echte Übergangs-/Restart-Tests für Review und atomaren Import, Duplikat-/Mehrclient-Szenarien sowie Secret-Sentinel-Prüfungen für API, Logs und Fehlerantworten. Garmin-Netztests sollen nicht verwendet werden.
