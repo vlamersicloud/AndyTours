@@ -7,6 +7,7 @@
     <DockPanel Margin="16">
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
             <TextBlock Text="{Binding ErklaerungText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Zusatzhinweis}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding Hinweis}" TextWrapping="Wrap" Foreground="Firebrick" />
             <TextBlock Text="Speichert …"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Speichert}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
         </StackPanel>
