@@ -26,6 +26,8 @@
                         <MenuItem Header="Kategorien…" Click="KategorienVerwalten_Click"/>
                         <MenuItem Header="Equipment…" Click="EquipmentsVerwalten_Click"/>
                         <MenuItem Header="Wartungen und Alarme…" Click="WartungenVerwalten_Click"/>
+                        <MenuItem Header="Trainingsbereiche…" Click="TrainingsbereicheVerwalten_Click"/>
+                        <MenuItem Header="Tätigkeiten…" Click="TaetigkeitenVerwalten_Click"/>
                         <MenuItem Header="Persönliche Daten…" Click="ProfilBearbeiten_Click"/>
                     </MenuItem>
                 </Menu>

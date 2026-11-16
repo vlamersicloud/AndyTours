@@ -39,13 +39,13 @@ Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutz
 | Aktivitätsstatistik | Datums-/Aktivitäts-/Kategorienfilter, Kennzahlen, Saisonziele, Bestleistungen | teilweise: Filter, KPIs und Diagramm; Saisonziele/Bestleistungen offen |
 | Aktivitäten | Stammdatenverwaltung | UI angebunden; sieben Abläufe vorhanden |
 | Kategorien | Stammdatenverwaltung und Zusammenführen | UI angebunden; sechs Abläufe vorhanden |
-| Zuordnungen / Inventar | Equipment, Trainingsbereiche, Reihenfolgen, Zusammenführen | teilweise; Equipment-CRUD und Stammdaten-UI angebunden; Einsatz/Haltbarkeit und Bulk-Sortierung offen |
+| Zuordnungen / Inventar | Equipment, Trainingsbereiche, Reihenfolgen, Zusammenführen | teilweise; Equipment-CRUD und Stammdaten-UI angebunden; typisierte Trainingsbereichsliste angebunden; Einsatz/Haltbarkeit und Bulk-Sortierung offen |
 | Pulsauswertung | FIT-Messzeiten, Garmin-Referenz, Lückenkennzeichnung | offen |
 | Tourdetail | Höhenprofil, Messreihen, Karte, Mehrtagestouren, Trackbearbeitung | offen |
 | Garmin Connect | Key-Verwaltung, Abruf, Duplikatschutz | offen; separates Secret-Management nicht migriert |
 | USB / FIT | Geräteadapter, Upload, Vorauswahl, Equipment-Zuordnung, Import | offen |
 | Equipment | Stammdaten, Rad-/Sensorzuordnung, Ausmusterung, Einsatz/Haltbarkeit | teilweise: Equipment-CRUD, Ausmustern, Standard und Entfernen gemerkter Kennungen im API-Modus; Einsatz/Haltbarkeit offen |
-| Wartung | Erfassen, Bearbeiten, Löschen, Alarme | API und UI angebunden: serverseitige Kilometer-/Haltbarkeitsprojektionen, Alarmverwaltung und atomare Bulkaktionen; Startup-Fälligkeitswarnung angebunden; Tätigkeitslistenverwaltung offen, keine Parität |
+| Wartung | Erfassen, Bearbeiten, Löschen, Alarme | API und UI angebunden: serverseitige Kilometer-/Haltbarkeitsprojektionen, Alarmverwaltung und atomare Bulkaktionen; Startup-Fälligkeitswarnung und Tätigkeitslistenverwaltung angebunden; leere Wartungslisten konfigurierbar, keine Parität |
 | Persönliche Daten | Fahrerprofil und zugehörige Werte | API-Lesen/Speichern mit CAS und UI angebunden; sieben Regressionstests bereitgestellt und kompiliert, nicht ausgeführt |
 | Planung / Courses / GPX | Routing, Kurse, Export und Geräteübertragung | offen |
 | Overlays | Ordner, Inhalte, Farben und Verwaltung | offen |

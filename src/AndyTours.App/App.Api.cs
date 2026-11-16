@@ -131,6 +131,20 @@ public partial class App
                 finally { admin?.Dispose(); }
             };
 
+            fenster.TextlisteVerwaltenAngefordert += async art =>
+            {
+                ApiTextlisteFenster? admin = null;
+                try
+                {
+                    var vm = new ApiTextlisteViewModel(art, uebergebeneSitzung.Textlisten,
+                        text => MessageBox.Show((Window?)admin ?? fenster, text, "Textlisteneintrag bestätigen",
+                            MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes);
+                    admin = new ApiTextlisteFenster(vm) { Owner = fenster };
+                    admin.ShowDialog();
+                }
+                finally { admin?.Dispose(); }
+            };
+
             fenster.ProfilBearbeitenAngefordert += async () =>
             {
                 try
