@@ -47,6 +47,7 @@ public sealed partial class ApiOverlaysViewModel
                 FordereNamensbearbeitungAn();
             }
             if (fresh is null) Hinweis = "Ordneranlage bestätigt, aktueller Bestand konnte aber nicht neu geladen werden.";
+            else Hinweis = _kontext.LastHinweis;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (StammdatenException ex) when (!_beendet && ex.Art is StammdatenFehlerart.Ungueltig or StammdatenFehlerart.NichtGefunden or StammdatenFehlerart.Konflikt)
@@ -70,7 +71,7 @@ public sealed partial class ApiOverlaysViewModel
         await _kontext.LadenAsync(ct);
         ct.ThrowIfCancellationRequested();
         var after = _kontext.Anzeige;
-        if (ReferenceEquals(before, after) || _kontext.LastHinweis.Length != 0) return null;
+        if (ReferenceEquals(before, after) || after is null) return null;
         return after?.Bestand;
     }
 

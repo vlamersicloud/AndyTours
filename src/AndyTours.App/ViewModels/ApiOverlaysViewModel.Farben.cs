@@ -8,18 +8,16 @@ public sealed partial class ApiOverlaysViewModel
 {
     partial void OnGewaehlteFarbeChanged(ApiOverlayFarboption? value)
     {
-        if (!_wirdAngezeigt && value != _letzteEigeneFarbe && KannOverlayAendern)
+        var persisted = Ausgewaehlt?.Overlay?.Farbe;
+        if (!_wirdAngezeigt && value?.Farbe != persisted && KannOverlayAendern)
             EigeneFarbeAendernCommand.Execute(value);
     }
 
     partial void OnGewaehlteGemeinsameFarbeChanged(ApiOverlayFarboption? value)
     {
-        if (!_wirdAngezeigt && value != _letzteGemeinsameFarbe && KannAendern)
+        if (!_wirdAngezeigt && value?.Farbe != BestehenderBestand?.GemeinsameFarbe && KannAendern)
             GemeinsameFarbeAendernCommand.Execute(value);
     }
-
-    private ApiOverlayFarboption? _letzteEigeneFarbe;
-    private ApiOverlayFarboption? _letzteGemeinsameFarbe;
 
     [RelayCommand(CanExecute = nameof(KannOverlayAendern))]
     private async Task EigeneFarbeAendern(ApiOverlayFarboption? option, CancellationToken cancellationToken)
@@ -28,7 +26,7 @@ public sealed partial class ApiOverlaysViewModel
             option is null || (option.Farbe is { } color && !Enum.IsDefined(color))) return;
         var id = overlay.Id;
         var request = new OverlayAendernAnfrage(bestand.Version, overlay.OrdnerId, overlay.Name, option.Farbe);
-        var previous = _letzteEigeneFarbe ?? OptionEigene(overlay.Farbe, bestand.GemeinsameFarbe);
+        var previous = OptionEigene(overlay.Farbe, bestand.GemeinsameFarbe);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _lebensdauerToken);
         CancellationToken ct = linked.Token;
         Aendert = true;
@@ -38,9 +36,8 @@ public sealed partial class ApiOverlaysViewModel
             ct.ThrowIfCancellationRequested();
             if (_beendet) return;
             var fresh = await AktualisiereNachSchreibenAsync(ct);
-            if (fresh is null) { Hinweis = "Farbänderung bestätigt, aktueller Bestand konnte aber nicht neu geladen werden."; RestoreOwn(previous); return; }
-            _letzteEigeneFarbe = OptionEigene(fresh.Overlays.FirstOrDefault(x => x.Id == id)?.Farbe, fresh.GemeinsameFarbe);
-            Hinweis = string.Empty;
+            if (fresh is null) { Hinweis = "Farbänderung bestätigt, aktueller Bestand konnte aber nicht neu geladen werden."; return; }
+            Hinweis = _kontext.LastHinweis;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { RestoreOwn(previous); }
         catch (StammdatenException ex) when (!_beendet && ex.Art is StammdatenFehlerart.Ungueltig or StammdatenFehlerart.NichtGefunden or StammdatenFehlerart.Konflikt)
@@ -56,7 +53,7 @@ public sealed partial class ApiOverlaysViewModel
     private async Task GemeinsameFarbeAendern(ApiOverlayFarboption? option, CancellationToken cancellationToken)
     {
         if (_beendet || !KannAendern || BestehenderBestand is not { } bestand || option?.Farbe is not { } color || !Enum.IsDefined(color)) return;
-        var previous = _letzteGemeinsameFarbe ?? ApiOverlayFarboptionen.Alle().FirstOrDefault(x => x.Farbe == bestand.GemeinsameFarbe);
+        var previous = ApiOverlayFarboptionen.Alle().FirstOrDefault(x => x.Farbe == bestand.GemeinsameFarbe);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _lebensdauerToken);
         CancellationToken ct = linked.Token;
         Aendert = true;
@@ -66,9 +63,8 @@ public sealed partial class ApiOverlaysViewModel
             ct.ThrowIfCancellationRequested();
             if (_beendet) return;
             var fresh = await AktualisiereNachSchreibenAsync(ct);
-            if (fresh is null) { Hinweis = "Gemeinsame Farbe bestätigt, aktueller Bestand konnte aber nicht neu geladen werden."; RestoreCommon(previous); return; }
-            _letzteGemeinsameFarbe = ApiOverlayFarboptionen.Alle().FirstOrDefault(x => x.Farbe == fresh.GemeinsameFarbe);
-            Hinweis = string.Empty;
+            if (fresh is null) { Hinweis = "Gemeinsame Farbe bestätigt, aktueller Bestand konnte aber nicht neu geladen werden."; return; }
+            Hinweis = _kontext.LastHinweis;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { RestoreCommon(previous); }
         catch (StammdatenException ex) when (!_beendet && ex.Art is StammdatenFehlerart.Ungueltig or StammdatenFehlerart.NichtGefunden or StammdatenFehlerart.Konflikt)
@@ -82,15 +78,17 @@ public sealed partial class ApiOverlaysViewModel
 
     private void RestoreOwn(ApiOverlayFarboption? value)
     {
+        if (_beendet) return;
         _wirdAngezeigt = true;
-        try { GewaehlteFarbe = value; _letzteEigeneFarbe = value; }
+        try { GewaehlteFarbe = value; }
         finally { _wirdAngezeigt = false; }
     }
 
     private void RestoreCommon(ApiOverlayFarboption? value)
     {
+        if (_beendet) return;
         _wirdAngezeigt = true;
-        try { GewaehlteGemeinsameFarbe = value; _letzteGemeinsameFarbe = value; }
+        try { GewaehlteGemeinsameFarbe = value; }
         finally { _wirdAngezeigt = false; }
     }
 

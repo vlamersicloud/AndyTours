@@ -37,8 +37,8 @@ public sealed partial class ApiOverlaysViewModel
                 Hinweis = "Änderung bestätigt, aktueller Bestand konnte nicht neu geladen werden.";
                 return;
             }
-            Hinweis = string.Empty;
-            FordereSchliessenAn();
+            Hinweis = _kontext.LastHinweis;
+            if (Hinweis.Length == 0) FordereSchliessenAn();
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (StammdatenException ex) when (!_beendet && ex.Art is StammdatenFehlerart.Ungueltig or StammdatenFehlerart.NichtGefunden or StammdatenFehlerart.Konflikt)
@@ -90,7 +90,7 @@ public sealed partial class ApiOverlaysViewModel
                 Hinweis = "Löschen bestätigt, aktueller Bestand konnte nicht neu geladen werden.";
                 return;
             }
-            Hinweis = string.Empty;
+            Hinweis = _kontext.LastHinweis;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (StammdatenException ex) when (!_beendet && ex.Art is StammdatenFehlerart.Ungueltig or StammdatenFehlerart.NichtGefunden or StammdatenFehlerart.Konflikt)
