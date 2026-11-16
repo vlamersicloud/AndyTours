@@ -222,6 +222,79 @@ public sealed class SqliteWartungsverwaltungTests : IDisposable
         Assert.Equal(_equipment1, allowed.Eintraege.Single(x => x.Id == id).EquipmentId);
     }
 
+    [Fact]
+    public async Task Haltbarkeit_verwendet_vorherige_gleichartige_Wartung_und_ignoriert_Alarm()
+    {
+        long equipmentId;
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        using (var tx = db.BeginTransaction())
+        {
+            equipmentId = EquipmentsTabelle.Einfuegen(db, tx, new Equipment
+            {
+                Name = "Haltbarkeit", AktivitaetId = _activity1,
+                Anschaffungsdatum = new DateOnly(2024, 1, 1), AnfangsdistanzKm = 100
+            });
+            tx.Commit();
+        }
+
+        var rides = new (DateOnly Date, double Km)[]
+        {
+            (new(2024, 1, 1), 10), (new(2024, 1, 2), 20), (new(2024, 1, 10), 30),
+            (new(2024, 1, 11), 40), (new(2024, 1, 20), 50), (new(2024, 1, 21), 999)
+        };
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        {
+            foreach (var ride in rides)
+                TrainingseinheitenTabelle.Einfuegen(db, new Trainingseinheit
+                {
+                    AktivitaetId = _activity1, EquipmentId = equipmentId, Datum = ride.Date,
+                    Name = "Test", DistanzKm = ride.Km, Trainingsbereich = ""
+                });
+        }
+
+        var firstId = await Seed(new Wartung { Datum = new DateOnly(2024, 1, 1), EquipmentId = equipmentId, Taetigkeit = "Kette", Typ = WartungsTyp.Wartung });
+        var secondId = await Seed(new Wartung { Datum = new DateOnly(2024, 1, 10), EquipmentId = equipmentId, Taetigkeit = "kEtTe", Typ = WartungsTyp.Wartung });
+        var thirdId = await Seed(new Wartung { Datum = new DateOnly(2024, 1, 20), EquipmentId = equipmentId, Taetigkeit = "Reifen", Typ = WartungsTyp.Wartung });
+        await Seed(new Wartung { Datum = new DateOnly(2024, 1, 5), EquipmentId = equipmentId, Taetigkeit = "Kette", Typ = WartungsTyp.Alarm, AlarmKm = 1000, Aktiv = true });
+
+        string rawBefore;
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        {
+            rawBefore = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                Wartungen = WartungenTabelle.Laden(db),
+                Training = TrainingseinheitenTabelle.Laden(db),
+                Equipment = EquipmentsTabelle.Laden(db)
+            });
+        }
+
+        var filtered = await _service.Laden(new(_activity1, equipmentId));
+        var unfiltered = await _service.Laden(new(null, null));
+        Assert.Equal(unfiltered.Bestand.Version, filtered.Bestand.Version);
+        var first = filtered.Wartungszeilen.Single(row => row.Id == firstId);
+        Assert.Equal(110, first.KmStand);
+        Assert.Equal(110, first.KmSeitLetzter);
+        Assert.Equal(0, first.TageSeitLetzter);
+        var second = filtered.Wartungszeilen.Single(row => row.Id == secondId);
+        Assert.Equal(160, second.KmStand);
+        Assert.Equal(50, second.KmSeitLetzter);
+        Assert.Equal(9, second.TageSeitLetzter);
+        var third = filtered.Wartungszeilen.Single(row => row.Id == thirdId);
+        Assert.Equal(250, third.KmStand);
+        Assert.Equal(250, third.KmSeitLetzter);
+        Assert.Equal(19, third.TageSeitLetzter);
+
+        using var verify = OeffneDatenbank.Ausfuehren(_database);
+        var rawRows = WartungenTabelle.Laden(verify).Where(row => row.EquipmentId == equipmentId && row.Typ == WartungsTyp.Wartung).ToArray();
+        Assert.Equal([firstId, secondId, thirdId], rawRows.Select(row => row.Id));
+        Assert.Equal(rawBefore, System.Text.Json.JsonSerializer.Serialize(new
+        {
+            Wartungen = WartungenTabelle.Laden(verify),
+            Training = TrainingseinheitenTabelle.Laden(verify),
+            Equipment = EquipmentsTabelle.Laden(verify)
+        }));
+    }
+
     private async Task<long> CreateMaintenance(long equipmentId, DateOnly date, string task, string comment)
     {
         var version = (await _service.Laden(new(null, null))).Bestand.Version;

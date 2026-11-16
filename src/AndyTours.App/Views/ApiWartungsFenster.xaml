@@ -8,7 +8,11 @@
             <Setter Property="Padding" Value="12,6"/><Setter Property="Margin" Value="3"/>
             <Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#FFD4DCE5"/>
         </Style>
+        <Style x:Key="MaintenanceNumber" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Right"/><Setter Property="Padding" Value="4,0"/>
+        </Style>
         <Style x:Key="Table" TargetType="DataGrid">
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/><Setter Property="EnableColumnVirtualization" Value="True"/>
             <Setter Property="AutoGenerateColumns" Value="False"/><Setter Property="IsReadOnly" Value="True"/>
             <Setter Property="SelectionMode" Value="Extended"/><Setter Property="SelectionUnit" Value="FullRow"/>
             <Setter Property="CanUserAddRows" Value="False"/><Setter Property="CanUserDeleteRows" Value="False"/>
@@ -58,15 +62,16 @@
                         <Button Content="Bearbeiten" Command="{Binding WartungBearbeitenCommand}" Style="{StaticResource ToolbarButton}"/>
                         <Button Content="Löschen" Command="{Binding WartungenLoeschenCommand}" Style="{StaticResource ToolbarButton}"/>
                     </StackPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Haltbarkeit: Kilometer und Kalendertage seit der vorherigen gleichartigen Wartung. Bei der ersten Wartung zählen Anfangskilometer und Anschaffungsdatum, ersatzweise die erste Tour." TextWrapping="Wrap" Foreground="#FF475569" Margin="0,0,0,8"/>
                     <DataGrid x:Name="WartungenGrid" Style="{StaticResource Table}" ItemsSource="{Binding Wartungszeilen}" SelectionChanged="Wartungen_SelectionChanged" PreviewMouseDoubleClick="Wartungen_DoubleClick" PreviewKeyDown="Wartungen_KeyDown">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=d}" Width="105"/>
-                            <DataGridTextColumn Header="Rad" Binding="{Binding Rad}" Width="150"/>
-                            <DataGridTextColumn Header="Km-Stand" Binding="{Binding KmStand, StringFormat=N1}" Width="100"/>
-                            <DataGridTextColumn Header="Km seit letzter" Binding="{Binding KmSeitLetzter, StringFormat=N1}" Width="130"/>
-                            <DataGridTextColumn Header="Tage seit letzter" Binding="{Binding TageSeitLetzter}" Width="120"/>
-                            <DataGridTextColumn Header="Tätigkeit" Binding="{Binding Taetigkeit}" Width="180"/>
-                            <DataGridTextColumn Header="Kommentar" Binding="{Binding Kommentar}" Width="*"/>
+                            <DataGridTextColumn Header="Datum" SortMemberPath="Datum" Binding="{Binding Datum, Mode=OneWay, StringFormat='dd.MM.yyyy'}" Width="105"/>
+                            <DataGridTextColumn Header="Rad" SortMemberPath="Rad" Binding="{Binding Rad, Mode=OneWay}" Width="150"/>
+                            <DataGridTextColumn Header="Km-Stand" SortMemberPath="KmStand" Binding="{Binding KmStand, StringFormat=N1, Mode=OneWay}" ElementStyle="{StaticResource MaintenanceNumber}" Width="100"/>
+                            <DataGridTextColumn Header="Km seit letzter" SortMemberPath="KmSeitLetzter" Binding="{Binding KmSeitLetzter, StringFormat=N1, Mode=OneWay}" ElementStyle="{StaticResource MaintenanceNumber}" Width="130"/>
+                            <DataGridTextColumn Header="Tage seit letzter" SortMemberPath="TageSeitLetzter" Binding="{Binding TageSeitLetzter, Mode=OneWay}" ElementStyle="{StaticResource MaintenanceNumber}" Width="120"/>
+                            <DataGridTextColumn Header="Tätigkeit" SortMemberPath="Taetigkeit" Binding="{Binding Taetigkeit, Mode=OneWay}" Width="180"/>
+                            <DataGridTextColumn Header="Kommentar" SortMemberPath="Kommentar" Binding="{Binding Kommentar, Mode=OneWay}" Width="*"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
@@ -81,12 +86,12 @@
                     </StackPanel>
                     <DataGrid x:Name="AlarmeGrid" Style="{StaticResource Table}" ItemsSource="{Binding Alarmzeilen}" SelectionChanged="Alarme_SelectionChanged" PreviewMouseDoubleClick="Alarme_DoubleClick" PreviewKeyDown="Alarme_KeyDown">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Rad" Binding="{Binding Rad}" Width="150"/>
-                            <DataGridTextColumn Header="Tätigkeit" Binding="{Binding Taetigkeit}" Width="*"/>
-                            <DataGridTextColumn Header="Intervall (km)" Binding="{Binding IntervallKm, StringFormat=N0}" Width="130"/>
-                            <DataGridTextColumn Header="Gefahren (km)" Binding="{Binding GefahrenKm, StringFormat=N1}" Width="130"/>
-                            <DataGridTextColumn Header="Verbleibend (km)" Binding="{Binding VerbleibendKm, StringFormat=N1}" Width="140"/>
-                            <DataGridTextColumn Header="Zustand" Binding="{Binding Zustand}" Width="140"/>
+                            <DataGridTextColumn Header="Rad" SortMemberPath="Rad" Binding="{Binding Rad, Mode=OneWay}" Width="150"/>
+                            <DataGridTextColumn Header="Tätigkeit" SortMemberPath="Taetigkeit" Binding="{Binding Taetigkeit, Mode=OneWay}" Width="*"/>
+                            <DataGridTextColumn Header="Intervall (km)" SortMemberPath="IntervallKm" Binding="{Binding IntervallKm, StringFormat=N0, Mode=OneWay}" ElementStyle="{StaticResource MaintenanceNumber}" Width="130"/>
+                            <DataGridTextColumn Header="Gefahren (km)" SortMemberPath="GefahrenKm" Binding="{Binding GefahrenKm, StringFormat=N1, Mode=OneWay}" ElementStyle="{StaticResource MaintenanceNumber}" Width="130"/>
+                            <DataGridTextColumn Header="Verbleibend (km)" SortMemberPath="VerbleibendKm" Binding="{Binding VerbleibendKm, StringFormat=N1, Mode=OneWay}" ElementStyle="{StaticResource MaintenanceNumber}" Width="140"/>
+                            <DataGridTextColumn Header="Zustand" SortMemberPath="Zustand" Binding="{Binding Zustand, Mode=OneWay}" Width="140"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
