@@ -89,8 +89,9 @@ public sealed partial class SqliteGarminImportJobs : IGarminImportJobs
             update.Parameters.AddWithValue("$packet", nextPacket);
             update.Parameters.AddWithValue("$updated", Format(now));
             update.Parameters.AddWithValue("$job", jobId.ToString("D"));
+            ct.ThrowIfCancellationRequested();
             try { update.ExecuteNonQuery(); }
-            catch (SqliteException ex) when (ex.SqliteErrorCode == 19) { throw Konflikt("Ein anderer Garmin-Import ist bereits aktiv."); }
+            catch (SqliteException ex) when (ex.SqliteExtendedErrorCode == 2067) { throw Konflikt("Ein anderer Garmin-Import ist bereits aktiv."); }
         }
 
         ct.ThrowIfCancellationRequested();

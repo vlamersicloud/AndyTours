@@ -67,8 +67,9 @@ public sealed partial class SqliteGarminImportJobs
             insert.Parameters.AddWithValue("$auto", auto ? 1 : 0);
             insert.Parameters.AddWithValue("$created", now);
             insert.Parameters.AddWithValue("$updated", now);
+            ct.ThrowIfCancellationRequested();
             try { insert.ExecuteNonQuery(); }
-            catch (SqliteException ex) when (ex.SqliteErrorCode == 19) { throw Konflikt("Ein Garmin-Import ist bereits aktiv."); }
+            catch (SqliteException ex) when (ex.SqliteExtendedErrorCode == 2067) { throw Konflikt("Ein Garmin-Import ist bereits aktiv."); }
         }
 
         ct.ThrowIfCancellationRequested();
@@ -98,7 +99,7 @@ public sealed partial class SqliteGarminImportJobs
         using (var command = db.CreateCommand())
         {
             command.Transaction = tx;
-            command.CommandText = "SELECT JobId FROM GarminImportJob ORDER BY CASE WHEN Zustand BETWEEN 0 AND 3 THEN 0 WHEN Zustand=4 THEN 1 ELSE 2 END,AktualisiertUtc DESC LIMIT 1;";
+            command.CommandText = "SELECT JobId FROM GarminImportJob WHERE Zustand<>5 ORDER BY CASE WHEN Zustand BETWEEN 0 AND 3 THEN 0 ELSE 1 END,AktualisiertUtc DESC LIMIT 1;";
             var value = command.ExecuteScalar() as string;
             id = value is null ? null : Guid.Parse(value);
         }
@@ -148,7 +149,8 @@ public sealed partial class SqliteGarminImportJobs
         using var command = db.CreateCommand();
         command.CommandText = """
             SELECT j.JobId,j.Revision,j.Zustand,j.Paketnummer,j.WeitereMoeglich,j.Automatisch,j.ErstelltUtc,j.AktualisiertUtc,j.WarncodesJson,
-            (SELECT COUNT(*) FROM GarminImportKandidat c WHERE c.JobId=j.JobId AND c.Zustand IN(1,2)),
+            (SELECT COUNT(*) FROM GarminImportKandidat c WHERE c.JobId=j.JobId AND c.Zustand<>0),
+            (SELECT COUNT(*) FROM GarminImportKandidat c WHERE c.JobId=j.JobId AND c.Zustand=2),
             (SELECT COUNT(*) FROM GarminImportKandidat c WHERE c.JobId=j.JobId AND c.Zustand=3)
             FROM GarminImportJob j WHERE j.JobId=$id;
             """;
@@ -158,8 +160,8 @@ public sealed partial class SqliteGarminImportJobs
         var revision = reader.GetInt64(1);
         var warnings = JsonSerializer.Deserialize<string[]>(reader.GetString(8)) ?? [];
         return new GarminImportJobAntwort(Guid.Parse(reader.GetString(0)), Version(id, revision),
-            (GarminImportJobStatus)reader.GetInt32(2), reader.GetInt32(3), 0, checked((int)reader.GetInt64(9)),
-            checked((int)reader.GetInt64(10)), reader.GetBoolean(4), reader.GetBoolean(5),
+            (GarminImportJobStatus)reader.GetInt32(2), reader.GetInt32(3), checked((int)reader.GetInt64(9)),
+            checked((int)reader.GetInt64(10)), checked((int)reader.GetInt64(11)), reader.GetBoolean(4), reader.GetBoolean(5),
             DateTimeOffset.Parse(reader.GetString(6), CultureInfo.InvariantCulture), DateTimeOffset.Parse(reader.GetString(7), CultureInfo.InvariantCulture), warnings);
     }
 
