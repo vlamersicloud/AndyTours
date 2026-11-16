@@ -89,6 +89,64 @@ public sealed class PulsAuswertungDienstTests : IDisposable
         Assert.Empty(Directory.GetFiles(Path.Combine(_root, ".fit-snapshots"), ".fit-verlauf-*.tmp"));
     }
 
+    [Fact]
+    public async Task CountsFilteredMissingTracksWithoutInventingPulseTime()
+    {
+        long activity, otherActivity, category, otherCategory;
+        using (var db = OeffneDatenbank.Ausfuehren(Database))
+        using (var tx = db.BeginTransaction())
+        {
+            activity = AktivitaetenTabelle.Einfuegen(db, tx, new Aktivitaet { Name = "Rad", IstHaupt = true });
+            otherActivity = AktivitaetenTabelle.Einfuegen(db, tx, new Aktivitaet { Name = "Lauf" });
+            category = KategorienTabelle.Einfuegen(db, tx, new Kategorie { Name = "Auswahl", IstStandard = true });
+            otherCategory = KategorienTabelle.Einfuegen(db, tx, new Kategorie { Name = "Andere" });
+
+            Trainingseinheit Create(string name, long activityId, long categoryId, DateOnly date,
+                string? attachment, long duration)
+            {
+                var tour = new Trainingseinheit
+                {
+                    AktivitaetId = activityId, Datum = date, Name = name,
+                    Fahrzeit = TimeSpan.FromSeconds(duration), DistanzKm = 2, HfDurchschnitt = 150
+                };
+                tour.KategorieIds.Add(categoryId);
+                if (attachment is not null)
+                    tour.Anhaenge.Add(new Anhang { Typ = AnhangTyp.Hoehenprofil, RelativerPfad = attachment });
+                TrainingseinheitenTabelle.Einfuegen(db, tx, tour);
+                return tour;
+            }
+
+            Create("Valid", activity, category, new DateOnly(2026, 1, 15), "selected.fit", 300);
+            Create("Missing", activity, category, new DateOnly(2026, 1, 16), null, 600);
+            Create("Wrong date", activity, category, new DateOnly(2026, 2, 1), null, 700);
+            Create("Wrong activity", otherActivity, category, new DateOnly(2026, 1, 16), null, 800);
+            Create("Wrong category", activity, otherCategory, new DateOnly(2026, 1, 16), null, 900);
+            tx.Commit();
+        }
+
+        FitTestdatei.Schreibe(Path.Combine(_root, "selected.fit"),
+            new FitTestdatei.Werte(new DateTime(2026, 1, 15, 8, 0, 0, DateTimeKind.Utc), MitPause: true));
+        var service = new PulsAuswertungDienst(new SqlitePulsQuelldaten(Database), _root,
+            () => throw new InvalidOperationException("Analysis must stay offline"));
+        var result = await service.Auswerten(
+            new(new DateOnly(2026, 1, 10), new DateOnly(2026, 1, 31),
+                Auswertungsraster.Monat, activity, category, null),
+            CancellationToken.None);
+
+        Assert.Equal(2, result.Aktivitaeten);
+        Assert.Equal(1, result.OhneDaten);
+        Assert.Equal(20, result.MesszeitSekunden);
+        Assert.Equal(900, result.FahrzeitSekunden);
+        var cell = Assert.Single(result.Zellen);
+        Assert.Equal(90, cell.Bereich);
+        Assert.Equal(20, cell.Sekunden);
+        Assert.Equal(1, cell.Anteil);
+        Assert.Null(result.Referenz.Abgerufen);
+        Assert.Empty(result.Referenz.Profile);
+        Assert.True(otherActivity != activity && otherCategory != category);
+        Assert.Empty(Directory.GetFiles(Path.Combine(_root, ".fit-snapshots"), ".fit-verlauf-*.tmp"));
+    }
+
     public void Dispose()
     {
         SqliteConnection.ClearAllPools();
