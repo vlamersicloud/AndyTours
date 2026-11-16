@@ -15,15 +15,16 @@ public partial class ApiFitImportViewModel
     private async Task GeraeteLesenAsync()
     {
         if (!KannGeraeteLesen()) return;
+        var token = _lifetime.Token;
         Aendert = true;
         try
         {
             var progress = new Progress<(int Fertig, int Gesamt)>(p =>
             {
-                if (IsAlive(_lifetime.Token)) Status = $"Geräte-Dateien werden kopiert: {p.Fertig} von {p.Gesamt}.";
+                if (IsAlive(token)) Status = $"Geräte-Dateien werden kopiert: {p.Fertig} von {p.Gesamt}.";
             });
-            var result = await ApiGeraeteDateien.Kopieren(_lifetime.Token, progress);
-            if (!IsAlive(_lifetime.Token))
+            var result = await ApiGeraeteDateien.Kopieren(token, progress);
+            if (!IsAlive(token))
             {
                 result.Dispose();
                 return;
@@ -43,7 +44,7 @@ public partial class ApiFitImportViewModel
             }
             Status = summary;
         }
-        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { }
         catch
         {
             if (IsAlive(CancellationToken.None)) Status = "Geräte-Dateien konnten nicht kopiert werden.";
