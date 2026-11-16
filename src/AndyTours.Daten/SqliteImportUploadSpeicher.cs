@@ -32,7 +32,7 @@ public sealed partial class SqliteImportUploadSpeicher
         if (inhaltHash is null || inhaltHash.Length != 64 || !inhaltHash.All(Uri.IsHexDigit))
             throw Invalid("FIT-Upload ungültig.");
         inhaltHash = inhaltHash.ToUpperInvariant();
-        if (byteanzahl is < 1 or > 134217728) throw Invalid("FIT-Upload ungültig.");
+        if (byteanzahl is < 1 or > FitUploadRegeln.MaxDateiBytes) throw Invalid("FIT-Upload ungültig.");
         cancellationToken.ThrowIfCancellationRequested();
         using var db = OeffneDatenbank.Ausfuehren(_datenbankpfad);
         using var tx = db.BeginTransaction(deferred: false);
@@ -135,24 +135,7 @@ public sealed partial class SqliteImportUploadSpeicher
             reader.GetInt64(4), state, tourId, DateTimeOffset.Parse(reader.GetString(7), CultureInfo.InvariantCulture));
     }
 
-    private static string NormalizeFilename(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value)) throw Invalid("FIT-Dateiname ungültig.");
-        string normalized;
-        try
-        {
-            normalized = value.Normalize(NormalizationForm.FormC);
-        }
-        catch (ArgumentException)
-        {
-            throw Invalid("FIT-Dateiname ungültig.");
-        }
-        if (normalized.Length is < 1 or > 255 || normalized is "." or ".." ||
-            normalized.IndexOfAny(['/', '\\']) >= 0 || normalized.Any(char.IsControl) ||
-            !string.Equals(Path.GetFileName(normalized), normalized, StringComparison.Ordinal))
-            throw Invalid("FIT-Dateiname ungültig.");
-        return normalized;
-    }
+    private static string NormalizeFilename(string value) => FitUploadRegeln.Dateiname(value);
 
     private static long ScalarLong(SqliteConnection db, SqliteTransaction tx, string sql)
     {
