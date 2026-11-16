@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using AndyTours.Application.Touren;
@@ -24,6 +25,8 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
         ValidiereTour.Liste(start, anzahl, filter.Von, filter.Bis);
         if (filter.AktivitaetId is <= 0 || filter.KategorieId is <= 0)
             throw new UngueltigeTourException("Aktivitäts- und Kategorienkennungen müssen positiv sein.");
+        if (!Enum.IsDefined(filter.Sortierung))
+            throw new UngueltigeTourException("Tourensortierung ist ungültig.");
         using var verbindung = Oeffnen();
         var alle = TrainingseinheitenTabelle.Laden(verbindung)
             .Where(t => (!filter.Von.HasValue || t.Datum >= filter.Von.Value) &&
@@ -31,8 +34,29 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
                         (!filter.AktivitaetId.HasValue || t.AktivitaetId == filter.AktivitaetId.Value) &&
                         (!filter.KategorieId.HasValue || t.KategorieIds.Contains(filter.KategorieId.Value)))
             .ToList();
-        var seite = alle.Skip(start).Take(anzahl).Select(TourenMapper.ToAntwort).ToArray();
-        return Task.FromResult(new TourListeAntwort(seite, alle.Count, start, anzahl));
+        var sortiert = Sortiere(alle, filter.Sortierung, filter.Absteigend).ToList();
+        ct.ThrowIfCancellationRequested();
+        var seite = sortiert.Skip(start).Take(anzahl).Select(TourenMapper.ToAntwort).ToArray();
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(new TourListeAntwort(seite, sortiert.Count, start, anzahl));
+    }
+
+    private static IOrderedEnumerable<AndyTours.Core.Modell.Trainingseinheit> Sortiere(
+        IEnumerable<AndyTours.Core.Modell.Trainingseinheit> eintraege, TourenSortierschluessel schluessel, bool absteigend)
+    {
+        if (schluessel == TourenSortierschluessel.Bestand)
+            return eintraege.OrderBy(t => t.Datum).ThenBy(t => t.Startzeit).ThenBy(t => t.Id);
+        var comparer = StringComparer.Create(CultureInfo.GetCultureInfo("de-DE"), ignoreCase: false);
+        return schluessel switch
+        {
+            TourenSortierschluessel.Datum => absteigend ? eintraege.OrderByDescending(t => t.Datum).ThenByDescending(t => t.Startzeit).ThenBy(t => t.Id) : eintraege.OrderBy(t => t.Datum).ThenBy(t => t.Startzeit).ThenBy(t => t.Id),
+            TourenSortierschluessel.Startzeit => absteigend ? eintraege.OrderByDescending(t => t.Startzeit).ThenBy(t => t.Id) : eintraege.OrderBy(t => t.Startzeit).ThenBy(t => t.Id),
+            TourenSortierschluessel.Name => absteigend ? eintraege.OrderByDescending(t => t.Name, comparer).ThenBy(t => t.Id) : eintraege.OrderBy(t => t.Name, comparer).ThenBy(t => t.Id),
+            TourenSortierschluessel.DistanzKm => absteigend ? eintraege.OrderByDescending(t => t.DistanzKm).ThenBy(t => t.Id) : eintraege.OrderBy(t => t.DistanzKm).ThenBy(t => t.Id),
+            TourenSortierschluessel.Hoehenmeter => absteigend ? eintraege.OrderByDescending(t => t.Hoehenmeter).ThenBy(t => t.Id) : eintraege.OrderBy(t => t.Hoehenmeter).ThenBy(t => t.Id),
+            TourenSortierschluessel.Fahrzeit => absteigend ? eintraege.OrderByDescending(t => t.Fahrzeit).ThenBy(t => t.Id) : eintraege.OrderBy(t => t.Fahrzeit).ThenBy(t => t.Id),
+            _ => throw new UngueltigeTourException("Tourensortierung ist ungültig.")
+        };
     }
 
     /// <inheritdoc />
