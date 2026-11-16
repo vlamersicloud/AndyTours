@@ -38,6 +38,7 @@ public sealed class BackendClientSitzung : IDisposable
         _importHttpClient = new HttpClient(_handler, disposeHandler: false) { BaseAddress = BasisAdresse, Timeout = TimeSpan.FromMinutes(10) };
         _importHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", zugriffstoken);
         Touren = new TourenHttpClient(_httpClient);
+        TourenMehrfachverwaltung = new TourenMehrfachHttpClient(_importHttpClient);
         Auswertung = new AktivitaetsauswertungHttpClient(_httpClient);
         Stammdaten = new StammdatenHttpClient(_httpClient);
         Aktivitaeten = new AktivitaetenHttpVerwaltung(_httpClient);
@@ -68,6 +69,7 @@ public sealed class BackendClientSitzung : IDisposable
 
     public Uri BasisAdresse { get; }
     public ITourenSpeicher Touren { get; }
+    public ITourenMehrfachverwaltung TourenMehrfachverwaltung { get; }
     public IAktivitaetsauswertung Auswertung { get; }
     public IStammdatenLeser Stammdaten { get; }
     public IAktivitaetenVerwaltung Aktivitaeten { get; }
