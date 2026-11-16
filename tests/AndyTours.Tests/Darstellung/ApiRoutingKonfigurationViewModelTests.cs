@@ -95,6 +95,50 @@ public sealed class ApiRoutingKonfigurationViewModelTests
         Assert.False(lateVm.StatusGeladen);
     }
 
+    [Fact]
+    public async Task Delayed_ack_preserves_newer_secret_and_other_drafts_and_abort_after_ack_stays_confirmed()
+    {
+        var port = new ControlledPort { DelayWrite = true };
+        var vm = new ApiRoutingKonfigurationViewModel(port);
+        await vm.LadenCommand.ExecuteAsync(default);
+        vm.OrsSchluesselEntwurf = "FAKE-A";
+        vm.Dienst = RoutingAnbieter.Openrouteservice;
+        vm.AdresseEntwurf = "https://draft.example";
+        int cleared = 0;
+        vm.EntwurfLeeren += (_, _) => cleared++;
+        var write = vm.OrsSchluesselSpeichernCommand.ExecuteAsync(null);
+        Assert.Equal("FAKE-A", port.SavedKey);
+        vm.OrsSchluesselEntwurf = "FAKE-B";
+        port.Release.TrySetResult(new(port.Version, RoutingAnbieter.BRouter, "https://router.example", false, true));
+        await write;
+        Assert.Equal("FAKE-B", vm.OrsSchluesselEntwurf);
+        Assert.Equal(0, cleared);
+        Assert.Equal(RoutingAnbieter.Openrouteservice, vm.Dienst);
+        Assert.Equal("https://draft.example", vm.AdresseEntwurf);
+
+        port.DelayWrite = false;
+        port.BeforeReturn = vm.Abbrechen;
+        vm.OrsSchluesselEntwurf = "FAKE-C";
+        await vm.OrsSchluesselSpeichernCommand.ExecuteAsync(null);
+        Assert.True(vm.StatusGeladen);
+        Assert.False(vm.HatUnklarenSpeicherstatus);
+        vm.Dispose();
+    }
+
+    [Fact]
+    public async Task Failed_remove_without_draft_marks_uncertain_until_manual_reload()
+    {
+        var port = new ControlledPort { FailUnknown = true };
+        var vm = new ApiRoutingKonfigurationViewModel(port) { Bestaetigung = _ => true };
+        await vm.LadenCommand.ExecuteAsync(default);
+        await vm.OrsSchluesselEntfernenCommand.ExecuteAsync(null);
+        Assert.True(vm.HatUnklarenSpeicherstatus);
+        Assert.False(vm.StatusGeladen);
+        await vm.LadenCommand.ExecuteAsync(default);
+        Assert.False(vm.HatUnklarenSpeicherstatus);
+        vm.Dispose();
+    }
+
     private sealed class ControlledPort : IRoutingKonfiguration
     {
         public string Version { get; private set; } = new('A', 64);
@@ -102,7 +146,9 @@ public sealed class ApiRoutingKonfigurationViewModelTests
         public int Writes { get; private set; }
         public string? SavedKey { get; private set; }
         public bool FailWrite { get; set; }
+        public bool FailUnknown { get; set; }
         public bool DelayWrite { get; set; }
+        public Action? BeforeReturn { get; set; }
         public TaskCompletionSource<RoutingKonfigurationAntwort> Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public RoutingKonfigurationAntwort Response { get; set; } = new(new string('A', 64), RoutingAnbieter.BRouter, "https://router.example", false, false);
 
@@ -118,8 +164,10 @@ public sealed class ApiRoutingKonfigurationViewModelTests
         {
             Writes++;
             if (FailWrite) throw new StammdatenException(StammdatenFehlerart.Konflikt, "fixed");
+            if (FailUnknown) throw new IOException("private");
             if (DelayWrite) return await Release.Task;
             ct.ThrowIfCancellationRequested();
+            BeforeReturn?.Invoke();
             Version = new('B', 64);
             Response = Response with { Version = Version, HatOrsSchluessel = true };
             return Response;
