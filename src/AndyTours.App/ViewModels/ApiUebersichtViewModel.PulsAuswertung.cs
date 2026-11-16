@@ -32,7 +32,7 @@ public partial class ApiUebersichtViewModel
                 generation != _generation || pulseGeneration != _pulsGeneration) return;
 
             var previousSport = sport ?? Pulsprofil?.Sport;
-            UebernimmPulsreferenz(answer.Referenz, previousSport);
+            UebernimmPulsreferenz(answer.Referenz, previousSport, waehleStandard: false);
             var display = ApiPulsDarstellung.Erstellen(answer);
             PulsDiagramm = display.Diagramm;
             Pulszeilen = display.Zeilen;
@@ -48,12 +48,12 @@ public partial class ApiUebersichtViewModel
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (OperationCanceledException)
         {
-            if (!ct.IsCancellationRequested && !_pulsBeendet)
+            if (IstPulsOperationAktuell(pulseGeneration, ct) && generation == _generation)
                 PulsStatus = "Die Pulsauswertung hat das Zeitlimit überschritten.";
         }
         catch (StammdatenException ex) when (ex.Art == StammdatenFehlerart.Konflikt)
         {
-            if (!ct.IsCancellationRequested && !_pulsBeendet)
+            if (IstPulsOperationAktuell(pulseGeneration, ct) && generation == _generation)
             {
                 _pulsReferenz = null;
                 LeerePulsanzeige();
@@ -62,7 +62,7 @@ public partial class ApiUebersichtViewModel
         }
         catch (Exception)
         {
-            if (!ct.IsCancellationRequested && !_pulsBeendet)
+            if (IstPulsOperationAktuell(pulseGeneration, ct) && generation == _generation)
                 PulsStatus = "Die Pulsauswertung konnte nicht geladen werden.";
         }
         finally

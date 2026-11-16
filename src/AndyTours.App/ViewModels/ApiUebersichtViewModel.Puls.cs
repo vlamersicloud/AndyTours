@@ -43,14 +43,16 @@ public partial class ApiUebersichtViewModel
         PulsStatus = "Auswahl geändert. Pulsauswertung bitte neu laden.";
     }
 
-    private void UebernimmPulsreferenz(PulsReferenzAntwort antwort, string? vorherigerSport = null)
+    private void UebernimmPulsreferenz(PulsReferenzAntwort antwort, string? vorherigerSport = null, bool waehleStandard = true)
     {
         ArgumentNullException.ThrowIfNull(antwort);
         _pulsReferenz = antwort;
         Pulsprofile = antwort.Profile.ToArray();
         Pulsprofil = vorherigerSport is null
-            ? Pulsprofile.FirstOrDefault(profile => profile.Sport == "CYCLING")
-              ?? Pulsprofile.FirstOrDefault(profile => profile.Sport == "DEFAULT")
+            ? (waehleStandard
+                ? Pulsprofile.FirstOrDefault(profile => profile.Sport == "CYCLING")
+                  ?? Pulsprofile.FirstOrDefault(profile => profile.Sport == "DEFAULT")
+                : null)
             : Pulsprofile.FirstOrDefault(profile => profile.Sport == vorherigerSport);
         PulsReferenzText = antwort.Abgerufen is DateTimeOffset abgerufen
             ? $"Garmin-Referenz vom {abgerufen.ToLocalTime():dd.MM.yyyy HH:mm}; aktuell, nicht historisch."
