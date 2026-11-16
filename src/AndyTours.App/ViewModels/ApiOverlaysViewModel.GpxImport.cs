@@ -57,7 +57,6 @@ public sealed partial class ApiOverlaysViewModel
             if (!stream.CanRead) throw new IOException();
             gesendet = true;
             var result = await _gpxImport.Importieren(request, stream, cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
             if (_beendet) return GpxImportErgebnis.Unklar;
             if (result is null || result.Id <= 0 || result.Bestand is null)
             {
@@ -68,6 +67,8 @@ public sealed partial class ApiOverlaysViewModel
             row.Status = "Import bestätigt; Bestand wird aktualisiert";
             row.Fertig = true;
             row.Unklar = false;
+            _gpxWartetAufReload = true;
+            OnPropertyChanged(nameof(GpxWartetAufReload));
             var fresh = await AktualisiereNachSchreibenAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (_beendet) return GpxImportErgebnis.BestaetigtOhneFrischenBestand;
@@ -78,6 +79,7 @@ public sealed partial class ApiOverlaysViewModel
                 return GpxImportErgebnis.BestaetigtOhneFrischenBestand;
             }
             _gpxWartetAufReload = false;
+            OnPropertyChanged(nameof(GpxWartetAufReload));
             bool exists = fresh.Overlays.Any(o => o.Id == result.Id);
             row.Status = exists ? "Importiert" : "Bestätigt; nicht mehr im aktuellen Bestand";
             return GpxImportErgebnis.Bestaetigt;
@@ -86,9 +88,8 @@ public sealed partial class ApiOverlaysViewModel
         {
             if (!_beendet)
             {
-                row.Unklar = gesendet || warUnklar;
-                row.Status = row.Unklar ? "Importstatus unklar; dieselbe Anfrage erneut prüfen" : "Import abgebrochen";
-                if (!row.Unklar) row.Fertig = true;
+                if (row.Fertig) { row.Unklar = false; row.Status = "Import bestätigt; Bestand bitte neu laden"; _gpxWartetAufReload = true; OnPropertyChanged(nameof(GpxWartetAufReload)); }
+                else { row.Unklar = gesendet || warUnklar; row.Status = row.Unklar ? "Importstatus unklar; dieselbe Anfrage erneut prüfen" : "Import abgebrochen"; if (!row.Unklar) row.Fertig = true; }
             }
             return row.Unklar ? GpxImportErgebnis.Unklar : GpxImportErgebnis.Abgelehnt;
         }
@@ -110,6 +111,11 @@ public sealed partial class ApiOverlaysViewModel
             if (!_beendet && !warUnklar) { row.Status = "Datei ist zu groß"; row.Fertig = true; }
             else if (!_beendet) row.Status = "Vorheriger Importstatus unklar; bitte Bestand prüfen";
             return warUnklar ? GpxImportErgebnis.Unklar : GpxImportErgebnis.Abgelehnt;
+        }
+        catch (Exception ex) when (!gesendet && !warUnklar && ex is IOException or UnauthorizedAccessException or FileNotFoundException)
+        {
+            if (!_beendet) { row.Fertig = true; row.Unklar = false; row.Status = "Quelldatei kann nicht gelesen werden"; }
+            return GpxImportErgebnis.Abgelehnt;
         }
         catch (Exception)
         {

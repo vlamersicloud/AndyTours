@@ -108,7 +108,7 @@ public sealed class ApiOverlaysViewModelTests
         await vm.GpxImportierenCommand.ExecuteAsync(null);
 
         Assert.All(vm.Importdateien, row => Assert.True(row.Fertig));
-        Assert.All(vm.Importdateien, row => Assert.Contains("bestätigt", row.Status, StringComparison.OrdinalIgnoreCase));
+        Assert.All(vm.Importdateien, row => { Assert.True(row.Fertig); Assert.False(row.Unklar); });
         var final = await store.Laden(default);
         Assert.Equal(2, final.Overlays.Count);
         Assert.All(final.Overlays, item => Assert.Equal(a.Id, item.OrdnerId));
