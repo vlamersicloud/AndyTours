@@ -36,21 +36,7 @@ public sealed partial class SqliteImportUploadSpeicher
         cancellationToken.ThrowIfCancellationRequested();
         using var db = OeffneDatenbank.Ausfuehren(_datenbankpfad);
         using var tx = db.BeginTransaction(deferred: true);
-        FitUploadUebernahmeAntwort? response = null;
-        using (var command = db.CreateCommand())
-        {
-            command.Transaction = tx;
-            command.CommandText = "SELECT AnfrageHash,AntwortJson FROM FitUploadQuittung WHERE AnfrageId=@id;";
-            command.Parameters.AddWithValue("@id", anfrage.AnfrageId.ToString("D"));
-            using var reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                if (!CryptographicOperations.FixedTimeEquals(Convert.FromHexString(reader.GetString(0)), Convert.FromHexString(hash)))
-                    throw new StammdatenException(StammdatenFehlerart.Konflikt, "FIT-Importanfrage wurde mit abweichendem Inhalt wiederverwendet.");
-                response = JsonSerializer.Deserialize<FitUploadUebernahmeAntwort>(reader.GetString(1))
-                    ?? throw new StammdatenException(StammdatenFehlerart.Konflikt, "FIT-Importquittung ungültig.");
-            }
-        }
+        var response = ReadReceipt(db, tx, anfrage.AnfrageId, hash);
         cancellationToken.ThrowIfCancellationRequested();
         tx.Commit();
         return Task.FromResult(response);
