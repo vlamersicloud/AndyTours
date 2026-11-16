@@ -42,7 +42,7 @@ public sealed class ApiOverlayGpxCancelTests
         {
             ct.ThrowIfCancellationRequested();
             _version++;
-            return Task.FromResult(new OverlayBestandAntwort(_version.ToString("X64"), OverlayFarbe.Violett, [], []));
+            return Task.FromResult(new OverlayBestandAntwort(_version.ToString("X64", System.Globalization.CultureInfo.InvariantCulture), OverlayFarbe.Violett, [], []));
         }
         public Task<OverlayInhaltAntwort> Inhalt(long id, string version, CancellationToken ct) => throw new InvalidOperationException();
     }
