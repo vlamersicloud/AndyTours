@@ -2,6 +2,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AndyTours.Core\AndyTours.Core.csproj" />
+    <ProjectReference Include="..\AndyTours.Contracts\AndyTours.Contracts.csproj" />
+    <ProjectReference Include="..\AndyTours.Application\AndyTours.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
