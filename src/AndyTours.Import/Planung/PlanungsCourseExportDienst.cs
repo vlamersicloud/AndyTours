@@ -29,7 +29,7 @@ public sealed class PlanungsCourseExportDienst : IPlanungsCourseExport
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch (StammdatenException) { throw; }
-        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or OverflowException or FormatException)
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or OverflowException or FormatException or Dynastream.Fit.FitException)
         { throw Invalid(); }
     }
 
