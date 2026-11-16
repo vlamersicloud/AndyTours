@@ -6,6 +6,7 @@ using AndyTours.Api;
 using AndyTours.Application.Auswertung;
 using AndyTours.Application.Export;
 using AndyTours.Application.Garmin;
+using AndyTours.Application.Overlays;
 using AndyTours.Application.Import;
 using AndyTours.Application.Touren;
 using AndyTours.Application.Stammdaten;
@@ -66,6 +67,9 @@ builder.Services.AddSingleton(sp => new AndyTours.Import.Garmin.GarminImportPake
     sp.GetRequiredService<AndyTours.Import.Garmin.GarminImportArtefakte>()));
 builder.Services.AddHostedService<GarminImportDienst>();
 builder.Services.AddSingleton<IWartungsverwaltung>(_ => new SqliteWartungsverwaltung(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton(sp => new SqliteOverlaySpeicher(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<IOverlayLeser>(sp => sp.GetRequiredService<SqliteOverlaySpeicher>());
+builder.Services.AddSingleton<IOverlayVerwaltung>(sp => sp.GetRequiredService<SqliteOverlaySpeicher>());
 
 var app = builder.Build();
 app.UseExceptionHandler();
@@ -121,6 +125,9 @@ app.MapGarminImport();
 app.MapFitUploads();
 app.MapTourdetail();
 app.MapPuls();
+app.MapOverlays();
+app.MapOverlayOrdner();
+app.MapOverlayAenderungen();
 app.MapCourseExport();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
