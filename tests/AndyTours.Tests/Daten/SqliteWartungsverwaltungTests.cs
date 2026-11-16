@@ -75,6 +75,7 @@ public sealed class SqliteWartungsverwaltungTests : IDisposable
     [Fact]
     public async Task BulkToggleMitNichtAlarmRollbacktUndAlarmselektionSchaltetEinheitlich()
     {
+        await CreateMaintenance(_equipment1, new DateOnly(2020, 1, 1), "Service", "");
         await CreateAlarm(_equipment1, "A", true); await CreateAlarm(_equipment2, "B", false);
         var snapshot = (await _service.Laden(new(null, null))).Bestand;
         var alarmIds = snapshot.Eintraege.Where(x => x.Art == Wartungsart.Alarm).Select(x => x.Id).ToArray();
@@ -144,13 +145,13 @@ public sealed class SqliteWartungsverwaltungTests : IDisposable
     {
         var version = (await _service.Laden(new(null, null))).Bestand.Version;
         var result = await _service.WartungAnlegen(new(version, date, equipmentId, task, comment));
-        return result.Eintraege.Single(x => x.Taetigkeit == task && x.Art == Wartungsart.Wartung).Id;
+        return result.Eintraege.Single(x => x.Taetigkeit == task && x.Art == Wartungsart.Wartung && x.Datum == date && x.EquipmentId == equipmentId).Id;
     }
     private async Task<long> CreateAlarm(long equipmentId, string task, bool active)
     {
         var version = (await _service.Laden(new(null, null))).Bestand.Version;
         var result = await _service.AlarmAnlegen(new(version, equipmentId, task, 5000, active));
-        return result.Eintraege.Single(x => x.Taetigkeit == task && x.Art == Wartungsart.Alarm).Id;
+        return result.Eintraege.Single(x => x.Taetigkeit == task && x.Art == Wartungsart.Alarm && x.EquipmentId == equipmentId).Id;
     }
     private async Task<long> Seed(Wartung maintenance)
     {
