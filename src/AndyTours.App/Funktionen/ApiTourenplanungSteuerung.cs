@@ -19,7 +19,7 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
     private readonly IPlanungsDateien _files;
     private readonly IPlanungsCourseExport _courses;
     private readonly ApiPlanungsProfilSitzung _profile;
-    private readonly CancellationTokenSource _lifetime = new();
+    private readonly CancellationTokenSource _lifetime;
     private readonly CancellationToken _lifetimeToken;
     private bool _disposed;
 
@@ -27,7 +27,8 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
         IPlanungsCourseExport courses, ApiPlanungsProfilSitzung profile, CancellationToken parentToken = default)
     {
         _window = window; _vm = vm; _files = files; _courses = courses; _profile = profile;
-        _lifetimeToken = CancellationTokenSource.CreateLinkedTokenSource(parentToken, _lifetime.Token).Token;
+        _lifetime = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
+        _lifetimeToken = _lifetime.Token;
         _vm.ApiOeffnen = Oeffnen; _vm.ApiSpeichern = Speichern; _vm.ApiGarminUebertragen = Garmin;
         _vm.ApiProfilGeaendert = ProfilGeaendert;
         _profile.Geaendert += ProfilAktualisiert;
@@ -35,18 +36,24 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
         _vm.ApiProfilHinweis = profile.Hinweis;
     }
 
-    private async void ProfilGeaendert(Fahrprofil profil) { if (!_disposed) await _profile.Setzen(ToContract(profil), _lifetimeToken); }
+    private async void ProfilGeaendert(Fahrprofil profil)
+    {
+        try { if (!_disposed) await _profile.Setzen(ToContract(profil), _lifetimeToken); }
+        catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested) { }
+        catch { if (!_disposed) _vm.ApiProfilHinweis = "Planungsprofil konnte nicht gespeichert werden."; }
+    }
     private void ProfilAktualisiert(object? sender, EventArgs e) { if (!_disposed) _vm.ApiProfilHinweis = _profile.Hinweis; }
 
     private async Task Oeffnen() => await Datei(async ct =>
     {
-        if (!_vm.DarfVerwerfen()) return;
+        if (_vm.IstGeaendert && MessageBox.Show(_window, "Die Planung hat ungespeicherte Änderungen. Änderungen verwerfen?", "Tour planen", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return;
         var dialog = new OpenFileDialog { Title = "Planung öffnen", Filter = "GPX-Dateien (*.gpx)|*.gpx", CheckFileExists = true, InitialDirectory = _vm.ApiStartordner };
         if (dialog.ShowDialog(_window) != true) return;
         ct.ThrowIfCancellationRequested();
         await using var input = new FileStream(dialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
         var dto = await _files.Lesen(input, ct);
         ct.ThrowIfCancellationRequested();
+        if (_disposed || !_window.IsVisible) return;
         var core = PlanungsVertragMapper.ToCore(dto, ct);
         if (!_disposed) _vm.UebernimmApiPlanung(core, dialog.FileName);
     });
@@ -60,6 +67,8 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
         Tourenplanung snapshot = _vm.Planung;
         var dto = PlanungsVertragMapper.ToDto(snapshot, ct);
         var response = await _files.Schreiben(new(Path.GetFileNameWithoutExtension(dialog.FileName), dto), ct);
+        ct.ThrowIfCancellationRequested();
+        if (_disposed || !_window.IsVisible) return;
         if (response.Inhalt is null || response.Inhalt.Length is 0 || response.Inhalt.LongLength > PlanungsDateiRegeln.MaxDateiBytes) throw Invalid();
         string target = Path.GetFullPath(dialog.FileName);
         string directory = Path.GetDirectoryName(target) ?? throw Invalid();
@@ -85,7 +94,7 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
 
     private async Task Datei(Func<CancellationToken, Task> action)
     {
-        if (_disposed || _vm.ApiDateiBeschaeftigt) return;
+        if (_disposed || !_window.IsVisible || _vm.ApiDateiBeschaeftigt) return;
         _vm.ApiDateiBeschaeftigt = true;
         try { await action(_lifetimeToken); }
         catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested) { }
@@ -97,6 +106,7 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
     public void Dispose()
     {
         if (_disposed) return; _disposed = true; _lifetime.Cancel();
+        _window.Closed -= Closed;
         _profile.Geaendert -= ProfilAktualisiert;
         if (_vm.ApiOeffnen == Oeffnen) _vm.ApiOeffnen = null;
         if (_vm.ApiSpeichern == Speichern) _vm.ApiSpeichern = null;
