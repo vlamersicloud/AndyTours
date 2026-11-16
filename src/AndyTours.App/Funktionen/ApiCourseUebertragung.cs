@@ -49,7 +49,7 @@ public static class ApiCourseUebertragung
             });
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
-        catch (Exception ex) when (ex is StammdatenException or Client.BackendApiException or System.Net.Http.HttpRequestException)
+        catch (Exception)
         {
             if (owner.IsVisible)
                 MessageBox.Show(owner, "Course-Einstellungen oder Export sind derzeit nicht verfügbar.",
