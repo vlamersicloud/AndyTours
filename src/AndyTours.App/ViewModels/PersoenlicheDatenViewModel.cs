@@ -20,7 +20,7 @@ public partial class PersoenlicheDatenViewModel : ObservableObject
     private readonly Func<Fahrereingaben, string?> _pruefen;
 
     /// <summary>Speichert die Eingaben; <c>false</c>, wenn das Speichern fehlgeschlagen ist.</summary>
-    private readonly Func<Fahrereingaben, bool> _speichern;
+    private readonly Func<Fahrereingaben, Task<bool>> _speichern;
 
     /// <summary>
     /// Erzeugt das ViewModel und füllt die Felder mit den gespeicherten Werten.
@@ -29,6 +29,10 @@ public partial class PersoenlicheDatenViewModel : ObservableObject
     /// <param name="pruefen">Prüft die Eingaben (Hinweis oder <c>null</c>).</param>
     /// <param name="speichern">Speichert die Eingaben.</param>
     public PersoenlicheDatenViewModel(Fahrereingaben eingaben, Func<Fahrereingaben, string?> pruefen, Func<Fahrereingaben, bool> speichern)
+        : this(eingaben, pruefen, values => Task.FromResult(speichern(values))) { }
+
+    /// <summary>Erzeugt das ViewModel mit asynchronem Speicher-Callback.</summary>
+    public PersoenlicheDatenViewModel(Fahrereingaben eingaben, Func<Fahrereingaben, string?> pruefen, Func<Fahrereingaben, Task<bool>> speichern)
     {
         _pruefen = pruefen;
         _speichern = speichern;
@@ -47,6 +51,10 @@ public partial class PersoenlicheDatenViewModel : ObservableObject
 
     /// <summary>Wird ausgelöst, sobald gespeichert wurde; das Fenster schließt sich dann.</summary>
     public event EventHandler? Gespeichert;
+
+    /// <summary>Gibt an, ob gerade gespeichert wird.</summary>
+    [ObservableProperty]
+    private bool _speichert;
 
     /// <summary>Vorname.</summary>
     [ObservableProperty]
@@ -86,22 +94,31 @@ public partial class PersoenlicheDatenViewModel : ObservableObject
 
     /// <summary>Befehl „OK“: speichert und schließt das Fenster; bei einem Fehler bleibt es offen.</summary>
     [RelayCommand(CanExecute = nameof(IstGueltig))]
-    private void Ok()
+    private async Task OkAsync()
     {
-        if (_speichern(AktuelleEingaben()))
+        if (!IstGueltig()) return;
+        Speichert = true;
+        try
         {
-            Gespeichert?.Invoke(this, EventArgs.Empty);
+            if (await _speichern(AktuelleEingaben())) Gespeichert?.Invoke(this, EventArgs.Empty);
         }
+        catch
+        {
+            Hinweis = "Speicherstatus unklar. Bitte Bestand neu laden und prüfen; nicht blind erneut speichern.";
+        }
+        finally { Speichert = false; OkCommand.NotifyCanExecuteChanged(); }
     }
 
-    /// <summary>Wählbarkeit von „OK“: keine ungültige Eingabe.</summary>
-    private bool IstGueltig() => Hinweis.Length == 0;
+    partial void OnSpeichertChanged(bool value) => OkCommand.NotifyCanExecuteChanged();
+
+    /// <summary>Wählbarkeit von „OK“: gültige Eingaben und kein laufender Speichervorgang.</summary>
+    private bool IstGueltig() => !Speichert && Hinweis.Length == 0;
 
     /// <summary>Prüft nach jeder Änderung eines Feldes neu.</summary>
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
-        if (e.PropertyName != nameof(Hinweis))
+        if (e.PropertyName is not (nameof(Hinweis) or nameof(Speichert)))
         {
             Pruefen();
         }

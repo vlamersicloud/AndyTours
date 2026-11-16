@@ -1,4 +1,5 @@
 using System.Windows;
+using System.ComponentModel;
 using AndyTours.App.ViewModels;
 using AndyTours.App.Funktionen;
 
@@ -14,6 +15,8 @@ namespace AndyTours.App.Views;
 /// </remarks>
 public partial class PersoenlicheDatenFenster : Window
 {
+    private readonly PersoenlicheDatenViewModel _viewModel;
+    private bool _saveSucceeded;
     /// <summary>
     /// Erzeugt das Fenster und verbindet es mit dem ViewModel.
     /// </summary>
@@ -23,9 +26,16 @@ public partial class PersoenlicheDatenFenster : Window
         InitializeComponent();
         Oberflaechenskalierung.Anmelden(this);
         DataContext = viewModel;
-        viewModel.Gespeichert += (_, _) => DialogResult = true;
+        _viewModel = viewModel;
+        viewModel.Gespeichert += (_, _) => { _saveSucceeded = true; DialogResult = true; };
+        Closing += OnClosing;
 
         // Tastaturbedienung: Fokus ins erste Feld
         Loaded += (_, _) => VornameFeld.Focus();
+    }
+
+    private void OnClosing(object? sender, CancelEventArgs e)
+    {
+        if (_viewModel.Speichert && !_saveSucceeded) e.Cancel = true;
     }
 }
