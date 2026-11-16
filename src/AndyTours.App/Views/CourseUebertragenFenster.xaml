@@ -64,7 +64,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Label Content="_Fahrprofil:" Target="{Binding ElementName=ProfilAuswahl}" Padding="0" VerticalAlignment="Center" />
-                    <ComboBox x:Name="ProfilAuswahl" Grid.Column="1" ItemsSource="{Binding Fahrprofile}" DisplayMemberPath="Value"
+                    <ComboBox x:Name="ProfilAuswahl" Grid.Column="1" IsEnabled="{Binding IstBereit}" ItemsSource="{Binding Fahrprofile}" DisplayMemberPath="Value"
                               SelectedValuePath="Key" SelectedValue="{Binding Profil}" />
                 </Grid>
                 <TextBlock Margin="110,4,0,0" TextWrapping="Wrap" Foreground="Gray"
@@ -78,7 +78,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Label Content="_Gerät:" Target="{Binding ElementName=GeraeteAuswahl}" Padding="0" VerticalAlignment="Center" />
-                    <ComboBox x:Name="GeraeteAuswahl" Grid.Column="1" ItemsSource="{Binding Ziele}" DisplayMemberPath="Geraet"
+                    <ComboBox x:Name="GeraeteAuswahl" Grid.Column="1" IsEnabled="{Binding IstBereit}" ItemsSource="{Binding Ziele}" DisplayMemberPath="Geraet"
                               SelectedItem="{Binding Ziel}" />
                 </Grid>
 
