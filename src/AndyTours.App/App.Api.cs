@@ -14,6 +14,7 @@ public partial class App
         BackendClientSitzung? sitzung = null;
         LokalesBackend? lokalesBackend = null;
         ApiHauptfenster? hauptfenster = null;
+        ApiOverlayVerwaltungHost? overlayHost = null;
         try
         {
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -31,6 +32,9 @@ public partial class App
             var fenster = hauptfenster;
             var uebergebeneSitzung = sitzung;
             var uebergebenesLokalesBackend = lokalesBackend;
+            overlayHost = new ApiOverlayVerwaltungHost(fenster, uebergebeneSitzung.OverlayLeser,
+                uebergebeneSitzung.OverlayVerwaltung, uebergebeneSitzung.OverlayGpxImport);
+            fenster.OverlaysAngefordert += overlayHost.Oeffnen;
             fenster.AktivitaetenVerwaltenAngefordert += async () =>
             {
                 ApiAktivitaetenFenster? verwaltungsfenster = null;
@@ -187,7 +191,7 @@ public partial class App
 
             fenster.TourdetailAngefordert += (ids, ct) =>
                 ApiTourdetailAnzeige.Oeffnen(fenster, ids, uebergebeneSitzung.Tourdetail,
-                    uebergebeneSitzung.CourseExport, ct);
+                    uebergebeneSitzung.CourseExport, ct, overlayHost?.Kontext);
 
             fenster.GarminGeraetImportierenAngefordert += () =>
             {
@@ -305,6 +309,7 @@ public partial class App
         }
         catch
         {
+            overlayHost?.Dispose();
             if (hauptfenster is not null) hauptfenster.Dispose();
             var bereinigungFehlgeschlagen = false;
             try
