@@ -80,7 +80,37 @@ public static class PlanungsGpx
     {
         try
         {
-            XElement? wurzel = XDocument.Parse(text).Root;
+            return Interpretieren(XDocument.Parse(text).Root, CancellationToken.None);
+        }
+        catch (Exception fehler) when (fehler is XmlException or FormatException or ArgumentNullException or OverflowException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Reads an AndyTours planning document asynchronously from a caller-configured XML reader.</summary>
+    public static async Task<Tourenplanung?> Lesen(XmlReader reader, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        try
+        {
+            XDocument document = await XDocument.LoadAsync(reader, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            return Interpretieren(document.Root, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception fehler) when (fehler is XmlException or FormatException or ArgumentNullException or OverflowException)
+        {
+            return null;
+        }
+    }
+
+    private static Tourenplanung? Interpretieren(XElement? wurzel, CancellationToken cancellationToken)
+    {
+            cancellationToken.ThrowIfCancellationRequested();
             XElement? erweiterung = wurzel?.Element(Gpx + "metadata")?.Element(Gpx + "extensions")?.Element(AndyTours + "planung");
             if (wurzel is null || erweiterung is null
                 || !Enum.TryParse((string?)erweiterung.Attribute("profil"), out Fahrprofil profil) || !Enum.IsDefined(profil))
@@ -88,7 +118,9 @@ public static class PlanungsGpx
                 return null;
             }
 
-            List<Geoposition> wegpunkte = [.. erweiterung.Elements(AndyTours + "wegpunkt").Select(Position)];
+            List<Geoposition> wegpunkte = [];
+            foreach (XElement element in erweiterung.Elements(AndyTours + "wegpunkt"))
+            { cancellationToken.ThrowIfCancellationRequested(); wegpunkte.Add(Position(element)); }
             List<XElement> segmente = [.. wurzel.Elements(Gpx + "trk").Take(1).Elements(Gpx + "trkseg")];
             if (wegpunkte.Count < 2 || segmente.Count != wegpunkte.Count - 1)
             {
@@ -98,6 +130,7 @@ public static class PlanungsGpx
             List<List<Abbiegepunkt>> abbiegepunkte = [.. segmente.Select(_ => new List<Abbiegepunkt>())];
             foreach (XElement wpt in wurzel.Elements(Gpx + "wpt"))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 XElement? abbiegung = wpt.Element(Gpx + "extensions")?.Element(AndyTours + "abbiegung");
                 if (abbiegung is not null
                     && (int?)abbiegung.Attribute("teilstueck") is int nummer && nummer >= 0 && nummer < segmente.Count
@@ -110,11 +143,10 @@ public static class PlanungsGpx
             List<Teilstueck?> teilstuecke = [];
             for (int i = 0; i < segmente.Count; i++)
             {
-                List<Verlaufspunkt> punkte = [.. segmente[i].Elements(Gpx + "trkpt").Select(p => new Verlaufspunkt
-                {
-                    Position = Position(p),
-                    Hoehe = (double?)p.Element(Gpx + "ele"),
-                })];
+                cancellationToken.ThrowIfCancellationRequested();
+                List<Verlaufspunkt> punkte = [];
+                foreach (XElement p in segmente[i].Elements(Gpx + "trkpt"))
+                { cancellationToken.ThrowIfCancellationRequested(); punkte.Add(new Verlaufspunkt { Position = Position(p), Hoehe = (double?)p.Element(Gpx + "ele") }); }
                 if (punkte.Count < 2)
                 {
                     return null;
@@ -125,11 +157,6 @@ public static class PlanungsGpx
             }
 
             return new Tourenplanung(profil, wegpunkte, teilstuecke);
-        }
-        catch (Exception fehler) when (fehler is XmlException or FormatException or ArgumentNullException)
-        {
-            return null;
-        }
     }
 
     /// <summary>Ein Abbiegepunkt als GPX-Wegpunkt.</summary>
