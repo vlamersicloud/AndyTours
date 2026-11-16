@@ -110,6 +110,39 @@ public sealed class CourseExportDienstTests
         Assert.Equal(1, handler.RequestCount);
     }
 
+    [Fact]
+    public async Task UngueltigeAnfragenWerdenVorServerdatenUndNetzwerkAbgewiesen()
+    {
+        var source = new FakeSource(new(Fahrprofil.Mountainbike,
+            new Routingeinstellungen(Routingdienst.BRouter, "https://fake.invalid/", "SECRET")));
+        var factoryCalls = 0;
+        var service = new CourseExportDienst(source, () =>
+        {
+            factoryCalls++;
+            throw new InvalidOperationException("must not create HTTP client");
+        });
+        var valid = Point(47, 12, 0, 0);
+        var cases = new[]
+        {
+            new CourseExportAnfrage("bad", (CourseFahrprofil)999, [valid, Point(47.1, 12.1, 1, 1)]),
+            new CourseExportAnfrage("bad", CourseFahrprofil.Trekking, null!),
+            new CourseExportAnfrage("bad", CourseFahrprofil.Trekking,
+                [valid, Point(double.NaN, 12, 1, 1)]),
+            new CourseExportAnfrage("bad", CourseFahrprofil.Trekking,
+                [valid with { Hoehe = double.NaN }, Point(47.1, 12.1, 1, 1)]),
+            new CourseExportAnfrage("bad", CourseFahrprofil.Trekking,
+                [valid, Point(47.1, 12.1, 1, -1)]),
+            new CourseExportAnfrage("bad\uD800", CourseFahrprofil.Trekking,
+                [valid, Point(47.1, 12.1, 1, 1)])
+        };
+
+        foreach (var request in cases)
+            await Assert.ThrowsAsync<AndyTours.Application.Stammdaten.StammdatenException>(
+                () => service.Erstellen(request, CancellationToken.None));
+        Assert.Equal(0, source.Reads);
+        Assert.Equal(0, factoryCalls);
+    }
+
     private static List<CoursePointMesg> ReadCoursePoints(byte[] bytes)
     {
         using var stream = new MemoryStream(bytes);
@@ -141,8 +174,11 @@ public sealed class CourseExportDienstTests
 
     private sealed class UnreadableContent(Action markRead) : System.Net.Http.HttpContent
     {
-        protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context) =>
+        protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context)
+        {
+            markRead();
             throw new InvalidOperationException("error body must not be read");
+        }
         protected override bool TryComputeLength(out long length) { length = -1; return false; }
         protected override Task<Stream> CreateContentReadStreamAsync()
         {
@@ -177,8 +213,10 @@ public sealed class CourseExportDienstTests
 
     private sealed class FakeSource(CourseExportServerkontext context) : ICourseExportServerdaten
     {
+        public int Reads { get; private set; }
         public Task<CourseExportServerkontext> Laden(CancellationToken cancellationToken)
         {
+            Reads++;
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(context);
         }
