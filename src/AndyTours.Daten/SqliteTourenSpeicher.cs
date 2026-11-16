@@ -64,6 +64,25 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
             ct.ThrowIfCancellationRequested();
         }
 
+        TourenTabellensummeAntwort tabellensumme;
+        try
+        {
+            ct.ThrowIfCancellationRequested();
+            var summe = BerechneAuswahlsummen.Ausfuehren(alle);
+            if (!double.IsFinite(summe.DistanzKm))
+                throw new UngueltigeTourException("Tourentabellensumme konnte nicht erstellt werden.");
+            ct.ThrowIfCancellationRequested();
+            tabellensumme = new TourenTabellensummeAntwort(
+                summe.Anzahl, summe.DistanzKm, summe.Hoehenmeter,
+                summe.Fahrzeit.Ticks / TimeSpan.TicksPerSecond);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (UngueltigeTourException) { throw; }
+        catch (Exception ex) when (ex is OverflowException or ArgumentException)
+        {
+            throw new UngueltigeTourException("Tourentabellensumme konnte nicht erstellt werden.");
+        }
+
         Dictionary<long, TourAnzeigeAntwort> anzeigen;
         try
         {
@@ -88,7 +107,8 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
         ct.ThrowIfCancellationRequested();
         var result = new TourListeAntwort(seite, sortiert.Count, start, anzahl)
         {
-            TabellenfilterOptionen = tabellenfilterOptionen
+            TabellenfilterOptionen = tabellenfilterOptionen,
+            Tabellensumme = tabellensumme
         };
         transaktion.Commit();
         return Task.FromResult(result);
