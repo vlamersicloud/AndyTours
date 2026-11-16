@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using AndyTours.Application.Auswertung;
+using AndyTours.Application.Garmin;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Application.Touren;
 using AndyTours.Application.Verbindungen;
@@ -49,6 +50,7 @@ public sealed class BackendClientSitzung : IDisposable
         Textlisten = new TextlistenVerwaltungHttpClient(_httpClient);
         Saisonziele = new SaisonzieleVerwaltungHttpClient(_httpClient);
         Wartung = new WartungsverwaltungHttpClient(_httpClient);
+        GarminEinstellungen = new GarminEinstellungenHttpClient(_httpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
@@ -74,6 +76,8 @@ public sealed class BackendClientSitzung : IDisposable
     public ITextlistenVerwaltung Textlisten { get; }
     /// <summary>Versionierte Verwaltung von Wartungen und Alarmen.</summary>
     public IWartungsverwaltung Wartung { get; }
+    /// <summary>Versionierte Garmin-Einstellungen ohne Schlüssel-Lesezugriff.</summary>
+    public IGarminEinstellungen GarminEinstellungen { get; }
     /// <summary>Verbindungsprüfung.</summary>
     public IBackendVerbindung Verbindung { get; }
 
