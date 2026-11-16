@@ -26,6 +26,8 @@ dotnet run --project src/AndyTours.App -c Release -- --api
 
 Der normale Start ohne `--api` bleibt Legacy. Der API-Modus bietet Verbindung lokal/zentral und eine Übersicht mit Zeitraum-, Aktivitäts- und Kategorienfiltern, serverseitig gefilterter Tourenliste mit Paging, Statistik, vier Kennzahlen und Diagramm. Touren können im API-Modus angelegt, bearbeitet, kopiert und gelöscht werden; Schreibvorgänge verwenden Versionsprüfung, und Neuanlagen unterstützen Idempotency-Keys. Liste und Statistik verwenden dieselben Datums-, Aktivitäts- und Kategorienfilter.
 
+Die Garmin-Einstellungen sind im API-Modus über das Stammdatenmenü angebunden: der Client erhält ausschließlich Status (Schlüssel vorhanden/Automatik), der Schlüssel wird nie zurückgegeben; im Backend liegt er unverschlüsselt in SQLite und Sicherungen, ohne Umgebungsvariablen-Fallback. Garmin-Abruf, Import und Duplikatschutz bleiben offen.
+
 Über das Stammdatenmenü sind Aktivitätenverwaltung (sieben Abläufe) und Kategorienverwaltung (sechs Abläufe) in der UI angebunden. Bestleistungs- und Jahreszielprojektionen sind serverseitig verbunden; Rekord-Tournavigation und Zielverlaufsgrafik bleiben offen. Saisonzieleditor ist angebunden. Equipmentverwaltung ist mit Backend, API, typisiertem Client und UI für Anlegen, Bearbeiten, Löschen, Ausmustern, Standardkennzeichen und Entfernen gemerkter Gerätekennungen angebunden. Einsatz/Haltbarkeit und weitere Inventarabläufe, einschließlich Sortierung, sind noch offen.
 
 ## Funktionsinventar / Paritätsprüfung
@@ -42,7 +44,7 @@ Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutz
 | Zuordnungen / Inventar | Equipment, Trainingsbereiche, Reihenfolgen, Zusammenführen | teilweise; Equipment-CRUD und Stammdaten-UI angebunden; typisierte Trainingsbereichsliste angebunden; Einsatz/Haltbarkeit und Bulk-Sortierung offen |
 | Pulsauswertung | FIT-Messzeiten, Garmin-Referenz, Lückenkennzeichnung | offen |
 | Tourdetail | Höhenprofil, Messreihen, Karte, Mehrtagestouren, Trackbearbeitung | offen |
-| Garmin Connect | Key-Verwaltung, Abruf, Duplikatschutz | offen; separates Secret-Management nicht migriert |
+| Garmin Connect | Einstellungen/Key-Status, Abruf, Import, Duplikatschutz | teilweise: status-only Einstellungen-API und UI angebunden; Schlüssel verbleibt plaintext im Backend (SQLite/Backups), kein Env-Fallback; Abruf/Import/Duplikatschutz offen |
 | USB / FIT | Geräteadapter, Upload, Vorauswahl, Equipment-Zuordnung, Import | offen |
 | Equipment | Stammdaten, Rad-/Sensorzuordnung, Ausmusterung, Einsatz/Haltbarkeit | teilweise: Equipment-CRUD, Ausmustern, Standard und Entfernen gemerkter Kennungen im API-Modus; Einsatz/Haltbarkeit offen |
 | Wartung | Erfassen, Bearbeiten, Löschen, Alarme | API und UI angebunden: serverseitige Kilometer-/Haltbarkeitsprojektionen, Alarmverwaltung und atomare Bulkaktionen; Startup-Fälligkeitswarnung und Tätigkeitslistenverwaltung angebunden; leere Wartungslisten konfigurierbar, keine Parität |

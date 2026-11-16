@@ -185,6 +185,15 @@ public partial class App
                 admin.ShowDialog();
             };
 
+            fenster.GarminEinstellungenAngefordert += () =>
+            {
+                var vm = new ApiGarminEinstellungenViewModel(uebergebeneSitzung.GarminEinstellungen);
+                var dialog = new ApiGarminEinstellungenFenster(vm) { Owner = fenster };
+                try { dialog.ShowDialog(); }
+                finally { dialog.Dispose(); }
+                return Task.CompletedTask;
+            };
+
             fenster.ProfilBearbeitenAngefordert += async () =>
             {
                 try

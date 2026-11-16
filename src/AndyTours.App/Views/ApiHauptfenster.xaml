@@ -30,6 +30,7 @@
                         <MenuItem Header="Tätigkeiten…" Click="TaetigkeitenVerwalten_Click"/>
                         <MenuItem Header="Saisonziele…" Click="SaisonzieleVerwalten_Click"/>
                         <MenuItem Header="Persönliche Daten…" Click="ProfilBearbeiten_Click"/>
+                        <MenuItem Header="Garmin Connect – Einstellungen…" Click="GarminEinstellungen_Click"/>
                     </MenuItem>
                 </Menu>
             </StackPanel>
