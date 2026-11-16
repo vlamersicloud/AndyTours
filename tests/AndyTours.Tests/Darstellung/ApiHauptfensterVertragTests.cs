@@ -84,6 +84,21 @@ public sealed class ApiHauptfensterVertragTests
         Assert.Equal(handlers.Length, handlers.Distinct(StringComparer.Ordinal).Count());
     }
 
+    [Fact] public void RekordnavigationIstExplizitUndZeitraumhinweisBleibtErhalten()
+    {
+        var d = LadeXaml();
+        foreach (var listName in new[] { "Jahresrekorde", "Einzelrekorde" })
+        {
+            var list = Assert.Single(d.Descendants(Presentation + "ListView"), x => (string?)x.Attribute("ItemsSource") == "{Binding " + listName + "}");
+            var action = Assert.Single(list.Descendants(Presentation + "Button"), x => (string?)x.Attribute("Click") == "RekordTourOeffnen_Click");
+            var trigger = Assert.Single(action.Descendants(Presentation + "DataTrigger"), x => (string?)x.Attribute("Value") == "{x:Null}");
+            Assert.Equal("{Binding TourId}", (string?)trigger.Attribute("Binding"));
+            Assert.Contains(trigger.Elements(Presentation + "Setter"), x => (string?)x.Attribute("Property") == "IsEnabled" && (string?)x.Attribute("Value") == "False");
+        }
+        Assert.Contains(d.Descendants(Presentation + "TextBlock"), x => ((string?)x.Attribute("Text"))?.Contains("Teilauswahlen eines Jahres", StringComparison.Ordinal) == true);
+        Assert.DoesNotContain(d.Descendants(Presentation + "ListView"), x => x.Attribute("MouseDoubleClick") is not null);
+    }
+
     [Fact] public void GarminImportMenuIstEindeutigUndVerweistAufHandler()
     {
         var d=LadeXaml();
