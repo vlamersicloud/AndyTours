@@ -1,30 +1,26 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using AndyTours.Application.Overlays;
 using AndyTours.Application.Stammdaten;
-using AndyTours.App.Funktionen;
 using AndyTours.Contracts.V1;
 using AndyTours.Core.Modell;
 using CoreFarbe = AndyTours.Core.Modell.Overlayfarbe;
 
 namespace AndyTours.App.Funktionen;
 
-/// <summary>Immutable applied API overlay state, scoped to one API root/session.</summary>
 public sealed record ApiOverlayAnzeige(
     OverlayBestandAntwort Bestand,
     IReadOnlyList<Overlay> Eingeschaltete,
     CoreFarbe Farbe,
     string Hinweis);
 
-/// <summary>Per-root overlay snapshot and enabled geometry cache; never uses the legacy static overlay dataset.</summary>
+/// <summary>Per-root API overlay state; does not share the legacy static dataset.</summary>
 public sealed class ApiOverlayKontext : IDisposable
 {
     private readonly IOverlayLeser _leser;
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _lebensdauer = new();
     private readonly CancellationToken _lebensdauerToken;
-    private IReadOnlyDictionary<(long Id, string Version), Overlay> _cache =
-        new ReadOnlyDictionary<(long, string), Overlay>(new Dictionary<(long, string), Overlay>());
+    private IReadOnlyDictionary<(long Id, string Version), Overlay> _cache = EmptyCache();
     private long _generation;
     private bool _beendet;
 
@@ -38,7 +34,7 @@ public sealed class ApiOverlayKontext : IDisposable
 
     public ApiOverlayAnzeige? Anzeige { get; private set; }
     public string LastHinweis { get; private set; } = string.Empty;
-    public Action? VerwaltungOeffnen { get; }
+    public Action? VerwaltungOeffnen { get; private set; }
     public event EventHandler? Geaendert;
     public event EventHandler<Overlay>? GanzesOverlayAngefordert;
 
@@ -60,6 +56,7 @@ public sealed class ApiOverlayKontext : IDisposable
             var nextCache = new Dictionary<(long Id, string Version), Overlay>();
             var enabled = new List<Overlay>();
             var failedNames = new List<string>();
+            int failedCount = 0;
             foreach (var meta in bestand.Overlays)
             {
                 ct.ThrowIfCancellationRequested();
@@ -67,15 +64,22 @@ public sealed class ApiOverlayKontext : IDisposable
                 Overlay mapped;
                 if (!priorCache.TryGetValue((meta.Id, meta.Version), out mapped!))
                 {
-                    var content = await _leser.Inhalt(meta.Id, meta.Version, ct);
-                    ct.ThrowIfCancellationRequested();
                     try
                     {
+                        var content = await _leser.Inhalt(meta.Id, meta.Version, ct);
+                        ct.ThrowIfCancellationRequested();
                         mapped = await Task.Run(() => ApiOverlayMapper.AlsOverlay(meta, content, ct), ct);
+                    }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+                    catch (StammdatenException ex) when (ex.Art is StammdatenFehlerart.NichtGefunden or StammdatenFehlerart.Konflikt) { throw; }
+                    catch (StammdatenException ex) when (ex.Art == StammdatenFehlerart.Ungueltig)
+                    {
+                        RecordGeometryFailure(meta.Name, failedNames, ref failedCount);
+                        continue;
                     }
                     catch (InvalidOperationException)
                     {
-                        if (failedNames.Count < 20 && !string.IsNullOrWhiteSpace(meta.Name)) failedNames.Add(meta.Name);
+                        RecordGeometryFailure(meta.Name, failedNames, ref failedCount);
                         continue;
                     }
                 }
@@ -84,10 +88,14 @@ public sealed class ApiOverlayKontext : IDisposable
             }
 
             ct.ThrowIfCancellationRequested();
-            var message = failedNames.Count == 0 ? string.Empty :
-                "Einige eingeschaltete Overlays konnten nicht geladen werden: " + string.Join(", ", failedNames) +
-                (bestand.Overlays.Count(o => o.IstEingeschaltet) > failedNames.Count ? " und weitere." : ".");
-            var next = new ApiOverlayAnzeige(bestand,
+            string message = failedCount == 0 ? string.Empty :
+                "Einige eingeschaltete Overlays konnten nicht geladen werden" +
+                (failedNames.Count == 0 ? "." : ": " + string.Join(", ", failedNames) +
+                    (failedCount > failedNames.Count ? " und weitere." : "."));
+            var safeFolders = new ReadOnlyCollection<OverlayOrdnerAntwort>(bestand.Ordner.ToList());
+            var safeItems = new ReadOnlyCollection<OverlayMetadatenAntwort>(bestand.Overlays.ToList());
+            var safeBestand = bestand with { Ordner = safeFolders, Overlays = safeItems };
+            var next = new ApiOverlayAnzeige(safeBestand,
                 new ReadOnlyCollection<Overlay>(enabled), ApiOverlayMapper.Farbe(bestand.GemeinsameFarbe), message);
             await AufUiThreadAsync(() =>
             {
@@ -99,14 +107,14 @@ public sealed class ApiOverlayKontext : IDisposable
                 Geaendert?.Invoke(this, EventArgs.Empty);
             });
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (StammdatenException ex) when (ex.Art is StammdatenFehlerart.NichtGefunden or StammdatenFehlerart.Konflikt)
         {
-            await MeldeLadefehlerAsync(generation, "Der Overlay-Bestand wurde geändert. Bitte neu laden.");
+            await MeldeLadefehlerAsync(generation, "Der Overlay-Bestand wurde geändert. Bitte neu laden.", ct);
         }
         catch (Exception)
         {
-            await MeldeLadefehlerAsync(generation, "Overlays konnten nicht vollständig geladen werden. Bitte Verbindung und Bestand prüfen.");
+            await MeldeLadefehlerAsync(generation, "Overlays konnten nicht vollständig geladen werden. Bitte Verbindung und Bestand prüfen.", ct);
         }
     }
 
@@ -122,16 +130,22 @@ public sealed class ApiOverlayKontext : IDisposable
         _beendet = true;
         Interlocked.Increment(ref _generation);
         _lebensdauer.Cancel();
-        _cache = new ReadOnlyDictionary<(long, string), Overlay>(new Dictionary<(long, string), Overlay>());
+        Anzeige = null;
+        LastHinweis = string.Empty;
+        _cache = EmptyCache();
+        VerwaltungOeffnen = null;
+        Geaendert = null;
+        GanzesOverlayAngefordert = null;
         _lebensdauer.Dispose();
     }
 
-    private async Task MeldeLadefehlerAsync(long generation, string hinweis)
+    private async Task MeldeLadefehlerAsync(long generation, string hint, CancellationToken ct)
     {
         await AufUiThreadAsync(() =>
         {
+            ct.ThrowIfCancellationRequested();
             if (_beendet || generation != Volatile.Read(ref _generation)) return;
-            LastHinweis = hinweis;
+            LastHinweis = hint;
             Geaendert?.Invoke(this, EventArgs.Empty);
         });
     }
@@ -151,4 +165,13 @@ public sealed class ApiOverlayKontext : IDisposable
         }, null);
         return completion.Task;
     }
+
+    private static void RecordGeometryFailure(string? name, List<string> names, ref int count)
+    {
+        count++;
+        if (names.Count < 20 && !string.IsNullOrWhiteSpace(name)) names.Add(name);
+    }
+
+    private static ReadOnlyDictionary<(long Id, string Version), Overlay> EmptyCache() =>
+        new ReadOnlyDictionary<(long, string), Overlay>(new Dictionary<(long, string), Overlay>());
 }
