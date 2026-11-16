@@ -11,6 +11,7 @@
             <TextBlock Text="Ausgewählte Dateien bleiben in der Warteschlange. Upload-Originale werden beim Übernehmen nicht verändert." Margin="0,6,0,0" TextWrapping="Wrap"/>
         </StackPanel>
         <WrapPanel Grid.Row="1" Margin="0,14,0,10">
+            <Button Content="Gespeicherte Uploads laden" Command="{Binding LadenCommand}" Padding="10,5" Margin="0,0,8,6"/>
             <Button Content="Dateien auswählen…" Click="DateienAuswaehlen" Padding="10,5" Margin="0,0,8,6">
                 <Button.Style><Style TargetType="Button"><Setter Property="IsEnabled" Value="True"/><Style.Triggers><DataTrigger Binding="{Binding Laedt}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger><DataTrigger Binding="{Binding Aendert}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger><DataTrigger Binding="{Binding EditorOffen}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></Button.Style>
             </Button>

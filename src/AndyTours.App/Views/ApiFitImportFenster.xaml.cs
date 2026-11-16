@@ -17,6 +17,18 @@ public partial class ApiFitImportFenster : Window, IDisposable
         InitializeComponent();
         DataContext = _viewModel;
         _viewModel.PruefungAngefordert += PruefungAngefordert;
+        Loaded += FensterGeladen;
+    }
+
+    private async void FensterGeladen(object sender, RoutedEventArgs e)
+    {
+        Loaded -= FensterGeladen;
+        try { await _viewModel.LadenCommand.ExecuteAsync(null); }
+        catch (OperationCanceledException) { }
+        catch
+        {
+            if (!_cleaned && IsLoaded) _viewModel.Status = "Vorhandene Uploads konnten nicht geladen werden.";
+        }
     }
 
     private void DateienAuswaehlen(object sender, RoutedEventArgs e)
@@ -63,6 +75,7 @@ public partial class ApiFitImportFenster : Window, IDisposable
     {
         if (_cleaned) return;
         _cleaned = true;
+        Loaded -= FensterGeladen;
         _viewModel.PruefungAngefordert -= PruefungAngefordert;
         _viewModel.Dispose();
     }
