@@ -43,6 +43,7 @@ public sealed partial class RoutingKonfigurationHttpClient(HttpClient http)
                 ?? throw new HttpRequestException("Routingkonfigurationantwort ungültig.");
             if (result.Version is not { Length: 64 } || !result.Version.All(Uri.IsHexDigit) || !Enum.IsDefined(result.Dienst) ||
                 result.AdresseAusgeblendet && result.BRouterAdresse is not null ||
+                !result.AdresseAusgeblendet && result.BRouterAdresse is null ||
                 result.BRouterAdresse is not null && !RoutingKonfigurationRegeln.IstAdresseSichtbar(result.BRouterAdresse))
                 throw new HttpRequestException("Routingkonfigurationantwort ungültig.");
             return result;

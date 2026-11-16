@@ -85,6 +85,39 @@ public sealed class SqliteRoutingKonfigurationTests : IDisposable
         Assert.Equal(saved.Version, after.Version); Assert.True(after.HatOrsSchluessel);
     }
 
+    [Fact]
+    public async Task Key_rotation_advances_version_and_failed_write_rolls_back()
+    {
+        using (var db = OeffneDatenbank.Ausfuehren(Db))
+        {
+            EinstellungTabelle.Schreiben(db, null, Einstellungsschluessel.RoutingOpenrouteserviceSchluessel, "fake-key-A");
+            EinstellungTabelle.Schreiben(db, null, "Other.rollback", "preserve");
+        }
+        var before = await Service.Laden(default);
+        var rotated = await Service.OrsKeySpeichern(new(before.Version, "fake-key-B"), default);
+        Assert.NotEqual(before.Version, rotated.Version);
+        await Assert.ThrowsAsync<StammdatenException>(() =>
+            Service.OrsKeySpeichern(new(before.Version, "fake-key-stale"), default));
+
+        using (var db = OeffneDatenbank.Ausfuehren(Db))
+        using (var command = db.CreateCommand())
+        {
+            command.CommandText = $"""
+                CREATE TRIGGER reject_routing_key BEFORE INSERT ON Einstellung
+                WHEN NEW.Schluessel = '{Einstellungsschluessel.RoutingOpenrouteserviceSchluessel}'
+                BEGIN SELECT RAISE(ABORT, 'test'); END;
+                """;
+            command.ExecuteNonQuery();
+        }
+        await Assert.ThrowsAsync<SqliteException>(() =>
+            Service.OrsKeySpeichern(new(rotated.Version, "fake-key-C"), default));
+        var after = await Service.Laden(default);
+        Assert.Equal(rotated.Version, after.Version);
+        using var verify = OeffneDatenbank.Ausfuehren(Db);
+        Assert.Equal("fake-key-B", EinstellungTabelle.Lesen(verify, Einstellungsschluessel.RoutingOpenrouteserviceSchluessel));
+        Assert.Equal("preserve", EinstellungTabelle.Lesen(verify, "Other.rollback"));
+    }
+
     public void Dispose()
     {
         SqliteConnection.ClearAllPools();
