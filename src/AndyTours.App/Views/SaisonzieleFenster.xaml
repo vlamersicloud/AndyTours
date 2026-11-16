@@ -37,7 +37,7 @@
                 <!-- 1. Jahresauswahl -->
                 <StackPanel Orientation="Horizontal">
                     <Label Content="_Jahr:" Target="{Binding ElementName=JahrFeld}" VerticalAlignment="Center" />
-                              IsEnabled="{Binding IstGueltig}" />
+<ComboBox x:Name="JahrFeld" Width="90" ItemsSource="{Binding Jahre}" SelectedItem="{Binding GewaehltesJahr}" IsEnabled="{Binding IstGueltig}" />
                     <TextBlock Text="Ein Ziel gilt auch für die folgenden Jahre, bis es dort geändert wird. Leer = kein Ziel."
                                Foreground="Gray" TextWrapping="Wrap" VerticalAlignment="Center" Margin="12,0,0,0" Width="400" />
                 </StackPanel>
@@ -48,10 +48,11 @@
                           CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False"
                           HeadersVisibility="Column" SelectionUnit="Cell" SelectionMode="Single"
                           GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#FFE0E0E0">
+                    <DataGrid.Style><Style TargetType="DataGrid"><Style.Triggers><DataTrigger Binding="{Binding Speichert}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger></Style.Triggers></Style></DataGrid.Style>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Aktivität" Binding="{Binding Name}" IsReadOnly="True" Width="*" />
                         <DataGridTextColumn Header="Kilometer" Width="90"
-                                            Binding="{Binding Km, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding DataContext.Speichert, RelativeSource={RelativeSource AncestorType=Window}}">
+                                            Binding="{Binding Km, UpdateSourceTrigger=PropertyChanged}">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                                     <Setter Property="HorizontalAlignment" Value="Right" />
@@ -59,7 +60,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         <DataGridTextColumn Header="Höhenmeter" Width="110"
-                                            Binding="{Binding Hm, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding DataContext.Speichert, RelativeSource={RelativeSource AncestorType=Window}}">
+                                            Binding="{Binding Hm, UpdateSourceTrigger=PropertyChanged}">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                                     <Setter Property="HorizontalAlignment" Value="Right" />
@@ -67,7 +68,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         <DataGridTextColumn Header="Anzahl" Width="70"
-                                            Binding="{Binding Anzahl, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding DataContext.Speichert, RelativeSource={RelativeSource AncestorType=Window}}">
+                                            Binding="{Binding Anzahl, UpdateSourceTrigger=PropertyChanged}">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                                     <Setter Property="HorizontalAlignment" Value="Right" />
