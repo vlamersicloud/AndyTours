@@ -46,16 +46,21 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
             Kategorien = kategorien,
             Equipments = equipments,
         };
-        var alle = trainings
+        var basis = trainings
             .Where(t => (!filter.Von.HasValue || t.Datum >= filter.Von.Value) &&
                         (!filter.Bis.HasValue || t.Datum <= filter.Bis.Value) &&
-                        (!filter.AktivitaetId.HasValue || t.AktivitaetId == filter.AktivitaetId.Value) &&
-                        (!filter.KategorieId.HasValue || t.KategorieIds.Contains(filter.KategorieId.Value)))
+                        (!filter.AktivitaetId.HasValue || t.AktivitaetId == filter.AktivitaetId.Value))
+            .ToList();
+        var coreTableFilter = TourenTabellenfilterMapper.ToFilter(filter.Tabellenfilter);
+        var coreOptions = ErmittleFilterwerte.Ausfuehren(basis, bestand, coreTableFilter);
+        var tabellenfilterOptionen = TourenTabellenfilterOptionenMapper.ToAntwort(coreOptions);
+        ct.ThrowIfCancellationRequested();
+        var alle = basis
+            .Where(t => !filter.KategorieId.HasValue || t.KategorieIds.Contains(filter.KategorieId.Value))
             .ToList();
         if (filter.Tabellenfilter is not null)
         {
-            alle = FiltereEinheiten.Ausfuehren(alle,
-                TourenTabellenfilterMapper.ToFilter(filter.Tabellenfilter), bestand);
+            alle = FiltereEinheiten.Ausfuehren(alle, coreTableFilter, bestand);
             ct.ThrowIfCancellationRequested();
         }
 
@@ -81,7 +86,10 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
         var seite = sortiert.Skip(start).Take(anzahl).Select(t =>
             TourenMapper.ToAntwort(t) with { Anzeige = anzeigen[t.Id] }).ToArray();
         ct.ThrowIfCancellationRequested();
-        var result = new TourListeAntwort(seite, sortiert.Count, start, anzahl);
+        var result = new TourListeAntwort(seite, sortiert.Count, start, anzahl)
+        {
+            TabellenfilterOptionen = tabellenfilterOptionen
+        };
         transaktion.Commit();
         return Task.FromResult(result);
     }
