@@ -31,6 +31,7 @@ builder.Services.AddSingleton<IAktivitaetsauswertung>(_ => new SqliteAktivitaets
 builder.Services.AddSingleton<IStammdatenLeser>(_ => new SqliteStammdatenLeser(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IAktivitaetenVerwaltung>(_ => new SqliteAktivitaetenVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IKategorienVerwaltung>(_ => new SqliteKategorienVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<IEquipmentsVerwaltung>(_ => new SqliteEquipmentsVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
 
 var app = builder.Build();
 app.UseExceptionHandler();
@@ -76,6 +77,7 @@ app.Use(async (httpContext, next) =>
 app.MapOpenApi("/openapi/{documentName}.json");
 app.MapAktivitaeten();
 app.MapKategorien();
+app.MapEquipments();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
 var touren = app.MapGroup("/api/v1/touren").WithTags("Touren");
