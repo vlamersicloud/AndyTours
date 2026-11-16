@@ -10,7 +10,7 @@ namespace AndyTours.App.Funktionen;
 public static class ApiTourenplanungAnzeige
 {
     public static async Task Oeffnen(Window owner, IPlanungsProfil profilePort, IPlanungsRouting routing,
-        IPlanungsDateien files, IPlanungsCourseExport courses, ApiOverlayKontext overlays, CancellationToken cancellationToken)
+        IPlanungsDateien files, IPlanungsCourseExport courses, ApiOverlayKontext overlays, CancellationToken cancellationToken, IPlanungsStartgebiet? startgebiet = null)
     {
         ArgumentNullException.ThrowIfNull(owner);
         ApiPlanungsProfilSitzung? profile = null;
@@ -25,8 +25,15 @@ public static class ApiTourenplanungAnzeige
             if (current is null || current.Version is not { Length: 64 } v || !v.All(Uri.IsHexDigit) || !Enum.IsDefined(current.Profil))
                 throw new InvalidOperationException();
             var local = ApiPlanungsAnsichtSpeicher.Laden();
-            Geoposition sw = local.SuedWest ?? new Geoposition(47.2, 5.8);
-            Geoposition ne = local.NordOst ?? new Geoposition(55.1, 15.1);
+            Geoposition sw; Geoposition ne;
+            if (local.SuedWest is not null && local.NordOst is not null) { sw = local.SuedWest; ne = local.NordOst; }
+            else if (startgebiet is not null)
+            {
+                try { var bounds = await startgebiet.Laden(cancellationToken); cancellationToken.ThrowIfCancellationRequested(); if (!owner.IsVisible) return; if (bounds.SuedWest is not null && bounds.NordOst is not null) { sw = new(bounds.SuedWest.Breite, bounds.SuedWest.Laenge); ne = new(bounds.NordOst.Breite, bounds.NordOst.Laenge); } else { sw = new(47.2, 5.8); ne = new(55.1, 15.1); } }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+                catch { sw = new(47.2, 5.8); ne = new(55.1, 15.1); if (owner.IsVisible) MessageBox.Show(owner, "Startausschnitt konnte nicht geladen werden; Standardbereich wird verwendet.", "Tour planen", MessageBoxButton.OK, MessageBoxImage.Information); }
+            }
+            else { sw = new(47.2, 5.8); ne = new(55.1, 15.1); }
             await overlays.LadenAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (!owner.IsVisible) return;
