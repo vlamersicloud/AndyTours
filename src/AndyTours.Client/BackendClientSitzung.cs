@@ -6,6 +6,7 @@ using AndyTours.Application.Export;
 using AndyTours.Application.Garmin;
 using AndyTours.Application.Import;
 using AndyTours.Application.Overlays;
+using AndyTours.Application.Planung;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Application.Touren;
 using AndyTours.Application.Verbindungen;
@@ -56,6 +57,7 @@ public sealed class BackendClientSitzung : IDisposable
         OverlayVerwaltung = new OverlayVerwaltungHttpClient(_importHttpClient);
         OverlayGpxImport = new OverlayGpxImportHttpClient(_importHttpClient);
         CourseExport = new CourseExportHttpClient(_importHttpClient);
+        PlanungsRouting = new PlanungsRoutingHttpClient(_importHttpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
@@ -80,6 +82,7 @@ public sealed class BackendClientSitzung : IDisposable
     public IOverlayVerwaltung OverlayVerwaltung { get; }
     public IOverlayGpxImport OverlayGpxImport { get; }
     public ICourseExport CourseExport { get; }
+    public IPlanungsRouting PlanungsRouting { get; }
     public IBackendVerbindung Verbindung { get; }
 
     public void Dispose()
