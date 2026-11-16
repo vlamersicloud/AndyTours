@@ -17,6 +17,7 @@ public sealed class SqliteGarminEinstellungenTests : IDisposable
         using(var db=OeffneDatenbank.Ausfuehren(Db)) Assert.Null(EinstellungTabelle.Lesen(db,Einstellungsschluessel.GarminPersonalApiKey));
         const string fake="FakeKey_Only+123"; var saved=await Service.SchluesselSpeichern(new(empty.Version,fake));
         var json=JsonSerializer.Serialize(saved); Assert.DoesNotContain(fake,json); Assert.True(saved.HatSchluessel);
+        using(var status=JsonDocument.Parse(json)) Assert.Equal(new[]{"Version","HatSchluessel","AllePaketeAutomatisch"},status.RootElement.EnumerateObject().Select(p=>p.Name).OrderBy(x=>x,StringComparer.Ordinal).ToArray());
         Assert.DoesNotContain(fake,new GarminSchluesselAnfrage(saved.Version,fake).ToString());
     }
     [Fact] public async Task AutomatikUndEntfernenLassenJeweilsAndereEinstellungUnveraendert()
@@ -30,9 +31,9 @@ public sealed class SqliteGarminEinstellungenTests : IDisposable
     }
     [Fact] public async Task LegacyKeyReplacementInvalidatesCasWithoutOverwrite()
     {
-        var first=await Service.Laden(); await Service.SchluesselSpeichern(new(first.Version,"Fake-old"));
+        var first=await Service.Laden(); var saved=await Service.SchluesselSpeichern(new(first.Version,"Fake-old"));
         using(var db=OeffneDatenbank.Ausfuehren(Db)) GarminEinstellung.Speichern(db,"Fake-new");
-        var error=await Assert.ThrowsAsync<StammdatenException>(()=>Service.AutomatikSpeichern(new(first.Version,true)));
+        var error=await Assert.ThrowsAsync<StammdatenException>(()=>Service.AutomatikSpeichern(new(saved.Version,true)));
         Assert.Equal(StammdatenFehlerart.Konflikt,error.Art); Assert.DoesNotContain("Fake",error.Message);
         using(var db=OeffneDatenbank.Ausfuehren(Db)) Assert.Equal("Fake-new",GarminEinstellung.Laden(db));
     }
@@ -46,6 +47,14 @@ public sealed class SqliteGarminEinstellungenTests : IDisposable
         }
         var invalid=await Assert.ThrowsAsync<StammdatenException>(()=>Service.AutomatikSpeichern(new("invalid",true)));
         Assert.Equal(StammdatenFehlerart.Ungueltig,invalid.Art);
+    }
+    [Fact] public async Task LeererKeyEntferntKeyUndBewahrtAutomatik()
+    {
+        var initial=await Service.Laden(); var keyed=await Service.SchluesselSpeichern(new(initial.Version,"Fake-empty"));
+        var automatic=await Service.AutomatikSpeichern(new(keyed.Version,true));
+        var empty=await Service.SchluesselSpeichern(new(automatic.Version,""));
+        Assert.False(empty.HatSchluessel); Assert.True(empty.AllePaketeAutomatisch);
+        using var db=OeffneDatenbank.Ausfuehren(Db); Assert.Null(GarminEinstellung.Laden(db)); Assert.True(GarminEinstellung.AutomatischLaden(db));
     }
     [Fact] public async Task AbbruchLaesstEinstellungenUnveraendert()
     {
