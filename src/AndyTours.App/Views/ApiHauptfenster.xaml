@@ -111,7 +111,7 @@
                         <oxy:PlotView Grid.Row="2" Model="{Binding PulsDiagramm}" MinHeight="180" Margin="0,0,0,8"/>
                         <DataGrid Grid.Row="3" ItemsSource="{Binding Pulszeilen, Mode=OneWay}" IsReadOnly="True"
                                   AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-                                  EnableRowVirtualization="True" MinHeight="140" HeadersVisibility="Column">
+                                  EnableRowVirtualization="True" EnableColumnVirtualization="True" MinHeight="140" HeadersVisibility="Column">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Zeitraum" Binding="{Binding Zeitraum, Mode=OneWay}" Width="*"/>
                                 <DataGridTextColumn Header="Zone" Binding="{Binding Zone, Mode=OneWay}" Width="120"/>

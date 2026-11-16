@@ -31,14 +31,14 @@ public sealed class ApiHauptfensterVertragTests
         var tab=Assert.Single(d.Descendants(Presentation+"TabItem"),x=>(string?)x.Attribute("Header")=="Pulsbereiche");
         var values=tab.Descendants().Attributes().Select(a=>a.Value).ToHashSet(StringComparer.Ordinal);
         foreach(var item in new[]{"PulsreferenzLadenCommand","GarminZonenAktualisierenCommand","PulsdatenLadenCommand","Pulsprofile","Pulsprofil","BpmBereiche","PulsReferenzText","PulsStatus","PulsDiagramm","Pulszeilen"})
-            Assert.Contains("{Binding "+item+"}",values);
+            Assert.Contains(values, value => value.StartsWith("{Binding "+item+",", StringComparison.Ordinal) || value == "{Binding "+item+"}");
         var grid=Assert.Single(tab.Descendants(Presentation+"DataGrid"));
         Assert.Equal("True",(string?)grid.Attribute("IsReadOnly"));
         Assert.Equal("True",(string?)grid.Attribute("EnableRowVirtualization"));
         Assert.Equal("True",(string?)grid.Attribute("EnableColumnVirtualization"));
         Assert.Equal("False",(string?)grid.Attribute("CanUserAddRows"));
         Assert.Equal("{Binding Pulszeilen, Mode=OneWay}",(string?)grid.Attribute("ItemsSource"));
-        Assert.Equal(new[]{"Zeitraum","Zone","Pulsbereich","Messzeit","Anteil"},grid.Elements(Presentation+"DataGrid.Columns").Elements(Presentation+"DataGridTextColumn").Select(x=>(string?)x.Attribute("Header")).ToArray());
+        Assert.Collection(grid.Elements(Presentation+"DataGrid.Columns").Elements(Presentation+"DataGridTextColumn"), column => Assert.Equal("Zeitraum", (string?)column.Attribute("Header")), column => Assert.Equal("Zone", (string?)column.Attribute("Header")), column => Assert.Equal("Pulsbereich", (string?)column.Attribute("Header")), column => Assert.Equal("Messzeit", (string?)column.Attribute("Header")), column => Assert.Equal("Anteil", (string?)column.Attribute("Header")));
         Assert.All(grid.Elements(Presentation+"DataGrid.Columns").Elements(Presentation+"DataGridTextColumn"),column=>Assert.Contains("Mode=OneWay",(string?)column.Attribute("Binding")));
     }
     [Fact] public void FilterDiagrammUndKpisBleibenGebunden()

@@ -1,3 +1,4 @@
+using System.Globalization;
 using AndyTours.App.ViewModels;
 using AndyTours.Contracts.V1;
 using OxyPlot;
@@ -25,18 +26,19 @@ public sealed class ApiPulsDarstellungTests
 
         var view = ApiPulsDarstellung.Erstellen(answer);
         var axis = Assert.IsType<CategoryAxis>(Assert.Single(view.Diagramm.Axes, x => x.Position == AxisPosition.Bottom));
-        Assert.Equal(new[] { "Januar gekürzt", "Februar leer", "März geliefert" }, axis.Labels);
-        Assert.Equal(new[] { "Eigene Zone A · 90–99 bpm", "Eigene Zone B · 100–109 bpm" },
-            view.Diagramm.Series.Cast<RectangleBarSeries>().Select(x => x.Title));
+        Assert.Collection(axis.Labels,
+            label => Assert.Equal("Januar gekürzt", label),
+            label => Assert.Equal("Februar leer", label),
+            label => Assert.Equal("März geliefert", label));
+        Assert.Collection(view.Diagramm.Series.Cast<RectangleBarSeries>(),
+            series => Assert.Equal("Eigene Zone A · 90–99 bpm", series.Title),
+            series => Assert.Equal("Eigene Zone B · 100–109 bpm", series.Title));
         var series = view.Diagramm.Series.Cast<RectangleBarSeries>().ToArray();
         Assert.NotEqual(series[0].FillColor, series[1].FillColor);
-        Assert.All(series, s => Assert.Equal(1, s.Items.Count));
-        Assert.Equal(2, view.Zeilen.Count);
-        Assert.Equal(new[] { "Januar gekürzt", "März geliefert" }, view.Zeilen.Select(x => x.Zeitraum));
-        Assert.Equal(new[] { "Eigene Zone A", "Eigene Zone B" }, view.Zeilen.Select(x => x.Zone));
-        Assert.Equal("2,0 min", view.Zeilen[0].Messzeit);
-        Assert.Equal("25,0 %", view.Zeilen[0].Anteil);
-        Assert.Equal("1,0 min", view.Zeilen[1].Messzeit);
-        Assert.Equal("75,0 %", view.Zeilen[1].Anteil);
+        Assert.Single(series[0].Items);
+        Assert.Single(series[1].Items);
+        Assert.Collection(view.Zeilen,
+            row => { Assert.Equal("Januar gekürzt", row.Zeitraum); Assert.Equal("Eigene Zone A", row.Zone); Assert.Equal("2,0 min", row.Messzeit); Assert.Equal((.25).ToString("P1", CultureInfo.GetCultureInfo("de-DE")), row.Anteil); },
+            row => { Assert.Equal("März geliefert", row.Zeitraum); Assert.Equal("Eigene Zone B", row.Zone); Assert.Equal("1,0 min", row.Messzeit); Assert.Equal((.75).ToString("P1", CultureInfo.GetCultureInfo("de-DE")), row.Anteil); });
     }
 }
