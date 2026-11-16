@@ -36,17 +36,11 @@ public static class OverlayGpxRegeln
 
     public static string Anzeigename(string dateiname)
     {
-        if (dateiname is null) throw Invalid();
-        string normalized;
-        try { normalized = dateiname.Normalize(NormalizationForm.FormC); }
-        catch (ArgumentException) { throw Invalid(); }
-        int separator = normalized.LastIndexOfAny(['/', '\\']);
-        string basename = separator >= 0 ? normalized[(separator + 1)..] : normalized;
-        int extension = basename.LastIndexOf('.');
-        if (extension > 0) basename = basename[..extension];
-        basename = basename.Trim();
-        if (basename.Length == 0 || basename.Any(char.IsControl)) throw Invalid();
-        return basename;
+        var request = new OverlayGpxImportAnfrage(new string('0', 64), Guid.NewGuid(), null, dateiname);
+        string basename = Normalisieren(request).Dateiname;
+        string displayName = Path.GetFileNameWithoutExtension(basename).Trim().Normalize(NormalizationForm.FormC);
+        if (displayName.Length == 0 || displayName.Any(char.IsControl)) throw Invalid();
+        return displayName;
     }
 
     private static StammdatenException Invalid() =>

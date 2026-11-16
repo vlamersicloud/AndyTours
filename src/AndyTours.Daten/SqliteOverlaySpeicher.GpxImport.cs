@@ -11,7 +11,7 @@ public sealed partial class SqliteOverlaySpeicher : IOverlayGpxSpeicher
     public Task<OverlayAnlegenAntwort> Importieren(
         OverlayGpxVorbereitung vorbereitet, CancellationToken cancellationToken)
     {
-        if (vorbereitet is null || vorbereitet.Anfrage is null || vorbereitet.Abschnitte is null)
+        if (vorbereitet is null || vorbereitet.Anfrage is null)
             throw new StammdatenException(StammdatenFehlerart.Ungueltig, "Overlay-GPX-Anfrage ungültig.");
         var request = OverlayGpxRegeln.Normalisieren(vorbereitet.Anfrage);
         PruefeGpxHash(vorbereitet.InhaltHash);
@@ -80,7 +80,7 @@ public sealed partial class SqliteOverlaySpeicher : IOverlayGpxSpeicher
             foreach (var point in section)
             {
                 ct.ThrowIfCancellationRequested();
-                if (!double.IsFinite(point.Breite) || !double.IsFinite(point.Laenge) ||
+                if (point is null || !double.IsFinite(point.Breite) || !double.IsFinite(point.Laenge) ||
                     point.Breite is < -90 or > 90 || point.Laenge is < -180 or > 180)
                     throw InvalidGeometry();
             }
