@@ -23,6 +23,7 @@
                 <Menu VerticalAlignment="Center" Background="Transparent">
                     <MenuItem Header="Datei" Padding="10,6">
                         <MenuItem Header="Tour planen…" Click="TourPlanen_Click"/>
+                        <MenuItem Header="Routing-Einstellungen…" Click="RoutingKonfiguration_Click"/>
                         <MenuItem Header="Overlays…" Click="OverlaysOeffnen_Click"/>
                         <MenuItem Header="FIT-Dateien importieren…" Click="FitDateienImportieren_Click"/>
                         <MenuItem Header="Vom Garmin-Gerät importieren…" Click="GarminGeraetImportieren_Click"/>

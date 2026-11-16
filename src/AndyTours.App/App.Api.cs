@@ -38,6 +38,33 @@ public partial class App
             fenster.TourenplanungAngefordert += ct => ApiTourenplanungAnzeige.Oeffnen(fenster,
                 uebergebeneSitzung.PlanungsProfil, uebergebeneSitzung.PlanungsRouting, uebergebeneSitzung.PlanungsDateien,
                 uebergebeneSitzung.PlanungsCourseExport, overlayHost.Kontext, ct, uebergebeneSitzung.PlanungsStartgebiet);
+
+            fenster.RoutingKonfigurationAngefordert += () =>
+            {
+                ApiRoutingKonfigurationViewModel? routingVm = null;
+                ApiRoutingKonfigurationFenster? routingWindow = null;
+                try
+                {
+                    routingVm = new ApiRoutingKonfigurationViewModel(uebergebeneSitzung.RoutingKonfiguration,
+                        fenster.LebenszeitToken);
+                    routingWindow = new ApiRoutingKonfigurationFenster(routingVm) { Owner = fenster };
+                    routingWindow.ShowDialog();
+                }
+                finally
+                {
+                    if (routingWindow?.IsVisible == true)
+                    {
+                        routingWindow.Dispose();
+                        try { routingWindow.Close(); } catch { }
+                    }
+                    else
+                    {
+                        routingWindow?.Dispose();
+                        if (routingWindow is null) routingVm?.Dispose();
+                    }
+                }
+                return Task.CompletedTask;
+            };
             fenster.AktivitaetenVerwaltenAngefordert += async () =>
             {
                 ApiAktivitaetenFenster? verwaltungsfenster = null;
