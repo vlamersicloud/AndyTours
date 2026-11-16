@@ -1,0 +1,93 @@
+using AndyTours.Application.Stammdaten;
+using AndyTours.Contracts.V1;
+using AndyTours.Core.Modell;
+using AndyTours.Daten;
+using Microsoft.Data.Sqlite;
+
+namespace AndyTours.Tests.Daten;
+
+/// <summary>Isolierte Regressionen für die SQLite-Equipmentverwaltung.</summary>
+public sealed class SqliteEquipmentsVerwaltungTests : IDisposable
+{
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "AndyTours-EquipmentApi-" + Guid.NewGuid().ToString("N"));
+    private readonly string _db;
+    private readonly SqliteEquipmentsVerwaltung _sut;
+    private readonly SqliteTourenSpeicher _tours;
+    private readonly long _activity1, _activity2;
+
+    public SqliteEquipmentsVerwaltungTests()
+    {
+        Directory.CreateDirectory(_dir); _db = Path.Combine(_dir, "andytours.db");
+        _sut = new(_db); _tours = new(_db);
+        using var c = OeffneDatenbank.Ausfuehren(_db); using var tx = c.BeginTransaction();
+        _activity1 = AktivitaetenTabelle.Einfuegen(c, tx, new Aktivitaet { Name = "Rad", IstHaupt = true });
+        _activity2 = AktivitaetenTabelle.Einfuegen(c, tx, new Aktivitaet { Name = "Lauf" }); tx.Commit();
+    }
+
+    [Fact] public async Task VeralteteVersionVerweigertMutation()
+    {
+        var old = await _sut.Laden(); await Add("Bike", _activity1);
+        var ex = await Assert.ThrowsAsync<StammdatenException>(() => _sut.Anlegen(Request(old.Version, Values("Nope", _activity1))));
+        Assert.Equal(StammdatenFehlerart.Konflikt, ex.Art);
+        Assert.DoesNotContain((await _sut.Laden()).Eintraege, x => x.Name == "Nope");
+    }
+
+    [Fact] public async Task StandardTransferBleibtAufAktivitaetBegrenzt()
+    {
+        var first = await Add("A", _activity1, standard: true); await Add("B", _activity2, standard: true);
+        await Add("C", _activity1, standard: true);
+        using var c = OeffneDatenbank.Ausfuehren(_db); var all = EquipmentsTabelle.Laden(c);
+        Assert.False(all.Single(x => x.Id == first).IstStandard); Assert.True(all.Single(x => x.Name == "B").IstStandard);
+        Assert.True(all.Single(x => x.Name == "C").IstStandard);
+    }
+
+    [Fact] public async Task AusmusternEntferntStandard()
+    {
+        var id = await Add("Bike", _activity1, standard: true);
+        await Change(id, Values("Bike", _activity1, standard: true, retired: true));
+        Assert.False((await _sut.Laden()).Eintraege.Single(x => x.Id == id).IstStandard);
+    }
+
+    [Fact] public async Task UngueltigeAktivitaetDuplikatUndDistanzLassenBestandUnveraendert()
+    {
+        var id = await Add("A", _activity1); var before = await _sut.Laden();
+        await Assert.ThrowsAsync<StammdatenException>(() => _sut.Anlegen(Request(before.Version, Values("B", 999999))));
+        before = await _sut.Laden(); await Assert.ThrowsAsync<StammdatenException>(() => _sut.Anlegen(Request(before.Version, Values(" a ", _activity1))));
+        before = await _sut.Laden(); await Assert.ThrowsAsync<StammdatenException>(() => _sut.Aendern(id, Request(before.Version, Values("A", _activity1, km: double.NaN))));
+        using var c = OeffneDatenbank.Ausfuehren(_db); Assert.Equal("A", EquipmentsTabelle.Laden(c).Single().Name);
+    }
+
+    [Fact] public async Task LoeschenBeiTourOderWartungGesperrt()
+    {
+        var id = await Add("Bike", _activity1); var vals = TourenMapper.ToAntwort(new Trainingseinheit { AktivitaetId = _activity1,
+            Datum = new DateOnly(2026, 1, 1), Name = "Tour", DistanzKm = 2, Fahrzeit = TimeSpan.FromMinutes(10), EquipmentId = id }).Werte;
+        await _tours.Anlegen(vals);
+        var version = (await _sut.Laden()).Version;
+        var ex = await Assert.ThrowsAsync<StammdatenException>(() => _sut.Loeschen(id, version));
+        Assert.Equal(StammdatenFehlerart.Konflikt, ex.Art); Assert.Single((await _sut.Laden()).Eintraege);
+    }
+
+    [Fact] public async Task RawLegacyMappingIsPreservedAndOnlyRemovalAllowed()
+    {
+        var id = await Add("Old", _activity1); const string raw = "Bike1;  Sensor:abc  ";
+        using (var c = OeffneDatenbank.Ausfuehren(_db)) { using var tx = c.BeginTransaction(); var e = EquipmentsTabelle.Laden(c).Single(); e.Geraetezuordnung = raw; EquipmentsTabelle.Aendern(c, tx, e); tx.Commit(); }
+        var snap = await _sut.Laden(); await Change(id, Values("Old", _activity1, mapping: raw));
+        using (var c = OeffneDatenbank.Ausfuehren(_db)) Assert.Equal(raw, c.QueryMapping());
+        snap = await _sut.Laden(); await Change(id, Values("Old", _activity1, mapping: "Bike1"));
+        using (var c = OeffneDatenbank.Ausfuehren(_db)) Assert.Equal("Bike1", c.QueryMapping());
+        snap = await _sut.Laden(); var fail = await Assert.ThrowsAsync<StammdatenException>(() => _sut.Aendern(id, Request(snap.Version, Values("Old", _activity1, mapping: "Rad:new"))));
+        Assert.Equal(StammdatenFehlerart.Ungueltig, fail.Art);
+    }
+
+    private async Task<long> Add(string name, long? activity, bool standard = false) =>
+        (await _sut.Anlegen(Request((await _sut.Laden()).Version, Values(name, activity, standard)))).Eintraege.Single(e => e.Name == name).Id;
+    private async Task Change(long id, EquipmentWerte w) => await _sut.Aendern(id, Request((await _sut.Laden()).Version, w));
+    private static EquipmentSpeichernAnfrage Request(string v, EquipmentWerte w) => new(v, w);
+    private static EquipmentWerte Values(string n, long? a, bool standard = false, bool retired = false, double km = 0, string mapping = "") => new(n, a, mapping, "", standard, retired, null, km);
+    public void Dispose() { SqliteConnection.ClearAllPools(); if (Directory.Exists(_dir)) Directory.Delete(_dir, true); }
+}
+
+internal static class EquipmentTestSql
+{
+    public static string QueryMapping(this SqliteConnection c) { using var cmd = c.CreateCommand(); cmd.CommandText = "SELECT Geraetezuordnung FROM Equipment"; return (string)cmd.ExecuteScalar()!; }
+}
