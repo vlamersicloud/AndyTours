@@ -43,6 +43,7 @@ public sealed partial class ApiOverlaysViewModel
         }
         else
         {
+            _baumGueltig = true;
             ApiOverlayBaum.AktualisiereZustaende(Wurzeln, bestand);
             PopulateColorOptions(state);
         }

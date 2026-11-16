@@ -40,10 +40,12 @@ public sealed partial class ApiOverlaysViewModel : ObservableObject, IDisposable
     public ObservableCollection<ApiOverlayFarboption> GemeinsameFarbauswahl { get; } = [];
     public event EventHandler? Schliessen;
     public event EventHandler? NameBearbeiten;
-    public bool KannAendern => IstBereit && Ausgewaehlt is not null;
+    public bool KannAendern => IstBereit;
+    public bool KannAuswahlAendern => IstBereit && Ausgewaehlt is not null;
+    public bool KannOverlayAendern => IstBereit && Ausgewaehlt?.IstOverlay == true;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IstEtwasAusgewaehlt), nameof(IstOverlayAusgewaehlt), nameof(KannAendern))]
+    [NotifyPropertyChangedFor(nameof(IstEtwasAusgewaehlt), nameof(IstOverlayAusgewaehlt), nameof(KannAendern), nameof(KannAuswahlAendern), nameof(KannOverlayAendern))]
     private ApiOverlayknoten? _ausgewaehlt;
     [ObservableProperty] private string _bearbeitungsname = string.Empty;
     [ObservableProperty] private string _hinweis = string.Empty;
@@ -62,7 +64,7 @@ public sealed partial class ApiOverlaysViewModel : ObservableObject, IDisposable
         Wurzeln.Clear(); Farbauswahl.Clear(); GemeinsameFarbauswahl.Clear();
         Ausgewaehlt = null; Schliessen = null; NameBearbeiten = null;
         _lebensdauer.Dispose();
-        OnPropertyChanged(nameof(IstBereit)); OnPropertyChanged(nameof(KannAendern));
+        OnPropertyChanged(nameof(IstBereit)); OnPropertyChanged(nameof(KannAendern)); OnPropertyChanged(nameof(KannAuswahlAendern)); OnPropertyChanged(nameof(KannOverlayAendern));
     }
 
     public void FordereNamensbearbeitungAn() => NameBearbeiten?.Invoke(this, EventArgs.Empty);
@@ -80,7 +82,7 @@ public sealed partial class ApiOverlaysViewModel : ObservableObject, IDisposable
 
     private void ArbeitszustandGeaendert()
     {
-        OnPropertyChanged(nameof(IstBeschaeftigt)); OnPropertyChanged(nameof(IstBereit)); OnPropertyChanged(nameof(KannAendern));
+        OnPropertyChanged(nameof(IstBeschaeftigt)); OnPropertyChanged(nameof(IstBereit)); OnPropertyChanged(nameof(KannAendern)); OnPropertyChanged(nameof(KannAuswahlAendern)); OnPropertyChanged(nameof(KannOverlayAendern)); OnPropertyChanged(nameof(KannAuswahlAendern)); OnPropertyChanged(nameof(KannOverlayAendern));
         BenachrichtigeBefehle();
     }
 
@@ -88,7 +90,7 @@ public sealed partial class ApiOverlaysViewModel : ObservableObject, IDisposable
     {
         if (_beendet) return;
         UebernimmAnzeige();
-        OnPropertyChanged(nameof(BestehenderBestand)); OnPropertyChanged(nameof(IstBereit)); OnPropertyChanged(nameof(IstLeer)); OnPropertyChanged(nameof(KannAendern));
+        OnPropertyChanged(nameof(BestehenderBestand)); OnPropertyChanged(nameof(IstBereit)); OnPropertyChanged(nameof(IstLeer)); OnPropertyChanged(nameof(KannAendern)); OnPropertyChanged(nameof(KannAuswahlAendern)); OnPropertyChanged(nameof(KannOverlayAendern));
         BenachrichtigeBefehle();
     }
 

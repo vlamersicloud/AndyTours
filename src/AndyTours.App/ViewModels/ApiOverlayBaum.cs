@@ -16,10 +16,13 @@ public static class ApiOverlayBaum
         long? ausgewaehltesOverlayId = null)
     {
         if (bestand is null || bestand.Ordner is null || bestand.Overlays is null || umschalten is null) throw Invalid();
+        if (bestand.Ordner.Any(x => x is null) || bestand.Overlays.Any(x => x is null) ||
+            bestand.Ordner.Select(x => x.Id).Distinct().Count() != bestand.Ordner.Count ||
+            bestand.Overlays.Select(x => x.Id).Distinct().Count() != bestand.Overlays.Count) throw Invalid();
         var folders = bestand.Ordner.ToDictionary(x => x.Id);
         var items = bestand.Overlays.ToDictionary(x => x.Id);
         if (folders.Keys.Any(id => id <= 0) || items.Keys.Any(id => id <= 0) ||
-            folders.Values.Any(x => string.IsNullOrWhiteSpace(x.Name)) || items.Values.Any(x => string.IsNullOrWhiteSpace(x.Name)) ||
+            folders.Values.Any(x => x.Name is null) || items.Values.Any(x => x.Name is null) ||
             items.Values.Any(x => x.OrdnerId is { } parent && !folders.ContainsKey(parent))) throw Invalid();
 
         foreach (var folder in folders.Values)
@@ -72,7 +75,10 @@ public static class ApiOverlayBaum
 
     public static bool Strukturgleich(IReadOnlyList<ApiOverlayknoten> roots, OverlayBestandAntwort bestand)
     {
-        if (roots is null || bestand?.Ordner is null || bestand.Overlays is null) return false;
+        if (roots is null || bestand?.Ordner is null || bestand.Overlays is null ||
+            bestand.Ordner.Any(x => x is null) || bestand.Overlays.Any(x => x is null) ||
+            bestand.Ordner.Select(x => x.Id).Distinct().Count() != bestand.Ordner.Count ||
+            bestand.Overlays.Select(x => x.Id).Distinct().Count() != bestand.Overlays.Count) return false;
         var existingFolders = Flatten(roots).Where(n => n.IstOrdner).ToDictionary(n => n.Id);
         var existingItems = Flatten(roots).Where(n => n.IstOverlay).ToDictionary(n => n.Id);
         return existingFolders.Count == bestand.Ordner.Count && existingItems.Count == bestand.Overlays.Count &&

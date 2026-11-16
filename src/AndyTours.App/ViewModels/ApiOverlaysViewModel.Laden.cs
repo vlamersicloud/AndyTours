@@ -32,7 +32,8 @@ public sealed partial class ApiOverlaysViewModel
     [RelayCommand(CanExecute = nameof(KannAendern))]
     private async Task Umschalten(UmschaltAnfrage request, CancellationToken cancellationToken)
     {
-        if (_beendet || IstBeschaeftigt || BestehenderBestand is not { } bestand) return;
+        if (_beendet || !KannAendern || IstBeschaeftigt || BestehenderBestand is not { } bestand ||
+            request is null || !Wurzeln.SelectMany(Flatten).Any(node => ReferenceEquals(node, request.Knoten))) return;
         var ids = ApiOverlayBaum.OverlayIds(request.Knoten);
         if (ids.Count == 0)
         {
@@ -67,7 +68,8 @@ public sealed partial class ApiOverlaysViewModel
 
     partial void Umschaltwunsch(ApiOverlayknoten node, bool value)
     {
-        if (!_beendet && KannAendern) UmschaltenCommand.Execute(new UmschaltAnfrage(node, value));
+        if (!_beendet && KannAendern && Wurzeln.SelectMany(Flatten).Any(current => ReferenceEquals(current, node)))
+            UmschaltenCommand.Execute(new UmschaltAnfrage(node, value));
     }
 
     partial void BenachrichtigeBefehle()

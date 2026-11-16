@@ -14,7 +14,7 @@ public static class ApiOverlayMapper
         cancellationToken.ThrowIfCancellationRequested();
         if (meta is null || inhalt is null || meta.Id <= 0 || inhalt.Id != meta.Id ||
             string.IsNullOrEmpty(meta.Version) || !string.Equals(meta.Version, inhalt.Version, StringComparison.Ordinal) ||
-            string.IsNullOrWhiteSpace(meta.Name) || inhalt.Abschnitte is null || inhalt.Abschnitte.Count == 0 ||
+            meta.Name is null || inhalt.Abschnitte is null || inhalt.Abschnitte.Count == 0 ||
             !Enum.IsDefined(meta.Farbe ?? ApiFarbe.Violett))
             throw Invalid();
 
