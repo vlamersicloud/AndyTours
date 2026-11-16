@@ -36,7 +36,7 @@ public sealed class GarminImportPruefungTests
         Assert.True(File.Exists(f.PermanentPath(relative)));
         Assert.True(File.Exists(f.FitPath(job.JobId, candidate.KandidatId)));
         Assert.True(File.Exists(f.ZipPath(candidate.GarminAktivitaetId)));
-        Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(f.FitPath(job.JobId, candidate.KandidatId))!, ".review-*.tmp"));
+        Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(f.FitPath(job.JobId, candidate.KandidatId))!, ".fit-review-*.tmp"));
         File.Delete(f.FitPath(job.JobId, candidate.KandidatId));
         var replay = await facade.Uebernehmen(job.JobId, request);
         Assert.Equal(tour.TourId, Assert.Single(replay.Ergebnisse).TourId);
