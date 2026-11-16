@@ -29,7 +29,13 @@ public static class ApiTourdetailAnzeige
             }
 
             var missing = response.Etappen.Where(s => s.Verlauf is null).ToArray();
-            if (missing.Length > 0)
+            if (missing.Length == 1)
+            {
+                MessageBox.Show(owner, $"Ohne Aufzeichnung: {missing[0].Tour.Werte.Name}", "Tourdetails",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                if (!owner.IsVisible || cancellationToken.IsCancellationRequested) return;
+            }
+            else if (missing.Length > 1)
             {
                 var names = missing.Take(20).Select(s => s.Tour.Werte.Name).ToArray();
                 var summary = string.Join(", ", names);
@@ -40,11 +46,27 @@ public static class ApiTourdetailAnzeige
             }
 
             var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var detailToken = lifetime.Token;
+            TourdetailFenster? detailWindow = null;
             var vm = new TourdetailViewModel(stages, ApiGpxOrdner.Laden, ApiGpxOrdner.Speichern,
-                rows => ApiCourseUebertragung.Zeige(owner, rows, export, lifetime.Token));
-            var window = new TourdetailFenster(vm) { Owner = owner };
-            window.Closed += (_, _) => { lifetime.Cancel(); lifetime.Dispose(); };
-            window.Show();
+                rows => detailWindow?.IsVisible == true
+                    ? ApiCourseUebertragung.Zeige(detailWindow, rows, export, detailToken)
+                    : Task.CompletedTask);
+            try
+            {
+                detailWindow = new TourdetailFenster(vm) { Owner = owner };
+                detailWindow.Closed += (_, _) => { lifetime.Cancel(); lifetime.Dispose(); };
+                detailWindow.Show();
+            }
+            catch
+            {
+                if (detailWindow is null || !detailWindow.IsVisible)
+                {
+                    lifetime.Cancel();
+                    lifetime.Dispose();
+                }
+                throw;
+            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
         catch (Exception)
