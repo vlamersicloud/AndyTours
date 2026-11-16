@@ -32,7 +32,7 @@ public partial class ApiFitImportViewModel : ObservableObject, IDisposable
     public void Hinzufuegen(IEnumerable<string> paths)
     {
         ArgumentNullException.ThrowIfNull(paths);
-        if (_disposed) return;
+        if (!Idle()) return;
         var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         foreach (var path in paths)
         {
@@ -42,7 +42,6 @@ public partial class ApiFitImportViewModel : ObservableObject, IDisposable
             var name = Path.GetFileName(fullPath);
             Dateien.Add(new ApiFitImportDatei(fullPath, name));
         }
-        HatAenderungen = Dateien.Any(x => !x.Hochgeladen);
         NotifyCommands();
     }
 
@@ -87,7 +86,6 @@ public partial class ApiFitImportViewModel : ObservableObject, IDisposable
                     Status = file.Status;
                 }
             }
-            if (IsAlive(linked.Token)) HatAenderungen = Dateien.Any(x => !x.Hochgeladen);
         }
         finally
         {
@@ -97,7 +95,12 @@ public partial class ApiFitImportViewModel : ObservableObject, IDisposable
 
     private bool IsAlive(CancellationToken token) => !_disposed && !token.IsCancellationRequested;
 
-    private void NotifyCommands() => HochladenCommand.NotifyCanExecuteChanged();
+    private void NotifyCommands()
+    {
+        HochladenCommand.NotifyCanExecuteChanged();
+        NotifyPruefCommands();
+    }
+    partial void NotifyPruefCommands();
     partial void OnLaedtChanged(bool value) => NotifyCommands();
     partial void OnAendertChanged(bool value) => NotifyCommands();
     partial void OnEditorOffenChanged(bool value) => NotifyCommands();
@@ -122,7 +125,13 @@ public sealed partial class ApiFitImportDatei : ObservableObject
     public bool Hochgeladen => Uploaded is not null;
 
     [ObservableProperty] private string _status = "Bereit";
-    internal FitUploadAntwort? Uploaded { get; set; }
+    [ObservableProperty] private bool _abgeschlossen;
+    private FitUploadAntwort? _uploaded;
+    internal FitUploadAntwort? Uploaded
+    {
+        get => _uploaded;
+        set { if (SetProperty(ref _uploaded, value)) OnPropertyChanged(nameof(Hochgeladen)); }
+    }
 
     internal ApiFitImportDatei(string lokalerPfad, string dateiname)
     {
