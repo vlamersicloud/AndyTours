@@ -10,7 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace AndyTours.App.ViewModels;
 
 /// <summary>Serverbasierte Wartungs- und Alarmverwaltung für die API-Oberfläche.</summary>
-public partial class ApiWartungsViewModel : ObservableObject
+public partial class ApiWartungsViewModel : ObservableObject, IDisposable
 {
     private readonly IWartungsverwaltung _wartungen;
     private readonly IStammdatenLeser _stammdaten;
@@ -21,6 +21,8 @@ public partial class ApiWartungsViewModel : ObservableObject
     private bool _erstesLaden = true;
     private bool _hasLoaded;
     private long _generation;
+    private readonly CancellationTokenSource _readLifetime = new();
+    private bool _closing;
 
     [ObservableProperty] private ApiFilterOption? _aktivitaetAuswahl;
     [ObservableProperty] private ApiFilterOption? _equipmentAuswahl;
@@ -80,23 +82,27 @@ public partial class ApiWartungsViewModel : ObservableObject
     private void FilterChanged()
     {
         Interlocked.Increment(ref _generation);
-        Wartungszeilen.Clear(); Alarmzeilen.Clear(); WartungIds = []; AlarmIds = [];
         _hasLoaded = false; _bestand = null;
+        Wartungszeilen.Clear(); Alarmzeilen.Clear(); WartungIds = []; AlarmIds = [];
         Status = "Filter geändert – bitte neu laden.";
+        NotifyCommands();
     }
 
     [RelayCommand(CanExecute = nameof(CanLoad))]
     public async Task LadenAsync(CancellationToken ct = default) { await LoadCore(ct); }
-    private bool CanLoad() => !Laedt && !Aendert && !EditorOffen;
+    private bool CanLoad() => !_closing && !Laedt && !Aendert && !EditorOffen;
 
     private async Task<bool> LoadCore(CancellationToken ct)
     {
         if (Laedt) return false;
+        if (_closing) return false;
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, _readLifetime.Token);
+        var readToken = linked.Token;
         var generation = Interlocked.Increment(ref _generation);
         Laedt = true;
         try
         {
-            var meta = await _stammdaten.Laden(ct);
+            var meta = await _stammdaten.Laden(readToken);
             if (generation != Interlocked.Read(ref _generation)) return false;
             var previousActivity = AktivitaetAuswahl?.Id;
             var previousEquipment = EquipmentAuswahl?.Id;
@@ -123,7 +129,7 @@ public partial class ApiWartungsViewModel : ObservableObject
             }
             finally { _filterSuspendiert = false; }
             _erstesLaden = false;
-            var overview = await _wartungen.Laden(new(AktivitaetAuswahl?.Id, EquipmentAuswahl?.Id), ct);
+            var overview = await _wartungen.Laden(new(AktivitaetAuswahl?.Id, EquipmentAuswahl?.Id), readToken);
             if (generation != Interlocked.Read(ref _generation)) return false;
             _bestand = overview.Bestand;
             Taetigkeiten = overview.Taetigkeiten; OnPropertyChanged(nameof(Taetigkeiten));
@@ -133,6 +139,7 @@ public partial class ApiWartungsViewModel : ObservableObject
             Status = lookupHinweis;
             return true;
         }
+        catch (OperationCanceledException) when (readToken.IsCancellationRequested) { return false; }
         catch (Exception) { if (generation == Interlocked.Read(ref _generation)) Status = "Wartungsdaten konnten nicht geladen werden."; return false; }
         finally { Laedt = false; NotifyCommands(); }
     }
@@ -158,14 +165,14 @@ public partial class ApiWartungsViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanEditMaintenance))] private Task WartungBearbeitenAsync() => WartungIds.Count == 1 ? EditMaintenance(WartungIds[0]) : Task.CompletedTask;
     [RelayCommand(CanExecute = nameof(CanNew))] private Task NeuerAlarmAsync() => EditAlarm(null);
     [RelayCommand(CanExecute = nameof(CanEditAlarm))] private Task AlarmBearbeitenAsync() => AlarmIds.Count == 1 ? EditAlarm(AlarmIds[0]) : Task.CompletedTask;
-    private bool CanNew() => IsIdleWithSnapshot();
-    private bool CanEditMaintenance() => IsIdleWithSnapshot() && WartungIds.Count == 1;
-    private bool CanEditAlarm() => IsIdleWithSnapshot() && AlarmIds.Count == 1;
+    private bool CanNew() => !_closing && IsIdleWithSnapshot();
+    private bool CanEditMaintenance() => !_closing && IsIdleWithSnapshot() && WartungIds.Count == 1;
+    private bool CanEditAlarm() => !_closing && IsIdleWithSnapshot() && AlarmIds.Count == 1;
     private bool IsIdleWithSnapshot() => !Laedt && !Aendert && !EditorOffen && _hasLoaded && _bestand is not null && _meta is not null;
 
     private async Task EditMaintenance(long? id)
     {
-        var loaded = await LoadEditorSnapshot(); if (loaded is null) return;
+        var loaded = await LoadEditorSnapshot(); if (loaded is null || _closing) return;
         var snapshot = loaded.Value.Bestand; var meta = loaded.Value.Meta;
         Wartung? existing = id is long selected ? snapshot.Eintraege.FirstOrDefault(x => x.Id == selected && x.Art == Wartungsart.Wartung) is { } item ? ToCore(item) : null : null;
         if (id is not null && existing is null) { Status = "Die ausgewählte Wartung ist nicht mehr vorhanden. Bitte neu laden."; return; }
@@ -179,7 +186,7 @@ public partial class ApiWartungsViewModel : ObservableObject
 
     private async Task EditAlarm(long? id)
     {
-        var loaded = await LoadEditorSnapshot(); if (loaded is null) return;
+        var loaded = await LoadEditorSnapshot(); if (loaded is null || _closing) return;
         var snapshot = loaded.Value.Bestand; var meta = loaded.Value.Meta;
         Wartung? existing = id is long selected ? snapshot.Eintraege.FirstOrDefault(x => x.Id == selected && x.Art == Wartungsart.Alarm) is { } item ? ToCore(item) : null : null;
         if (id is not null && existing is null) { Status = "Der ausgewählte Alarm ist nicht mehr vorhanden. Bitte neu laden."; return; }
@@ -193,16 +200,22 @@ public partial class ApiWartungsViewModel : ObservableObject
 
     private async Task<(WartungsbestandAntwort Bestand, StammdatenAntwort Meta)?> LoadEditorSnapshot()
     {
-        if (Laedt || Aendert || EditorOffen) return null;
+        if (_closing || Laedt || Aendert || EditorOffen) return null;
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(_readLifetime.Token);
+        var ct = linked.Token;
         Laedt = true;
         try
         {
-            var mt = _stammdaten.Laden(); var wt = _wartungen.Laden(new(AktivitaetAuswahl?.Id, EquipmentAuswahl?.Id));
-            await Task.WhenAll(mt, wt); _meta = await mt; _bestand = (await wt).Bestand; Taetigkeiten = (await wt).Taetigkeiten;
+            var mt = _stammdaten.Laden(ct); var wt = _wartungen.Laden(new(AktivitaetAuswahl?.Id, EquipmentAuswahl?.Id), ct);
+            await Task.WhenAll(mt, wt);
+            ct.ThrowIfCancellationRequested();
+            if (_closing) return null;
+            _meta = await mt; var overview = await wt; _bestand = overview.Bestand; Taetigkeiten = overview.Taetigkeiten;
             return (_bestand, _meta);
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { return null; }
         catch (Exception) { Status = "Aktuelle Daten für den Editor konnten nicht geladen werden."; return null; }
-        finally { Laedt = false; }
+        finally { Laedt = false; NotifyCommands(); }
     }
 
     private async Task<bool> SaveMaintenance(Wartung item, string version)
@@ -256,10 +269,25 @@ public partial class ApiWartungsViewModel : ObservableObject
         catch (Exception) { HatAenderungen = true; Status = "Umschaltstatus unklar; bitte neu laden."; }
         finally { Aendert = false; }
     }
-    private bool CanBulk() => !Laedt && !Aendert && !EditorOffen && _hasLoaded && _bestand is not null;
+    private bool CanBulk() => !_closing && !Laedt && !Aendert && !EditorOffen && _hasLoaded && _bestand is not null;
     private bool CanDeleteMaintenance() => CanBulk() && WartungIds.Count > 0;
     private bool CanDeleteAlarm() => CanBulk() && AlarmIds.Count > 0;
     private bool CanToggleAlarm() => CanBulk() && AlarmIds.Count > 0;
+
+    public void Dispose()
+    {
+        AbbrechenLesenderVorgaenge();
+        _readLifetime.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    public void AbbrechenLesenderVorgaenge()
+    {
+        if (_closing) return;
+        _closing = true;
+        _readLifetime.Cancel();
+        NotifyCommands();
+    }
 
     private async Task ReloadAfterSave() { if (await LoadCore(CancellationToken.None)) Status = "Gespeichert."; else Status = "Gespeichert; die Liste konnte nicht aktualisiert werden. Bitte neu laden."; }
     private static Wartung ToCore(WartungsdatensatzAntwort x) => new() { Id=x.Id, Datum=x.Datum, EquipmentId=x.EquipmentId, Taetigkeit=x.Taetigkeit, Kommentar=x.Kommentar, Typ=x.Art switch { Wartungsart.Wartung=>WartungsTyp.Wartung, Wartungsart.Alarm=>WartungsTyp.Alarm, _=>throw new InvalidOperationException() }, AlarmKm=x.AlarmKm, Aktiv=x.Aktiv };

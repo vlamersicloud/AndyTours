@@ -51,18 +51,22 @@ public partial class ApiWartungsFenster : Window, IDisposable
 
     private void Wartungen_DoubleClick(object sender, MouseButtonEventArgs e)
     {
+        if (e.ChangedButton != MouseButton.Left) return;
         if (ItemsControl.ContainerFromElement(WartungenGrid, e.OriginalSource as DependencyObject) is DataGridRow row && row.Item is AndyTours.Contracts.V1.WartungszeileAntwort item)
         {
             WartungenGrid.SelectedItems.Clear(); row.IsSelected = true;
+            _viewModel.WartungIds = [item.Id];
             if (_viewModel.WartungBearbeitenCommand.CanExecute(null)) _viewModel.WartungBearbeitenCommand.Execute(null);
         }
     }
 
     private void Alarme_DoubleClick(object sender, MouseButtonEventArgs e)
     {
+        if (e.ChangedButton != MouseButton.Left) return;
         if (ItemsControl.ContainerFromElement(AlarmeGrid, e.OriginalSource as DependencyObject) is DataGridRow row && row.Item is AndyTours.Contracts.V1.AlarmzeileAntwort item)
         {
             AlarmeGrid.SelectedItems.Clear(); row.IsSelected = true;
+            _viewModel.AlarmIds = [item.Id];
             if (_viewModel.AlarmBearbeitenCommand.CanExecute(null)) _viewModel.AlarmBearbeitenCommand.Execute(null);
         }
     }
@@ -86,6 +90,8 @@ public partial class ApiWartungsFenster : Window, IDisposable
             e.Cancel = true;
             return;
         }
+        _viewModel.AbbrechenLesenderVorgaenge();
+        CancelCommands();
         CancelAndDispose();
     }
 
@@ -93,6 +99,8 @@ public partial class ApiWartungsFenster : Window, IDisposable
     {
         _viewModel.WartungEditorAngefordert -= WartungEditorAngefordert;
         _viewModel.AlarmEditorAngefordert -= AlarmEditorAngefordert;
+        _viewModel.Dispose();
+        CancelCommands();
         CancelAndDispose();
     }
 
@@ -100,6 +108,15 @@ public partial class ApiWartungsFenster : Window, IDisposable
     {
         CancelAndDispose();
         GC.SuppressFinalize(this);
+    }
+
+    private void CancelCommands()
+    {
+        _viewModel.LadenCommand.Cancel();
+        _viewModel.NeueWartungCommand.Cancel();
+        _viewModel.WartungBearbeitenCommand.Cancel();
+        _viewModel.NeuerAlarmCommand.Cancel();
+        _viewModel.AlarmBearbeitenCommand.Cancel();
     }
 
     private void CancelAndDispose()
