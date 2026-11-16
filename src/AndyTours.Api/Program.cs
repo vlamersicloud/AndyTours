@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using AndyTours.Api;
 using AndyTours.Application.Auswertung;
+using AndyTours.Application.Garmin;
 using AndyTours.Application.Touren;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
@@ -35,6 +36,7 @@ builder.Services.AddSingleton<IEquipmentsVerwaltung>(_ => new SqliteEquipmentsVe
 builder.Services.AddSingleton<IProfilVerwaltung>(_ => new SqliteProfilVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<ITextlistenVerwaltung>(_ => new SqliteTextlistenVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<ISaisonzieleVerwaltung>(_ => new SqliteSaisonzieleVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<IGarminEinstellungen>(_ => new SqliteGarminEinstellungen(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IWartungsverwaltung>(_ => new SqliteWartungsverwaltung(Path.Combine(dataDirectory, "andytours.db")));
 
 var app = builder.Build();
@@ -86,6 +88,7 @@ app.MapProfil();
 app.MapTextlisten();
 app.MapSaisonziele();
 app.MapWartungen();
+app.MapGarminEinstellungen();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
 var touren = app.MapGroup("/api/v1/touren").WithTags("Touren");
