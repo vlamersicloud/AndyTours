@@ -107,6 +107,11 @@ public partial class TourdetailFenster : Window
     /// </summary>
     private void OverlaysOeffnen_Click(object sender, RoutedEventArgs e)
     {
+        if (DataContext is TourdetailViewModel { IstApiModus: true })
+        {
+            MessageBox.Show(this, "Die Overlay-Verwaltung ist im API-Modus noch nicht angebunden und bleibt ein offener Migrationspunkt.", "Overlays", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
         if (global::System.Windows.Application.Current.MainWindow?.DataContext is HauptfensterViewModel hauptfenster)
         {
             hauptfenster.OverlaysOeffnenCommand.Execute(null);
