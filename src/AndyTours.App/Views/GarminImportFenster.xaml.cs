@@ -18,6 +18,7 @@ public partial class GarminImportFenster : Window
         Oberflaechenskalierung.Anmelden(this);
         DataContext = viewModel;
         SpalteGeraet.Visibility = viewModel.MehrereGeraete ? Visibility.Visible : Visibility.Collapsed;
+        SpalteHinweis.Visibility = viewModel.Zeilen.Any(z => !string.IsNullOrWhiteSpace(z.Hinweis)) ? Visibility.Visible : Visibility.Collapsed;
         viewModel.Bestaetigt += Bestaetigt;
     }
 
