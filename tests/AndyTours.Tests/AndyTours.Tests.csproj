@@ -19,6 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\CourseUebertragenFenster.xaml"
+                      LogicalName="AndyTours.CourseUebertragenFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.xaml"
                       LogicalName="AndyTours.ApiHauptfenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiFitImportFenster.xaml"
