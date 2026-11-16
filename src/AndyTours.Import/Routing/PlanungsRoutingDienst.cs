@@ -31,7 +31,10 @@ public sealed class PlanungsRoutingDienst : IPlanungsRouting
         cancellationToken.ThrowIfCancellationRequested();
         var from = ToCore(anfrage.Von.Position);
         var to = ToCore(anfrage.Nach.Position);
-        var request = BildeRoutinganfrage.Ausfuehren(context.Routing, ToCore(anfrage.Profil), from, to);
+        Routinganfrage? request;
+        try { request = BildeRoutinganfrage.Ausfuehren(context.Routing, ToCore(anfrage.Profil), from, to); }
+        catch (Exception ex) when (ex is ArgumentException or UriFormatException)
+        { return Fallback(from, to, "routing_einstellungen_unvollstaendig"); }
         if (request is null) return Fallback(from, to, "routing_einstellungen_unvollstaendig");
 
         using var http = _httpFactory();
