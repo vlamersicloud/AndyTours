@@ -1,7 +1,9 @@
-# Overlay-Migration – Entwurf
+# API-Overlays
 
-**Nur Design; keine Implementierung oder Paritätsbehauptung.** Bestehende Abläufe erhalten: Ordner/Overlays anlegen, umbenennen, verschieben und löschen; lokale GPX-Dateien wählen; Sichtbarkeit inklusive dreistufiger Ordnerzustände, eigene/gemeinsame Farben, Mehrfachauswahl und Zoom auf die ganze Strecke. Namensprüfung bleibt geschwisterbezogen; Verschieben verhindert Zyklen, Ordnerlöschung berücksichtigt kaskadierende Inhalte. Keine stille Feature-Auslassung.
+Die API-Overlayabläufe sind im Client angeschlossen; vollständige Migration und Laufzeitparität sind noch offen. Der typisierte Client liest Metadaten und versionsgebundene Geometrie und bietet gezielte Ordner-/Overlayänderungen mit CAS-Versionen. Serverseitig gelten Zyklus- und Kaskadenregeln.
 
-Importiert werden begrenzte GPX-Dateiinhalte, nicht Clientpfade: Parser und Validierung laufen serverseitig. Idempotente stabile Import-Receipts und CAS-Versionen schützen Wiederholungen und konkurrierende Änderungen; Metadaten-/Baumversion und Punktdaten-Leseversion getrennt halten. Keine beliebigen SQL-Aufträge oder Dateipfade über HTTP. Kartenstatus ist sitzungs-/fenstergebunden, nicht statisch datasetweit; dadurch kein Overlay-Leak zwischen lokalen und zentralen Sitzungen.
+Der GPX-Endpunkt nimmt begrenzte Rohdaten an (128 MiB je Datei); Parsing/Validierung erfolgen serverseitig. Stabile Anfrage-IDs, Quittungen und Body-Hashes unterstützen idempotente Wiederholung. Clientpfade bleiben lokal und erscheinen weder im Vertrag noch in der Oberfläche.
 
-Slices: versionierte Contracts/Fehlergrenzen → atomarer Store mit Namens-, Zyklus- und Cascade-Regeln → begrenzter GPX-Import/API → typisierter Client → WPF-Verwaltung und Kartenadapter. Baumaufklappung, Auswahl, Doppelklick-Zoom und lokalen Dateiauswahldialog wiederverwenden; Änderungen anderer Clients durch Reload sichtbar machen. Abbruch, Größenlimits, Zugriffsschutz, CAS-Konflikt, Import-Idempotenz und Rollback als Tests vorbereiten. Tests und Windows-/Kartenlaufzeit bleiben zu verifizieren.
+Pro API-Root gibt es einen Overlaykontext mit UI-Dispatcher-Anwendung, versionsgebundenem Geometriecache und eigenem modeless Manager. Die Tourdetailkarte erhält denselben Kontext. Baumzustände, Auswahl, dreistufige Sichtbarkeit, Farben, Verschieben und Zoom sind angebunden. Mehrere Dateien lassen sich einreihen; unsichere Anfragen behalten ID und ursprüngliche Version für manuelle Wiederholung. Bestätigte Importe bleiben bis zum erfolgreichen Metadaten-Reload gesperrt.
+
+Builds wurden geprüft; vorbereitete Tests wurden kompiliert, aber nicht ausgeführt. Windows-/Kartenlaufzeit, Geräte und vollständige Migration sind nicht verifiziert.
