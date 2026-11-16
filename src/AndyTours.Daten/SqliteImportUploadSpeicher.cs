@@ -138,7 +138,15 @@ public sealed partial class SqliteImportUploadSpeicher
     private static string NormalizeFilename(string value)
     {
         if (string.IsNullOrWhiteSpace(value)) throw Invalid("FIT-Dateiname ungültig.");
-        var normalized = value.Normalize(NormalizationForm.FormC);
+        string normalized;
+        try
+        {
+            normalized = value.Normalize(NormalizationForm.FormC);
+        }
+        catch (ArgumentException)
+        {
+            throw Invalid("FIT-Dateiname ungültig.");
+        }
         if (normalized.Length is < 1 or > 255 || normalized is "." or ".." ||
             normalized.IndexOfAny(['/', '\\']) >= 0 || normalized.Any(char.IsControl) ||
             !string.Equals(Path.GetFileName(normalized), normalized, StringComparison.Ordinal))
