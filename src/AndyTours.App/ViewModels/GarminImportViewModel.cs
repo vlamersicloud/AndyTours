@@ -26,8 +26,9 @@ public partial class GarminImportViewModel : ObservableObject, IDisposable
     public IReadOnlyList<Importzeile> Ergebnis { get; private set; } = [];
     [ObservableProperty] private bool speichert;
     [ObservableProperty] private string? hinweis;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ErklaerungText))] private string? erklaerungOverride;
     [ObservableProperty] private string _zusatzhinweis = string.Empty;
-    public string ErklaerungText => _speichern is null ? "Diese Touren sind noch nicht in AndyTours. Angehakte Touren werden mit dem gewählten Equipment importiert." : "Nicht markierte Zeilen werden im Garmin-Auftrag übersprungen und nicht gelöscht; Originaldateien bleiben erhalten.";
+    public string ErklaerungText => ErklaerungOverride ?? (_speichern is null ? "Diese Touren sind noch nicht in AndyTours. Angehakte Touren werden mit dem gewählten Equipment importiert." : "Nicht markierte Zeilen werden im Garmin-Auftrag übersprungen und nicht gelöscht; Originaldateien bleiben erhalten.");
     public string BestaetigenText => _speichern is null ? "Importieren" : "Auswahl bestätigen";
     [RelayCommand(CanExecute = nameof(KannImportieren))]
     private async Task ImportierenAsync()
