@@ -1,0 +1,7 @@
+# Touren: Mehrfachaktionen (Design)
+
+Status: nicht implementiert. Legacy-Vorbild: HauptfensterViewModel.Zuordnen und OrdneEinheitenZu. Drei endliche Aktionen: Kategorien setzen/entfernen (unberührte Kategorien jeder Tour erhalten), Aktivität ändern (bestehendes Equipment bleibt auch bei Inkompatibilität), Equipment setzen/entfernen (Kategorien bleiben; Auswahl „kein“ und nicht ausgemusterte Geräte passend zu mindestens einer ausgewählten Aktivität oder ohne Aktivität). Der Einzel-Equipment-Editor darf das bisherige ausgemusterte Equipment weiter anzeigen; Mehrfachauswahl tut das derzeit nicht.
+
+Löschung benötigt ausdrückliche Bestätigung. Quelldateien der Anhänge bleiben erhalten; DB-Anhangsmetadaten und Kategorienzuordnungen kaskadieren, Garmin-Zuordnungen werden in derselben Transaktion entfernt, FIT-Uploads verlieren ihre TourId per SET NULL.
+
+Entwurf für die API: endliche, feldbezogene Operationen mit eindeutigen Tour-IDs und erwarteter Version je Zeile; nur alle Zeilen atomar schreiben, wenn alle Versionen passen. Kein Vollbestands-Overwrite und keine frei wählbaren Felder/SQL. Selektion und Bestätigung binden an einen Snapshot; Konflikt erfordert manuelles Neuladen. Bei unklarem ACK dieselbe Request-ID/Quittung abfragen oder wiederholen, nie blind neu anlegen. Nach bestätigtem Commit darf ein fehlgeschlagenes UI-Reload die Aktion nicht erneut auslösen. Verträge, Grenzen und UI sind noch festzulegen.
