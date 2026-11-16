@@ -245,8 +245,13 @@ public partial class CourseUebertragenViewModel : ObservableObject
                         }
                         continue;
                     }
-                    catch (OperationCanceledException) { throw; }
-                    catch (Exception ex) when (ex is AndyTours.Application.Stammdaten.StammdatenException or AndyTours.Client.BackendApiException or System.Net.Http.HttpRequestException)
+                    catch (OperationCanceledException) when (abbruch.IsCancellationRequested) { throw; }
+                    catch (OperationCanceledException)
+                    {
+                        Hinweis = "Die Vorbereitung des Courses hat zu lange gedauert.";
+                        return;
+                    }
+                    catch (Exception)
                     {
                         Hinweis = "Der Course konnte vom Backend nicht vorbereitet werden.";
                         return;
