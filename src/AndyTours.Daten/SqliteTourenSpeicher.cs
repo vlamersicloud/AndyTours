@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using AndyTours.Application.Touren;
 using AndyTours.Contracts.V1;
+using AndyTours.Core.Berechnungen;
+using AndyTours.Core.Modell;
 using Microsoft.Data.Sqlite;
 
 namespace AndyTours.Daten;
@@ -28,21 +30,58 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
         if (!Enum.IsDefined(filter.Sortierung))
             throw new UngueltigeTourException("Tourensortierung ist ungültig.");
         using var verbindung = Oeffnen();
-        var alle = TrainingseinheitenTabelle.Laden(verbindung)
+        using var transaktion = verbindung.BeginTransaction(deferred: true);
+        var trainings = TrainingseinheitenTabelle.Laden(verbindung);
+        ct.ThrowIfCancellationRequested();
+        var aktivitaeten = AktivitaetenTabelle.Laden(verbindung);
+        ct.ThrowIfCancellationRequested();
+        var kategorien = KategorienTabelle.Laden(verbindung);
+        ct.ThrowIfCancellationRequested();
+        var equipments = EquipmentsTabelle.Laden(verbindung);
+        ct.ThrowIfCancellationRequested();
+        var alle = trainings
             .Where(t => (!filter.Von.HasValue || t.Datum >= filter.Von.Value) &&
                         (!filter.Bis.HasValue || t.Datum <= filter.Bis.Value) &&
                         (!filter.AktivitaetId.HasValue || t.AktivitaetId == filter.AktivitaetId.Value) &&
                         (!filter.KategorieId.HasValue || t.KategorieIds.Contains(filter.KategorieId.Value)))
             .ToList();
-        var sortiert = Sortiere(alle, filter.Sortierung, filter.Absteigend).ToList();
+
+        Dictionary<long, TourAnzeigeAntwort> anzeigen;
+        try
+        {
+            var displayRows = ErstelleEinheitszeilen.Ausfuehren(alle, new Datenbestand
+            {
+                Trainingseinheiten = trainings,
+                Aktivitaeten = aktivitaeten,
+                Kategorien = kategorien,
+                Equipments = equipments,
+            });
+            anzeigen = new Dictionary<long, TourAnzeigeAntwort>(displayRows.Count);
+            foreach (var row in displayRows)
+            {
+                ct.ThrowIfCancellationRequested();
+                anzeigen.Add(row.Id, TourAnzeigeMapper.ToAntwort(row));
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception ex) when (ex is OverflowException or ArgumentException)
+        {
+            throw new UngueltigeTourException("Tour-Anzeigeprojektion konnte nicht erstellt werden.");
+        }
+
+        var sortiert = Sortiere(alle, filter.Sortierung, filter.Absteigend, anzeigen).ToList();
         ct.ThrowIfCancellationRequested();
-        var seite = sortiert.Skip(start).Take(anzahl).Select(TourenMapper.ToAntwort).ToArray();
+        var seite = sortiert.Skip(start).Take(anzahl).Select(t =>
+            TourenMapper.ToAntwort(t) with { Anzeige = anzeigen[t.Id] }).ToArray();
         ct.ThrowIfCancellationRequested();
-        return Task.FromResult(new TourListeAntwort(seite, sortiert.Count, start, anzahl));
+        var result = new TourListeAntwort(seite, sortiert.Count, start, anzahl);
+        transaktion.Commit();
+        return Task.FromResult(result);
     }
 
-    private static IOrderedEnumerable<AndyTours.Core.Modell.Trainingseinheit> Sortiere(
-        IEnumerable<AndyTours.Core.Modell.Trainingseinheit> eintraege, TourenSortierschluessel schluessel, bool absteigend)
+    private static IOrderedEnumerable<Trainingseinheit> Sortiere(
+        IEnumerable<Trainingseinheit> eintraege, TourenSortierschluessel schluessel, bool absteigend,
+        Dictionary<long, TourAnzeigeAntwort> anzeigen)
     {
         if (schluessel == TourenSortierschluessel.Bestand)
             return eintraege.OrderBy(t => t.Datum).ThenBy(t => t.Startzeit).ThenBy(t => t.Id);
@@ -55,6 +94,18 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
             TourenSortierschluessel.DistanzKm => absteigend ? eintraege.OrderByDescending(t => t.DistanzKm).ThenBy(t => t.Id) : eintraege.OrderBy(t => t.DistanzKm).ThenBy(t => t.Id),
             TourenSortierschluessel.Hoehenmeter => absteigend ? eintraege.OrderByDescending(t => t.Hoehenmeter).ThenBy(t => t.Id) : eintraege.OrderBy(t => t.Hoehenmeter).ThenBy(t => t.Id),
             TourenSortierschluessel.Fahrzeit => absteigend ? eintraege.OrderByDescending(t => t.Fahrzeit).ThenBy(t => t.Id) : eintraege.OrderBy(t => t.Fahrzeit).ThenBy(t => t.Id),
+            TourenSortierschluessel.Aktivitaet => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].Aktivitaet, comparer).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].Aktivitaet, comparer).ThenBy(t => t.Id),
+            TourenSortierschluessel.Kategorien => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].Kategorien, comparer).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].Kategorien, comparer).ThenBy(t => t.Id),
+            TourenSortierschluessel.Equipment => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].Equipment, comparer).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].Equipment, comparer).ThenBy(t => t.Id),
+            TourenSortierschluessel.DurchschnittKmh => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].DurchschnittKmh).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].DurchschnittKmh).ThenBy(t => t.Id),
+            TourenSortierschluessel.MaxKmh => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].MaxKmh).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].MaxKmh).ThenBy(t => t.Id),
+            TourenSortierschluessel.HfDurchschnitt => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].HfDurchschnitt).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].HfDurchschnitt).ThenBy(t => t.Id),
+            TourenSortierschluessel.HfMax => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].HfMax).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].HfMax).ThenBy(t => t.Id),
+            TourenSortierschluessel.Trittfrequenz => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].Trittfrequenz).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].Trittfrequenz).ThenBy(t => t.Id),
+            TourenSortierschluessel.Temperatur => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].Temperatur).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].Temperatur).ThenBy(t => t.Id),
+            TourenSortierschluessel.MaxHoehe => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].MaxHoehe).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].MaxHoehe).ThenBy(t => t.Id),
+            TourenSortierschluessel.Trainingsbereich => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].Trainingsbereich, comparer).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].Trainingsbereich, comparer).ThenBy(t => t.Id),
+            TourenSortierschluessel.Kommentar => absteigend ? eintraege.OrderByDescending(t => anzeigen[t.Id].Kommentar, comparer).ThenBy(t => t.Id) : eintraege.OrderBy(t => anzeigen[t.Id].Kommentar, comparer).ThenBy(t => t.Id),
             _ => throw new UngueltigeTourException("Tourensortierung ist ungültig.")
         };
     }

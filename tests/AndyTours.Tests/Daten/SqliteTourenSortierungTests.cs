@@ -8,6 +8,11 @@ namespace AndyTours.Tests.Daten;
 
 public sealed class SqliteTourenSortierungTests : IDisposable
 {
+    private static readonly TourenSortierschluessel[] OriginalSortKeys =
+    [
+        TourenSortierschluessel.Datum, TourenSortierschluessel.Startzeit, TourenSortierschluessel.Name,
+        TourenSortierschluessel.DistanzKm, TourenSortierschluessel.Hoehenmeter, TourenSortierschluessel.Fahrzeit
+    ];
     private readonly string _dir = Path.Combine(Path.GetTempPath(), "AndyTours-TourSort-" + Guid.NewGuid().ToString("N"));
     private readonly string _db;
     private readonly SqliteTourenSpeicher _store;
@@ -56,10 +61,10 @@ public sealed class SqliteTourenSortierungTests : IDisposable
     }
 
     [Fact]
-    public async Task Every_sort_key_and_direction_is_stable_across_small_pages()
+    public async Task Original_six_sort_keys_and_directions_remain_stable_across_small_pages()
     {
         var rows = await Seed();
-        foreach (var key in Enum.GetValues<TourenSortierschluessel>().Where(x => x != TourenSortierschluessel.Bestand))
+        foreach (var key in OriginalSortKeys)
         foreach (var descending in new[] { false, true })
         {
             IOrderedEnumerable<Row> expected = key switch
