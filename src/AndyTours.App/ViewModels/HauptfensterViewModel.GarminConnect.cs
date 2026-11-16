@@ -32,6 +32,7 @@ public partial class HauptfensterViewModel
             return;
         }
 
+        using var abbruch = new CancellationTokenSource();
         string zwischenordner = Path.Combine(Path.GetTempPath(), "AndyTours_Connect_" + Guid.NewGuid().ToString("N"));
         try
         {
@@ -65,7 +66,7 @@ public partial class HauptfensterViewModel
             using var handler = new HttpClientHandler { AllowAutoRedirect = false };
             using var http = new HttpClient(handler) { Timeout = TimeSpan.FromMinutes(2) };
             var client = new GarminPersonalClient(http, schluessel);
-            IAsyncEnumerator<long> aktivitaeten = client.LeseRadaktivitaetsIdsAsync().GetAsyncEnumerator();
+            IAsyncEnumerator<long> aktivitaeten = client.LeseRadaktivitaetsIdsAsync(abbruch.Token).GetAsyncEnumerator();
             try
             {
                 var gesammelt = new Leseergebnis(true, [], []);
@@ -78,22 +79,23 @@ public partial class HauptfensterViewModel
                         vorhanden = [.. _bestand.Trainingseinheiten];
                     }
                     GarminDownloadPaket? paket = null;
-                    Leseergebnis ergebnis = LeseMitFortschritt("Garmin Connect: Paket mit höchstens 20 Aktivitäten …", fortschritt =>
+                    Leseergebnis ergebnis = LeseMitFortschritt("Garmin Connect: Paket mit höchstens 20 Aktivitäten …", (fortschritt, token) =>
                     {
                         var meldung = new Progress<(int Aktuell, int Gesamt)>(p =>
                             fortschritt.Report(new KopierFortschritt(p.Aktuell, p.Gesamt, 0, 0)));
                         var gelesen = new Leseergebnis(true, [], []);
                         var warnungen = new DirekteImportwarnung(gelesen.Uebersprungen);
                         paket = LadeGarminConnectAufzeichnungen.LadePaketAsync(
-                            client, aktivitaeten, archivordner, zwischenordner, ids, meldung, warnungen).GetAwaiter().GetResult();
+                            client, aktivitaeten, archivordner, zwischenordner, ids, meldung, warnungen, token).GetAwaiter().GetResult();
                         foreach ((long id, string pfad) in paket.Dateien)
                         {
+                            token.ThrowIfCancellationRequested();
                             _garminConnectIds.Add(pfad, id);
                             Lies(pfad, vorhanden, gelesen, startdatum);
                         }
 
                         return gelesen;
-                    });
+                    }, abbruch);
 
                     if (automatisch)
                     {
@@ -136,6 +138,10 @@ public partial class HauptfensterViewModel
             {
                 aktivitaeten.DisposeAsync().AsTask().GetAwaiter().GetResult();
             }
+        }
+        catch (OperationCanceledException) when (abbruch.IsCancellationRequested)
+        {
+            Statusmeldung = "Import abgebrochen. Bereits gespeicherte Touren und fertige Downloadarchive bleiben erhalten.";
         }
         catch (Exception fehler) when (fehler is HttpRequestException or IOException or UnauthorizedAccessException
             or OperationCanceledException or JsonException or InvalidOperationException or SqliteException or InvalidDataException)

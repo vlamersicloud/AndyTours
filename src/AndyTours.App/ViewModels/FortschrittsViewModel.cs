@@ -1,5 +1,6 @@
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using AndyTours.Daten.Datenordner;
 
 namespace AndyTours.App.ViewModels;
@@ -19,9 +20,24 @@ public partial class FortschrittsViewModel : ObservableObject
     /// Erzeugt das ViewModel.
     /// </summary>
     /// <param name="titel">Fenstertitel, z. B. „Daten werden kopiert …“.</param>
-    public FortschrittsViewModel(string titel)
+    public FortschrittsViewModel(string titel, Action? abbrechen = null)
     {
         Titel = titel;
+        _abbrechen = abbrechen;
+    }
+
+    private readonly Action? _abbrechen;
+    private bool _abbruchAngefordert;
+    public bool IstAbbrechbar => _abbrechen is not null;
+    private bool KannAbbrechen() => IstAbbrechbar && !_abbruchAngefordert;
+
+    [RelayCommand(CanExecute = nameof(KannAbbrechen))]
+    private void Abbrechen()
+    {
+        _abbruchAngefordert = true;
+        AbbrechenCommand.NotifyCanExecuteChanged();
+        DateienText = "Import wird abgebrochen …";
+        _abbrechen?.Invoke();
     }
 
     /// <summary>Fenstertitel.</summary>
@@ -45,6 +61,8 @@ public partial class FortschrittsViewModel : ObservableObject
     /// <param name="stand">Der gemeldete Zwischenstand.</param>
     public void Aktualisiere(KopierFortschritt stand)
     {
+        if (_abbruchAngefordert) return;
+
         // Anteil nach Datenmenge, weil große Dateien länger dauern; ohne Datenmenge (nur leere Dateien) nach Anzahl
         Prozent = stand.GesamtBytes > 0
             ? 100.0 * stand.KopierteBytes / stand.GesamtBytes

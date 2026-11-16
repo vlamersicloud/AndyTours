@@ -28,6 +28,7 @@ public static class LadeGarminConnectAufzeichnungen
             Directory.CreateDirectory(zwischenordner);
             for (int versuch = 0; versuch < paketgroesse;)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (!await ids.MoveNextAsync().ConfigureAwait(false))
                 {
                     return new GarminDownloadPaket(ergebnis, false, false);

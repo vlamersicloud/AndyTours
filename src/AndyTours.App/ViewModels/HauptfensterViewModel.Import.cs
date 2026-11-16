@@ -65,7 +65,7 @@ public partial class HauptfensterViewModel
         List<Trainingseinheit> vorhanden = [.. _bestand.Trainingseinheiten];
         try
         {
-            Leseergebnis ergebnis = LeseMitFortschritt("Garmin-Geräte werden gelesen …", fortschritt => LeseGeraete(zwischenordner, vorhanden, fortschritt));
+            Leseergebnis ergebnis = LeseMitFortschritt("Garmin-Geräte werden gelesen …", (fortschritt, token) => LeseGeraete(zwischenordner, vorhanden, fortschritt, token));
             if (!ergebnis.GeraetGefunden)
             {
                 MessageBox.Show(KeinGeraet, Importtitel, MessageBoxButton.OK, MessageBoxImage.Information);
@@ -73,6 +73,10 @@ public partial class HauptfensterViewModel
             }
 
             Importiere(ergebnis);
+        }
+        catch (OperationCanceledException)
+        {
+            Statusmeldung = "Import abgebrochen. Bereits gespeicherte Touren bleiben erhalten.";
         }
         catch (Exception fehler) when (fehler is COMException or IOException or UnauthorizedAccessException)
         {
@@ -107,7 +111,15 @@ public partial class HauptfensterViewModel
 
         string[] dateien = dialog.FileNames;
         List<Trainingseinheit> vorhanden = [.. _bestand.Trainingseinheiten];
-        Importiere(LeseMitFortschritt("FIT-Dateien werden gelesen …", fortschritt => LeseDateien(dateien, vorhanden, fortschritt)));
+        try
+        {
+            Importiere(LeseMitFortschritt("FIT-Dateien werden gelesen …",
+                (fortschritt, token) => LeseDateien(dateien, vorhanden, fortschritt, token)));
+        }
+        catch (OperationCanceledException)
+        {
+            Statusmeldung = "Import abgebrochen. Bereits gespeicherte Touren bleiben erhalten.";
+        }
     }
 
     /// <summary>
@@ -140,8 +152,9 @@ public partial class HauptfensterViewModel
     /// <param name="zwischenordner">Temporärer Ordner für die Kopien vom Gerät.</param>
     /// <param name="vorhanden">Die Einheiten des Datenbestands (Kopie der Liste, für die Duplikatprüfung).</param>
     /// <param name="fortschritt">Meldet die Anzahl der gelesenen Aufzeichnungen.</param>
-    private static Leseergebnis LeseGeraete(string zwischenordner, List<Trainingseinheit> vorhanden, IProgress<KopierFortschritt> fortschritt)
+    private static Leseergebnis LeseGeraete(string zwischenordner, List<Trainingseinheit> vorhanden, IProgress<KopierFortschritt> fortschritt, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         List<Geraeteaufzeichnung> alle = [.. FindeLaufwerksgeraete.Ausfuehren(), .. FindeMtpGeraete.Ausfuehren()];
         if (alle.Count == 0)
         {
@@ -157,6 +170,7 @@ public partial class HauptfensterViewModel
         var ergebnis = new Leseergebnis(true, [], []);
         for (int i = 0; i < kandidaten.Count; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Geraeteaufzeichnung aufzeichnung = kandidaten[i];
 
             // Je Aufzeichnung ein eigener Unterordner: Zwei Geräte können Dateien gleichen Namens haben
@@ -184,11 +198,12 @@ public partial class HauptfensterViewModel
     /// <param name="dateien">Vollständige Pfade der Dateien.</param>
     /// <param name="vorhanden">Die Einheiten des Datenbestands (Kopie der Liste, für die Duplikatprüfung).</param>
     /// <param name="fortschritt">Meldet die Anzahl der gelesenen Dateien.</param>
-    private static Leseergebnis LeseDateien(string[] dateien, List<Trainingseinheit> vorhanden, IProgress<KopierFortschritt> fortschritt)
+    private static Leseergebnis LeseDateien(string[] dateien, List<Trainingseinheit> vorhanden, IProgress<KopierFortschritt> fortschritt, CancellationToken cancellationToken)
     {
         var ergebnis = new Leseergebnis(true, [], []);
         for (int i = 0; i < dateien.Length; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Lies(dateien[i], vorhanden, ergebnis);
             fortschritt.Report(new KopierFortschritt(i + 1, dateien.Length, 0, 0));
         }
@@ -234,9 +249,13 @@ public partial class HauptfensterViewModel
     /// Wie <see cref="KopiereMitFortschritt"/>: Die Oberfläche bleibt bedienbar, die übrigen Fenster sind gesperrt,
     /// und ein unerwarteter Fehler wird nach dem Schließen mit ursprünglichem Stacktrace weitergegeben.
     /// </remarks>
-    private static Leseergebnis LeseMitFortschritt(string titel, Func<IProgress<KopierFortschritt>, Leseergebnis> arbeit)
+    private static Leseergebnis LeseMitFortschritt(string titel,
+        Func<IProgress<KopierFortschritt>, CancellationToken, Leseergebnis> arbeit,
+        CancellationTokenSource? sitzungsabbruch = null)
     {
-        var viewModel = new FortschrittsViewModel(titel);
+        using var lokalerAbbruch = new CancellationTokenSource();
+        var abbruch = sitzungsabbruch ?? lokalerAbbruch;
+        var viewModel = new FortschrittsViewModel(titel, () => abbruch.Cancel());
         var fenster = new FortschrittsFenster(viewModel) { Owner = Application.Current.MainWindow };
         Leseergebnis? ergebnis = null;
         Exception? fehler = null;
@@ -246,7 +265,8 @@ public partial class HauptfensterViewModel
             var fortschritt = new Progress<KopierFortschritt>(viewModel.Aktualisiere);
             try
             {
-                ergebnis = await Task.Run(() => arbeit(fortschritt));
+                ergebnis = await Task.Run(() => arbeit(fortschritt, abbruch.Token));
+                abbruch.Token.ThrowIfCancellationRequested();
             }
             catch (Exception f)
             {

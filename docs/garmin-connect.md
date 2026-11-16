@@ -246,3 +246,7 @@ Sensoren und Fahrrad-Equipment sind keine Aufzeichnungsgeräte.
 Neue Importe speichern die Modellbezeichnung zusammen mit der Tour.
 Für ältere Touren werden vorhandene FIT-Anhänge beim Öffnen des Datenbestands
 einmalig ausgewertet. Fehlende Informationen erscheinen als „Unbekannt“.
+
+## Laufenden Import abbrechen
+
+Im Fortschrittsfenster steht „Abbrechen“ zur Verfügung (Garmin Connect, USB-Gerät und FIT-Dateien). Garmin-Downloads werden per CancellationToken beendet; beim lokalen Lesen bzw. Kopieren wird die laufende Datei noch abgeschlossen. Das Fenster bleibt bis zum tatsächlichen Ende der Hintergrundarbeit geöffnet. Bereits gespeicherte Touren und vollständig heruntergeladene ZIP-Archive bleiben erhalten; noch nicht bestätigte Touren werden bei Abbruch nicht importiert. Der Import kann später erneut gestartet werden. Andere Kopiervorgänge, etwa beim Datenordnerwechsel, erhalten keinen Abbruchknopf.

@@ -29,6 +29,19 @@
 
         <!-- 3. Datenmenge -->
         <TextBlock Text="{Binding MengeText}" />
+        <Button Content="_Abbrechen" Command="{Binding AbbrechenCommand}"
+                HorizontalAlignment="Right" MinWidth="100" Padding="8,3" Margin="0,12,0,0">
+            <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IstAbbrechbar}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
 
     </StackPanel>
 </Window>
