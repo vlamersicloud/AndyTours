@@ -41,7 +41,15 @@ public sealed class GarminImportPaketWorker
         HttpClient? http = null;
         try
         {
-            var server = await _serverdaten.Laden(run.Token).ConfigureAwait(false);
+            GarminImportServerkontext server;
+            try
+            {
+                server = await _serverdaten.Laden(run.Token).ConfigureAwait(false);
+            }
+            catch (StammdatenException)
+            {
+                throw new GarminImportPaketFehler(GarminImportWarncodes.SchluesselFehlt);
+            }
             http = _createHttpClient();
             var client = new GarminPersonalClient(http, server.Schluessel);
             var observed = await _store.BeobachteteKandidaten(lease, run.Token).ConfigureAwait(false);
@@ -55,6 +63,12 @@ public sealed class GarminImportPaketWorker
             foreach (var candidate in current)
             {
                 run.Token.ThrowIfCancellationRequested();
+                if (server.BereitsImportiert.Contains(candidate.GarminAktivitaetId))
+                {
+                    var skipped = candidate with { Status = GarminImportKandidatStatus.Uebersprungen, Warncode = null };
+                    await _store.DownloadKandidatSpeichern(lease, skipped, run.Token).ConfigureAwait(false);
+                    continue;
+                }
                 var result = await LoadArtifact(client, lease.JobId, candidate, run.Token).ConfigureAwait(false);
                 await _store.DownloadKandidatSpeichern(lease, result, run.Token).ConfigureAwait(false);
                 if (result.Warncode is not null) warnings.Add(result.Warncode);
@@ -75,7 +89,6 @@ public sealed class GarminImportPaketWorker
                     var id = ids.Current;
                     if (knownIds.Contains(id)) continue;
                     run.Token.ThrowIfCancellationRequested();
-                    await Task.Delay(TimeSpan.FromMilliseconds(500), run.Token).ConfigureAwait(false);
                     var candidate = new GarminImportKandidatAntwort(Guid.NewGuid(), id, GarminImportKandidatStatus.Wartend,
                         null, "Garmin " + id.ToString(System.Globalization.CultureInfo.InvariantCulture), null, null, null);
                     candidate = await _store.DownloadKandidatSpeichern(lease, candidate, run.Token).ConfigureAwait(false);
@@ -130,8 +143,8 @@ public sealed class GarminImportPaketWorker
             http?.Dispose();
         }
 
-        using var cleanup = ct.IsCancellationRequested ? new CancellationTokenSource(TimeSpan.FromSeconds(5)) : null;
-        var completionToken = cleanup?.Token ?? CancellationToken.None;
+        using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var completionToken = cleanup.Token;
         try
         {
             await _store.PaketAbschliessen(lease, interrupted, more, warnings.ToArray(), completionToken).ConfigureAwait(false);
