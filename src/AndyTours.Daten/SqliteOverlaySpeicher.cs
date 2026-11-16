@@ -32,7 +32,7 @@ public sealed partial class SqliteOverlaySpeicher
     }
 
     /// <summary>Reads metadata and hashes point blobs without decoding or materializing geometry.</summary>
-    private static OverlayBestandAntwort ReadBestand(SqliteConnection db, SqliteTransaction tx, CancellationToken ct)
+    internal static OverlayBestandAntwort ReadBestand(SqliteConnection db, SqliteTransaction tx, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var folders = new List<OverlayOrdnerAntwort>();
@@ -88,7 +88,7 @@ public sealed partial class SqliteOverlaySpeicher
         return new OverlayBestandAntwort(aggregate, commonColor, folders, items);
     }
 
-    private static string HashBlob(Stream stream, CancellationToken ct)
+    internal static string HashBlob(Stream stream, CancellationToken ct)
     {
         using (stream)
         using (var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
@@ -104,7 +104,7 @@ public sealed partial class SqliteOverlaySpeicher
         }
     }
 
-    private static string HashJson<T>(T value) =>
+    internal static string HashJson<T>(T value) =>
         Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value)));
 
     private static OverlayFarbe? Farbe(string? raw) =>
