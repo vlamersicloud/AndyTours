@@ -77,5 +77,7 @@ public sealed partial class ApiOverlaysViewModel
         LadenCommand.NotifyCanExecuteChanged();
         UmschaltenCommand.NotifyCanExecuteChanged();
         OrdnerAnlegenCommand.NotifyCanExecuteChanged();
+        NameUebernehmenCommand.NotifyCanExecuteChanged();
+        LoeschenCommand.NotifyCanExecuteChanged();
     }
 }
