@@ -38,7 +38,7 @@ public partial class TourenplanungViewModel
     public string Fenstertitel => Dateipfad is null ? Titel : $"{Titel} – {Path.GetFileNameWithoutExtension(Dateipfad)}";
 
     /// <summary><c>true</c>, wenn die Planung gespeichert werden kann (mindestens zwei Wegpunkte).</summary>
-    public bool KannSpeichern => Planung.Wegpunkte.Count >= 2;
+    public bool KannSpeichern => Planung.Wegpunkte.Count >= 2 && KannApiBedienen;
 
     /// <summary>
     /// Fragt bei ungespeicherten Änderungen, ob sie verworfen werden sollen (vor dem Schließen des Fensters).
@@ -75,8 +75,9 @@ public partial class TourenplanungViewModel
     /// bleibt unverändert. Wählbar wie „Speichern…“, also ab zwei Wegpunkten.
     /// </remarks>
     [RelayCommand(CanExecute = nameof(KannSpeichern))]
-    private void GarminUebertragen()
+    private async Task GarminUebertragen()
     {
+        if (ApiGarminUebertragen is { } api) { await api(); return; }
         string name = BildeCoursename.FuerPlanung(Dateipfad, DateOnly.FromDateTime(DateTime.Today));
         Window? fenster = global::System.Windows.Application.Current?.Windows.OfType<TourenplanungFenster>().FirstOrDefault(f => f.DataContext == this);
         CourseUebertragenViewModel.Zeige(fenster, [new Coursezeile(Planung, name)], Profil, _ladeRouting);
@@ -84,8 +85,9 @@ public partial class TourenplanungViewModel
 
     /// <summary>Befehl „Speichern…“: Datei wählen und die Planung als GPX schreiben.</summary>
     [RelayCommand(CanExecute = nameof(KannSpeichern))]
-    private void Speichern()
+    private async Task Speichern()
     {
+        if (ApiSpeichern is { } api) { await api(); return; }
         var dialog = new SaveFileDialog
         {
             Title = "Planung speichern",
@@ -118,9 +120,10 @@ public partial class TourenplanungViewModel
     }
 
     /// <summary>Befehl „Öffnen…“: eine gespeicherte Planung laden und weiterbearbeiten.</summary>
-    [RelayCommand]
-    private void Oeffnen()
+    [RelayCommand(CanExecute = nameof(KannApiBedienen))]
+    private async Task Oeffnen()
     {
+        if (ApiOeffnen is { } api) { await api(); return; }
         if (!DarfVerwerfen())
         {
             return;
@@ -174,6 +177,8 @@ public partial class TourenplanungViewModel
     }
 
     /// <summary>Ordner, in dem die Dialoge beginnen: der der geöffneten Datei, sonst der gemerkte, sonst „Dokumente“.</summary>
+    internal string ApiStartordner => Startordner();
+
     private string Startordner()
     {
         string? ordner = Path.GetDirectoryName(Dateipfad) ?? _einstellungen.Ordner;

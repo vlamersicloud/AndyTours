@@ -180,6 +180,7 @@ public partial class TourenplanungViewModel : ObservableObject
         Merke(_einstellungen with { Profil = value });
         if (!_wirdGeladen)
         {
+            if (IstApiModus) ApiProfilGeaendert?.Invoke(value);
             Aendere(Planungsaenderung.WechsleProfil(Planung, value), geaendert: HatWegpunkte);
         }
     }

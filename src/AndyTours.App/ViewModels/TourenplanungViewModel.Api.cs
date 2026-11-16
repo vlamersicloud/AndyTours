@@ -18,7 +18,13 @@ public partial class TourenplanungViewModel
     public bool ApiDateiBeschaeftigt
     {
         get => _apiDateiBeschaeftigt;
-        set { if (SetProperty(ref _apiDateiBeschaeftigt, value)) OnPropertyChanged(nameof(KannApiBedienen)); }
+        set
+        {
+            if (!SetProperty(ref _apiDateiBeschaeftigt, value)) return;
+            OnPropertyChanged(nameof(KannApiBedienen));
+            SpeichernCommand.NotifyCanExecuteChanged(); GarminUebertragenCommand.NotifyCanExecuteChanged();
+            OeffnenCommand.NotifyCanExecuteChanged(); LetztenPunktEntfernenCommand.NotifyCanExecuteChanged(); AllesLoeschenCommand.NotifyCanExecuteChanged();
+        }
     }
     private string _apiProfilHinweis = string.Empty;
     public string ApiProfilHinweis { get => _apiProfilHinweis; set => SetProperty(ref _apiProfilHinweis, value); }
