@@ -17,8 +17,13 @@ public sealed class SqliteTextlistenVerwaltung(string datenbankpfad) : ITextlist
     public Task<TextlisteAntwort> Laden(Textlistenart art, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        Map(art);
         using var c = Oeffnen();
-        return Task.FromResult(Antwort(Lesen(c, art)));
+        using var tx = c.BeginTransaction(deferred: true);
+        var answer = Antwort(Lesen(c, art));
+        ct.ThrowIfCancellationRequested();
+        tx.Commit();
+        return Task.FromResult(answer);
     }
 
     public Task<TextlisteAntwort> Anlegen(Textlistenart art, TextlisteneintragAnfrage anfrage, CancellationToken ct = default)
@@ -43,7 +48,7 @@ public sealed class SqliteTextlistenVerwaltung(string datenbankpfad) : ITextlist
             if (index < 0) throw NotFound();
             if (s.Eintraege.Where((_, i) => i != index).Any(x => VergleicheNamen.Ausfuehren(x, newName))) throw Invalid("Der Zielname ist bereits vorhanden.");
             var canonicalOld = s.Eintraege[index];
-            if (!VergleicheNamen.Ausfuehren(canonicalOld, newName)) CascadeRename(c, tx, s.Liste, canonicalOld, newName);
+            if (!string.Equals(canonicalOld, newName, StringComparison.Ordinal)) CascadeRename(c, tx, s.Liste, canonicalOld, newName);
             s.Eintraege[index] = newName;
             AuswahllisteEinstellung.Speichern(c, tx, s.Liste, s.Eintraege);
         }, ct);
@@ -90,9 +95,11 @@ public sealed class SqliteTextlistenVerwaltung(string datenbankpfad) : ITextlist
         ct.ThrowIfCancellationRequested();
         ValidateVersion(version);
         using var c = Oeffnen(); using var tx = c.BeginTransaction(deferred: false);
+        Map(art);
         var snapshot = Lesen(c, art);
         if (!CryptographicOperations.FixedTimeEquals(Convert.FromHexString(snapshot.Version), Convert.FromHexString(version!)))
             throw new StammdatenException(StammdatenFehlerart.Konflikt, "Die Textliste wurde zwischenzeitlich geändert. Bitte neu laden.");
+        ct.ThrowIfCancellationRequested();
         mutation(c, tx, snapshot);
         ct.ThrowIfCancellationRequested();
         var updated = Lesen(c, art);
