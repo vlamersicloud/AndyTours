@@ -30,6 +30,45 @@ public sealed class SqliteWartungsverwaltungTests : IDisposable
     }
 
     [Fact]
+    public async Task FaelligkeitshinweisIstUngefiltertUndIgnoriertAusgeschalteteOderAusgemusterteAlarme()
+    {
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        {
+            TrainingseinheitenTabelle.Einfuegen(db, new Trainingseinheit
+            {
+                AktivitaetId = _activity1, EquipmentId = _equipment1, Datum = DateOnly.FromDateTime(DateTime.Today),
+                Name = "Aktuelle Fahrt", DistanzKm = 40, Trainingsbereich = ""
+            });
+            using var tx = db.BeginTransaction();
+            WartungenTabelle.Einfuegen(db, tx, new Wartung
+            {
+                Datum = new DateOnly(2020, 1, 1), EquipmentId = _equipment1, Taetigkeit = "Kette",
+                Typ = WartungsTyp.Alarm, AlarmKm = 10, Aktiv = true
+            });
+            tx.Commit();
+        }
+        var due = await _service.Laden(new(_activity1, _equipment2));
+        Assert.Empty(due.Alarmzeilen);
+        Assert.Contains("Kette", due.FaelligkeitsHinweis);
+
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        {
+            using var tx = db.BeginTransaction();
+            var alarm = WartungenTabelle.Laden(db).Single(x => x.Typ == WartungsTyp.Alarm);
+            alarm.Aktiv = false; WartungenTabelle.Aendern(db, tx, alarm); tx.Commit();
+        }
+        Assert.Null((await _service.Laden(new(null, null))).FaelligkeitsHinweis);
+
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        {
+            using var tx = db.BeginTransaction();
+            var alarm = WartungenTabelle.Laden(db).Single(x => x.Typ == WartungsTyp.Alarm);
+            alarm.Aktiv = true; alarm.EquipmentId = _retired; WartungenTabelle.Aendern(db, tx, alarm); tx.Commit();
+        }
+        Assert.Null((await _service.Laden(new(null, null))).FaelligkeitsHinweis);
+    }
+
+    [Fact]
     public async Task TaetigkeitsauswahlFaelltNurBeiNichtAngelegterListeZurueck()
     {
         await CreateMaintenance(_equipment1, new DateOnly(2020, 1, 1), "Kette", "");
