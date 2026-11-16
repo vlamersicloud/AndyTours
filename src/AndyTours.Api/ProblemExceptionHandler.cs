@@ -15,7 +15,7 @@ public sealed class ProblemExceptionHandler : IExceptionHandler
     {
         if (exception is FitUploadZuGrossException or BadHttpRequestException { StatusCode: 413 })
         {
-            await Results.Problem(statusCode: 413, title: "Die FIT-Datei überschreitet die zulässige Größe.",
+            await Results.Problem(statusCode: 413, title: "Anfrage überschreitet die zulässige Größe.",
                 extensions: new Dictionary<string, object?> { ["traceId"] = httpContext.TraceIdentifier, ["code"] = "fit_upload.zu_gross" })
                 .ExecuteAsync(httpContext);
             return true;

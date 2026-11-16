@@ -31,8 +31,9 @@ public static class CourseExportEndpunkte
             CourseExportAnfrage? request;
             try
             {
+                using var body = new BegrenzterRequestLesestream(context.Request.Body, MaxRequestBytes);
                 request = await JsonSerializer.DeserializeAsync<CourseExportAnfrage>(
-                    new BegrenzterRequestLesestream(context.Request.Body, MaxRequestBytes),
+                    body,
                     jsonOptions.Value.SerializerOptions, ct);
             }
             catch (JsonException)
@@ -43,6 +44,7 @@ public static class CourseExportEndpunkte
                 return Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "Course-Export-Anfrage ungültig.");
             return Results.Ok(await service.Erstellen(request, ct));
         })
+        .Accepts<CourseExportAnfrage>("application/json")
         .Produces<CourseExportAntwort>().ProducesProblem(400).ProducesProblem(413).ProducesProblem(415);
         return app;
     }
