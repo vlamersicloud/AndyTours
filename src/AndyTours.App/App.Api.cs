@@ -60,6 +60,36 @@ public partial class App
                     }
                 }
             };
+            fenster.KategorienVerwaltenAngefordert += async () =>
+            {
+                ApiKategorienFenster? verwaltungsfenster = null;
+                try
+                {
+                    var verwaltungsViewModel = new ApiKategorienViewModel(uebergebeneSitzung.Kategorien,
+                        text => MessageBox.Show((Window?)verwaltungsfenster ?? fenster, text, "Kategorie bestätigen",
+                            MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes);
+                    verwaltungsfenster = new ApiKategorienFenster(verwaltungsViewModel) { Owner = fenster };
+                    verwaltungsfenster.ShowDialog();
+                }
+                catch (Exception)
+                {
+                    viewModel.StatusText = "Die Kategorienverwaltung konnte nicht geöffnet werden.";
+                }
+                finally
+                {
+                    if (verwaltungsfenster?.IsVisible == true)
+                    {
+                        try { verwaltungsfenster.Close(); }
+                        catch (Exception) { }
+                    }
+                    if (fenster.IsVisible)
+                    {
+                        try { await viewModel.AktualisierenAsync(CancellationToken.None); }
+                        catch (Exception) { viewModel.StatusText = "Übersicht konnte nach der Kategorienverwaltung nicht aktualisiert werden."; }
+                    }
+                }
+            };
+
             fenster.Closed += async (_, _) =>
             {
                 var bereinigungFehlgeschlagen = false;

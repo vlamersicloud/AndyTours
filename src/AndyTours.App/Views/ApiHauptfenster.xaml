@@ -20,7 +20,12 @@
         <DockPanel Grid.Row="0" Margin="0,0,0,16">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="BackendAdresseText" VerticalAlignment="Center" Foreground="#637083" Margin="0,0,14,0"/>
-                <Button Content="Aktivitäten verwalten…" Click="AktivitaetenVerwalten_Click" Padding="12,7"/>
+                <Menu VerticalAlignment="Center" Background="Transparent">
+                    <MenuItem Header="Stammdaten" Padding="10,6">
+                        <MenuItem Header="Aktivitäten…" Click="AktivitaetenVerwalten_Click"/>
+                        <MenuItem Header="Kategorien…" Click="KategorienVerwalten_Click"/>
+                    </MenuItem>
+                </Menu>
             </StackPanel>
             <TextBlock Text="AndyTours" FontSize="26" FontWeight="Bold" Foreground="#18324F"/>
         </DockPanel>
