@@ -37,7 +37,7 @@ public sealed class PlanungsRoutingRobustheitTests
     }
 
     [Theory]
-    [InlineData("{\"features\":[{\"geometry\":{\"coordinates\":[[11.5,48.1],[11.6,48.2]]},\"properties\":{\"voicehints\":[[0,-2147483648,0,0,0]]}}]}")]
+    [InlineData("{\"features\":[{\"geometry\":{\"coordinates\":[[11.5,48.1],[11.6,48.2]]},\"properties\":{\"voicehints\":[[0,5,-2147483648,0,0]]}}]}")]
     [InlineData("{\"features\":[{\"geometry\":{\"coordinates\":[[200,95],[201,96]]},\"properties\":{}}]}")]
     public async Task Invalid_provider_geometry_or_turn_falls_back_without_emitting_bad_values(string body)
     {
