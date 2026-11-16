@@ -89,8 +89,15 @@ public static class FahrerTabelle
     public static long SpeicherePersoenlicheDaten(SqliteConnection verbindung, Fahrer fahrer)
     {
         using SqliteTransaction transaktion = verbindung.BeginTransaction();
-        long id = Standardfahrer(verbindung, transaktion);
+        long id = SpeicherePersoenlicheDaten(verbindung, transaktion, fahrer);
+        transaktion.Commit();
+        return id;
+    }
 
+    /// <summary>Speichert persönliche Daten innerhalb der aufrufenden Transaktion.</summary>
+    public static long SpeicherePersoenlicheDaten(SqliteConnection verbindung, SqliteTransaction transaktion, Fahrer fahrer)
+    {
+        long id = Standardfahrer(verbindung, transaktion);
         using SqliteCommand befehl = verbindung.CreateCommand();
         befehl.Transaction = transaktion;
         befehl.CommandText = """
@@ -110,7 +117,6 @@ public static class FahrerTabelle
         befehl.Parameters.AddWithValue("$heimatort", fahrer.Heimatort);
         befehl.ExecuteNonQuery();
 
-        transaktion.Commit();
         return id;
     }
 
