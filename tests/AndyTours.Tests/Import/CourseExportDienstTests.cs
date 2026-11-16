@@ -41,6 +41,68 @@ public sealed class CourseExportDienstTests
         Assert.True(decoder.CheckIntegrity(stream));
     }
 
+    [Fact]
+    public async Task FakeBRouterTurnsAreEncodedWithoutLeakingRoutingDetails()
+    {
+        const string json = """
+        {"type":"FeatureCollection","features":[{"properties":{"voicehints":[[1,5,0,0,0]]},"geometry":{"coordinates":[[12,47,500],[12.01,47.01,510],[12.02,47.02,520]]}}]}
+        """;
+        var handler = new RecordingHandler(json);
+        var http = new HttpClient(handler);
+        var service = new CourseExportDienst(
+            new FakeSource(new(Fahrprofil.Mountainbike,
+                new Routingeinstellungen(Routingdienst.BRouter, "https://fake-route.invalid/", "FAKESECRET"))),
+            () => http);
+        var input = new[]
+        {
+            Point(47, 12, 0, 0),
+            Point(47.01, 12.01, 0.5, 30000),
+            Point(47.02, 12.02, 1, 60000)
+        };
+
+        var result = await service.Erstellen(new("track", CourseFahrprofil.Trekking, input), CancellationToken.None);
+        Assert.Null(result.Warncode);
+        Assert.Equal(1, handler.RequestCount);
+        Assert.True(handler.Disposed);
+        var publicJson = System.Text.Json.JsonSerializer.Serialize(result);
+        Assert.DoesNotContain("fake-route.invalid", publicJson);
+        Assert.DoesNotContain("FAKESECRET", publicJson);
+
+        using var stream = new MemoryStream(result.Inhalt);
+        var decoder = new Decode();
+        Assert.True(PruefeFitDatei.Ausfuehren(stream, decoder));
+        Assert.True(decoder.CheckIntegrity(stream));
+        var turns = new List<CoursePointMesg>();
+        var broadcaster = new MesgBroadcaster();
+        decoder.MesgEvent += broadcaster.OnMesg;
+        broadcaster.CoursePointMesgEvent += (_, e) => turns.Add((CoursePointMesg)e.mesg);
+        stream.Position = 0;
+        decoder.Read(stream);
+        var turn = Assert.Single(turns);
+        Assert.Equal(CoursePoint.Right, turn.GetType());
+    }
+
+    private sealed class RecordingHandler(string json) : HttpMessageHandler
+    {
+        public int RequestCount { get; private set; }
+        public bool Disposed { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            RequestCount++;
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            });
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            Disposed = true;
+            base.Dispose(disposing);
+        }
+    }
+
     private static TourdetailMesspunkt Point(double lat, double lon, double distance, long elapsed) =>
         new(DateTimeOffset.UtcNow, distance, elapsed, null, null, null, null, null, new(lat, lon));
 
