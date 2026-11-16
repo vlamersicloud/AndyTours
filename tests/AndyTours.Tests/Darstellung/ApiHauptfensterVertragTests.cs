@@ -20,7 +20,8 @@ public sealed class ApiHauptfensterVertragTests
     {
         var d=LadeXaml(); var buttons=d.Descendants(Presentation+"Button").Select(x=>(string?)x.Attribute("Command")).ToHashSet(StringComparer.Ordinal);
         Assert.Contains("{Binding NeueTourCommand}",buttons); Assert.Contains("{Binding TourBearbeitenCommand}",buttons); Assert.Contains("{Binding TourKopierenCommand}",buttons); Assert.Contains("{Binding TourLoeschenCommand}",buttons);
-        var grid=Assert.Single(d.Descendants(Presentation+"DataGrid")); Assert.Equal("{Binding AusgewaehlteTour, Mode=TwoWay}",(string?)grid.Attribute("SelectedItem")); Assert.Equal("TourenDataGrid_MouseDoubleClick",(string?)grid.Attribute("MouseDoubleClick"));
+        var grid=Assert.Single(d.Descendants(Presentation+"DataGrid")); Assert.Equal("Extended",(string?)grid.Attribute("SelectionMode")); Assert.Equal("{Binding AusgewaehlteTour, Mode=TwoWay}",(string?)grid.Attribute("SelectedItem")); Assert.Equal("TourenDataGrid_MouseDoubleClick",(string?)grid.Attribute("MouseDoubleClick"));
+        var tourdetails=Assert.Single(d.Descendants(Presentation+"Button"),x=>(string?)x.Attribute("Content")=="Tourdetails…"); Assert.Equal("TourdetailOeffnen_Click",(string?)tourdetails.Attribute("Click"));
         var keys=grid.Element(Presentation+"DataGrid.InputBindings")!.Elements(Presentation+"KeyBinding").ToDictionary(x=>(string)x.Attribute("Key")!);
         Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["F2"].Attribute("Command")!); Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["Enter"].Attribute("Command")!); Assert.Equal("{Binding TourLoeschenCommand}",(string)keys["Delete"].Attribute("Command")!);
     }
