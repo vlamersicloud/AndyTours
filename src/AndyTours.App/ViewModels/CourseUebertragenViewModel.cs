@@ -177,6 +177,7 @@ public partial class CourseUebertragenViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(KannUebertragen))]
     private async Task Uebertragen()
     {
+        if (!KannUebertragen()) return;
         Hinweis = string.Empty;
         if (Zeilen.Any(z => z.Name.Trim().Length == 0))
         {
@@ -223,7 +224,7 @@ public partial class CourseUebertragenViewModel : ObservableObject
                     Zustand = $"„{name}“ wird im Backend vorbereitet …";
                     try
                     {
-                        var export = await _apiExport(zeile, Profil, abbruch);
+                        var export = await _apiExport(zeile, TransferProfil, abbruch);
                         abbruch.ThrowIfCancellationRequested();
                         var expectedName = BildeCoursename.Dateiname(name.Normalize(System.Text.NormalizationForm.FormC));
                         if (export.Inhalt is null || export.Inhalt.Length is 0 or > 134217728 ||
@@ -268,7 +269,7 @@ public partial class CourseUebertragenViewModel : ObservableObject
                     Zustand = $"Abbiegungen für „{name}“ werden ermittelt …";
                     IReadOnlyList<Geoposition> spur = BildeCourse.Spur(zeile.Verlauf!);
                     (IReadOnlyList<Courseabbiegung> abbiegungen, string? fehlt) =
-                        await Abbiegungsabruf.Ermittle(spur, _ladeRouting(), Profil, abbruch);
+                        await Abbiegungsabruf.Ermittle(spur, _ladeRouting(), TransferProfil, abbruch);
                     grund ??= fehlt;
                     course = BildeCourse.AusVerlauf(zeile.Verlauf!, name, abbiegungen);
                 }
@@ -318,7 +319,7 @@ public partial class CourseUebertragenViewModel : ObservableObject
             bool vorhanden;
             try
             {
-                vorhanden = Ziel.DateiVorhanden(datei);
+                vorhanden = TransferZiel.DateiVorhanden(datei);
             }
             catch (Exception fehler) when (fehler is IOException or UnauthorizedAccessException)
             {
@@ -327,7 +328,7 @@ public partial class CourseUebertragenViewModel : ObservableObject
             }
 
             if (!vorhanden || MessageBox.Show(
-                    $"Auf „{Ziel.Geraet}“ wartet schon ein Course „{zeile.Name.Trim()}“, der noch nicht übernommen wurde. Soll er ersetzt werden?",
+                    $"Auf „{TransferZiel.Geraet}“ wartet schon ein Course „{zeile.Name.Trim()}“, der noch nicht übernommen wurde. Soll er ersetzt werden?",
                     Titel, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.Yes)
             {
                 auswahl.Add(zeile);
@@ -345,7 +346,7 @@ public partial class CourseUebertragenViewModel : ObservableObject
     {
         try
         {
-            Ziel.Schreibe(datei, inhalt);
+            TransferZiel.Schreibe(datei, inhalt);
             return true;
         }
         catch (Exception fehler) when (fehler is IOException or UnauthorizedAccessException)
