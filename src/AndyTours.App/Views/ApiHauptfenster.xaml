@@ -23,6 +23,7 @@
                 <Menu VerticalAlignment="Center" Background="Transparent">
                     <MenuItem Header="Datei" Padding="10,6">
                         <MenuItem Header="FIT-Dateien importieren…" Click="FitDateienImportieren_Click"/>
+                        <MenuItem Header="Vom Garmin-Gerät importieren…" Click="GarminGeraetImportieren_Click"/>
                     </MenuItem>
                     <MenuItem Header="Stammdaten" Padding="10,6">
                         <MenuItem Header="Aktivitäten…" Click="AktivitaetenVerwalten_Click"/>
