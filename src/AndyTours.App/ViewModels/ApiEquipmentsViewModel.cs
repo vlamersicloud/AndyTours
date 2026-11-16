@@ -15,6 +15,7 @@ public partial class ApiEquipmentsViewModel : ObservableObject
     private readonly IStammdatenLeser _stammdaten;
     private readonly Func<string, bool> _bestaetigen;
     private string? _version;
+    [ObservableProperty] private IReadOnlyDictionary<long, string> _aktivitaetsNamen = new Dictionary<long, string>();
 
     [ObservableProperty] private EquipmentAntwort? _auswahl;
     [ObservableProperty] private string _statusText = "Equipment laden.";
@@ -46,6 +47,8 @@ public partial class ApiEquipmentsViewModel : ObservableObject
         {
             var oldId = Auswahl?.Id;
             var response = await _verwaltung.Laden(ct);
+            var metadata = await _stammdaten.Laden(ct);
+            AktivitaetsNamen = metadata.Aktivitaeten.ToDictionary(a => a.Id, a => a.Name);
             SetzeSnapshot(response, oldId);
             StatusText = $"{Eintraege.Count} Einträge geladen.";
         }
@@ -86,6 +89,7 @@ public partial class ApiEquipmentsViewModel : ObservableObject
             var family = await _verwaltung.Laden(ct);
             var metadataResponse = await _stammdaten.Laden(ct);
             var metadata = ApiFormularMapper.AlsStammdaten(metadataResponse);
+            AktivitaetsNamen = metadata.Aktivitaeten.ToDictionary(a => a.Id, a => a.Name);
             SetzeSnapshot(family, selected?.Id);
             var found = selected is null ? null : Eintraege.FirstOrDefault(e => e.Id == selected.Id);
             if (selected is not null && found is null)

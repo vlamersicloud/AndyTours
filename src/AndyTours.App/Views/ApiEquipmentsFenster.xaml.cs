@@ -2,6 +2,10 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Globalization;
+using System.Windows.Data;
+using AndyTours.Contracts.V1;
+using AndyTours.Client;
 using AndyTours.App.ViewModels;
 
 namespace AndyTours.App.Views;
@@ -17,6 +21,7 @@ public partial class ApiEquipmentsFenster : Window, IDisposable
     {
         InitializeComponent(); _viewModel = viewModel; DataContext = viewModel;
         Loaded += OnLoaded; Closed += OnClosed;
+        _viewModel.EditorAngefordert += OnEditorAngefordert;
     }
     protected override void OnClosing(CancelEventArgs e)
     {
@@ -34,7 +39,13 @@ public partial class ApiEquipmentsFenster : Window, IDisposable
     }
     private void OnClosed(object? sender, EventArgs e)
     {
+        _viewModel.EditorAngefordert -= OnEditorAngefordert;
         _viewModel.LadenCommand.Cancel(); _viewModel.NeuCommand.Cancel(); _viewModel.BearbeitenCommand.Cancel(); _viewModel.LoeschenCommand.Cancel(); Dispose();
+    }
+    private void OnEditorAngefordert(object? sender, EquipmentEditorEventArgs args)
+    {
+        var editor = new EquipmentBearbeitenFenster(args.ViewModel) { Owner = this };
+        editor.ShowDialog();
     }
     private void Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
@@ -49,4 +60,16 @@ public partial class ApiEquipmentsFenster : Window, IDisposable
         var command = e.Key == Key.Delete ? _viewModel.LoeschenCommand : _viewModel.BearbeitenCommand;
         if (command.CanExecute(null)) command.Execute(null); e.Handled = true;
     }
+}
+
+public sealed class EquipmentAktivitaetConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (values.Length < 2 || values[1] is not IReadOnlyDictionary<long, string> names) return Binding.DoNothing;
+        if (values[0] is not long id) return "(keine)";
+        return names.TryGetValue(id, out var name) ? name : $"Nicht vorhanden (#{id})";
+    }
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) =>
+        [Binding.DoNothing, Binding.DoNothing];
 }

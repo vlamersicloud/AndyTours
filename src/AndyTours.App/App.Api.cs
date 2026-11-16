@@ -99,11 +99,6 @@ public partial class App
                         text => MessageBox.Show((Window?)admin ?? fenster, text, "Equipment bestätigen",
                             MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes);
                     admin = new ApiEquipmentsFenster(vm) { Owner = fenster };
-                    vm.EditorAngefordert += (_, args) =>
-                    {
-                        var editor = new EquipmentBearbeitenFenster(args.ViewModel) { Owner = admin };
-                        editor.ShowDialog();
-                    };
                     admin.ShowDialog();
                 }
                 catch (Exception) { viewModel.StatusText = "Die Equipmentverwaltung konnte nicht geöffnet werden."; }

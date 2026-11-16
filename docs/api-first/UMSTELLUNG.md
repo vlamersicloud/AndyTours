@@ -26,7 +26,7 @@ dotnet run --project src/AndyTours.App -c Release -- --api
 
 Der normale Start ohne `--api` bleibt Legacy. Der API-Modus bietet Verbindung lokal/zentral und eine Übersicht mit Zeitraum-, Aktivitäts- und Kategorienfiltern, serverseitig gefilterter Tourenliste mit Paging, Statistik, vier Kennzahlen und Diagramm. Touren können im API-Modus angelegt, bearbeitet, kopiert und gelöscht werden; Schreibvorgänge verwenden Versionsprüfung, und Neuanlagen unterstützen Idempotency-Keys. Liste und Statistik verwenden dieselben Datums-, Aktivitäts- und Kategorienfilter.
 
-Über das Stammdatenmenü sind Aktivitätenverwaltung (sieben Abläufe) und Kategorienverwaltung (sechs Abläufe) in der UI angebunden. Equipmentverträge und -port sind vorhanden, bilden aber nur die Grundlage; Backend und UI dafür sind noch offen. Inventar ist nur teilweise umgestellt: Sortierung und weitere Abläufe sind offen.
+Über das Stammdatenmenü sind Aktivitätenverwaltung (sieben Abläufe) und Kategorienverwaltung (sechs Abläufe) in der UI angebunden. Equipmentverwaltung ist mit Backend, API, typisiertem Client und UI für Anlegen, Bearbeiten, Löschen, Ausmustern, Standardkennzeichen und Entfernen gemerkter Gerätekennungen angebunden. Einsatz/Haltbarkeit und weitere Inventarabläufe, einschließlich Sortierung, sind noch offen.
 
 ## Funktionsinventar / Paritätsprüfung
 
@@ -39,12 +39,12 @@ Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutz
 | Aktivitätsstatistik | Datums-/Aktivitäts-/Kategorienfilter, Kennzahlen, Saisonziele, Bestleistungen | teilweise: Filter, KPIs und Diagramm; Saisonziele/Bestleistungen offen |
 | Aktivitäten | Stammdatenverwaltung | UI angebunden; sieben Abläufe vorhanden |
 | Kategorien | Stammdatenverwaltung und Zusammenführen | UI angebunden; sechs Abläufe vorhanden |
-| Zuordnungen / Inventar | Equipment, Trainingsbereiche, Reihenfolgen, Zusammenführen | teilweise; Equipment nur Contracts/Port, Backend/UI offen; Bulk-Sortierung offen |
+| Zuordnungen / Inventar | Equipment, Trainingsbereiche, Reihenfolgen, Zusammenführen | teilweise; Equipment-CRUD und Stammdaten-UI angebunden; Einsatz/Haltbarkeit und Bulk-Sortierung offen |
 | Pulsauswertung | FIT-Messzeiten, Garmin-Referenz, Lückenkennzeichnung | offen |
 | Tourdetail | Höhenprofil, Messreihen, Karte, Mehrtagestouren, Trackbearbeitung | offen |
 | Garmin Connect | Key-Verwaltung, Abruf, Duplikatschutz | offen; separates Secret-Management nicht migriert |
 | USB / FIT | Geräteadapter, Upload, Vorauswahl, Equipment-Zuordnung, Import | offen |
-| Equipment | Stammdaten, Rad-/Sensorzuordnung, Ausmusterung, Einsatz/Haltbarkeit | offen; Contracts/Port sind nur Grundlage |
+| Equipment | Stammdaten, Rad-/Sensorzuordnung, Ausmusterung, Einsatz/Haltbarkeit | teilweise: Equipment-CRUD, Ausmustern, Standard und Entfernen gemerkter Kennungen im API-Modus; Einsatz/Haltbarkeit offen |
 | Wartung | Erfassen, Bearbeiten, Löschen, Alarme | offen |
 | Persönliche Daten | Fahrerprofil und zugehörige Werte | offen |
 | Planung / Courses / GPX | Routing, Kurse, Export und Geräteübertragung | offen |
@@ -83,7 +83,7 @@ Der Installer-Publish ist self-contained `win-x64`; Source-Checkouts benötigen 
 ## Verifikation und verbleibende Lücken
 
 - Testserver-Builds und Windows-`win-x64`-Cross-Publish waren erfolgreich.
-- Tests wurden kompiliert, nicht ausgeführt.
+- Tests wurden kompiliert, nicht ausgeführt. Windows-Rendering und visuelle Bedienung wurden nicht geprüft.
 - Installer/ISCC sowie Windows-Start, Dialogverbindung und UI-Rendering wurden nicht geprüft.
 - Keine vollständige Migration behaupten, bis alle offenen Paritätsbereiche umgesetzt und verifiziert sind.
 
