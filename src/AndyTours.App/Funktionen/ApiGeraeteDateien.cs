@@ -29,12 +29,12 @@ public static class ApiGeraeteDateien
         Task.Run(() =>
         {
             var root = Path.Combine(Path.GetTempPath(), "AndyToursApiDevice-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(root);
             var copied = new List<ApiGeraeteDatei>();
             var errors = new List<string>();
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                Directory.CreateDirectory(root);
                 var items = enumerate().ToArray();
                 var total = items.Length;
                 if (total == 0) return new ApiGeraeteDateiErgebnis(root, copied, errors, false);
@@ -59,7 +59,7 @@ public static class ApiGeraeteDateien
                         else copied.Add(new ApiGeraeteDatei(destination, safeName, item.Geraet));
                     }
                     catch (OperationCanceledException) { throw; }
-                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException or AndyTours.Application.Stammdaten.StammdatenException)
                     {
                         errors.Add("Eine Geräte-Datei konnte nicht kopiert werden.");
                     }
