@@ -113,6 +113,53 @@ public partial class App
                 }
             };
 
+            fenster.ProfilBearbeitenAngefordert += async () =>
+            {
+                try
+                {
+                    var snapshot = await uebergebeneSitzung.Profil.Laden(CancellationToken.None);
+                    var driver = snapshot.Fahrer is null ? new AndyTours.Core.Modell.Fahrer() : new AndyTours.Core.Modell.Fahrer
+                    {
+                        Id = snapshot.Fahrer.Id, Vorname = snapshot.Fahrer.Vorname, Nachname = snapshot.Fahrer.Nachname,
+                        Geburtstag = snapshot.Fahrer.Geburtstag, GroesseCm = snapshot.Fahrer.GroesseCm,
+                        GewichtKg = snapshot.Fahrer.GewichtKg, Ruhepuls = snapshot.Fahrer.Ruhepuls,
+                        Maxpuls = snapshot.Fahrer.Maxpuls, Heimatort = snapshot.Fahrer.Heimatort
+                    };
+                    var input = AndyTours.Core.Berechnungen.FahrerEingaben.AlsEingaben(driver);
+                    PersoenlicheDatenViewModel? editor = null;
+                    editor = new PersoenlicheDatenViewModel(input,
+                        values => AndyTours.Core.Berechnungen.FahrerEingaben.AlsFahrer(values, driver, DateOnly.FromDateTime(DateTime.Today)).Hinweis,
+                        async values =>
+                        {
+                            var (updated, error) = AndyTours.Core.Berechnungen.FahrerEingaben.AlsFahrer(values, driver, DateOnly.FromDateTime(DateTime.Today));
+                            if (updated is null) { editor!.Hinweis = error ?? "Eingaben ungültig."; return false; }
+                            try
+                            {
+                                var valuesDto = new AndyTours.Contracts.V1.ProfilWerte(updated.Vorname, updated.Nachname, updated.Geburtstag,
+                                    updated.GroesseCm, updated.GewichtKg, updated.Ruhepuls, updated.Maxpuls, updated.Heimatort);
+                                await uebergebeneSitzung.Profil.Speichern(new AndyTours.Contracts.V1.ProfilSpeichernAnfrage(snapshot.Version, valuesDto), CancellationToken.None);
+                                return true;
+                            }
+                            catch (AndyTours.Application.Stammdaten.StammdatenException ex)
+                            {
+                                editor!.Hinweis = ex.Art == AndyTours.Application.Stammdaten.StammdatenFehlerart.Konflikt
+                                    ? ex.Message + " Eingaben bleiben erhalten; bitte neu laden."
+                                    : ex.Message;
+                                return false;
+                            }
+                            catch (Exception)
+                            {
+                                editor!.Hinweis = "Speicherstatus unklar. Bitte Bestand neu laden und prüfen; nicht blind erneut speichern.";
+                                return false;
+                            }
+                        });
+                    var dialog = new PersoenlicheDatenFenster(editor!) { Owner = fenster };
+                    dialog.ShowDialog();
+                }
+                catch (AndyTours.Application.Stammdaten.StammdatenException ex) { viewModel.StatusText = ex.Message; }
+                catch (Exception) { viewModel.StatusText = "Profil konnte nicht geladen werden. Bitte Verbindung prüfen."; }
+            };
+
             fenster.Closed += async (_, _) =>
             {
                 var bereinigungFehlgeschlagen = false;

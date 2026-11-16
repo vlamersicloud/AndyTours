@@ -36,7 +36,8 @@
         </StackPanel>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="16,16,16,0">
+            <StackPanel Margin="16,16,16,0"><StackPanel.Style><Style TargetType="StackPanel"><Setter Property="IsEnabled" Value="True"/><Style.Triggers><DataTrigger Binding="{Binding Speichert}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
+
                 <!-- 1. Felder -->
                 <Grid>
                     <Grid.ColumnDefinitions>

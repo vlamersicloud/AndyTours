@@ -19,6 +19,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     public event Func<Task>? AktivitaetenVerwaltenAngefordert;
     public event Func<Task>? KategorienVerwaltenAngefordert;
     public event Func<Task>? EquipmentsVerwaltenAngefordert;
+    public event Func<Task>? ProfilBearbeitenAngefordert;
 
     public ApiHauptfenster(ApiUebersichtViewModel viewModel, Uri backendAdresse)
     {
@@ -35,7 +36,7 @@ public partial class ApiHauptfenster : Window, IDisposable
         var ownedWindowOffen = System.Windows.Application.Current?.Windows
             .OfType<Window>()
             .Any(window => window != this && window.Owner == this && window.IsVisible) == true;
-        if (_viewModel.EditorOffen || ownedWindowOffen)
+        if (_verwaltungOffen || _viewModel.EditorOffen || ownedWindowOffen)
         {
             e.Cancel = true;
             _viewModel.StatusText = "Bitte zuerst alle geöffneten Dialogfenster schließen.";
@@ -104,9 +105,27 @@ public partial class ApiHauptfenster : Window, IDisposable
     {
         if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
+        _viewModel.Laedt = true;
         try { if (EquipmentsVerwaltenAngefordert is { } handler) await handler(); }
         catch (Exception) { _viewModel.StatusText = "Die Equipmentverwaltung konnte nicht geöffnet werden."; }
-        finally { _verwaltungOffen = false; }
+        finally { _viewModel.Laedt = false; _verwaltungOffen = false; }
+        if (_geschlossen || !IsVisible) return;
+        try { await _viewModel.AktualisierenAsync(CancellationToken.None); }
+        catch (Exception) { _viewModel.StatusText = "Übersicht konnte nach der Verwaltung nicht aktualisiert werden."; }
+    }
+
+
+    private async void ProfilBearbeiten_Click(object sender, RoutedEventArgs e)
+    {
+        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        _verwaltungOffen = true;
+        _viewModel.Laedt = true;
+        try { if (ProfilBearbeitenAngefordert is { } handler) await handler(); }
+        catch (Exception) { _viewModel.StatusText = "Das Profil konnte nicht geöffnet werden."; }
+        finally { _viewModel.Laedt = false; _verwaltungOffen = false; }
+        if (_geschlossen || !IsVisible) return;
+        try { await _viewModel.AktualisierenAsync(CancellationToken.None); }
+        catch (Exception) { _viewModel.StatusText = "Übersicht konnte nach der Profilbearbeitung nicht aktualisiert werden."; }
     }
 
     private void TourenDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
