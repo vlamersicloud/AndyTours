@@ -25,16 +25,17 @@ public sealed class GarminImportArtefakte
         if (jobId == Guid.Empty || kandidat is null || kandidat.KandidatId == Guid.Empty || kandidat.GarminAktivitaetId <= 0)
             throw new ArgumentException("Garmin-Kandidat ungültig.");
 
+        ct.ThrowIfCancellationRequested();
         var archives = Path.Combine(_datenordner, "GarminConnect");
         var fitDirectory = Path.Combine(_datenordner, "GarminImport", jobId.ToString("N"));
-        Directory.CreateDirectory(archives);
-        Directory.CreateDirectory(fitDirectory);
         var id = kandidat.GarminAktivitaetId.ToString(CultureInfo.InvariantCulture);
         var archive = Path.Combine(archives, $"activity-{id}.zip");
         var fit = Path.Combine(fitDirectory, kandidat.KandidatId.ToString("N") + ".fit");
 
         try
         {
+            Directory.CreateDirectory(archives);
+            Directory.CreateDirectory(fitDirectory);
             if (!File.Exists(archive))
                 await DownloadArchive(client, kandidat.GarminAktivitaetId, archive, ct).ConfigureAwait(false);
 
@@ -50,6 +51,7 @@ public sealed class GarminImportArtefakte
                     return kandidat with { Status = GarminImportKandidatStatus.Fehler, Warncode = GarminImportWarncodes.FitUngueltig };
                 }
 
+                ct.ThrowIfCancellationRequested();
                 File.Move(fitTemp, fit, overwrite: true);
                 return kandidat with
                 {
@@ -84,6 +86,10 @@ public sealed class GarminImportArtefakte
             throw new GarminImportPaketFehler(ex.StatusCode == HttpStatusCode.TooManyRequests
                 ? GarminImportWarncodes.RateLimit : GarminImportWarncodes.Netzwerk);
         }
+        catch (InvalidDataException)
+        {
+            throw new GarminImportPaketFehler(GarminImportWarncodes.ArchivUngueltig);
+        }
         catch (IOException)
         {
             throw new GarminImportPaketFehler(GarminImportWarncodes.DateiFehler);
@@ -101,6 +107,7 @@ public sealed class GarminImportArtefakte
         {
             await using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                 await client.LadeArchivAsync(id, stream, ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
             try { File.Move(temporary, archive); }
             catch (IOException) when (File.Exists(archive)) { /* A competing worker completed the shared cache. */ }
         }
@@ -132,7 +139,7 @@ public sealed class GarminImportPaketFehler : Exception
         : base("Garmin-Importpaket konnte nicht verarbeitet werden.")
     {
         if (warncode is not (GarminImportWarncodes.Netzwerk or GarminImportWarncodes.Zeitlimit or
-            GarminImportWarncodes.Abgebrochen or GarminImportWarncodes.DateiFehler or GarminImportWarncodes.RateLimit or
+            GarminImportWarncodes.Abgebrochen or GarminImportWarncodes.ArchivUngueltig or GarminImportWarncodes.DateiFehler or GarminImportWarncodes.RateLimit or
             GarminImportWarncodes.SchluesselFehlt))
             throw new ArgumentException("Warncode ungültig.", nameof(warncode));
         Warncode = warncode;
