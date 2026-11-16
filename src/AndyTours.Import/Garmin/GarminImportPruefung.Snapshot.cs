@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 using AndyTours.Application.Garmin;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
@@ -12,20 +13,16 @@ public sealed partial class GarminImportPruefung
     private readonly IGarminImportPruefspeicher _speicher;
     private readonly string _datenordner;
     private readonly TimeZoneInfo _fallbackZeitzone;
-
     public GarminImportPruefung(IGarminImportPruefspeicher speicher, string datenordner, TimeZoneInfo? fallbackZeitzone = null)
     {
         _speicher = speicher ?? throw new ArgumentNullException(nameof(speicher));
-        if (string.IsNullOrWhiteSpace(datenordner) || !Path.IsPathFullyQualified(datenordner))
-            throw new ArgumentException("Serverdatenordner ungültig.", nameof(datenordner));
+        if (string.IsNullOrWhiteSpace(datenordner) || !Path.IsPathFullyQualified(datenordner)) throw new ArgumentException("Serverdatenordner ungültig.", nameof(datenordner));
         _datenordner = Path.GetFullPath(datenordner);
         _fallbackZeitzone = fallbackZeitzone ?? TimeZoneInfo.Local;
     }
-
     private async Task<FitSnapshot> LeseSnapshot(Guid jobId, Guid kandidatId, CancellationToken cancellationToken)
     {
-        if (jobId == Guid.Empty || kandidatId == Guid.Empty)
-            throw new StammdatenException(StammdatenFehlerart.Ungueltig, "FIT-Datei ungültig.");
+        if (jobId == Guid.Empty || kandidatId == Guid.Empty) throw new StammdatenException(StammdatenFehlerart.Ungueltig, "FIT-Datei ungültig.");
         cancellationToken.ThrowIfCancellationRequested();
         var directory = Path.Combine(_datenordner, "GarminImport", jobId.ToString("N"));
         var source = Path.Combine(directory, kandidatId.ToString("N") + ".fit");
@@ -38,35 +35,30 @@ public sealed partial class GarminImportPruefung
                 await GarminPersonalClient.KopiereBegrenztAsync(input, output, 128L * 1024 * 1024, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             await using var snapshotStream = new FileStream(temporary, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
-            var hash = Convert.ToHexString(await SHA256.HashDataAsync(snapshotStream, cancellationToken).ConfigureAwait(false));
+            var fileHash = Convert.ToHexString(await SHA256.HashDataAsync(snapshotStream, cancellationToken).ConfigureAwait(false));
+            var versionPayload = Encoding.UTF8.GetBytes(fileHash + "\n" + _fallbackZeitzone.ToSerializedString());
+            var version = Convert.ToHexString(SHA256.HashData(versionPayload));
             var parsed = LeseFitAufzeichnung.Ausfuehren(temporary, _fallbackZeitzone);
             var record = parsed.Aufzeichnung;
-            if (record is null || !double.IsFinite(record.DistanzKm) || record.DistanzKm < 0 || record.Fahrzeit < TimeSpan.Zero || record.Fahrzeit.Ticks % TimeSpan.TicksPerSecond != 0)
-                throw new InvalidDataException();
-            return new FitSnapshot(record, hash, temporary);
+            if (record is null || !double.IsFinite(record.DistanzKm) || record.DistanzKm < 0 || record.Fahrzeit < TimeSpan.Zero || record.Fahrzeit.Ticks % TimeSpan.TicksPerSecond != 0) throw new InvalidDataException();
+            return new FitSnapshot(record, fileHash, version, temporary);
         }
-        catch (OperationCanceledException)
-        {
-            TryDelete(temporary);
-            throw;
-        }
+        catch (OperationCanceledException) { TryDelete(temporary); throw; }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException or FormatException or OverflowException)
         {
             TryDelete(temporary);
             throw new StammdatenException(StammdatenFehlerart.Ungueltig, "FIT-Datei ungültig.");
         }
     }
-
     private static void TryDelete(string path)
     {
-        try { if (File.Exists(path)) File.Delete(path); }
-        catch (IOException) { }
-        catch (UnauthorizedAccessException) { }
+        try { if (File.Exists(path)) File.Delete(path); } catch (IOException) { } catch (UnauthorizedAccessException) { }
     }
-
-    private sealed class FitSnapshot(Aufzeichnung aufzeichnung, string version, string tempPath) : IDisposable
+    private sealed class FitSnapshot(Aufzeichnung aufzeichnung, string dateiHash, string version, string tempPath) : IDisposable
     {
         public Aufzeichnung Aufzeichnung { get; } = aufzeichnung;
+        public string DateiHash { get; } = dateiHash;
+        /// <summary>Opaque token for content and the timezone interpretation used to parse it.</summary>
         public string Version { get; } = version;
         public string TempPath { get; } = tempPath;
         public void Dispose() => TryDelete(TempPath);

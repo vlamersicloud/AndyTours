@@ -19,7 +19,7 @@ public sealed partial class GarminImportPruefung
             Directory.CreateDirectory(directory);
             if (File.Exists(finalPath))
             {
-                await VerifyExisting(finalPath, fit.Version, cancellationToken).ConfigureAwait(false);
+                await VerifyExisting(finalPath, fit.DateiHash, cancellationToken).ConfigureAwait(false);
                 return relative;
             }
             await using (var input = new FileStream(fit.TempPath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan))
@@ -32,7 +32,7 @@ public sealed partial class GarminImportPruefung
             }
             catch (IOException) when (File.Exists(finalPath))
             {
-                await VerifyExisting(finalPath, fit.Version, cancellationToken).ConfigureAwait(false);
+                await VerifyExisting(finalPath, fit.DateiHash, cancellationToken).ConfigureAwait(false);
             }
             return relative;
         }
