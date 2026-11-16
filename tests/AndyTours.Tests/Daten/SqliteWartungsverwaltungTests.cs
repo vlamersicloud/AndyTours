@@ -54,7 +54,14 @@ public sealed class SqliteWartungsverwaltungTests : IDisposable
         };
         await _service.WartungAnlegen(requests[3]);
         foreach (var request in requests.Take(3).Append(requests[4]))
-            Assert.Equal(StammdatenFehlerart.Ungueltig, (await Assert.ThrowsAsync<StammdatenException>(() => _service.WartungAnlegen(request))).Art);
+        {
+            var fresh = (await _service.Laden(new(null, null))).Bestand;
+            var call = request with { Version = fresh.Version };
+            var error = await Assert.ThrowsAsync<StammdatenException>(() => _service.WartungAnlegen(call));
+            var expected = call.EquipmentId == 999999 ? StammdatenFehlerart.NichtGefunden : StammdatenFehlerart.Ungueltig;
+            Assert.Equal(expected, error.Art);
+            Assert.Equal(fresh.Version, (await _service.Laden(new(null, null))).Bestand.Version);
+        }
         var current = (await _service.Laden(new(null, null))).Bestand;
         Assert.Single(current.Eintraege);
         Assert.Equal(current.Version, (await _service.Laden(new(_activity1, null))).Bestand.Version);
@@ -136,9 +143,19 @@ public sealed class SqliteWartungsverwaltungTests : IDisposable
         var id = await Seed(new Wartung { Datum = new DateOnly(2020, 1, 1), EquipmentId = _retired, Taetigkeit = "Existing", Typ = WartungsTyp.Wartung });
         snapshot = (await _service.Laden(new(null, null))).Bestand;
         await _service.WartungAendern(id, new(snapshot.Version, new DateOnly(2021, 1, 1), _retired, "Existing", "ok"));
+        long secondRetired;
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        using (var tx = db.BeginTransaction())
+        {
+            secondRetired = EquipmentsTabelle.Einfuegen(db, tx, new Equipment { Name = "Alt 2", AktivitaetId = _activity1, Ausgemustert = true });
+            tx.Commit();
+        }
         snapshot = (await _service.Laden(new(null, null))).Bestand;
-        var rejected = await Assert.ThrowsAsync<StammdatenException>(() => _service.WartungAendern(id, new(snapshot.Version, new DateOnly(2021, 1, 1), _equipment1, "Existing", "ok")));
+        var rejected = await Assert.ThrowsAsync<StammdatenException>(() => _service.WartungAendern(id, new(snapshot.Version, new DateOnly(2021, 1, 1), secondRetired, "Existing", "ok")));
         Assert.Equal(StammdatenFehlerart.Ungueltig, rejected.Art);
+        snapshot = (await _service.Laden(new(null, null))).Bestand;
+        var allowed = await _service.WartungAendern(id, new(snapshot.Version, new DateOnly(2021, 1, 1), _equipment1, "Existing", "ok"));
+        Assert.Equal(_equipment1, allowed.Eintraege.Single(x => x.Id == id).EquipmentId);
     }
 
     private async Task<long> CreateMaintenance(long equipmentId, DateOnly date, string task, string comment)
