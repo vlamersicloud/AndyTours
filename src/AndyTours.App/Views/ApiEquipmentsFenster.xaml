@@ -4,6 +4,9 @@
         xmlns:local="clr-namespace:AndyTours.App.Views"
         Title="Equipment verwalten · AndyTours" Width="900" Height="650" MinWidth="740" MinHeight="480"
         Language="de-DE" Background="#F4F6F8" WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <local:EquipmentAktivitaetConverter x:Key="EquipmentAktivitaetConverter"/>
+    </Window.Resources>
     <Grid Margin="20">
         <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <Grid Grid.Row="0">

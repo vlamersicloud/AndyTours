@@ -83,7 +83,7 @@ Der Installer-Publish ist self-contained `win-x64`; Source-Checkouts benötigen 
 ## Verifikation und verbleibende Lücken
 
 - Testserver-Builds und Windows-`win-x64`-Cross-Publish waren erfolgreich.
-- Tests wurden kompiliert, nicht ausgeführt. Windows-Rendering und visuelle Bedienung wurden nicht geprüft.
+- Tests wurden kompiliert, nicht ausgeführt. Neue XAML-StaticResource-Verweise müssen eine definierte, erreichbare lokale Ressource besitzen; der Build allein validiert keine Laufzeitauflösung. Dafür sind strukturelle XAML-Tests bereitzustellen. Windows-Rendering und visuelle Bedienung wurden nicht geprüft.
 - Installer/ISCC sowie Windows-Start, Dialogverbindung und UI-Rendering wurden nicht geprüft.
 - Keine vollständige Migration behaupten, bis alle offenen Paritätsbereiche umgesetzt und verifiziert sind.
 

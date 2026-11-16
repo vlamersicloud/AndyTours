@@ -5,7 +5,7 @@ using AndyTours.Daten;
 namespace AndyTours.Tests.Daten;
 
 /// <summary>
-/// Tests für <see cref="FahrerTabelle.SpeicherePersoenlicheDaten"/>.
+/// Tests für <see cref="FahrerTabelle.SpeicherePersoenlicheDaten(Microsoft.Data.Sqlite.SqliteConnection, AndyTours.Core.Modell.Fahrer)"/>.
 /// </summary>
 public class FahrerTests
 {

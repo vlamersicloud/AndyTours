@@ -54,7 +54,7 @@ public sealed class SqliteProfilVerwaltung(string datenbankpfad) : IProfilVerwal
     private static void Validate(ProfilWerte w)
     {
         CheckText(w.Vorname, "Vorname"); CheckText(w.Nachname, "Nachname"); CheckText(w.Heimatort, "Heimatort");
-        if (w.Geburtstag > DateOnly.FromDateTime(DateTime.UtcNow)) throw Invalid("Geburtstag darf nicht in der Zukunft liegen.");
+        if (w.Geburtstag > DateOnly.FromDateTime(DateTime.Today)) throw Invalid("Geburtstag darf nicht in der Zukunft liegen.");
         if (w.GroesseCm != 0 && w.GroesseCm is < 100 or > 250) throw Invalid("Größe muss 0 (unbekannt) oder 100 bis 250 cm betragen.");
         if (!double.IsFinite(w.GewichtKg) || (w.GewichtKg != 0 && (w.GewichtKg < 30 || w.GewichtKg > 250 || Math.Abs(Math.Round(w.GewichtKg, 1) - w.GewichtKg) > 1e-9)))
             throw Invalid("Gewicht muss 0 (unbekannt) oder 30 bis 250 kg mit höchstens einer Nachkommastelle betragen.");
