@@ -42,12 +42,13 @@ public sealed partial class SqliteGarminImportJobs
                 tx.Commit();
                 return Task.FromResult(existing.ToResponse());
             }
-            if (existing.Status != GarminImportKandidatStatus.Fehler)
+            if (!CanAdvance(existing.Status, kandidat.Status))
             {
                 tx.Commit();
                 return Task.FromResult(existing.ToResponse());
             }
-            UpdateCandidate(db, tx, lease.JobId, existing.Paketnummer, kandidat);
+            ct.ThrowIfCancellationRequested();
+            UpdateCandidate(db, tx, lease.JobId, existing.Paketnummer, existing.Id, kandidat);
         }
         else
         {
@@ -57,6 +58,7 @@ public sealed partial class SqliteGarminImportJobs
             var count = ScalarLong(db, tx, "SELECT COUNT(*) FROM GarminImportKandidat WHERE JobId=$job AND Paketnummer=$packet;",
                 ("$job", lease.JobId.ToString("D")), ("$packet", packet));
             if (count >= 20) throw Konflikt("Das Garmin-Paket ist vollständig.");
+            ct.ThrowIfCancellationRequested();
             InsertCandidate(db, tx, lease.JobId, packet, kandidat);
         }
 
@@ -113,7 +115,7 @@ public sealed partial class SqliteGarminImportJobs
     {
         using var command = db.CreateCommand();
         command.Transaction = tx;
-        command.CommandText = "SELECT KandidatId,Paketnummer,Zustand,Datum,Name,DistanzKm,FahrzeitSekunden,Warncode FROM GarminImportKandidat WHERE JobId=$job AND GarminAktivitaetId=$activity;";
+        command.CommandText = "SELECT KandidatId,GarminAktivitaetId,Paketnummer,Zustand,Datum,Name,DistanzKm,FahrzeitSekunden,Warncode FROM GarminImportKandidat WHERE JobId=$job AND GarminAktivitaetId=$activity;";
         command.Parameters.AddWithValue("$job", jobId.ToString("D"));
         command.Parameters.AddWithValue("$activity", activityId);
         using var reader = command.ExecuteReader();
@@ -124,17 +126,17 @@ public sealed partial class SqliteGarminImportJobs
     {
         using var command = db.CreateCommand();
         command.Transaction = tx;
-        command.CommandText = "SELECT KandidatId,Paketnummer,Zustand,Datum,Name,DistanzKm,FahrzeitSekunden,Warncode FROM GarminImportKandidat WHERE KandidatId=$id;";
+        command.CommandText = "SELECT KandidatId,GarminAktivitaetId,Paketnummer,Zustand,Datum,Name,DistanzKm,FahrzeitSekunden,Warncode FROM GarminImportKandidat WHERE KandidatId=$id;";
         command.Parameters.AddWithValue("$id", candidateId.ToString("D"));
         using var reader = command.ExecuteReader();
         return reader.Read() ? ReadCandidate(reader) : null;
     }
 
     private static ExistingCandidate ReadCandidate(SqliteDataReader reader) =>
-        new(Guid.Parse(reader.GetString(0)), reader.GetInt32(1), (GarminImportKandidatStatus)reader.GetInt32(2),
-            reader.IsDBNull(3) ? null : DateOnly.Parse(reader.GetString(3), System.Globalization.CultureInfo.InvariantCulture),
-            reader.GetString(4), reader.IsDBNull(5) ? null : reader.GetDouble(5),
-            reader.IsDBNull(6) ? null : reader.GetInt64(6), reader.IsDBNull(7) ? null : reader.GetString(7));
+        new(Guid.Parse(reader.GetString(0)), reader.GetInt64(1), reader.GetInt32(2), (GarminImportKandidatStatus)reader.GetInt32(3),
+            reader.IsDBNull(4) ? null : DateOnly.Parse(reader.GetString(4), System.Globalization.CultureInfo.InvariantCulture),
+            reader.GetString(5), reader.IsDBNull(6) ? null : reader.GetDouble(6),
+            reader.IsDBNull(7) ? null : reader.GetInt64(7), reader.IsDBNull(8) ? null : reader.GetString(8));
 
     private static void InsertCandidate(SqliteConnection db, SqliteTransaction tx, Guid jobId, int packet, GarminImportKandidatAntwort candidate)
     {
@@ -149,7 +151,7 @@ public sealed partial class SqliteGarminImportJobs
         command.ExecuteNonQuery();
     }
 
-    private static void UpdateCandidate(SqliteConnection db, SqliteTransaction tx, Guid jobId, int packet, GarminImportKandidatAntwort candidate)
+    private static void UpdateCandidate(SqliteConnection db, SqliteTransaction tx, Guid jobId, int packet, Guid candidateId, GarminImportKandidatAntwort candidate)
     {
         using var command = db.CreateCommand();
         command.Transaction = tx;
@@ -185,14 +187,27 @@ public sealed partial class SqliteGarminImportJobs
             throw Ungueltig("Garmin-Kandidat ungültig.");
     }
 
+    private static bool CanAdvance(GarminImportKandidatStatus current, GarminImportKandidatStatus next)
+    {
+        if (current is GarminImportKandidatStatus.FitBereit or GarminImportKandidatStatus.Importiert or GarminImportKandidatStatus.Uebersprungen)
+            return false;
+        return current switch
+        {
+            GarminImportKandidatStatus.Wartend => next is GarminImportKandidatStatus.Wartend or GarminImportKandidatStatus.ZipBereit or GarminImportKandidatStatus.FitBereit or GarminImportKandidatStatus.Fehler or GarminImportKandidatStatus.Uebersprungen,
+            GarminImportKandidatStatus.ZipBereit => next is GarminImportKandidatStatus.ZipBereit or GarminImportKandidatStatus.FitBereit or GarminImportKandidatStatus.Fehler or GarminImportKandidatStatus.Uebersprungen,
+            GarminImportKandidatStatus.Fehler => next is GarminImportKandidatStatus.Fehler or GarminImportKandidatStatus.Wartend or GarminImportKandidatStatus.ZipBereit or GarminImportKandidatStatus.FitBereit or GarminImportKandidatStatus.Uebersprungen,
+            _ => false
+        };
+    }
+
     private static bool IsAllowedWarning(string warning) =>
         warning is GarminImportWarncodes.Netzwerk or GarminImportWarncodes.Zeitlimit or GarminImportWarncodes.Abgebrochen or
             GarminImportWarncodes.FitUngueltig or GarminImportWarncodes.ArchivUngueltig or GarminImportWarncodes.DateiFehler or
             GarminImportWarncodes.SchluesselFehlt or GarminImportWarncodes.RateLimit;
 
-    private sealed record ExistingCandidate(Guid Id, int Paketnummer, GarminImportKandidatStatus Status, DateOnly? Datum,
+    private sealed record ExistingCandidate(Guid Id, long GarminAktivitaetId, int Paketnummer, GarminImportKandidatStatus Status, DateOnly? Datum,
         string Name, double? Distanz, long? Seconds, string? Warning)
     {
-        public GarminImportKandidatAntwort ToResponse() => new(Id, 0, Status, Datum, Name, Distanz, Seconds, Warning);
+        public GarminImportKandidatAntwort ToResponse() => new(Id, GarminAktivitaetId, Status, Datum, Name, Distanz, Seconds, Warning);
     }
 }
