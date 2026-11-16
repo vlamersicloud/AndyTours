@@ -18,18 +18,19 @@ public sealed class SqliteOverlayGpxSpeicherTests
         string path = Path.Combine(temp.Pfad, "overlay.db");
         var store = new SqliteOverlaySpeicher(path);
         var baseline = await store.Laden(CancellationToken.None);
-        long parent = await CreateFolder(store, baseline.Version);
-        var snapshot = await store.Laden(CancellationToken.None);
-        var request = new OverlayGpxImportAnfrage(snapshot.Version, Guid.NewGuid(), parent, "Track.gpx");
-        string hash = Convert.ToHexString(SHA256.HashData("body"u8));
-
-        Assert.Null(await store.Quittung(request, hash, CancellationToken.None));
+        var probe = new OverlayGpxImportAnfrage(baseline.Version, Guid.NewGuid(), null, "Probe.gpx");
+        string probeHash = Convert.ToHexString(SHA256.HashData("probe"u8));
+        Assert.Null(await store.Quittung(probe, probeHash, CancellationToken.None));
         using (var db = OeffneDatenbank.Ausfuehren(path))
         {
             using var cmd = db.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='OverlayQuittung';";
             Assert.Equal(0L, Convert.ToInt64(cmd.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture));
         }
+        long parent = await CreateFolder(store, baseline.Version);
+        var snapshot = await store.Laden(CancellationToken.None);
+        var request = new OverlayGpxImportAnfrage(snapshot.Version, Guid.NewGuid(), parent, "Track.gpx");
+        string hash = Convert.ToHexString(SHA256.HashData("body"u8));
 
         var prepared = Prepare(request, hash, [new Geoposition(48, 11)]);
         var created = await store.Importieren(prepared, CancellationToken.None);
@@ -58,6 +59,8 @@ public sealed class SqliteOverlayGpxSpeicherTests
         using var temp = new TempOrdner();
         string path = Path.Combine(temp.Pfad, "overlay.db");
         var store = new SqliteOverlaySpeicher(path);
+        var initial = await store.Laden(CancellationToken.None);
+        _ = await CreateFolder(store, initial.Version);
         var baseline = await store.Laden(CancellationToken.None);
         var request = new OverlayGpxImportAnfrage(baseline.Version, Guid.NewGuid(), null, "Track.gpx");
         string hash = new string('B', 64);
@@ -66,6 +69,7 @@ public sealed class SqliteOverlayGpxSpeicherTests
         using (var db = OeffneDatenbank.Ausfuehren(path))
             Exec(db, "CREATE TRIGGER fail_overlay_receipt BEFORE INSERT ON OverlayQuittung BEGIN SELECT RAISE(ABORT,'injected'); END;");
         await Assert.ThrowsAsync<SqliteException>(() => store.Importieren(prepared, CancellationToken.None));
+        Assert.Equal(baseline.Version, (await store.Laden(CancellationToken.None)).Version);
         Assert.Equal(baseline.Version, (await store.Laden(CancellationToken.None)).Version);
         Assert.Empty((await store.Laden(CancellationToken.None)).Overlays);
         Assert.Null(await store.Quittung(request, hash, CancellationToken.None));

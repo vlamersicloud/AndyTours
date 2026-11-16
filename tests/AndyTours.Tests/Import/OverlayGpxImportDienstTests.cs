@@ -75,7 +75,7 @@ public sealed class OverlayGpxImportDienstTests
     }
 
     [Fact]
-    public async Task RejectsMalformedDtdEmptyAndRouteOnlyInputWithoutReceipts()
+    public async Task RejectsMalformedDtdEmptyAndWaypointOnlyInputWithoutReceipts()
     {
         using var temp = new TempOrdner();
         string dbPath = Path.Combine(temp.Pfad, "overlay.db");
@@ -102,12 +102,31 @@ public sealed class OverlayGpxImportDienstTests
             Assert.Null(await store.Quittung(request, hash, CancellationToken.None));
         }
 
-        var preCanceled = new CountingStream(Encoding.UTF8.GetBytes("<gpx/>"));
+        using var preCanceled = new CountingStream(Encoding.UTF8.GetBytes("<gpx/>"));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             importer.Importieren(new OverlayGpxImportAnfrage(baseline.Version, Guid.NewGuid(), null, "cancel.gpx"),
                 preCanceled, new CancellationToken(true)));
         Assert.Equal(0, preCanceled.ReadCalls);
         Assert.Empty((await store.Laden(CancellationToken.None)).Overlays);
+    }
+
+    [Fact]
+    public async Task Gpx10FallsBackToRouteSegmentsWhenTrackPointsAreAllInvalid()
+    {
+        using var temp = new TempOrdner();
+        var store = new SqliteOverlaySpeicher(Path.Combine(temp.Pfad, "overlay.db"));
+        var baseline = await store.Laden(CancellationToken.None);
+        var importer = new OverlayGpxImportDienst(store);
+        const string xml = "<gpx xmlns=\"http://www.topografix.com/GPX/1/0\"><trk><trkseg><trkpt lat=\"bad\" lon=\"1\"/></trkseg></trk><rte><rtept lat=\"1\" lon=\"2\"/><rtept lat=\"3\" lon=\"4\"/></rte><rte><rtept lat=\"5\" lon=\"6\"/></rte><wpt lat=\"9\" lon=\"9\"/></gpx>";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
+        var result = await importer.Importieren(new OverlayGpxImportAnfrage(baseline.Version, Guid.NewGuid(), null, "Route.gpx"), stream, CancellationToken.None);
+        var metadata = Assert.Single(result.Bestand.Overlays);
+        var content = await store.Inhalt(result.Id, metadata.Version, CancellationToken.None);
+        Assert.Equal(2, content.Abschnitte.Count);
+        Assert.Equal(new OverlayPosition(1, 2), Assert.Single(content.Abschnitte[0]));
+        Assert.Collection(content.Abschnitte[1],
+            point => Assert.Equal(new OverlayPosition(3, 4), point),
+            point => Assert.Equal(new OverlayPosition(5, 6), point));
     }
 
     private sealed class CountingStream(byte[] data) : MemoryStream(data)
