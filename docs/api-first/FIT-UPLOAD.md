@@ -1,16 +1,9 @@
-# FIT-Upload und USB/MTP – Design
+# FIT-Upload – implementierter Stand
 
-**Nur Entwurf; nicht implementiert oder verifiziert.** Bestehende Importfunktionen bleiben erhalten.
+- API-Uploads streamen rohe Bytes mit einer Grenze von 128 MiB **pro Datei**. Es gibt keine 20-Dateien- oder 512-MiB-Satzgrenze. Opaque Upload-UUIDs, sichere Namensmetadaten und Hash-/Größenprüfung schützen unveränderliche Originaldateien; gleiche UUID/Inhalt sind wiederholbar, abweichender Inhalt kollidiert.
+- Upload-Metadaten-CAS und semantische FIT-/Zeitzonenversion sind getrennt. FIT-Auswertung und Fallback-Zeitzone liegen im API-Importpfad. Ungültige Dateien erscheinen separat; gültige können weiter geprüft werden.
+- Die WPF-Prüfung arbeitet in 10.000er-Chunks. Nicht verarbeitete Queue-Einträge bleiben für weitere Prüfung erhalten. Übernahme speichert Touren, Anhänge, Sensoränderungen, Uploadstatus und Receipt atomar. Wiederholungen benötigen eine ausdrückliche manuelle Aktion mit stabiler ID; es gibt kein automatisches Resenden.
+- Gespeicherte Uploads lassen sich über paginierte Metadaten wiederherstellen. Das System nutzt einen einzelnen authentifizierten Datensatz, keinen transienten Token-Owner. Ablauf-/Retention-Cleanup ist nicht implementiert; Originale werden nicht automatisch entfernt.
+- Datei-Menüs bieten FIT-Upload und Garmin-Geräteimport. USB/MTP liest und kopiert lokal ausschließlich in eigene temporäre Dateien; Aufräumen wartet laufende Uploads ab. FIT-Parsing bleibt in der API. Der App-Code enthält weiterhin Legacy-Data-/Import-Referenzen.
 
-## Sechs Slices
-
-1. **Verträge/Ports:** `AndyTours.Contracts.V1` erhält opake `UploadId`-/`DateiId`-GUIDs, Status, Preview und Commit-DTOs; `IImportUploadSpeicher` kapselt serverseitige Ablage. Keine synthetischen Garmin-IDs oder Garmin-only Tabellen.
-2. **Sicherer Upload:** authentifizierter Endpoint `FitUploadEndpunkte` streamt rohe Bytes mit harter Bytezählung und Limits (Vorschlag: 128 MiB/Datei, 20 Dateien, 512 MiB/Satz). Sichere Originalnamen sind nur Metadaten. Gleiche ID plus gleicher Body ist idempotent; anderer Body ergibt Konflikt. Serverpfade werden allein aus opaken IDs gebildet.
-3. **SQLite:** `SqliteImportUploadSpeicher` persistiert Owner, IDs, Hash, Revision, Status, Ablauf und Commit-Quittungen; Retry derselben Anfrage replayt, abweichender Payload wird abgelehnt.
-4. **Gemeinsame Fachlogik:** `GarminImportPruefung`-Snapshot/Hash/Zeitzonenhelfer source-neutral extrahieren; vorhandenes `LeseFitAufzeichnung`, Backend-Fallback-Zone und Core-Regeln für Datum/Minuten-Dedupe, Equipment, Standardkategorie und Sensoren wiederverwenden.
-5. **Review/Commit:** serverseitige Preview zeigt FIT-Daten, Fallback-Zone, Hinweise und Equipment. Confirm validiert Preview-Version und IDs; Tour, FIT-Anhang, Sensor-/Equipmentänderungen, Uploadstatus und Receipt werden atomar committed, mit definierter Datei-/DB-Recovery.
-6. **Dünner WPF-Client:** `FindeMtpGeraete`/Laufwerksfinder bleiben lokal; Client kopiert ausgewählte Dateien temporär und streamt sie. Mehrfachauswahl, Fortschritt und Abbruch bleiben erhalten; kein Parser/DB-Zugriff im API-Frontend.
-
-## Compile-only Tests
-
-Grenzgrößen/Abbruch, Dateinamen-Traversal, Upload-/Receipt-Idempotenz, FIT-Zeitzonen- und stale-preview-Versionen, Dedupe/Equipment/Sensorregeln, atomarer Commit/Recovery sowie Architekturtests gegen Clientparser, SQL, Pfade und Fake-Garmin-IDs. Tests nur vorbereiten und kompilieren, nicht ausführen.
+Tests wurden kompiliert, nicht ausgeführt. Laufzeit, Netzwerk/API, Windows-Visualisierung und echte Geräte bleiben unverifiziert.
