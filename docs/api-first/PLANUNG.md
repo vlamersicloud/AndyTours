@@ -12,7 +12,7 @@
 
 1. Versionierte Contracts/Ports und API für nichtgeheime Einstellungen; CAS für Änderungen, Schlüssel nur gezielt setzen/rotieren.
 2. Serverseitiges Routing über konfigurierte Provider mit Profil-/Punkt-/Antwortgrößenlimits; keine frei wählbaren URLs oder beliebigen Header vom Client.
-3. Geplante Geometrie bearbeiten, validieren und persistent speichern; bestehende Planungsaenderung- und Namensregeln wiederverwenden.
+3. Planung bleibt wie heute eine lokale GPX-Datei: gezielte Dateiöffnung/-speicherung bleibt im Client; Parsing und Serialisierung verwenden die bestehenden PlanungsGpx-Regeln. Keine verpflichtende Server-Planungsentität ohne fachliche Entscheidung.
 4. Planned-course Export/GPX und Geräteadapter-Parität mit expliziten Abbruch-, Wiederholungs- und Lebenszyklusgrenzen.
 
 Bis diese Slices und Windows-/Provider-Laufzeitprüfungen abgeschlossen sind, keine Vollständigkeitsbehauptung.
