@@ -53,10 +53,12 @@ public sealed class PlanungsRoutingDienstTests
     {
         var source = new Serverdaten(new(Fahrprofil.Trekking, Routingeinstellungen.Standard));
         var service = new PlanungsRoutingDienst(source, () => new HttpClient(new RecordingHandler()));
-        await Assert.ThrowsAsync<ArgumentException>(() => service.Berechnen(
+        var invalidCoordinates = await Assert.ThrowsAsync<AndyTours.Application.Stammdaten.StammdatenException>(() => service.Berechnen(
             new PlanungsRoutingAnfrage(CourseFahrprofil.Trekking, Point(double.NaN, 0), Point(48, 11)), CancellationToken.None));
-        await Assert.ThrowsAsync<ArgumentException>(() => service.Berechnen(
+        Assert.Equal(AndyTours.Application.Stammdaten.StammdatenFehlerart.Ungueltig, invalidCoordinates.Art);
+        var invalidProfile = await Assert.ThrowsAsync<AndyTours.Application.Stammdaten.StammdatenException>(() => service.Berechnen(
             new PlanungsRoutingAnfrage((CourseFahrprofil)999, Point(48, 11), Point(49, 12)), CancellationToken.None));
+        Assert.Equal(AndyTours.Application.Stammdaten.StammdatenFehlerart.Ungueltig, invalidProfile.Art);
         Assert.Equal(0, source.Calls);
     }
 

@@ -29,6 +29,6 @@ public static class RoutingTransport
             return anfrage.Dienst == Routingdienst.Openrouteservice ? LeseOpenrouteserviceAntwort.Ausfuehren(json) : LeseBRouterAntwort.Ausfuehren(json);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return null; }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or JsonException or FormatException or InvalidOperationException or ArgumentException) { return null; }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or JsonException or FormatException or InvalidOperationException or ArgumentException or OverflowException) { return null; }
     }
 }

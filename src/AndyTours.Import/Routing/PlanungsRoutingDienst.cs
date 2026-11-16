@@ -1,19 +1,17 @@
 using System.Net;
 using AndyTours.Application.Export;
 using AndyTours.Application.Planung;
+using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
-using AndyTours.Import.Routing;
 using CoreDirection = AndyTours.Core.Modell.Abbiegerichtung;
 using CoreProfile = AndyTours.Core.Modell.Fahrprofil;
 using CorePosition = AndyTours.Core.Modell.Geoposition;
 using CoreTurn = AndyTours.Core.Modell.Abbiegepunkt;
-using CoreTrackPoint = AndyTours.Core.Modell.Verlaufspunkt;
 
 namespace AndyTours.Import.Routing;
 
-/// <summary>Serverseitige Begrenzung und Übersetzung der konfigurierten Routingprovider.</summary>
 public sealed class PlanungsRoutingDienst : IPlanungsRouting
 {
     private readonly ICourseExportServerdaten _serverdaten;
@@ -33,16 +31,15 @@ public sealed class PlanungsRoutingDienst : IPlanungsRouting
         cancellationToken.ThrowIfCancellationRequested();
         var from = ToCore(anfrage.Von.Position);
         var to = ToCore(anfrage.Nach.Position);
-        var profile = ToCore(anfrage.Profil);
-        var request = BildeRoutinganfrage.Ausfuehren(context.Routing, profile, from, to);
+        var request = BildeRoutinganfrage.Ausfuehren(context.Routing, ToCore(anfrage.Profil), from, to);
         if (request is null) return Fallback(from, to, "routing_einstellungen_unvollstaendig");
 
         using var http = _httpFactory();
         var segment = await RoutingTransport.Ermittle(http, request, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
-        if (segment is null || !ValidSegment(segment)) return Fallback(from, to, "routing_nicht_erreichbar");
+        if (!ValidSegment(segment)) return Fallback(from, to, "routing_nicht_erreichbar");
         return new PlanungsRoutingAntwort(
-            segment.Punkte.Select(p => new PlanungsRoutingpunkt(ToDto(p.Position!), Finite(p.Hoehe))).ToArray(),
+            segment!.Punkte.Select(p => new PlanungsRoutingpunkt(ToDto(p.Position!), Finite(p.Hoehe))).ToArray(),
             segment.Abbiegepunkte.Select(ToDto).ToArray(),
             segment.IstLuftlinie,
             segment.IstLuftlinie ? "routing_nicht_erreichbar" : null);
@@ -55,33 +52,36 @@ public sealed class PlanungsRoutingDienst : IPlanungsRouting
 
     private static void Validate(PlanungsRoutingAnfrage request)
     {
-        ArgumentNullException.ThrowIfNull(request);
-        if (!Enum.IsDefined(request.Profil)) throw new ArgumentException("Routinganfrage ungültig.", nameof(request));
+        if (request is null || !Enum.IsDefined(request.Profil) || request.Von is null || request.Nach is null)
+            throw InvalidRequest();
         Validate(request.Von);
         Validate(request.Nach);
     }
 
     private static void Validate(PlanungsRoutingpunkt point)
     {
-        if (point?.Position is not { } p || !double.IsFinite(p.Breite) || p.Breite is < -90 or > 90 ||
-            !double.IsFinite(p.Laenge) || p.Laenge is < -180 or > 180 ||
+        if (point.Position is not { } p || !ValidPosition(p) ||
             point.Hoehe is { } h && !double.IsFinite(h))
-            throw new ArgumentException("Routinganfrage ungültig.");
+            throw InvalidRequest();
     }
 
-    private static bool ValidSegment(Teilstueck segment) =>
-        !segment.IstLuftlinie && segment.Punkte is { Count: >= 2 } &&
-        segment.Punkte.All(p => p.Position is { } pos && double.IsFinite(pos.Breite) && pos.Breite is >= -90 and <= 90 &&
-            double.IsFinite(pos.Laenge) && pos.Laenge is >= -180 and <= 180 &&
+    private static bool ValidPosition(PlanungsPosition point) =>
+        double.IsFinite(point.Breite) && point.Breite is >= -90 and <= 90 &&
+        double.IsFinite(point.Laenge) && point.Laenge is >= -180 and <= 180;
+
+    private static bool ValidSegment(Teilstueck? segment) =>
+        segment is { IstLuftlinie: false, Punkte.Count: >= 2 } && segment.Abbiegepunkte is not null &&
+        segment.Punkte.All(p => p?.Position is { } pos && ValidPosition(new PlanungsPosition(pos.Breite, pos.Laenge)) &&
             (p.Hoehe is null || double.IsFinite(p.Hoehe.Value))) &&
-        segment.Abbiegepunkte.All(t => Enum.IsDefined(t.Richtung) && (t.Ausfahrt is null || t.Ausfahrt > 0));
+        segment.Abbiegepunkte.All(t => t?.Position is { } pos && ValidPosition(new PlanungsPosition(pos.Breite, pos.Laenge)) &&
+            Enum.IsDefined(t.Richtung) && (t.Ausfahrt is null || t.Ausfahrt > 0));
 
     private static CoreProfile ToCore(CourseFahrprofil profile) => profile switch
     {
         CourseFahrprofil.Rennrad => CoreProfile.Rennrad,
         CourseFahrprofil.Trekking => CoreProfile.Trekking,
         CourseFahrprofil.Mountainbike => CoreProfile.Mountainbike,
-        _ => throw new ArgumentException("Routinganfrage ungültig.")
+        _ => throw InvalidRequest()
     };
 
     private static CorePosition ToCore(PlanungsPosition point) => new(point.Breite, point.Laenge);
@@ -98,16 +98,14 @@ public sealed class PlanungsRoutingDienst : IPlanungsRouting
         CoreDirection.ScharfRechts => PlanungsAbbiegerichtung.ScharfRechts,
         CoreDirection.Kreisverkehr => PlanungsAbbiegerichtung.Kreisverkehr,
         CoreDirection.Wenden => PlanungsAbbiegerichtung.Wenden,
-        _ => throw new InvalidOperationException("Routingantwort ungültig.")
+        _ => throw InvalidRequest()
     }, turn.Ausfahrt is > 0 ? turn.Ausfahrt : null);
+
+    private static StammdatenException InvalidRequest() => new(StammdatenFehlerart.Ungueltig, "Routinganfrage ungültig.");
 
     private static PlanungsRoutingAntwort Fallback(CorePosition from, CorePosition to, string warning)
     {
         var line = ErstelleLuftlinie.Ausfuehren(from, to);
-        return new PlanungsRoutingAntwort(
-            line.Punkte.Select(p => new PlanungsRoutingpunkt(ToDto(p.Position!), null)).ToArray(),
-            [],
-            true,
-            warning);
+        return new PlanungsRoutingAntwort(line.Punkte.Select(p => new PlanungsRoutingpunkt(ToDto(p.Position!), null)).ToArray(), [], true, warning);
     }
 }
