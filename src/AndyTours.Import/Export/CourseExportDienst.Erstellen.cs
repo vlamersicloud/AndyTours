@@ -3,6 +3,7 @@ using AndyTours.Contracts.V1;
 using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
 using AndyTours.Import.Garmin;
+using System.Text;
 namespace AndyTours.Import.Export;
 
 public sealed partial class CourseExportDienst : ICourseExport
@@ -15,6 +16,8 @@ public sealed partial class CourseExportDienst : ICourseExport
             !Enum.IsDefined(anfrage.Profil)) throw Invalid();
         try
         {
+            var name = anfrage.Name.Trim().Normalize(NormalizationForm.FormC);
+            if (name.Length == 0 || name.Any(char.IsControl)) throw Invalid();
             var points = new List<Verlaufspunkt>(anfrage.Verlauf.Count); int gpsCount = 0;
             foreach (var p in anfrage.Verlauf)
             {
@@ -30,12 +33,12 @@ public sealed partial class CourseExportDienst : ICourseExport
             var profile = ToCore(anfrage.Profil);
             var (turns, warning) = await LadeAbbiegungen(BildeCourse.Spur(points), context.Routing, profile, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            var course = BildeCourse.AusVerlauf(points, anfrage.Name.Trim(), turns);
+            var course = BildeCourse.AusVerlauf(points, name, turns);
             var bytes = SchreibeFitCourse.Ausfuehren(course, _zeit.GetUtcNow().UtcDateTime, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
-            return new(bytes, BildeCoursename.Dateiname(anfrage.Name.Trim()), warning);
+            return new(bytes, BildeCoursename.Dateiname(name), warning);
         }
         catch (OperationCanceledException) { throw; }
-        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or OverflowException or IndexOutOfRangeException) { throw Invalid(); }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or OverflowException or IndexOutOfRangeException or Dynastream.Fit.FitException) { throw Invalid(); }
     }
 }
