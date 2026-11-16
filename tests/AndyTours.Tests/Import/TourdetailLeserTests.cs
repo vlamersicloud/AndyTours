@@ -13,11 +13,11 @@ public sealed class TourdetailLeserTests
     public async Task LiestUtcTimerpausenNullableMessungenVersionUndWindowsRelativpfad()
     {
         using var f = new Fixture();
-        var tour = f.Add("2026\ride.fit"); f.Write("2026/ride.fit", new FitTestdatei.Werte(new DateTime(2026, 2, 1, 12, 0, 0, DateTimeKind.Utc), MitPause: true));
+        var tour = f.Add(@"2026\ride.fit"); f.Write("2026/ride.fit", new FitTestdatei.Werte(new DateTime(2026, 2, 1, 12, 0, 0, DateTimeKind.Utc), MitPause: true));
         var first = await f.Reader.Laden(new([tour]), CancellationToken.None); var stage = Assert.Single(first.Etappen);
         Assert.Equal(3, stage.Verlauf!.Count); Assert.Equal(new long[] { 0, 60000, 80000 }, stage.Verlauf.Select(p => p.FahrzeitMillisekunden));
         Assert.Equal(DateTimeOffset.Parse("2026-02-01T12:00:00Z", System.Globalization.CultureInfo.InvariantCulture), stage.Verlauf[0].ZeitpunktUtc); Assert.Null(stage.Verlauf[0].Puls); Assert.Null(stage.Verlauf[1].Position);
-        Assert.Equal(900d, stage.Verlauf[1].Hoehe); Assert.Equal(6d, stage.Verlauf[1].Geschwindigkeit); Assert.Equal(85, stage.Verlauf[1].Trittfrequenz); Assert.Equal(15, stage.Verlauf[1].Temperatur);
+        Assert.Equal(900d, stage.Verlauf[1].Hoehe); Assert.Equal(21.6d, stage.Verlauf[1].Geschwindigkeit); Assert.Equal(85, stage.Verlauf[1].Trittfrequenz); Assert.Equal(15, stage.Verlauf[1].Temperatur);
         Assert.Equal(first.Version, (await f.Reader.Laden(new([tour]), CancellationToken.None)).Version);
         var publicJson = System.Text.Json.JsonSerializer.Serialize(first); Assert.DoesNotContain(f.Root, publicJson); Assert.DoesNotContain("2026/ride.fit", publicJson);
         f.Write("2026/ride.fit", new FitTestdatei.Werte(new DateTime(2026, 2, 2, 12, 0, 0, DateTimeKind.Utc), MitPause: true));

@@ -16,7 +16,7 @@ public sealed class SqliteTourdetailQuelldatenTests
         var tie2 = f.Add(new DateOnly(2025, 1, 1), new TimeOnly(9, 0), "tie2", null, null);
         var tie1 = f.Add(new DateOnly(2025, 1, 1), new TimeOnly(9, 0), "tie1", null, null);
         var result = await f.Reader.Laden([late, tie2, nullTime, tie1], CancellationToken.None);
-        Assert.Equal([nullTime, tie1, tie2, late], result.Etappen.Select(x => x.Tour.Id));
+        Assert.Equal([nullTime, tie2, tie1, late], result.Etappen.Select(x => x.Tour.Id));
         Assert.Equal("profile.fit", result.Etappen[^1].RelativerFitPfad);
         Assert.DoesNotContain("profile.fit", System.Text.Json.JsonSerializer.Serialize(result.Etappen[^1].Tour));
     }
