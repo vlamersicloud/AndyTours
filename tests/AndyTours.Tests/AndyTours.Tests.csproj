@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\AndyTours.Core\AndyTours.Core.csproj" />
+    <ProjectReference Include="..\..\src\AndyTours.Client\AndyTours.Client.csproj" />
     <ProjectReference Include="..\..\src\AndyTours.Daten\AndyTours.Daten.csproj" />
     <ProjectReference Include="..\..\src\AndyTours.Import\AndyTours.Import.csproj" />
     <ProjectReference Include="..\..\tools\AndyTours.Altdatenuebernahme\AndyTours.Altdatenuebernahme.csproj" />
