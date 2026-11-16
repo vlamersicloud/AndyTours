@@ -6,7 +6,7 @@ using AndyTours.Tests.Datenordner;
 namespace AndyTours.Tests.Daten;
 
 /// <summary>
-/// Tests für <see cref="TrainingseinheitenTabelle.Einfuegen"/>, <see cref="TrainingseinheitenTabelle.Aendern"/>,
+/// Tests für <c>TrainingseinheitenTabelle.Einfuegen</c>, <see cref="TrainingseinheitenTabelle.Aendern"/>,
 /// <see cref="TrainingseinheitenTabelle.AendereMehrere"/>, <see cref="TrainingseinheitenTabelle.Loeschen"/> und <see cref="FahrerTabelle.Standardfahrer"/>.
 /// </summary>
 public class EinheitSchreibenTests
