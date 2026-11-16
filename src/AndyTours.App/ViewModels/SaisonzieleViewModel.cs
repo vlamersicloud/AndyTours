@@ -27,7 +27,7 @@ public partial class SaisonzieleViewModel : ObservableObject
     private readonly List<Saisonziel> _arbeitskopie;
 
     /// <summary>Speichert die Ziele der gepflegten Jahre; <c>false</c>, wenn das Speichern fehlgeschlagen ist.</summary>
-    private readonly Func<IReadOnlyList<int>, List<Saisonziel>, bool> _speichern;
+    private readonly Func<IReadOnlyList<int>, List<Saisonziel>, Task<bool>> _speichern;
 
     /// <summary>Jahr, dessen Zeilen gerade angezeigt werden.</summary>
     private int _angezeigtesJahr;
@@ -39,15 +39,13 @@ public partial class SaisonzieleViewModel : ObservableObject
     /// <param name="ziele">Die gespeicherten eigenen Ziele; sie werden nicht verändert.</param>
     /// <param name="laufendesJahr">Das laufende Jahr.</param>
     /// <param name="speichern">Speichert die Ziele der übergebenen Jahre.</param>
-    public SaisonzieleViewModel(IReadOnlyList<Aktivitaet> aktivitaeten, IEnumerable<Saisonziel> ziele, int laufendesJahr,
-        Func<IReadOnlyList<int>, List<Saisonziel>, bool> speichern)
+    public SaisonzieleViewModel(IReadOnlyList<Aktivitaet> aktivitaeten, IEnumerable<Saisonziel> ziele, int laufendesJahr, Func<IReadOnlyList<int>, List<Saisonziel>, bool> speichern)
+        : this(aktivitaeten, ziele, laufendesJahr, (jahre, saisonziele) => Task.FromResult(speichern(jahre, saisonziele))) { }
+
+    public SaisonzieleViewModel(IReadOnlyList<Aktivitaet> aktivitaeten, IEnumerable<Saisonziel> ziele, int laufendesJahr, Func<IReadOnlyList<int>, List<Saisonziel>, Task<bool>> speichern)
     {
-        _aktivitaeten = aktivitaeten;
-        _speichern = speichern;
-        _arbeitskopie = ziele.Select(Kopie).ToList();
-        Jahre = [laufendesJahr, laufendesJahr + 1];
-        _gewaehltesJahr = laufendesJahr;
-        ZeigeJahr(laufendesJahr);
+        _aktivitaeten = aktivitaeten; _speichern = speichern; _arbeitskopie = ziele.Select(Kopie).ToList();
+        Jahre = [laufendesJahr, laufendesJahr + 1]; _gewaehltesJahr = laufendesJahr; ZeigeJahr(laufendesJahr);
     }
 
     /// <summary>Wird ausgelöst, sobald gespeichert wurde; das Fenster schließt sich dann.</summary>
@@ -69,18 +67,24 @@ public partial class SaisonzieleViewModel : ObservableObject
     private string _hinweis = string.Empty;
 
     /// <summary><c>true</c>, wenn alle Eingaben gültig sind (dann sind „OK“ und der Jahreswechsel möglich).</summary>
-    public bool IstGueltig => Hinweis.Length == 0;
+    public bool IstGueltig => !Speichert && Hinweis.Length == 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IstGueltig))]
+    private bool _speichert;
+    partial void OnSpeichertChanged(bool value) => OkCommand.NotifyCanExecuteChanged();
 
     /// <summary>Befehl „OK“: speichert beide Jahre und schließt das Fenster; bei einem Fehler bleibt es offen.</summary>
     [RelayCommand(CanExecute = nameof(IstGueltig))]
-    private void Ok()
+    private async Task OkAsync()
     {
-        UebernimmZeilen();
-        List<Saisonziel> ziele = _arbeitskopie.Where(z => Jahre.Contains(z.AbJahr)).Select(Kopie).ToList();
-        if (_speichern(Jahre, ziele))
-        {
-            Gespeichert?.Invoke(this, EventArgs.Empty);
-        }
+        if (!IstGueltig) return;
+        UebernimmZeilen(); int[] jahre = Jahre.ToArray();
+        List<Saisonziel> ziele = _arbeitskopie.Where(z => jahre.Contains(z.AbJahr)).Select(Kopie).ToList();
+        Hinweis = string.Empty; Speichert = true;
+        try { if (await _speichern(jahre, ziele)) Gespeichert?.Invoke(this, EventArgs.Empty); else if (Hinweis.Length == 0) Hinweis = "Speichern fehlgeschlagen; bitte Saisonziele erneut laden."; }
+        catch { if (Hinweis.Length == 0) Hinweis = "Speichern fehlgeschlagen; Schreibstatus unklar. Bitte Saisonziele erneut laden."; }
+        finally { Speichert = false; }
     }
 
     /// <summary>Jahreswechsel: Änderungen des bisherigen Jahres übernehmen, dann das neue Jahr anzeigen.</summary>
