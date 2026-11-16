@@ -50,7 +50,7 @@ public partial class ApiUebersichtViewModel
         }
         catch (Exception)
         {
-            if (generation == Interlocked.Read(ref _generation)) StatusText = "Sortierte Tourenseite konnte nicht geladen werden; bisherige Sortierung bleibt aktiv.";
+            if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested) StatusText = "Sortierte Tourenseite konnte nicht geladen werden; bisherige Sortierung bleibt aktiv.";
             return false;
         }
         finally
