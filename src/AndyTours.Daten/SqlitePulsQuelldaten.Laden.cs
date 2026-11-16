@@ -12,9 +12,7 @@ public sealed partial class SqlitePulsQuelldaten
         cancellationToken.ThrowIfCancellationRequested();
         if (anfrage is null || anfrage.Von > anfrage.Bis || !Enum.IsDefined(anfrage.Raster) ||
             anfrage.AktivitaetId is <= 0 || anfrage.KategorieId is <= 0 ||
-            (anfrage.ProfilSport is not null &&
-             (string.IsNullOrWhiteSpace(anfrage.ProfilSport) || anfrage.ProfilSport.Length > 64 ||
-              anfrage.ProfilSport.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not '_' and not '-'))))
+            (anfrage.ProfilSport is not null && string.IsNullOrWhiteSpace(anfrage.ProfilSport)))
             throw Ungueltig();
 
         using var db = OeffneDatenbank.Ausfuehren(_datenbankpfad);
