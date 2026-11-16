@@ -65,7 +65,7 @@ public sealed class FitUploadUebernahmeTests
             Assert.Equal(tourId, tour.Id);
             Assert.Single(FahrerTabelle.Laden(db));
             Assert.Equal(2, tour.Anhaenge.Count);
-            Assert.Equal(0, Scalar(db, "SELECT COUNT(*) FROM GarminImportZuordnung;"));
+            Assert.Equal(0, Scalar(db, "SELECT COUNT(*) FROM Einstellung WHERE Schluessel LIKE 'GarminConnect.Aktivitaet.%';"));
             Assert.Equal((int)FitUploadStatus.Importiert, (int)Enum.Parse<FitUploadStatus>(ReadScalar(db, "SELECT Zustand FROM FitUpload WHERE UploadId=$id;", id)));
             Assert.Equal(tourId, long.Parse(ReadScalar(db, "SELECT TourId FROM FitUpload WHERE UploadId=$id;", id), System.Globalization.CultureInfo.InvariantCulture));
         }
