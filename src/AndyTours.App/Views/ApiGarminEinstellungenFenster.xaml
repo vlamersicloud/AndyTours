@@ -9,7 +9,9 @@
         <StackPanel Grid.Row="0">
             <TextBlock Text="Garmin Personal API-Schlüssel" FontSize="18" FontWeight="SemiBold" />
             <TextBlock Text="Schlüsselstatus: wird ausschließlich als vorhanden/nicht vorhanden angezeigt." TextWrapping="Wrap" Margin="0,6,0,0" />
-            <TextBlock Text="{Binding HasKey, StringFormat=Gespeicherter Schlüssel: {0}}" Margin="0,5,0,8" />
+            <TextBlock Margin="0,5,0,8">
+                <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Kein Schlüssel hinterlegt"/><Style.Triggers><DataTrigger Binding="{Binding HasKey}" Value="True"><Setter Property="Text" Value="Schlüssel hinterlegt"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+            </TextBlock>
             <PasswordBox x:Name="SchluesselFeld" PasswordChanged="SchluesselFeld_PasswordChanged" IsEnabled="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType=Window}}" />
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Button Content="Schlüssel speichern" Command="{Binding SchluesselSpeichernCommand}" Padding="10,5" Margin="0,0,8,0" />

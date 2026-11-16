@@ -50,7 +50,13 @@ public partial class ApiGarminEinstellungenViewModel : ObservableObject, IDispos
 
     private bool Idle() => !_closing && !Laedt && !Aendert;
     private bool CanMutate() => Idle() && _geladen;
-    private bool CanSaveKey() => CanMutate() && _keyDraft.Length > 0;
+    private bool CanSaveKey()
+    {
+        if (!CanMutate()) return false;
+        var trimmed = _keyDraft.Trim();
+        return trimmed.Length is > 0 and <= 4096 &&
+               trimmed.All(c => char.IsAsciiLetterOrDigit(c) || "-._~+/=".Contains(c));
+    }
     private bool CanSaveAuto() => CanMutate() && AutoDraft != AllePaketeAutomatisch;
 
     [RelayCommand(CanExecute = nameof(Idle))]

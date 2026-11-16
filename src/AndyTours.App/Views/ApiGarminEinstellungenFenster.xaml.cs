@@ -8,8 +8,8 @@ public partial class ApiGarminEinstellungenFenster : Window, IDisposable
     private bool _disposed;
     public ApiGarminEinstellungenFenster(ApiGarminEinstellungenViewModel viewModel)
     {
-        InitializeComponent();
         _viewModel=viewModel;
+        InitializeComponent();
         DataContext=viewModel;
         Loaded+=LoadedWindow;
         Closing+=ClosingWindow;
