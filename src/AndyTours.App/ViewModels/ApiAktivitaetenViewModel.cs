@@ -169,10 +169,12 @@ public partial class ApiAktivitaetenViewModel : ObservableObject
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
+            HatAenderungen = true;
             StatusText = "Speichern abgebrochen; der Serverstatus ist möglicherweise unklar. Bitte neu laden und nicht blind erneut ausführen.";
         }
         catch (Exception)
         {
+            HatAenderungen = true;
             StatusText = "Speicherstatus unklar. Bitte zuerst neu laden und die Änderung prüfen; nicht erneut absenden.";
         }
         finally
