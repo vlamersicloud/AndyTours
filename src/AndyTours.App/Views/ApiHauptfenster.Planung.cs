@@ -11,13 +11,14 @@ public partial class ApiHauptfenster
         if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         _viewModel.Laedt = true;
+        CancellationToken ct = _lifetime.Token;
         try
         {
             if (TourenplanungAngefordert is { } handlers)
-                foreach (Func<CancellationToken, Task> handler in handlers.GetInvocationList()) await handler(_lifetime.Token);
+                foreach (Func<CancellationToken, Task> handler in handlers.GetInvocationList()) await handler(ct);
         }
-        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch { if (!_geschlossen) _viewModel.StatusText = "Die Tourenplanung konnte nicht geöffnet werden."; }
-        finally { _viewModel.Laedt = false; _verwaltungOffen = false; }
+        finally { if (!_geschlossen) _viewModel.Laedt = false; _verwaltungOffen = false; }
     }
 }

@@ -77,7 +77,7 @@ public partial class TourenplanungViewModel
     [RelayCommand(CanExecute = nameof(KannSpeichern))]
     private async Task GarminUebertragen()
     {
-        if (ApiGarminUebertragen is { } api) { await api(); return; }
+        if (IstApiModus) { if (ApiGarminUebertragen is { } api) await api(); else MessageBox.Show("API-Aktion noch nicht bereit.", Titel, MessageBoxButton.OK, MessageBoxImage.Information); return; }
         string name = BildeCoursename.FuerPlanung(Dateipfad, DateOnly.FromDateTime(DateTime.Today));
         Window? fenster = global::System.Windows.Application.Current?.Windows.OfType<TourenplanungFenster>().FirstOrDefault(f => f.DataContext == this);
         CourseUebertragenViewModel.Zeige(fenster, [new Coursezeile(Planung, name)], Profil, _ladeRouting);
@@ -87,7 +87,7 @@ public partial class TourenplanungViewModel
     [RelayCommand(CanExecute = nameof(KannSpeichern))]
     private async Task Speichern()
     {
-        if (ApiSpeichern is { } api) { await api(); return; }
+        if (IstApiModus) { if (ApiSpeichern is { } api) await api(); else MessageBox.Show("API-Aktion noch nicht bereit.", Titel, MessageBoxButton.OK, MessageBoxImage.Information); return; }
         var dialog = new SaveFileDialog
         {
             Title = "Planung speichern",
@@ -123,7 +123,7 @@ public partial class TourenplanungViewModel
     [RelayCommand(CanExecute = nameof(KannApiBedienen))]
     private async Task Oeffnen()
     {
-        if (ApiOeffnen is { } api) { await api(); return; }
+        if (IstApiModus) { if (ApiOeffnen is { } api) await api(); else MessageBox.Show("API-Aktion noch nicht bereit.", Titel, MessageBoxButton.OK, MessageBoxImage.Information); return; }
         if (!DarfVerwerfen())
         {
             return;

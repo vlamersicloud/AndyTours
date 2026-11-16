@@ -47,10 +47,16 @@ public static class ApiTourenplanungAnzeige
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
         catch
         {
-            controller?.Dispose();
-            profile?.Dispose();
-            if (window is not null) { try { window.Close(); } catch { } }
             if (owner.IsVisible) MessageBox.Show(owner, "Die Tourenplanung konnte nicht mit dem Backend geöffnet werden.", "Tour planen", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            if (controller is not null || profile is not null || window is not null)
+            {
+                controller?.Dispose();
+                profile?.Dispose();
+                if (window is not null) { try { window.Close(); } catch { } }
+            }
         }
     }
 
