@@ -17,28 +17,32 @@ public static class OverlayGpxRegeln
             anfrage.OrdnerId is <= 0)
             throw Invalid();
 
-        string dateiname;
-        try
-        {
-            if (string.IsNullOrWhiteSpace(anfrage.Dateiname)) throw Invalid();
-            dateiname = anfrage.Dateiname.Normalize(NormalizationForm.FormC);
-            if (dateiname.Length is < 1 or > 255 || dateiname is "." or ".." ||
-                dateiname.IndexOfAny(['/', '\\']) >= 0 || dateiname.Any(char.IsControl))
-                throw Invalid();
-        }
-        catch (ArgumentException)
-        {
-            throw Invalid();
-        }
-
+        string dateiname = NormalisiereDateiname(anfrage.Dateiname);
+        _ = AnzeigenameAusBasename(dateiname);
         return anfrage with { Version = anfrage.Version.ToUpperInvariant(), Dateiname = dateiname };
     }
 
-    public static string Anzeigename(string dateiname)
+    public static string Anzeigename(string dateiname) =>
+        AnzeigenameAusBasename(NormalisiereDateiname(dateiname));
+
+    private static string NormalisiereDateiname(string dateiname)
     {
-        var request = new OverlayGpxImportAnfrage(new string('0', 64), Guid.NewGuid(), null, dateiname);
-        string basename = Normalisieren(request).Dateiname;
-        string displayName = Path.GetFileNameWithoutExtension(basename).Trim().Normalize(NormalizationForm.FormC);
+        if (string.IsNullOrWhiteSpace(dateiname)) throw Invalid();
+        string normalized;
+        try { normalized = dateiname.Normalize(NormalizationForm.FormC); }
+        catch (ArgumentException) { throw Invalid(); }
+
+        if (normalized.Length is < 1 or > 255 || normalized is "." or ".." ||
+            normalized.IndexOfAny(['/', '\\']) >= 0 || normalized.Any(char.IsControl))
+            throw Invalid();
+        return normalized;
+    }
+
+    private static string AnzeigenameAusBasename(string basename)
+    {
+        string displayName;
+        try { displayName = Path.GetFileNameWithoutExtension(basename).Trim().Normalize(NormalizationForm.FormC); }
+        catch (ArgumentException) { throw Invalid(); }
         if (displayName.Length == 0 || displayName.Any(char.IsControl)) throw Invalid();
         return displayName;
     }
