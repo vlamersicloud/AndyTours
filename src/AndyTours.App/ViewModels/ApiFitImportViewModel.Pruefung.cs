@@ -10,6 +10,13 @@ public partial class ApiFitImportViewModel
     private const int PruefChunk = 10000;
     public event Action<GarminImportViewModel>? PruefungAngefordert;
 
+    private static string FehlerZusammenfassung(IReadOnlyList<FitUploadPrueffehler> errors)
+    {
+        var names = errors.Take(20).Select(e => e.Dateiname + ": FIT-Datei ungültig.").ToList();
+        if (errors.Count > names.Count) names.Add($"Weitere {errors.Count - names.Count} ungültige Dateien; alle bleiben in der Warteschlange sichtbar.");
+        return string.Join(Environment.NewLine, names);
+    }
+
     private bool KannPruefen() => Idle() && Dateien.Any(x => x.Uploaded is not null && !x.Abgeschlossen);
 
     partial void NotifyPruefCommands() => PruefenCommand.NotifyCanExecuteChanged();
@@ -55,8 +62,7 @@ public partial class ApiFitImportViewModel
         var rows = preview.Zeilen.Where(row => chunk.Any(f => f.UploadId == row.UploadId)).ToArray();
         if (rows.Length == 0)
         {
-            Status = preview.Fehler.Count == 0 ? "Keine gültigen Uploads zur Prüfung." :
-                string.Join(" ", preview.Fehler.Select(e => $"{e.Dateiname}: FIT-Datei ungültig."));
+            Status = preview.Fehler.Count == 0 ? "Keine gültigen Uploads zur Prüfung." : FehlerZusammenfassung(preview.Fehler);
             NotifyCommands();
             return;
         }
@@ -83,8 +89,7 @@ public partial class ApiFitImportViewModel
             };
         }).ToArray();
 
-        var errorsText = preview.Fehler.Count == 0 ? string.Empty :
-            string.Join(Environment.NewLine, preview.Fehler.Select(e => $"{e.Dateiname}: FIT-Datei ungültig."));
+        var errorsText = preview.Fehler.Count == 0 ? string.Empty : FehlerZusammenfassung(preview.Fehler);
         var zoneText = string.IsNullOrWhiteSpace(preview.FallbackZeitzoneId) ? string.Empty :
             $"Zeitzone für FIT-Dateien ohne Zeitzonenangabe: {preview.FallbackZeitzoneId}.";
         string editorHint = string.Join(Environment.NewLine, new[] { zoneText, errorsText }.Where(x => !string.IsNullOrWhiteSpace(x)));
