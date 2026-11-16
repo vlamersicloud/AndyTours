@@ -35,6 +35,9 @@ public partial class App
             overlayHost = new ApiOverlayVerwaltungHost(fenster, uebergebeneSitzung.OverlayLeser,
                 uebergebeneSitzung.OverlayVerwaltung, uebergebeneSitzung.OverlayGpxImport);
             fenster.OverlaysAngefordert += overlayHost.Oeffnen;
+            fenster.TourenplanungAngefordert += ct => ApiTourenplanungAnzeige.Oeffnen(fenster,
+                uebergebeneSitzung.PlanungsProfil, uebergebeneSitzung.PlanungsRouting, uebergebeneSitzung.PlanungsDateien,
+                uebergebeneSitzung.PlanungsCourseExport, overlayHost.Kontext, ct);
             fenster.AktivitaetenVerwaltenAngefordert += async () =>
             {
                 ApiAktivitaetenFenster? verwaltungsfenster = null;
