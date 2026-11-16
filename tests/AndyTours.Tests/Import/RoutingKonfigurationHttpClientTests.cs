@@ -42,8 +42,11 @@ public sealed class RoutingKonfigurationHttpClientTests
             ("PUT", "/api/v1/routing-konfiguration/ors-schluessel"),
             ("POST", "/api/v1/routing-konfiguration/ors-schluessel/entfernen")
         }, calls.Select(x => (x.Method, x.Path)));
-        Assert.Contains(Version, calls[1].Body, StringComparison.Ordinal);
-        Assert.Contains("openrouteservice", calls[1].Body, StringComparison.OrdinalIgnoreCase);
+        using (var payload = JsonDocument.Parse(calls[1].Body))
+        {
+            Assert.Equal(Version, payload.RootElement.GetProperty("version").GetString());
+            Assert.Equal((int)RoutingAnbieter.Openrouteservice, payload.RootElement.GetProperty("dienst").GetInt32());
+        }
         Assert.Contains("FAKE-SECRET", calls[4].Body, StringComparison.Ordinal);
         Assert.DoesNotContain("FAKE-SECRET", string.Join("", calls.Where((_, i) => i != 4).Select(x => x.Body)), StringComparison.Ordinal);
     }
@@ -74,12 +77,17 @@ public sealed class RoutingKonfigurationHttpClientTests
     [Fact]
     public async Task Invalid_request_is_rejected_before_send_and_cancellation_is_not_retried()
     {
-        using var handler = new Handler((_, ct) => throw new OperationCanceledException(ct));
+        using var cts = new CancellationTokenSource();
+        using var handler = new Handler((_, ct) =>
+        {
+            cts.Cancel();
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(Ok(new(Version, RoutingAnbieter.BRouter, "https://router.example", false, false)));
+        });
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
         var client = new RoutingKonfigurationHttpClient(http);
         await Assert.ThrowsAsync<StammdatenException>(() => client.OrsKeySpeichern(new("bad", "FAKE"), default));
         Assert.Equal(0, handler.Sends);
-        using var cts = new CancellationTokenSource();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.Laden(cts.Token));
         Assert.Equal(1, handler.Sends);
     }
