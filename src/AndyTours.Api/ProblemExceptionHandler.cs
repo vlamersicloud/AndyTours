@@ -1,6 +1,8 @@
 using AndyTours.Application.Touren;
 using AndyTours.Application.Stammdaten;
+using AndyTours.Application.Import;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 
 namespace AndyTours.Api;
@@ -11,6 +13,14 @@ public sealed class ProblemExceptionHandler : IExceptionHandler
     /// <inheritdoc />
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
+        if (exception is FitUploadZuGrossException or BadHttpRequestException { StatusCode: 413 })
+        {
+            await Results.Problem(statusCode: 413, title: "Die FIT-Datei überschreitet die zulässige Größe.",
+                extensions: new Dictionary<string, object?> { ["traceId"] = httpContext.TraceIdentifier, ["code"] = "fit_upload.zu_gross" })
+                .ExecuteAsync(httpContext);
+            return true;
+        }
+
         if (exception is StammdatenException stammdaten)
         {
             var (status, title, code) = stammdaten.Art switch
