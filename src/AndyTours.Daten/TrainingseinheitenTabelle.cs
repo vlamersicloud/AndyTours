@@ -182,6 +182,15 @@ public static class TrainingseinheitenTabelle
         Action<SqliteConnection, SqliteTransaction, long>? nachEinfuegen = null)
     {
         using SqliteTransaction transaktion = verbindung.BeginTransaction();
+        var result = Einfuegen(verbindung, transaktion, einheit, nachEinfuegen);
+        transaktion.Commit();
+        return result;
+    }
+
+    /// <summary>Fügt eine Trainingseinheit samt abhängigen Daten in die vom Aufrufer verwaltete Transaktion ein.</summary>
+    public static (long Id, long FahrerId) Einfuegen(SqliteConnection verbindung, SqliteTransaction transaktion,
+        Trainingseinheit einheit, Action<SqliteConnection, SqliteTransaction, long>? nachEinfuegen = null)
+    {
         long fahrerId = einheit.FahrerId > 0 ? einheit.FahrerId : FahrerTabelle.Standardfahrer(verbindung, transaktion);
 
         long id;
@@ -206,9 +215,8 @@ public static class TrainingseinheitenTabelle
 
         SchreibeKategorien(verbindung, transaktion, id, einheit.KategorieIds);
         SchreibeNeueAnhaenge(verbindung, transaktion, id, einheit.Anhaenge);
-        // Zusätzliche Herkunftszuordnungen werden gemeinsam mit der Einheit bestätigt oder zurückgerollt.
+        // Zusätzliche Herkunftszuordnungen bleiben Teil der vom Aufrufer verwalteten Transaktion.
         nachEinfuegen?.Invoke(verbindung, transaktion, id);
-        transaktion.Commit();
         return (id, fahrerId);
     }
 
