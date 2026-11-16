@@ -40,6 +40,10 @@ public partial class JahresfortschrittViewModel : ObservableObject
     partial void OnZeigeHoehenmeterChanged(bool value) => Zeichne();
     partial void OnZeigePulsChanged(bool value) => Zeichne();
 
+    /// <summary>Blendet Pulsreihen aus, ohne die geladene Analyse zu verwerfen.</summary>
+    [RelayCommand]
+    private void PulsAusblenden() => ZeigePuls = false;
+
     /// <summary>Aktivität und Kategorie wirken wie bisher; der Zeitraum wird hier ausdrücklich unabhängig vom Tabellen-Jahresfilter eingestellt.</summary>
     public event EventHandler? ZeitraumGeaendert;
 
@@ -209,7 +213,8 @@ public partial class JahresfortschrittViewModel : ObservableObject
             {
                 var linie = new LineSeries {
                     Title = quelle.Title, YAxisKey = quelle.YAxisKey,
-                    Color = quelle.FillColor, StrokeThickness = 2,
+                    Color = quelle.FillColor,
+                    StrokeThickness = quelle.YAxisKey == "strecke" && ZeigePuls ? 4 : 2,
                     MarkerType = MarkerType.Circle, MarkerSize = 3,
                     TrackerFormatString = "{0}: {4:0.##}" };
                 var werte = quelle.Items.ToDictionary(

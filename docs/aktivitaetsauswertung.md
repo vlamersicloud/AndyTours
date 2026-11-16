@@ -142,3 +142,5 @@ Unter „Darstellung“ kann für alle ausgewählten Datenreihen gemeinsam zwisc
 ## Kompakte Pulsansicht
 
 Bestleistungen, Saisonhinweise und Pulsdetails sind standardmäßig eingeklappt. Die Pulsdetails enthalten die vollständige Statusmeldung, die Garmin-Referenz und eine separat scrollbar begrenzte Tabelle mit festen, lesbaren Spaltenbreiten. In der Übersicht ist die Statuszeile auf eine Zeile begrenzt; der vollständige Text steht auch im Tooltip. Nach erfolgreichem Laden der Pulsanalyse wird die Pulsreihe im gemeinsamen Diagramm automatisch eingeblendet. Die Übersicht passt sich an die Fensterbreite an; horizontales Scrollen betrifft bei Bedarf nur die Detailtabelle.
+
+Bei eingeblendeten Pulsreihen ist die Streckenlinie doppelt so stark (4 statt 2). „Puls ausblenden“ neben „Pulsanalyse laden“ entfernt die Pulsreihen und ihre Achse aus dem Diagramm, ohne die Analyse zu löschen. Über „Diagramminhalt → Puls“ lassen sie sich ohne erneutes Laden wieder einblenden.

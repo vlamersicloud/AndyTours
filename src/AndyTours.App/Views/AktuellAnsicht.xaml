@@ -147,7 +147,10 @@
                         <Button Content="Garmin-Zonen aktualisieren" Command="{Binding GarminZonenAktualisierenCommand}" Padding="8,3" Margin="0,0,12,6" />
                         <ComboBox ItemsSource="{Binding Pulsprofile}" SelectedItem="{Binding Pulsprofil}" DisplayMemberPath="Anzeige" Width="210" Margin="0,0,12,6" />
                         <CheckBox Content="10-bpm-Bereiche statt Garmin-Zonen" IsChecked="{Binding BpmBereiche}" VerticalAlignment="Center" Margin="0,0,12,6" />
-                        <Button Content="Pulsanalyse laden" Command="{Binding PulsdatenLadenCommand}" Padding="8,3" Margin="0,0,0,6" />
+                        <Button Content="Pulsanalyse laden" Command="{Binding PulsdatenLadenCommand}" Padding="8,3" Margin="0,0,8,6" />
+                        <Button Content="Puls ausblenden" Command="{Binding PulsAusblendenCommand}"
+                                IsEnabled="{Binding ZeigePuls}" Padding="8,3" Margin="0,0,0,6"
+                                ToolTip="Pulsreihen ausblenden; die geladene Analyse bleibt erhalten." />
                     </WrapPanel>
                     <TextBlock Text="{Binding PulsStatus}" TextTrimming="CharacterEllipsis"
                                ToolTip="{Binding PulsStatus}" Margin="0,0,0,4" />
