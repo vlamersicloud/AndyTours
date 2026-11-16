@@ -10,53 +10,76 @@ namespace AndyTours.Tests.Import;
 
 public sealed class OverlayHttpClientTests
 {
+    private const string AggregateVersion = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    private const string ItemVersion = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
+
     [Fact]
     public async Task Leser_und_Ordner_mutationen_senden_versionierte_requests_und_liefern_serverdaten()
     {
-        var contentDto = new OverlayInhaltAntwort(7, "ITEM-V", new IReadOnlyList<OverlayPosition>[]
+        var contentDto = new OverlayInhaltAntwort(7, ItemVersion, new IReadOnlyList<OverlayPosition>[]
         {
             new[] { new OverlayPosition(1.25, 2.5) },
             new[] { new OverlayPosition(3, 4), new OverlayPosition(5, 6) }
         });
-        var best = new OverlayBestandAntwort("AGG-V", OverlayFarbe.Gelb,
+        var best = new OverlayBestandAntwort(AggregateVersion, OverlayFarbe.Gelb,
             new[] { new OverlayOrdnerAntwort(4, null, "Alpen") },
-            new[] { new OverlayMetadatenAntwort(7, 4, "Trail", OverlayFarbe.Tuerkis, true, "ITEM-V") });
+            new[] { new OverlayMetadatenAntwort(7, 4, "Trail", OverlayFarbe.Tuerkis, true, ItemVersion) });
         var created = new OverlayAnlegenAntwort(best, 4);
-        var success = new TrackingContent(Json(contentDto));
-        var seen = new List<string>();
-        var handler = new RecordingHandler((request, token) =>
+        var metadataContent = new TrackingContent(Json(best));
+        var geometryContent = new TrackingContent(Json(contentDto));
+        int metadataReads = 0;
+        int geometryReads = 0;
+        var handler = new RecordingHandler(async (request, token) =>
         {
-            seen.Add(request.Method + " " + request.RequestUri!.PathAndQuery);
-            if (request.Method == HttpMethod.Get && request.RequestUri.AbsolutePath.EndsWith("/inhalt", StringComparison.Ordinal))
-                Assert.Equal("\"ITEM-V\"", Assert.Single(request.Headers.GetValues("If-Match")));
+            if (request.Method == HttpMethod.Get && request.RequestUri!.AbsolutePath == "/api/v1/overlays")
+            {
+                metadataReads++;
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = metadataContent };
+            }
+            if (request.Method == HttpMethod.Get && request.RequestUri!.AbsolutePath.EndsWith("/inhalt", StringComparison.Ordinal))
+            {
+                geometryReads++;
+                Assert.Equal($"\"{ItemVersion}\"", Assert.Single(request.Headers.GetValues("If-Match")));
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = geometryContent };
+            }
             if (request.Method == HttpMethod.Delete)
-                Assert.Equal("\"AGG-V\"", Assert.Single(request.Headers.GetValues("If-Match")));
+            {
+                Assert.Equal($"\"{AggregateVersion}\"", Assert.Single(request.Headers.GetValues("If-Match")));
+                return JsonResponse(best);
+            }
             if (request.Method == HttpMethod.Post)
             {
-                using var json = JsonDocument.Parse(request.Content!.ReadAsStringAsync(token).GetAwaiter().GetResult());
-                Assert.Equal("AGG-V", json.RootElement.GetProperty("version").GetString());
+                using var json = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
+                Assert.Equal(AggregateVersion, json.RootElement.GetProperty("version").GetString());
                 Assert.Equal("Alpen", json.RootElement.GetProperty("name").GetString());
                 Assert.Equal("44444444-4444-4444-4444-444444444444", json.RootElement.GetProperty("anfrageId").GetString());
+                return JsonResponse(created);
             }
-            var body = request.Method == HttpMethod.Get && request.RequestUri.AbsolutePath.EndsWith("/inhalt", StringComparison.Ordinal)
-                ? Json(contentDto) : (request.Method == HttpMethod.Post ? Json(created) : Json(best));
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = request.Method == HttpMethod.Get ? success : body });
+            throw new InvalidOperationException("Unexpected fake request.");
         });
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
         var reader = new OverlayLeserHttpClient(http);
         var manager = new OverlayVerwaltungHttpClient(http);
-        var loaded = await reader.Inhalt(7, "ITEM-V", default);
-        Assert.Equal("ITEM-V", loaded.Version);
+
+        var metadata = await reader.Laden(default);
+        Assert.Equal(AggregateVersion, metadata.Version);
+        Assert.Equal(OverlayFarbe.Gelb, metadata.GemeinsameFarbe);
+        Assert.Equal("Trail", Assert.Single(metadata.Overlays).Name);
+        var loaded = await reader.Inhalt(7, ItemVersion, default);
+        Assert.Equal(ItemVersion, loaded.Version);
         Assert.Equal(2, loaded.Abschnitte.Count);
         Assert.Equal(1.25, loaded.Abschnitte[0][0].Breite);
         Assert.Equal(2.5, loaded.Abschnitte[0][0].Laenge);
-        Assert.True(success.WasDisposed);
-        var made = await manager.OrdnerAnlegen(new("AGG-V", Guid.Parse("44444444-4444-4444-4444-444444444444"), null, "Alpen"));
+        Assert.True(metadataContent.WasDisposed);
+        Assert.True(geometryContent.WasDisposed);
+        var made = await manager.OrdnerAnlegen(new(AggregateVersion, Guid.Parse("44444444-4444-4444-4444-444444444444"), null, "Alpen"));
         Assert.Equal(4, made.Id);
-        Assert.Equal("AGG-V", made.Bestand.Version);
-        var deleted = await manager.OrdnerLoeschen(4, "AGG-V", default);
-        Assert.Equal("AGG-V", deleted.Version);
-        Assert.Equal(3, seen.Count);
+        Assert.Equal(AggregateVersion, made.Bestand.Version);
+        var deleted = await manager.OrdnerLoeschen(4, AggregateVersion, default);
+        Assert.Equal(AggregateVersion, deleted.Version);
+        Assert.Equal(1, metadataReads);
+        Assert.Equal(1, geometryReads);
+        Assert.Equal(4, handler.Count);
     }
 
     [Fact]
@@ -72,7 +95,7 @@ public sealed class OverlayHttpClientTests
             Assert.Equal(HttpMethod.Put, request.Method);
             Assert.Equal("/api/v1/overlays/gpx/55555555-5555-5555-5555-555555555555", request.RequestUri!.AbsolutePath);
             Assert.Equal("?ordnerId=12", request.RequestUri.Query);
-            Assert.Equal("\"OLD\"", Assert.Single(request.Headers.GetValues("If-Match")));
+            Assert.Equal("\"DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\"", Assert.Single(request.Headers.GetValues("If-Match")));
             Assert.Equal("Grüße.gpx", request.Content!.Headers.ContentDisposition!.FileNameStar);
             Assert.Equal("application/gpx+xml", request.Content.Headers.ContentType!.MediaType);
             Assert.Equal(bytes, await request.Content.ReadAsByteArrayAsync(ct));
@@ -81,7 +104,7 @@ public sealed class OverlayHttpClientTests
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
         using var input = new MemoryStream(bytes);
         var client = new OverlayGpxImportHttpClient(http);
-        var result = await client.Importieren(new("old", Guid.Parse("55555555-5555-5555-5555-555555555555"), 12, "Grüße.gpx"), input, default);
+        var result = await client.Importieren(new("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", Guid.Parse("55555555-5555-5555-5555-555555555555"), 12, "Grüße.gpx"), input, default);
         Assert.Equal(9, result.Id);
         Assert.True(input.CanRead);
         Assert.True(responseContent.WasDisposed);
@@ -125,12 +148,12 @@ public sealed class OverlayHttpClientTests
         });
         using var cancelHttp = new HttpClient(cancelHandler) { BaseAddress = new Uri("https://unit.test/") };
         using var cancelStream = new MemoryStream([7, 8]);
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            new OverlayGpxImportHttpClient(cancelHttp).Importieren(request, cancelStream, cts.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new OverlayGpxImportHttpClient(cancelHttp).Importieren(request, cancelStream, cts.Token));
         Assert.Equal(1, cancelHandler.Count);
         Assert.True(cancelStream.CanRead);
     }
 
+    private static HttpResponseMessage JsonResponse<T>(T value) => new(HttpStatusCode.OK) { Content = Json(value) };
     private static StringContent Json<T>(T value) => new(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
     private sealed class RecordingHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
     {
@@ -142,7 +165,7 @@ public sealed class OverlayHttpClientTests
     {
         public bool WasDisposed { get; private set; }
         protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context) => inner.CopyToAsync(stream);
-        protected override bool TryComputeLength(out long length) { length = 0; return true; }
+        protected override bool TryComputeLength(out long length) { length = 0; return false; }
         protected override void Dispose(bool disposing) { WasDisposed = true; inner.Dispose(); base.Dispose(disposing); }
     }
     private sealed class TrackingErrorContent : HttpContent
