@@ -31,7 +31,18 @@ public static class LeseFitVerlauf
     /// </remarks>
     /// <param name="pfad">Pfad der FIT-Datei.</param>
     /// <returns>Die Messpunkte und <c>null</c>, oder <c>null</c> und der Grund, warum die Datei nicht lesbar ist.</returns>
-    public static (List<Verlaufspunkt>? Verlauf, string? Fehler) Ausfuehren(string pfad)
+    public static (List<Verlaufspunkt>? Verlauf, string? Fehler) Ausfuehren(string pfad) => Ausfuehren(pfad, CancellationToken.None);
+
+    public static (List<Verlaufspunkt>? Verlauf, string? Fehler) Ausfuehren(string pfad, CancellationToken cancellationToken)
+    {
+        using var decoderSperre = FitDecoderTor.Betreten(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        var ergebnis = AusfuehrenIntern(pfad);
+        cancellationToken.ThrowIfCancellationRequested();
+        return ergebnis;
+    }
+
+    private static (List<Verlaufspunkt>? Verlauf, string? Fehler) AusfuehrenIntern(string pfad)
     {
         List<Verlaufspunkt> verlauf = [];
         double distanzKm = 0;

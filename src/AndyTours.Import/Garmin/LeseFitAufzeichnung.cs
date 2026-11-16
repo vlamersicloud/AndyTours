@@ -47,7 +47,18 @@ public static partial class LeseFitAufzeichnung
     /// <returns>Die Aufzeichnung und <c>null</c>, oder <c>null</c> und der Grund, warum sie nicht lesbar ist.</returns>
     public static (Aufzeichnung? Aufzeichnung, string? Fehler) Ausfuehren(string pfad) => Ausfuehren(pfad, TimeZoneInfo.Local);
 
-    public static (Aufzeichnung? Aufzeichnung, string? Fehler) Ausfuehren(string pfad, TimeZoneInfo fallbackZeitzone)
+    public static (Aufzeichnung? Aufzeichnung, string? Fehler) Ausfuehren(string pfad, TimeZoneInfo fallbackZeitzone) => Ausfuehren(pfad, fallbackZeitzone, CancellationToken.None);
+
+    public static (Aufzeichnung? Aufzeichnung, string? Fehler) Ausfuehren(string pfad, TimeZoneInfo fallbackZeitzone, CancellationToken cancellationToken)
+    {
+        using var decoderSperre = FitDecoderTor.Betreten(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        var ergebnis = AusfuehrenIntern(pfad, fallbackZeitzone);
+        cancellationToken.ThrowIfCancellationRequested();
+        return ergebnis;
+    }
+
+    private static (Aufzeichnung? Aufzeichnung, string? Fehler) AusfuehrenIntern(string pfad, TimeZoneInfo fallbackZeitzone)
     {
         ArgumentNullException.ThrowIfNull(fallbackZeitzone);
         FileIdMesg? dateikennung = null;
