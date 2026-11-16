@@ -13,7 +13,6 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
     private readonly IGarminImportJobs _jobs;
     private readonly CancellationTokenSource _readLifetime = new();
     private Guid? _pendingStartId;
-    private string? _pendingStartVersion;
     private bool _closing;
     private bool _disposed;
     private long _generation;
