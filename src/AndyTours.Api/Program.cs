@@ -40,6 +40,13 @@ builder.Services.AddSingleton<IGarminEinstellungen>(_ => new SqliteGarminEinstel
 builder.Services.AddSingleton(sp => new SqliteGarminImportJobs(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IGarminImportJobs>(sp => sp.GetRequiredService<SqliteGarminImportJobs>());
 builder.Services.AddSingleton<IGarminImportArbeitspeicher>(sp => sp.GetRequiredService<SqliteGarminImportJobs>());
+builder.Services.AddSingleton<IGarminImportServerdaten>(_ => new SqliteGarminImportServerdaten(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton(_ => new AndyTours.Import.Garmin.GarminImportArtefakte(dataDirectory));
+builder.Services.AddSingleton(sp => new AndyTours.Import.Garmin.GarminImportPaketWorker(
+    sp.GetRequiredService<IGarminImportArbeitspeicher>(),
+    sp.GetRequiredService<IGarminImportServerdaten>(),
+    sp.GetRequiredService<AndyTours.Import.Garmin.GarminImportArtefakte>()));
+builder.Services.AddHostedService<GarminImportDienst>();
 builder.Services.AddSingleton<IWartungsverwaltung>(_ => new SqliteWartungsverwaltung(Path.Combine(dataDirectory, "andytours.db")));
 
 var app = builder.Build();
