@@ -43,6 +43,7 @@ public sealed class BackendClientSitzung : IDisposable
         Auswertung = new AktivitaetsauswertungHttpClient(_httpClient);
         Stammdaten = new StammdatenHttpClient(_httpClient);
         Aktivitaeten = new AktivitaetenHttpVerwaltung(_httpClient);
+        Kategorien = new KategorienVerwaltungHttpClient(_httpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
@@ -56,6 +57,8 @@ public sealed class BackendClientSitzung : IDisposable
     public IStammdatenLeser Stammdaten { get; }
     /// <summary>Versionierte Verwaltungsoperationen für Aktivitäten.</summary>
     public IAktivitaetenVerwaltung Aktivitaeten { get; }
+    /// <summary>Versionierte Verwaltungsoperationen für Kategorien.</summary>
+    public IKategorienVerwaltung Kategorien { get; }
     /// <summary>Verbindungsprüfung.</summary>
     public IBackendVerbindung Verbindung { get; }
 
