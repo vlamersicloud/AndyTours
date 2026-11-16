@@ -53,7 +53,7 @@ public static class LeseGpxStrecke
         return ParseRoot(document.Root, cancellationToken);
     }
 
-    private static IReadOnlyList<IReadOnlyList<Geoposition>>? ParseRoot(XElement? root, CancellationToken ct)
+    private static List<IReadOnlyList<Geoposition>>? ParseRoot(XElement? root, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         if (root is null || root.Name.LocalName != "gpx") return null;
