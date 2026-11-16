@@ -14,28 +14,12 @@ public static class Overlaydarstellung
     private const double Linienbreite = 3;
     private const double Rand = 0.08;
 
-    private static readonly Dictionary<Overlayfarbe, (string Name, byte R, byte G, byte B)> Farben = new()
-    {
-        [Overlayfarbe.Violett] = ("Violett", 0x9B, 0x30, 0xD9),
-        [Overlayfarbe.Blau] = ("Blau", 0x1F, 0x4E, 0xD8),
-        [Overlayfarbe.Hellblau] = ("Hellblau", 0x3B, 0xA7, 0xF0),
-        [Overlayfarbe.Tuerkis] = ("Türkis", 0x00, 0xA8, 0xA8),
-        [Overlayfarbe.Gruen] = ("Grün", 0x2E, 0x9E, 0x3A),
-        [Overlayfarbe.Gelb] = ("Gelb", 0xE8, 0xC2, 0x00),
-        [Overlayfarbe.Orange] = ("Orange", 0xF0, 0x7A, 0x10),
-        [Overlayfarbe.Rot] = ("Rot", 0xD6, 0x22, 0x22),
-        [Overlayfarbe.Pink] = ("Pink", 0xE8, 0x3E, 0x9C),
-        [Overlayfarbe.Braun] = ("Braun", 0x8B, 0x5A, 0x2B),
-        [Overlayfarbe.Grau] = ("Grau", 0x80, 0x80, 0x80),
-        [Overlayfarbe.Schwarz] = ("Schwarz", 0x20, 0x20, 0x20),
-    };
-
-    public static string Anzeigename(Overlayfarbe farbe) => Farben[farbe].Name;
+    public static string Anzeigename(Overlayfarbe farbe) => Overlayfarben.Wert(farbe).Name;
 
     public static System.Windows.Media.Color Farbwert(Overlayfarbe farbe)
     {
-        (_, byte r, byte g, byte b) = Farben[farbe];
-        return System.Windows.Media.Color.FromRgb(r, g, b);
+        var tone = Overlayfarben.Wert(farbe);
+        return System.Windows.Media.Color.FromRgb(tone.R, tone.G, tone.B);
     }
 
     public static MemoryLayer ErzeugeEbene() => new(Ebenenname) { Style = null };
@@ -49,8 +33,8 @@ public static class Overlaydarstellung
         var ebene = (MemoryLayer)karte.Layers.First(e => e.Name == Ebenenname);
         ebene.Features = [.. overlays.SelectMany(overlay =>
         {
-            (_, byte r, byte g, byte b) = Farben[overlay.Farbe ?? gemeinsameFarbe];
-            var farbe = Mapsui.Styles.Color.FromArgb(Deckkraft, r, g, b);
+            var tone = Overlayfarben.Wert(overlay.Farbe ?? gemeinsameFarbe);
+            var farbe = Mapsui.Styles.Color.FromArgb(Deckkraft, tone.R, tone.G, tone.B);
             return overlay.Abschnitte.Select(abschnitt => Linie(abschnitt, farbe));
         })];
         karte.Refresh();
