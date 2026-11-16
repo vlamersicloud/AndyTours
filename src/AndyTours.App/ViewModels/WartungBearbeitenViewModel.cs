@@ -40,7 +40,7 @@ public partial class WartungBearbeitenViewModel : ObservableObject
     private readonly Datenbestand _bestand;
 
     /// <summary>Speichert die fertige Wartung; liefert <c>true</c> bei Erfolg.</summary>
-    private readonly Func<Wartung, bool> _speichern;
+    private readonly Func<Wartung, Task<bool>> _speichern;
 
     /// <summary>Der heutige Tag; ein späteres Datum ist nicht erlaubt.</summary>
     private readonly DateOnly _heute;
@@ -72,10 +72,23 @@ public partial class WartungBearbeitenViewModel : ObservableObject
         Func<Wartung, bool> speichern,
         DateOnly heute,
         Datenbestand bestand)
+        : this(wartung, raeder, taetigkeiten, titel, wartungAsync: item => Task.FromResult(speichern(item)), heute, bestand)
+    {
+    }
+
+    /// <summary>Erzeugt das ViewModel mit asynchronem Speichercallback.</summary>
+    public WartungBearbeitenViewModel(
+        Wartung wartung,
+        IReadOnlyList<Auswahleintrag> raeder,
+        IReadOnlyList<string> taetigkeiten,
+        string titel,
+        Func<Wartung, Task<bool>> wartungAsync,
+        DateOnly heute,
+        Datenbestand bestand)
     {
         _basis = wartung;
         _bestand = bestand;
-        _speichern = speichern;
+        _speichern = wartungAsync;
         _heute = heute;
         _ohneTaetigkeiten = taetigkeiten.Count == 0;
         Titel = titel;
@@ -145,18 +158,41 @@ public partial class WartungBearbeitenViewModel : ObservableObject
     /// Befehl „OK“: nur ohne fehlerhafte Felder wählbar. Gelingt das Speichern, schließt sich das Fenster;
     /// sonst bleibt es mit den Eingaben offen (die Fehlermeldung zeigt das Hauptfenster).
     /// </summary>
+    [ObservableProperty]
+    private bool _speichert;
+
+    /// <summary>Speichert asynchron; ein unklarer Fehler lässt den Dialog und alle Eingaben offen.</summary>
     [RelayCommand(CanExecute = nameof(KannSpeichern))]
-    private void Speichern()
+    private async Task Speichern()
     {
-        if (WartungEingaben.AlsWartung(AktuelleEingaben(), _basis, _bestand, _heute).Wartung is Wartung wartung && _speichern(wartung))
+        if (WartungEingaben.AlsWartung(AktuelleEingaben(), _basis, _bestand, _heute).Wartung is not Wartung wartung) return;
+        Speichert = true;
+        try
         {
-            IstGespeichert = true;
-            SchliessenAngefordert?.Invoke(this, EventArgs.Empty);
+            if (await _speichern(wartung))
+            {
+                IstGespeichert = true;
+                SchliessenAngefordert?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+                Hinweis = "Die Wartung wurde nicht bestätigt. Der Speicherstatus kann unklar sein; bitte vor einem erneuten Versuch den Bestand prüfen.";
+            }
+        }
+        catch (Exception)
+        {
+            Hinweis = "Der Speicherstatus ist unklar. Die Eingaben bleiben erhalten; bitte vor einem erneuten Versuch den Bestand prüfen.";
+        }
+        finally
+        {
+            Speichert = false;
         }
     }
 
-    /// <summary>Wählbarkeit von „OK“: keine fehlerhaften Felder.</summary>
-    private bool KannSpeichern() => _fehler.Count == 0;
+    partial void OnSpeichertChanged(bool value) => SpeichernCommand.NotifyCanExecuteChanged();
+
+    /// <summary>Wählbarkeit von „OK“: keine fehlerhaften Felder und kein laufender Speichervorgang.</summary>
+    private bool KannSpeichern() => !Speichert && _fehler.Count == 0;
 
     /// <summary>
     /// Prüft nach jeder Änderung eines Feldes alle Eingaben.
