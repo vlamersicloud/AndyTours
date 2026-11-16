@@ -2,8 +2,8 @@ using AndyTours.Contracts.V1;
 
 namespace AndyTours.Application.Garmin;
 
-/// <summary>Internal server-side persistence/worker coordination port; never exposed over HTTP.</summary>
-internal interface IGarminImportArbeitspeicher
+/// <summary>Server-only coordination port; never mapped to HTTP.</summary>
+public interface IGarminImportArbeitspeicher
 {
     Task<GarminImportLease?> Beanspruchen(Guid besitzer, TimeSpan dauer, CancellationToken ct = default);
 
@@ -22,7 +22,7 @@ internal interface IGarminImportArbeitspeicher
 }
 
 /// <summary>A fencing token for one time-bounded worker claim.</summary>
-internal sealed record GarminImportLease(
+public sealed record GarminImportLease(
     Guid JobId,
     Guid Besitzer,
     long Generation,
@@ -30,7 +30,7 @@ internal sealed record GarminImportLease(
     GarminImportJobAntwort Auftrag);
 
 /// <summary>Finite, public-safe warning identifiers. Never include exception text.</summary>
-internal static class GarminImportWarncodes
+public static class GarminImportWarncodes
 {
     public const string Netzwerk = "netzwerk";
     public const string Zeitlimit = "zeitlimit";
