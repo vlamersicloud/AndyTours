@@ -7,11 +7,12 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AndyTours.App.ViewModels;
 
-/// <summary>Job control and safe status only; FIT review/import is not yet connected.</summary>
 public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
 {
+    private const int PageSize = 50;
     private readonly IGarminImportJobs _jobs;
-    private readonly CancellationTokenSource _readLifetime = new();
+    private readonly CancellationTokenSource _lifetime = new();
+    private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private Guid? _pendingStartId;
     private bool _closing;
     private bool _disposed;
@@ -55,20 +56,20 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
     private bool Idle() => !_closing && !_disposed && !Laedt && !Aendert;
     private bool CanFortsetzen() => KannFortsetzen;
     private bool CanAbbrechen() => KannAbbrechen;
+    private bool CanPrevious() => Idle() && Start > 0;
+    private bool CanNext() => Idle() && Auftrag is not null && Start + Kandidaten.Count < Gesamt;
 
     partial void OnAuftragChanged(GarminImportJobAntwort? value)
     {
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(WarnungenText));
-        FortsetzenCommand.NotifyCanExecuteChanged();
-        AbbrechenCommand.NotifyCanExecuteChanged();
-        VorigeSeiteCommand.NotifyCanExecuteChanged();
-        NaechsteSeiteCommand.NotifyCanExecuteChanged();
+        NotifyCommands();
     }
 
+    partial void OnStartChanged(int value) => NotifyCommands();
+    partial void OnGesamtChanged(int value) => NotifyCommands();
     partial void OnLaedtChanged(bool value) => NotifyCommands();
     partial void OnAendertChanged(bool value) => NotifyCommands();
-    partial void OnStartChanged(int value) => NaechsteSeiteCommand.NotifyCanExecuteChanged();
 
     private void NotifyCommands()
     {
@@ -81,23 +82,59 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand(CanExecute = nameof(Idle))]
-    public async Task LadenAktuellenAsync(CancellationToken ct = default)
+    public Task LadenAktuellenAsync(CancellationToken ct = default) => RefreshAsync(manual: true, ct);
+
+    public Task PollAsync(CancellationToken ct = default) => RefreshAsync(manual: false, ct);
+
+    private async Task RefreshAsync(bool manual, CancellationToken external)
     {
         if (!Idle()) return;
         var generation = Interlocked.Increment(ref _generation);
-        using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, _readLifetime.Token);
-        Laedt = true;
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(external, _lifetime.Token);
+        await _refreshLock.WaitAsync(linked.Token);
         try
         {
-            var result = await _jobs.AktuellenLaden(linked.Token).ConfigureAwait(false);
-            if (!StillCurrent(generation, linked.Token)) return;
-            Apply(result, []);
-            Status = string.Empty;
+            if (!Idle() || !IsCurrent(generation, linked.Token)) return;
+            Laedt = true;
+            var prior = Auftrag;
+            var loadedJob = prior is null
+                ? await _jobs.AktuellenLaden(linked.Token)
+                : await _jobs.Laden(prior.JobId, linked.Token);
+            if (!IsCurrent(generation, linked.Token)) return;
+            if (loadedJob is null)
+            {
+                Apply(null, 0, [], 0);
+                if (manual) Status = string.Empty;
+                return;
+            }
+
+            var pageStart = prior?.JobId == loadedJob.JobId ? Start : 0;
+            var firstPage = await _jobs.Kandidaten(loadedJob.JobId, pageStart, PageSize, linked.Token);
+            if (!IsCurrent(generation, linked.Token)) return;
+            pageStart = firstPage.Start;
+            if (pageStart > 0 && pageStart >= firstPage.Gesamt)
+            {
+                pageStart = Math.Max(0, ((firstPage.Gesamt - 1) / PageSize) * PageSize);
+                firstPage = await _jobs.Kandidaten(loadedJob.JobId, pageStart, PageSize, linked.Token);
+                if (!IsCurrent(generation, linked.Token)) return;
+            }
+            Apply(loadedJob, firstPage.Gesamt, firstPage.Kandidaten, pageStart);
+            if (manual) Status = string.Empty;
         }
         catch (OperationCanceledException) when (linked.IsCancellationRequested) { }
-        catch (StammdatenException ex) { Status = SafeDomainMessage(ex.Art); }
-        catch { Status = "Importstatus konnte nicht geladen werden."; }
-        finally { Laedt = false; }
+        catch (StammdatenException ex)
+        {
+            if (manual && IsCurrent(generation, linked.Token)) Status = SafeDomainMessage(ex.Art);
+        }
+        catch
+        {
+            if (manual && IsCurrent(generation, linked.Token)) Status = "Importstatus oder Kandidaten konnten nicht geladen werden.";
+        }
+        finally
+        {
+            if (!_closing && !_disposed) Laedt = false;
+            _refreshLock.Release();
+        }
     }
 
     [RelayCommand(CanExecute = nameof(Idle))]
@@ -109,129 +146,117 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
         Aendert = true;
         try
         {
-            var result = await _jobs.Starten(new GarminImportStartAnfrage(requestId), _readLifetime.Token).ConfigureAwait(false);
-            if (_closing) return;
+            var result = await _jobs.Starten(new GarminImportStartAnfrage(requestId), _lifetime.Token);
+            if (!IsAlive()) return;
             _pendingStartId = null;
             HatAenderungen = true;
-            Apply(result, []);
+            Apply(result, 0, [], 0);
             Status = "Downloadauftrag gestartet.";
         }
-        catch (StammdatenException ex) { Status = SafeDomainMessage(ex.Art); }
-        catch { Status = "Startstatus unklar. Bitte zuerst aktualisieren; nicht blind erneut starten."; }
-        finally { Aendert = false; }
+        catch (StammdatenException ex)
+        {
+            if (IsAlive()) Status = SafeDomainMessage(ex.Art);
+        }
+        catch
+        {
+            if (IsAlive())
+            {
+                HatAenderungen = true;
+                Status = "Startstatus unklar. Bitte aktualisieren; derselbe Auftrag wird nicht automatisch erneut gestartet.";
+            }
+        }
+        finally { if (IsAlive()) Aendert = false; }
     }
 
     [RelayCommand(CanExecute = nameof(CanFortsetzen))]
-    private async Task FortsetzenAsync()
-    {
-        if (!KannFortsetzen || Auftrag is null) return;
-        await MutateControl(abbrechen: false);
-    }
+    private Task FortsetzenAsync() => MutateControl(abbrechen: false);
 
     [RelayCommand(CanExecute = nameof(CanAbbrechen))]
-    private async Task AbbrechenAsync()
-    {
-        if (!KannAbbrechen || Auftrag is null) return;
-        await MutateControl(abbrechen: true);
-    }
+    private Task AbbrechenAsync() => MutateControl(abbrechen: true);
 
     private async Task MutateControl(bool abbrechen)
     {
-        var current = Auftrag!;
+        if (!Idle() || Auftrag is null) return;
+        var current = Auftrag;
         var request = new GarminImportSteuerAnfrage(current.Version, Guid.NewGuid());
         Aendert = true;
         try
         {
             var result = abbrechen
-                ? await _jobs.Abbrechen(current.JobId, request, _readLifetime.Token).ConfigureAwait(false)
-                : await _jobs.Fortsetzen(current.JobId, request, _readLifetime.Token).ConfigureAwait(false);
-            if (_closing) return;
+                ? await _jobs.Abbrechen(current.JobId, request, _lifetime.Token)
+                : await _jobs.Fortsetzen(current.JobId, request, _lifetime.Token);
+            if (!IsAlive()) return;
             HatAenderungen = true;
-            Apply(result, Kandidaten.ToArray());
+            Apply(result, Gesamt, Kandidaten.ToArray(), Start);
             Status = abbrechen ? "Importauftrag abgebrochen." : "Importauftrag wird fortgesetzt.";
         }
         catch (StammdatenException ex)
         {
-            Status = ex.Art == StammdatenFehlerart.Konflikt
-                ? "Versionskonflikt. Ansicht bitte aktualisieren; der Auftrag wurde nicht automatisch erneut geändert."
-                : SafeDomainMessage(ex.Art);
+            if (IsAlive())
+                Status = ex.Art == StammdatenFehlerart.Konflikt
+                    ? "Versionskonflikt. Ansicht bitte aktualisieren; die Eingaben bleiben erhalten."
+                    : SafeDomainMessage(ex.Art);
         }
-        catch { Status = "Schreibstatus unklar. Bitte aktualisieren; nicht blind erneut wiederholen."; }
-        finally { Aendert = false; }
-    }
-
-    [RelayCommand(CanExecute = nameof(Idle))]
-    private async Task VorigeSeiteAsync()
-    {
-        if (!Idle() || Start == 0) return;
-        Start = Math.Max(0, Start - PageSize);
-        await LoadPage();
-    }
-
-    [RelayCommand(CanExecute = nameof(CanNextPage))]
-    private async Task NaechsteSeiteAsync()
-    {
-        if (!CanNextPage()) return;
-        Start = checked(Start + PageSize);
-        await LoadPage();
-    }
-
-    private const int PageSize = 50;
-    private bool CanNextPage() => Idle() && Auftrag is not null && Start + Kandidaten.Count < Gesamt;
-
-    private async Task LoadPage()
-    {
-        if (Auftrag is null || !Idle()) return;
-        var jobId = Auftrag.JobId;
-        var generation = Interlocked.Increment(ref _generation);
-        using var linked = CancellationTokenSource.CreateLinkedTokenSource(_readLifetime.Token);
-        Laedt = true;
-        try
+        catch
         {
-            var page = await _jobs.Kandidaten(jobId, Start, PageSize, linked.Token).ConfigureAwait(false);
-            if (!StillCurrent(generation, linked.Token) || Auftrag?.JobId != jobId) return;
-            Gesamt = page.Gesamt;
-            Kandidaten.Clear();
-            foreach (var candidate in page.Kandidaten) Kandidaten.Add(candidate);
-        }
-        catch (OperationCanceledException) when (linked.IsCancellationRequested) { }
-        catch { Status = "Kandidaten konnten nicht geladen werden."; }
-        finally { Laedt = false; }
-    }
-
-    public async Task PollAsync(CancellationToken ct = default)
-    {
-        if (!Idle()) return;
-        var generation = Interlocked.Increment(ref _generation);
-        using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, _readLifetime.Token);
-        Laedt = true;
-        try
-        {
-            var updated = await _jobs.AktuellenLaden(linked.Token).ConfigureAwait(false);
-            if (!StillCurrent(generation, linked.Token)) return;
-            if (Auftrag is not null && updated?.JobId != Auftrag.JobId) return;
-            if (updated is not null && Auftrag?.Version != updated.Version)
+            if (IsAlive())
             {
-                Apply(updated, Kandidaten.ToArray());
-                await LoadPage();
+                HatAenderungen = true;
+                Status = "Schreibstatus unklar. Bitte aktualisieren; nicht blind wiederholen.";
             }
         }
-        catch (OperationCanceledException) when (linked.IsCancellationRequested) { }
-        catch { /* Background refresh is intentionally quiet. */ }
-        finally { Laedt = false; }
+        finally { if (IsAlive()) Aendert = false; }
     }
 
-    private bool StillCurrent(long generation, CancellationToken ct) =>
-        !_closing && !_disposed && !ct.IsCancellationRequested && generation == Volatile.Read(ref _generation);
+    [RelayCommand(CanExecute = nameof(CanPrevious))]
+    private Task VorigeSeiteAsync() => LoadPage(Math.Max(0, Start - PageSize));
 
-    private void Apply(GarminImportJobAntwort? job, IEnumerable<GarminImportKandidatAntwort> candidates)
+    [RelayCommand(CanExecute = nameof(CanNext))]
+    private Task NaechsteSeiteAsync() => LoadPage(checked(Start + PageSize));
+
+    private async Task LoadPage(int requestedStart)
+    {
+        if (!Idle() || Auftrag is null) return;
+        var generation = Interlocked.Increment(ref _generation);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
+        await _refreshLock.WaitAsync(linked.Token);
+        try
+        {
+            if (!Idle() || !IsCurrent(generation, linked.Token)) return;
+            Laedt = true;
+            var page = await _jobs.Kandidaten(Auftrag.JobId, requestedStart, PageSize, linked.Token);
+            if (!IsCurrent(generation, linked.Token)) return;
+            Start = page.Start;
+            Gesamt = page.Gesamt;
+            ReplaceCandidates(page.Kandidaten);
+        }
+        catch (OperationCanceledException) when (linked.IsCancellationRequested) { }
+        catch { if (IsAlive()) Status = "Kandidatenseite konnte nicht geladen werden."; }
+        finally
+        {
+            if (IsAlive()) Laedt = false;
+            _refreshLock.Release();
+        }
+    }
+
+    private void Apply(GarminImportJobAntwort? job, int total, IEnumerable<GarminImportKandidatAntwort> items, int start)
     {
         Auftrag = job;
-        Kandidaten.Clear();
-        foreach (var candidate in candidates) Kandidaten.Add(candidate);
-        Gesamt = job?.Bearbeitet ?? 0;
-        Start = 0;
+        Gesamt = total;
+        Start = start;
+        ReplaceCandidates(items);
     }
+
+    private void ReplaceCandidates(IEnumerable<GarminImportKandidatAntwort> items)
+    {
+        Kandidaten.Clear();
+        foreach (var item in items) Kandidaten.Add(item);
+        NotifyCommands();
+    }
+
+    private bool IsAlive() => !_closing && !_disposed;
+    private bool IsCurrent(long generation, CancellationToken ct) =>
+        IsAlive() && !ct.IsCancellationRequested && generation == Volatile.Read(ref _generation);
 
     private static string SafeDomainMessage(StammdatenFehlerart art) => art switch
     {
@@ -258,16 +283,16 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
         if (_closing) return;
         _closing = true;
         _generation++;
-        _readLifetime.Cancel();
+        _lifetime.Cancel();
         NotifyCommands();
     }
 
     public void Dispose()
     {
         if (_disposed) return;
-        _disposed = true;
         BeginClose();
-        _readLifetime.Dispose();
+        _disposed = true;
+        _lifetime.Dispose();
         GC.SuppressFinalize(this);
     }
 }
