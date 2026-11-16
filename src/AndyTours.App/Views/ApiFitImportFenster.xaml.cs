@@ -6,7 +6,7 @@ using Microsoft.Win32;
 
 namespace AndyTours.App.Views;
 
-public partial class ApiFitImportFenster : Window
+public partial class ApiFitImportFenster : Window, IDisposable
 {
     private readonly ApiFitImportViewModel _viewModel;
     private bool _cleaned;
@@ -57,6 +57,7 @@ public partial class ApiFitImportFenster : Window
     }
 
     private void FensterClosed(object? sender, EventArgs e) => Cleanup();
+    public void Dispose() { Cleanup(); GC.SuppressFinalize(this); }
 
     private void Cleanup()
     {

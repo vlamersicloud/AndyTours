@@ -21,6 +21,9 @@
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="BackendAdresseText" VerticalAlignment="Center" Foreground="#637083" Margin="0,0,14,0"/>
                 <Menu VerticalAlignment="Center" Background="Transparent">
+                    <MenuItem Header="Datei" Padding="10,6">
+                        <MenuItem Header="FIT-Dateien importieren…" Click="FitDateienImportieren_Click"/>
+                    </MenuItem>
                     <MenuItem Header="Stammdaten" Padding="10,6">
                         <MenuItem Header="Aktivitäten…" Click="AktivitaetenVerwalten_Click"/>
                         <MenuItem Header="Kategorien…" Click="KategorienVerwalten_Click"/>

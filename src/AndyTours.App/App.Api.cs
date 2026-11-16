@@ -185,6 +185,15 @@ public partial class App
                 admin.ShowDialog();
             };
 
+            fenster.FitDateienImportierenAngefordert += () =>
+            {
+                var vm = new ApiFitImportViewModel(uebergebeneSitzung.FitUploads);
+                var dialog = new ApiFitImportFenster(vm) { Owner = fenster };
+                try { dialog.ShowDialog(); }
+                finally { dialog.Dispose(); }
+                return Task.CompletedTask;
+            };
+
             fenster.GarminImportAngefordert += () =>
             {
                 var vm = new ApiGarminImportViewModel(uebergebeneSitzung.GarminImportJobs, uebergebeneSitzung.GarminImportPruefung);
