@@ -38,6 +38,7 @@ public static class FitTestdatei
     /// </param>
     /// <param name="OhneHoehe"><c>true</c> = die Messpunkte enthalten keine Höhe (wie bei einer Fahrt auf der Rolle).</param>
     /// <param name="OhneGps"><c>true</c> = kein Messpunkt enthält eine Position (wie bei einer Fahrt auf der Rolle).</param>
+    /// <param name="OhneOrtszeit">true = omit activity local timestamp.</param>
     public record Werte(
         System.DateTime StartUtc,
         int VerschiebungStunden = 2,
@@ -46,7 +47,8 @@ public static class FitTestdatei
         bool MitPulsUndTemperaturInSitzung = true,
         bool MitPause = false,
         bool OhneHoehe = false,
-        bool OhneGps = false);
+        bool OhneGps = false,
+        bool OhneOrtszeit = false);
 
     /// <summary>Position des ersten Messpunkts in Grad.</summary>
     public static readonly (double Breite, double Laenge) ErstePosition = (47.8, 12.1);
@@ -166,7 +168,7 @@ public static class FitTestdatei
         var aktivitaet = new ActivityMesg();
         var ende = new Dynastream.Fit.DateTime(start.GetTimeStamp() + 23995);
         aktivitaet.SetTimestamp(ende);
-        aktivitaet.SetLocalTimestamp(ende.GetTimeStamp() + (uint)(werte.VerschiebungStunden * 3600));
+        if (!werte.OhneOrtszeit) aktivitaet.SetLocalTimestamp(ende.GetTimeStamp() + (uint)(werte.VerschiebungStunden * 3600));
         aktivitaet.SetNumSessions(1);
         encoder.Write(aktivitaet);
 

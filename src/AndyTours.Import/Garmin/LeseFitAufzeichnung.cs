@@ -45,8 +45,11 @@ public static partial class LeseFitAufzeichnung
     /// </remarks>
     /// <param name="pfad">Pfad der FIT-Datei; der Dateiname wird als Name der Aufzeichnung übernommen.</param>
     /// <returns>Die Aufzeichnung und <c>null</c>, oder <c>null</c> und der Grund, warum sie nicht lesbar ist.</returns>
-    public static (Aufzeichnung? Aufzeichnung, string? Fehler) Ausfuehren(string pfad)
+    public static (Aufzeichnung? Aufzeichnung, string? Fehler) Ausfuehren(string pfad) => Ausfuehren(pfad, TimeZoneInfo.Local);
+
+    public static (Aufzeichnung? Aufzeichnung, string? Fehler) Ausfuehren(string pfad, TimeZoneInfo fallbackZeitzone)
     {
+        ArgumentNullException.ThrowIfNull(fallbackZeitzone);
         FileIdMesg? dateikennung = null;
         SessionMesg? sitzung = null;
         ActivityMesg? aktivitaet = null;
@@ -125,7 +128,7 @@ public static partial class LeseFitAufzeichnung
             return (null, "keine Tourdaten enthalten");
         }
 
-        System.DateTime start = Ortszeit(sitzung.GetStartTime(), aktivitaet);
+        System.DateTime start = Ortszeit(sitzung.GetStartTime(), aktivitaet, fallbackZeitzone);
         var aufzeichnung = new Aufzeichnung
         {
             Dateiname = Path.GetFileName(pfad),
@@ -159,7 +162,7 @@ public static partial class LeseFitAufzeichnung
     /// Der Edge speichert in der Aktivität zusätzlich die Ortszeit; der Unterschied ist die Zeitverschiebung
     /// am Ort der Tour. Ohne diese Angabe wird die Zeitzone des Rechners verwendet.
     /// </remarks>
-    private static System.DateTime Ortszeit(Dynastream.Fit.DateTime startUtc, ActivityMesg? aktivitaet)
+    private static System.DateTime Ortszeit(Dynastream.Fit.DateTime startUtc, ActivityMesg? aktivitaet, TimeZoneInfo fallbackZeitzone)
     {
         System.DateTime utc = System.DateTime.SpecifyKind(startUtc.GetDateTime(), DateTimeKind.Utc);
         if (aktivitaet?.GetLocalTimestamp() is uint ortszeit && aktivitaet.GetTimestamp() is Dynastream.Fit.DateTime zeitpunkt)
@@ -168,7 +171,7 @@ public static partial class LeseFitAufzeichnung
             return System.DateTime.SpecifyKind(utc.AddSeconds(verschiebung), DateTimeKind.Unspecified);
         }
 
-        return utc.ToLocalTime();
+        return TimeZoneInfo.ConvertTimeFromUtc(utc, fallbackZeitzone);
     }
 
     /// <summary>
