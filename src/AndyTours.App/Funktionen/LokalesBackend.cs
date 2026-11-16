@@ -54,6 +54,7 @@ public sealed class LokalesBackend : IAsyncDisposable
         };
         if (!istExe) start.ArgumentList.Add(backendProgramm);
         start.Environment["Backend__Datenordner"] = datenordner;
+        start.Environment["Backend__FitZeitzone"] = TimeZoneInfo.Local.Id;
         start.Environment["Backend__Zugriffstoken"] = token;
         start.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
 

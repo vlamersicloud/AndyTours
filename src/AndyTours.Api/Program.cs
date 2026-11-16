@@ -17,6 +17,10 @@ if (string.IsNullOrWhiteSpace(builder.Configuration["urls"]) &&
     builder.WebHost.UseUrls("http://localhost:5000");
 var dataDirectory = builder.Configuration["Backend:Datenordner"];
 var accessToken = builder.Configuration["Backend:Zugriffstoken"];
+var fitZoneId = builder.Configuration["Backend:FitZeitzone"];
+TimeZoneInfo fitZone;
+try { fitZone = string.IsNullOrWhiteSpace(fitZoneId) ? TimeZoneInfo.Local : TimeZoneInfo.FindSystemTimeZoneById(fitZoneId); }
+catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException) { throw new InvalidOperationException("Backend:FitZeitzone ist ungültig."); }
 if (string.IsNullOrWhiteSpace(dataDirectory) || !Path.IsPathFullyQualified(dataDirectory))
     throw new InvalidOperationException("Backend:Datenordner muss absolut konfiguriert sein.");
 if (string.IsNullOrWhiteSpace(accessToken) || Encoding.UTF8.GetByteCount(accessToken) < 32)
@@ -41,9 +45,9 @@ builder.Services.AddSingleton(sp => new SqliteGarminImportJobs(Path.Combine(data
 builder.Services.AddSingleton<IGarminImportJobs>(sp => sp.GetRequiredService<SqliteGarminImportJobs>());
 builder.Services.AddSingleton<IGarminImportArbeitspeicher>(sp => sp.GetRequiredService<SqliteGarminImportJobs>());
 builder.Services.AddSingleton<IGarminImportPruefspeicher>(sp => sp.GetRequiredService<SqliteGarminImportJobs>());
-builder.Services.AddSingleton<IGarminImportPruefung>(sp => new AndyTours.Import.Garmin.GarminImportPruefung(sp.GetRequiredService<IGarminImportPruefspeicher>(), dataDirectory));
+builder.Services.AddSingleton<IGarminImportPruefung>(sp => new AndyTours.Import.Garmin.GarminImportPruefung(sp.GetRequiredService<IGarminImportPruefspeicher>(), dataDirectory, fitZone));
 builder.Services.AddSingleton<IGarminImportServerdaten>(_ => new SqliteGarminImportServerdaten(Path.Combine(dataDirectory, "andytours.db")));
-builder.Services.AddSingleton(_ => new AndyTours.Import.Garmin.GarminImportArtefakte(dataDirectory));
+builder.Services.AddSingleton(_ => new AndyTours.Import.Garmin.GarminImportArtefakte(dataDirectory, fitZone));
 builder.Services.AddSingleton(sp => new AndyTours.Import.Garmin.GarminImportPaketWorker(
     sp.GetRequiredService<IGarminImportArbeitspeicher>(),
     sp.GetRequiredService<IGarminImportServerdaten>(),
