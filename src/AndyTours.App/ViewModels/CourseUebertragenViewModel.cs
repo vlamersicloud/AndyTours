@@ -184,6 +184,15 @@ public partial class CourseUebertragenViewModel : ObservableObject
             return;
         }
 
+        if (_apiExport is not null)
+        {
+            foreach (var zeile in Zeilen)
+            {
+                try { zeile.Name = zeile.Name.Trim().Normalize(System.Text.NormalizationForm.FormC); }
+                catch (ArgumentException) { Hinweis = "Ein Course-Name ist ungültig."; return; }
+            }
+        }
+
         if (Zeilen.GroupBy(z => BildeCoursename.Dateiname(z.Name), StringComparer.OrdinalIgnoreCase).FirstOrDefault(g => g.Count() > 1) is { } doppelt)
         {
             Hinweis = $"Der Name „{doppelt.First().Name.Trim()}“ kommt mehrfach vor. Bitte verschiedene Namen eingeben.";
@@ -208,6 +217,41 @@ public partial class CourseUebertragenViewModel : ObservableObject
             {
                 abbruch.ThrowIfCancellationRequested();
                 string name = zeile.Name.Trim();
+                if (_apiExport is not null)
+                {
+                    Zustand = $"„{name}“ wird im Backend vorbereitet …";
+                    try
+                    {
+                        var export = await _apiExport(zeile, Profil, abbruch);
+                        abbruch.ThrowIfCancellationRequested();
+                        var expectedName = BildeCoursename.Dateiname(name.Normalize(System.Text.NormalizationForm.FormC));
+                        if (export.Inhalt is null || export.Inhalt.Length is 0 or > 134217728 ||
+                            !string.Equals(export.Dateiname, expectedName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            Hinweis = "Der Course-Export lieferte keine gültige Datei.";
+                            return;
+                        }
+                        Zustand = $"„{name}“ wird übertragen …";
+                        if (!Schreibe(expectedName, export.Inhalt, name, uebertragen)) return;
+                        uebertragen.Add(name);
+                        if (export.Warncode is not null)
+                        {
+                            grund ??= export.Warncode switch
+                            {
+                                "routing_nicht_konfiguriert" => "Abbiegungen konnten nicht ermittelt werden, da die Routingkonfiguration fehlt.",
+                                "routing_nicht_erreichbar" => "Abbiegungen konnten nicht ermittelt werden, da der Routingdienst nicht erreichbar war.",
+                                _ => "Für diesen Course liegen keine vollständigen Abbiegehinweise vor."
+                            };
+                        }
+                        continue;
+                    }
+                    catch (OperationCanceledException) { throw; }
+                    catch (Exception ex) when (ex is AndyTours.Application.Stammdaten.StammdatenException or AndyTours.Client.BackendApiException or System.Net.Http.HttpRequestException)
+                    {
+                        Hinweis = "Der Course konnte vom Backend nicht vorbereitet werden.";
+                        return;
+                    }
+                }
                 Course course;
                 if (zeile.Planung is Tourenplanung planung)
                 {
