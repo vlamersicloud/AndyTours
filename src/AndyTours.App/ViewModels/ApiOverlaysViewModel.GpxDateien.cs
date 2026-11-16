@@ -46,7 +46,7 @@ public sealed partial class ApiOverlaysViewModel
             {
                 var normalized = OverlayGpxRegeln.Normalisieren(new OverlayGpxImportAnfrage(
                     BestehenderBestand!.Version, Guid.NewGuid(), folderId, basename));
-                Importdateien.Add(new ApiOverlayGpxDatei(fullPath, normalized.Dateiname, folderId, normalized.AnfrageId, normalized));
+                Importdateien.Add(new ApiOverlayGpxDatei(fullPath, normalized.Dateiname, folderId, normalized.AnfrageId));
                 Importdateien[^1].PropertyChanged += ImportZeileGeaendert;
                 added++;
             }
@@ -59,7 +59,7 @@ public sealed partial class ApiOverlaysViewModel
         BenachrichtigeBefehle();
     }
 
-    private void ImportZeileGeaendert(object? sender, System.ComponentModel.PropertyChangedEventArgs e) { if (e.PropertyName is nameof(ApiOverlayGpxDatei.Unklar) or nameof(ApiOverlayGpxDatei.Fertig)) { OnPropertyChanged(nameof(HatUnklareGpxImporte)); OnPropertyChanged(nameof(HatImportdateien)); BenachrichtigeBefehle(); } }
+    private void ImportZeileGeaendert(object? sender, System.ComponentModel.PropertyChangedEventArgs e) { if (!_beendet && (e.PropertyName is nameof(ApiOverlayGpxDatei.Unklar) or nameof(ApiOverlayGpxDatei.Fertig))) { OnPropertyChanged(nameof(HatUnklareGpxImporte)); OnPropertyChanged(nameof(HatImportdateien)); BenachrichtigeBefehle(); } }
 
     private bool KannGpxHinzufuegen() => !_beendet && KannAendern && !IstBeschaeftigt && !HatUnklareGpxImporte;
 
