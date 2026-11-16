@@ -77,6 +77,8 @@ public partial class ApiGarminImportViewModel
                 }
                 finally { if (IsAlive()) Aendert = false; }
             });
+            if (!string.IsNullOrWhiteSpace(review.FallbackZeitzoneId))
+                editor.Zusatzhinweis = $"Nur falls die FIT-Datei keine Ortszeit enthält: Backend-Fallback-Zeitzone {review.FallbackZeitzoneId}. Bereits gespeicherte Touren werden nicht umgerechnet.";
             if (!IsCurrent(generation, token)) { editor.Dispose(); return; }
             EditorOffen = true;
             Laedt = false;
