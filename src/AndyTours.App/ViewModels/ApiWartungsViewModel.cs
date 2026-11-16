@@ -82,7 +82,7 @@ public partial class ApiWartungsViewModel : ObservableObject
         Interlocked.Increment(ref _generation);
         Wartungszeilen.Clear(); Alarmzeilen.Clear(); WartungIds = []; AlarmIds = [];
         _hasLoaded = false; _bestand = null;
-        HatAenderungen = true; Status = "Filter geändert – bitte neu laden.";
+        Status = "Filter geändert – bitte neu laden.";
     }
 
     [RelayCommand(CanExecute = nameof(CanLoad))]
@@ -123,7 +123,7 @@ public partial class ApiWartungsViewModel : ObservableObject
             Taetigkeiten = overview.Taetigkeiten; OnPropertyChanged(nameof(Taetigkeiten));
             Wartungszeilen.Clear(); foreach (var row in overview.Wartungszeilen) Wartungszeilen.Add(row);
             Alarmzeilen.Clear(); foreach (var row in overview.Alarmzeilen) Alarmzeilen.Add(row);
-            _hasLoaded = true; HatAenderungen = false;
+            _hasLoaded = true;
             if (string.IsNullOrEmpty(Status) || Status == "Filter geändert – bitte neu laden.") Status = string.Empty;
         }
         catch (Exception) { if (generation == Interlocked.Read(ref _generation)) Status = "Wartungsdaten konnten nicht geladen werden."; }
@@ -158,7 +158,7 @@ public partial class ApiWartungsViewModel : ObservableObject
         var basis = existing ?? new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = EquipmentAuswahl?.Id, Taetigkeit = "", Typ = WartungsTyp.Wartung, Aktiv = true };
         var data = CoreData(meta, snapshot);
         var vm = new WartungBearbeitenViewModel(basis, ErmittleWartungsraeder.Ausfuehren(data, AktivitaetAuswahl?.Id, existing?.EquipmentId), Taetigkeiten, id is null ? "Neue Wartung" : "Wartung bearbeiten", async value => await SaveMaintenance(value, snapshot.Version), DateOnly.FromDateTime(DateTime.Today), data);
-        EditorOffen = true; try { WartungEditorAngefordert?.Invoke(this, vm); } finally { EditorOffen = false; }
+        EditorOffen = true; NotifyCommands(); try { WartungEditorAngefordert?.Invoke(this, vm); } finally { EditorOffen = false; NotifyCommands(); }
         if (vm.IstGespeichert) await ReloadAfterSave();
     }
 
@@ -171,7 +171,7 @@ public partial class ApiWartungsViewModel : ObservableObject
         var basis = existing ?? new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = EquipmentAuswahl?.Id, Taetigkeit = "", Typ = WartungsTyp.Alarm, AlarmKm = 5000, Aktiv = true };
         var data = CoreData(meta, snapshot);
         var vm = new AlarmBearbeitenViewModel(basis, ErmittleWartungsraeder.Ausfuehren(data, AktivitaetAuswahl?.Id, existing?.EquipmentId), Taetigkeiten, id is null ? "Neuer Alarm" : "Alarm bearbeiten", async value => await SaveAlarm(value, snapshot.Version), data);
-        EditorOffen = true; try { AlarmEditorAngefordert?.Invoke(this, vm); } finally { EditorOffen = false; }
+        EditorOffen = true; NotifyCommands(); try { AlarmEditorAngefordert?.Invoke(this, vm); } finally { EditorOffen = false; NotifyCommands(); }
         if (vm.IstGespeichert) await ReloadAfterSave();
     }
 
@@ -197,7 +197,7 @@ public partial class ApiWartungsViewModel : ObservableObject
             var response = item.Id == 0
                 ? await _wartungen.WartungAnlegen(new(version, item.Datum, item.EquipmentId, item.Taetigkeit, item.Kommentar))
                 : await _wartungen.WartungAendern(item.Id, new(version, item.Datum, item.EquipmentId, item.Taetigkeit, item.Kommentar));
-            _bestand = response; return true;
+            _bestand = response; HatAenderungen = true; WartungIds = []; AlarmIds = []; return true;
         }
         catch (StammdatenException e) { Status = e.Message; return false; }
         catch (Exception) { Status = "Speicherstatus unklar. Bitte vor einem erneuten Versuch den Bestand prüfen."; return false; }
@@ -213,7 +213,7 @@ public partial class ApiWartungsViewModel : ObservableObject
             var response = item.Id == 0
                 ? await _wartungen.AlarmAnlegen(new(version, item.EquipmentId ?? 0, item.Taetigkeit, interval, item.Aktiv))
                 : await _wartungen.AlarmAendern(item.Id, new(version, item.EquipmentId ?? 0, item.Taetigkeit, interval, item.Aktiv));
-            _bestand = response; return true;
+            _bestand = response; HatAenderungen = true; WartungIds = []; AlarmIds = []; return true;
         }
         catch (StammdatenException e) { Status = e.Message; return false; }
         catch (Exception) { Status = "Speicherstatus unklar. Bitte vor einem erneuten Versuch den Bestand prüfen."; return false; }
@@ -225,12 +225,20 @@ public partial class ApiWartungsViewModel : ObservableObject
     private async Task BulkDelete(IReadOnlyList<long> ids)
     {
         if (_bestand is null || ids.Count == 0 || !_bestaetigen("Ausgewählte Einträge löschen?")) return;
-        Aendert = true; try { _bestand = await _wartungen.Loeschen(new(_bestand.Version, ids)); await ReloadAfterSave(); } catch (Exception) { Status = "Löschen fehlgeschlagen oder Status unklar; bitte neu laden."; } finally { Aendert = false; }
+        Aendert = true;
+        try { _bestand = await _wartungen.Loeschen(new(_bestand.Version, ids)); HatAenderungen = true; WartungIds = []; AlarmIds = []; await ReloadAfterSave(); }
+        catch (StammdatenException e) { Status = e.Message; }
+        catch (Exception) { HatAenderungen = true; Status = "Löschstatus unklar; bitte neu laden."; }
+        finally { Aendert = false; }
     }
     [RelayCommand(CanExecute = nameof(CanToggleAlarm))] private async Task AlarmeUmschaltenAsync()
     {
         if (_bestand is null || AlarmIds.Count == 0) return;
-        Aendert = true; try { _bestand = await _wartungen.AlarmeUmschalten(new(_bestand.Version, AlarmIds)); await ReloadAfterSave(); } catch (Exception) { Status = "Umschalten fehlgeschlagen oder Status unklar; bitte neu laden."; } finally { Aendert = false; }
+        Aendert = true;
+        try { _bestand = await _wartungen.AlarmeUmschalten(new(_bestand.Version, AlarmIds)); HatAenderungen = true; WartungIds = []; AlarmIds = []; await ReloadAfterSave(); }
+        catch (StammdatenException e) { Status = e.Message; }
+        catch (Exception) { HatAenderungen = true; Status = "Umschaltstatus unklar; bitte neu laden."; }
+        finally { Aendert = false; }
     }
     private bool CanBulk() => !Laedt && !Aendert && !EditorOffen && _hasLoaded && _bestand is not null;
     private bool CanDeleteMaintenance() => CanBulk() && WartungIds.Count > 0;
