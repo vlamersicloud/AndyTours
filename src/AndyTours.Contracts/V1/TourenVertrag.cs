@@ -61,6 +61,8 @@ public sealed record TourListeAntwort(IReadOnlyList<TourAntwort> Eintraege, int 
 {
     /// <summary>Optionale Textauswahlwerte für ausschließlich tabellenspezifische Filter.</summary>
     public TourenTabellenfilterOptionenAntwort? TabellenfilterOptionen { get; init; }
+    /// <summary>Optionale Summe über alle Tabellenfilter-Treffer vor Paging.</summary>
+    public TourenTabellensummeAntwort? Tabellensumme { get; init; }
 }
 
 /// <summary>Änderungsanforderung mit der beim Lesen erhaltenen Versionskennung.</summary>
