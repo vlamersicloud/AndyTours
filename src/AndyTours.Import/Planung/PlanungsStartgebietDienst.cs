@@ -6,7 +6,7 @@ using AndyTours.Import.Dateien;
 
 namespace AndyTours.Import.Planung;
 
-public sealed class PlanungsStartgebietDienst
+public sealed class PlanungsStartgebietDienst : IPlanungsStartgebiet
 {
     private const int MaxDateien = 5;
     private readonly IPlanungsStartQuelldaten _quelldaten;
@@ -26,11 +26,12 @@ public sealed class PlanungsStartgebietDienst
         var pfade = await _quelldaten.Laden(cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         int versucht = 0;
-        foreach (var pfad in pfade)
+        for (int i = 0; i < pfade.Count && versucht < MaxDateien; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var pfad = pfade[i];
             if (!_fit.VerlaufExistiert(pfad)) continue;
-            if (++versucht > MaxDateien) break;
+            versucht++;
             try
             {
                 using var verlauf = await _fit.VerlaufLesen(pfad, cancellationToken).ConfigureAwait(false);
