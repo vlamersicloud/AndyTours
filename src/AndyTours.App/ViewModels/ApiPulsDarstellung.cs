@@ -24,11 +24,8 @@ public static class ApiPulsDarstellung
     {
         ArgumentNullException.ThrowIfNull(antwort);
         var model = new PlotModel { Culture = Deutsch, PlotAreaBorderColor = OxyColors.LightGray };
-        var periodKeys = antwort.Perioden.Select(period => period.Schluessel).ToHashSet();
-        var grouped = antwort.Zellen
-            .Where(cell => periodKeys.Contains(cell.Periode))
-            .GroupBy(cell => (cell.Periode, cell.Bereich))
-            .ToDictionary(group => group.Key, group => group.Sum(cell => cell.Sekunden));
+        var cellsByKey = antwort.Zellen.ToDictionary(
+            cell => (cell.Periode, cell.Bereich));
 
         var category = new CategoryAxis
         {
@@ -70,7 +67,7 @@ public static class ApiPulsDarstellung
             var series = new RectangleBarSeries
             {
                 Title = area.Zone + " · " + area.Pulsbereich,
-                FillColor = Farben[Math.Abs(areaId % Farben.Length)],
+                FillColor = Farben[Math.Abs((antwort.VerwendetesProfil is null ? areaId / 10 : areaId) % Farben.Length)],
                 StrokeThickness = 0,
                 LabelFormatString = null,
                 TrackerFormatString = "{7}"
@@ -79,8 +76,7 @@ public static class ApiPulsDarstellung
             {
                 var period = antwort.Perioden[i];
                 var key = period.Schluessel;
-                var cell = antwort.Zellen.FirstOrDefault(item => item.Periode == key && item.Bereich == areaId);
-                if (cell is null || cell.Sekunden <= 0) continue;
+                if (!cellsByKey.TryGetValue((key, areaId), out var cell) || cell.Sekunden <= 0) continue;
                 double minutes = cell.Sekunden / 60d;
                 series.Items.Add(new RectangleBarItem(i - .35, bottoms[i], i + .35, bottoms[i] + minutes)
                 {
