@@ -185,6 +185,10 @@ public partial class App
                 admin.ShowDialog();
             };
 
+            fenster.TourdetailAngefordert += (ids, ct) =>
+                ApiTourdetailAnzeige.Oeffnen(fenster, ids, uebergebeneSitzung.Tourdetail,
+                    uebergebeneSitzung.CourseExport, ct);
+
             fenster.GarminGeraetImportierenAngefordert += () =>
             {
                 var vm = new ApiFitImportViewModel(uebergebeneSitzung.FitUploads);
