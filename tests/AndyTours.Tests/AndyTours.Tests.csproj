@@ -42,6 +42,7 @@
     <Compile Include="..\..\src\AndyTours.App\Funktionen\ApiOverlayKontext.cs" Link="Presentation\ApiOverlayKontext.cs" />
     <Compile Include="..\..\src\AndyTours.App\Funktionen\Overlayfarben.cs" Link="Presentation\Overlayfarben.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiOverlayknoten.cs" Link="Presentation\ApiOverlayknoten.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiOverlayGpxDatei.cs" Link="Presentation\ApiOverlayGpxDatei.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiOverlayFarboption.cs" Link="Presentation\ApiOverlayFarboption.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiOverlayBaum.cs" Link="Presentation\ApiOverlayBaum.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiOverlaysViewModel*.cs" Link="Presentation\%(Filename)%(Extension)" />
