@@ -172,4 +172,79 @@ public sealed class SqliteGarminImportArbeitspeicherTests
         await Assert.ThrowsAsync<StammdatenException>(() => f.Jobs.DownloadKandidatSpeichern(lease, Fixture.Candidate(608) with { DistanzKm = double.NaN }));
         await Assert.ThrowsAsync<StammdatenException>(() => f.Jobs.DownloadKandidatSpeichern(lease, Fixture.Candidate(609) with { FahrzeitSekunden = -1 }));
     }
+    [Theory]
+    [InlineData(GarminImportKandidatStatus.Wartend)]
+    [InlineData(GarminImportKandidatStatus.ZipBereit)]
+    public async Task ErfolgreicherPaketabschlussLehntUnfertigeKandidatenAb(GarminImportKandidatStatus status)
+    {
+        using var f = new Fixture();
+        var lease = f.Claim();
+        var candidate = await f.Jobs.DownloadKandidatSpeichern(lease, Fixture.Candidate(701, status));
+        var packet = lease.Auftrag.Paketnummer;
+        await Assert.ThrowsAsync<StammdatenException>(() => f.Jobs.PaketAbschliessen(lease, false, true, []));
+        var stillRunning = await f.Jobs.Laden(lease.JobId);
+        Assert.Equal(GarminImportJobStatus.Laeuft, stillRunning!.Status);
+        Assert.Equal(packet, stillRunning.Paketnummer);
+        var observed = await f.Jobs.BeobachteteKandidaten(lease);
+        Assert.Single(observed);
+        Assert.Equal(packet, observed[0].Paketnummer);
+        Assert.Equal(candidate.KandidatId, observed[0].Kandidat.KandidatId);
+        Assert.Equal(status, observed[0].Kandidat.Status);
+        var interrupted = await f.Jobs.PaketAbschliessen(lease, true, true, [GarminImportWarncodes.Abgebrochen]);
+        Assert.Equal(GarminImportJobStatus.Unterbrochen, interrupted.Status);
+        Assert.Equal(packet, interrupted.Paketnummer);
+    }
+
+    [Fact]
+    public async Task ServerkontextGibtNurZuNochVorhandenenTourenPassendeZuordnungenZurueck()
+    {
+        using var fixture = new Fixture();
+        long existingTour;
+        long deletedTour;
+        using (var db = OeffneDatenbank.Ausfuehren(fixture.Path))
+        {
+            var first = new AndyTours.Core.Modell.Trainingseinheit
+            {
+                Datum = new DateOnly(2025, 4, 1), Name = "fixture", AktivitaetId = 1
+            };
+            var second = new AndyTours.Core.Modell.Trainingseinheit
+            {
+                Datum = new DateOnly(2025, 4, 2), Name = "deleted", AktivitaetId = 1
+            };
+            existingTour = TrainingseinheitenTabelle.Einfuegen(db, first).Id;
+            deletedTour = TrainingseinheitenTabelle.Einfuegen(db, second).Id;
+            using var mapping = db.CreateCommand();
+            mapping.CommandText = "INSERT OR REPLACE INTO Einstellung(Schluessel,Wert) VALUES($key,$value);";
+            mapping.Parameters.AddWithValue("$key", "GarminConnect.Aktivitaet.801");
+            mapping.Parameters.AddWithValue("$value", existingTour.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            mapping.ExecuteNonQuery();
+            mapping.Parameters.Clear();
+            mapping.Parameters.AddWithValue("$key", "GarminConnect.Aktivitaet.802");
+            mapping.Parameters.AddWithValue("$value", deletedTour.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            mapping.ExecuteNonQuery();
+            using var remove = db.CreateCommand();
+            remove.CommandText = "DELETE FROM Trainingseinheit WHERE Id=$id;";
+            remove.Parameters.AddWithValue("$id", deletedTour);
+            remove.ExecuteNonQuery();
+        }
+        var context = await new SqliteGarminImportServerdaten(fixture.Path).Laden();
+        Assert.Contains(801, context.BereitsImportiert);
+        Assert.DoesNotContain(802, context.BereitsImportiert);
+        Assert.DoesNotContain("FAKE-ONLY-TEST", context.ToString());
+    }
+
+    [Fact]
+    public async Task FehlenderServerKeyIstSichererDomainfehler()
+    {
+        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "GarminNoKey-" + Guid.NewGuid().ToString("N") + ".db");
+        try
+        {
+            using (var db = OeffneDatenbank.Ausfuehren(path)) { }
+            var ex = await Assert.ThrowsAsync<StammdatenException>(() => new SqliteGarminImportServerdaten(path).Laden());
+            Assert.Equal(StammdatenFehlerart.Ungueltig, ex.Art);
+            Assert.DoesNotContain("key", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+        finally { try { File.Delete(path); } catch (IOException) { } }
+    }
+
 }
