@@ -38,15 +38,16 @@ public sealed class PulsAuswertungHttpClientTests
             var body = await request.Content!.ReadAsStringAsync(ct);
             if (request.RequestUri!.AbsolutePath.EndsWith("/referenz/aktualisieren", StringComparison.Ordinal))
             {
-                Assert.Equal(version, JsonDocument.Parse(body).RootElement.GetProperty("Version").GetString());
+                using var refreshJson = JsonDocument.Parse(body);
+                Assert.Equal(version, refreshJson.RootElement.GetProperty("version").GetString());
                 return Ok(contents[1]);
             }
             using var json = JsonDocument.Parse(body);
-            Assert.Equal("Radfahren-É", json.RootElement.GetProperty("ProfilSport").GetString());
-            Assert.Equal("2026-01-10", json.RootElement.GetProperty("Von").GetString());
-            Assert.Equal(2, json.RootElement.GetProperty("Raster").GetInt32());
-            Assert.Equal(7, json.RootElement.GetProperty("AktivitaetId").GetInt64());
-            Assert.Equal(9, json.RootElement.GetProperty("KategorieId").GetInt64());
+            Assert.Equal("Radfahren-É", json.RootElement.GetProperty("profilSport").GetString());
+            Assert.Equal("2026-01-10", json.RootElement.GetProperty("von").GetString());
+            Assert.Equal((int)Auswertungsraster.Monat, json.RootElement.GetProperty("raster").GetInt32());
+            Assert.Equal(7, json.RootElement.GetProperty("aktivitaetId").GetInt64());
+            Assert.Equal(9, json.RootElement.GetProperty("kategorieId").GetInt64());
             return Ok(contents[2]);
         });
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
@@ -74,12 +75,21 @@ public sealed class PulsAuswertungHttpClientTests
         await Assert.ThrowsAsync<StammdatenException>(() => client.AktualisierenReferenz(
             new(new string('A', 64)), CancellationToken.None));
         Assert.Equal(1, handler.Count);
-        var error = await Assert.ThrowsAsync<StammdatenException>(() => client.Auswerten(
-            new(new(2026, 2, 1), new(2026, 1, 1), Auswertungsraster.Monat, null, null, null),
-            CancellationToken.None));
-        Assert.Equal(StammdatenFehlerart.Konflikt, error.Art);
+        await Assert.ThrowsAsync<StammdatenException>(() => client.AktualisierenReferenz(new(new string('G', 64)), CancellationToken.None));
         Assert.Equal(1, handler.Count);
-        Assert.DoesNotContain("secret", error.Message);
+        var conflict = await Assert.ThrowsAsync<StammdatenException>(() => client.Auswerten(new(new(2026, 1, 1), new(2026, 1, 2), Auswertungsraster.Monat, null, null, null), CancellationToken.None));
+        Assert.Equal(StammdatenFehlerart.Konflikt, conflict.Art);
+        Assert.Equal(2, handler.Count);
+        var invalid = await Assert.ThrowsAsync<StammdatenException>(() => client.Auswerten(new(new(2026, 2, 1), new(2026, 1, 1), Auswertungsraster.Monat, null, null, null), CancellationToken.None));
+        Assert.Equal(StammdatenFehlerart.Ungueltig, invalid.Art);
+        Assert.Equal(2, handler.Count);
+        Assert.DoesNotContain("secret", conflict.Message);
+        var badHandler = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new ExplodingContent() }));
+        using var badHttp = new HttpClient(badHandler) { BaseAddress = new Uri("https://unit.test/") };
+        var bad = await Assert.ThrowsAsync<StammdatenException>(() => new PulsAuswertungHttpClient(badHttp).LadenReferenz(CancellationToken.None));
+        Assert.Equal(StammdatenFehlerart.Ungueltig, bad.Art);
+        Assert.Equal(1, badHandler.Count);
+        Assert.DoesNotContain("secret", bad.Message);
     }
 
     private static HttpResponseMessage Ok(HttpContent content) => new(HttpStatusCode.OK) { Content = content };
@@ -102,10 +112,11 @@ public sealed class PulsAuswertungHttpClientTests
 
     private sealed class ExplodingContent : HttpContent
     {
-        protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context) =>
-            throw new InvalidOperationException("must not read error body");
-        protected override bool TryComputeLength(out long length) { length = 0; return true; }
-        protected override Task<Stream> CreateContentReadStreamAsync() =>
-            throw new InvalidOperationException("must not read error body");
+        public bool WasRead { get; private set; }
+        protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context)
+        { WasRead = true; throw new InvalidOperationException("must not read error body"); }
+        protected override bool TryComputeLength(out long length) { length = 0; return false; }
+        protected override Task<Stream> CreateContentReadStreamAsync()
+        { WasRead = true; throw new InvalidOperationException("must not read error body"); }
     }
 }
