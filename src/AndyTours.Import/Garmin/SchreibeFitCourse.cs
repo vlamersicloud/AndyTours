@@ -33,7 +33,18 @@ public static class SchreibeFitCourse
     /// <param name="course">Der Course mit mindestens zwei Punkten.</param>
     /// <param name="startUtc">Zeitpunkt des ersten Punkts (die Zeiten der Punkte zählen ab hier), meist jetzt.</param>
     /// <returns>Der Inhalt der Datei.</returns>
-    public static byte[] Ausfuehren(Course course, System.DateTime startUtc)
+    public static byte[] Ausfuehren(Course course, System.DateTime startUtc) => Ausfuehren(course, startUtc, CancellationToken.None);
+
+    public static byte[] Ausfuehren(Course course, System.DateTime startUtc, CancellationToken cancellationToken)
+    {
+        using var decoderSperre = FitDecoderTor.Betreten(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        var result = AusfuehrenIntern(course, startUtc);
+        cancellationToken.ThrowIfCancellationRequested();
+        return result;
+    }
+
+    private static byte[] AusfuehrenIntern(Course course, System.DateTime startUtc)
     {
         var start = new Dynastream.Fit.DateTime(startUtc);
         Coursepunkt erster = course.Punkte[0];
