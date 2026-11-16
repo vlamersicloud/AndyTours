@@ -59,6 +59,7 @@ public sealed class BackendClientSitzung : IDisposable
         CourseExport = new CourseExportHttpClient(_importHttpClient);
         PlanungsRouting = new PlanungsRoutingHttpClient(_importHttpClient);
         PlanungsProfil = new PlanungsProfilHttpClient(_importHttpClient);
+        PlanungsDateien = new PlanungsDateienHttpClient(_importHttpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
@@ -85,6 +86,7 @@ public sealed class BackendClientSitzung : IDisposable
     public ICourseExport CourseExport { get; }
     public IPlanungsRouting PlanungsRouting { get; }
     public IPlanungsProfil PlanungsProfil { get; }
+    public IPlanungsDateien PlanungsDateien { get; }
     public IBackendVerbindung Verbindung { get; }
 
     public void Dispose()
