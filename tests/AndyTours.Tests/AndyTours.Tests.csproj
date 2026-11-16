@@ -53,6 +53,7 @@
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenMehrfachRueckmeldung.cs" Link="Presentation\ApiTourenMehrfachRueckmeldung.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiRekordNavigation.cs" Link="Presentation\ApiRekordNavigation.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiFilterOptionenPlan.cs" Link="Presentation\ApiFilterOptionenPlan.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourTabellenfilterViewModel.cs" Link="Presentation\ApiTourTabellenfilterViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTabellenfilterOptionenPlan.cs" Link="Presentation\ApiTabellenfilterOptionenPlan.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourDauerText.cs" Link="Presentation\ApiTourDauerText.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourSeitenRegeln.cs" Link="Presentation\ApiTourSeitenRegeln.cs" />
