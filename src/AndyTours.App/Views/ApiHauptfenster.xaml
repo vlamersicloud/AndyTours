@@ -121,9 +121,10 @@
             <TabControl Grid.Row="1" Background="White">
                 <TabItem Header="Übersicht">
                     <Grid Margin="16">
-                        <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <oxy:PlotView Model="{Binding Diagramm}" MinHeight="250"/>
-                        <TextBlock Grid.Row="1" Text="{Binding ZukunftsHinweis}" Foreground="#875A12" TextWrapping="Wrap" Margin="0,12,0,0"/>
+                        <TextBlock Grid.Row="1" Text="{Binding SaisonText, Mode=OneWay}" TextWrapping="Wrap" Margin="0,12,0,0"/>
+                        <TextBlock Grid.Row="2" Text="{Binding ZukunftsHinweis}" Foreground="#875A12" TextWrapping="Wrap" Margin="0,12,0,0"/>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Bestleistungen">

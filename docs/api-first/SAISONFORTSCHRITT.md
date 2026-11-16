@@ -1,7 +1,5 @@
-# API-Saisonfortschritt – Designnotiz
+# API-Saisonfortschritt
 
-Die Legacy-UI zeigt Zeitraumbalken und -summen; nur beim Zeitraum exakt 1. Januar bis heute ergänzt sie den Saison-Stand, Soll, Rest/Vorsprung und Wochenleistung. Zukünftige Touren werden für diese Kennzahlen ausgeschlossen. Die Core-Jahreskurve belegt nicht, dass die UI eine historische Zielkurve darstellt.
+Die API-Übersicht kann eine optionale, serverseitig berechnete YTD-Projektion für den exakten Zeitraum 1. Januar bis Stichtag anzeigen: Kilometer, Höhenmeter, Anzahl und Fahrzeitstunden (ohne Fahrzeitziel). Backend-Datum und SQLite-Lesesnapshot werden gemeinsam verwendet; zukünftige Touren sind ausgeschlossen. Aktivität gilt für Ist-Werte und Ziele, Kategorien nur für Ist-Werte. Tabellenfilter ändern die Saisonwerte nicht. Andere Zeiträume oder ältere Backends ohne optionales Feld zeigen leer, nicht nullsummig. Ein Kennzahlwechsel nutzt vorbereitete Texte; bei ungültiger Antwort bleibt die bisherige Anzeige bestehen.
 
-Vorschlag: optionale typisierte Saisonprojektion mit Stichtag und je Kennzahl Stand sowie nullablem Ziel/Soll/Rest/Wochenwert; vier Größen: km, hm, Anzahl und Dauer, ohne Fahrzeitziel. Berechnung serverseitig mit gemeinsam erfasstem Datum und innerhalb desselben SQLite-Lesesnapshots aus Core-Regeln. Aktivitätenfilter gilt; Kategorie filtert Ist-Werte, nicht Jahresziele. Tabellenfilter beeinflussen die Saison nicht. Nur exakt 1. Januar bis Stichtag darf als YTD erscheinen; beliebige Teilzeiträume dürfen nicht als Saisonstand ausgegeben werden. Bestehende Perioden, Rekorde und Kalenderjahresziele bleiben unverändert.
-
-Noch offen: Vertrag und Randfalltests (Jahresanfang/-ende, Schaltjahr, keine Aktivität/Ziele, Zukunftstouren, Kategorien). Keine clientseitige Datenbestandsberechnung. Design-only; keine Implementierung oder Laufzeitbehauptung. Gesamtmigration weiterhin offen.
+Bestehende Periodenbalken bleiben Zeitraumsauswertungen; eine historische Zielkurve ist weder belegt noch Teil dieser Änderung. Tests wurden kompiliert, aber nicht ausgeführt. Windows-Rendering und Laufzeit sind ungeprüft; die Gesamtmigration bleibt offen.

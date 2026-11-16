@@ -24,6 +24,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
     public ObservableCollection<BestleistungszeileAntwort> Jahresrekorde { get; } = [];
     public ObservableCollection<BestleistungszeileAntwort> Einzelrekorde { get; } = [];
     public ObservableCollection<JahreszielAntwort> Jahresziele { get; } = [];
+    private ApiSaisonTexte _saisonTexte = ApiSaisonTexte.Leer;
     private long _generation;
     private long _aktualisierungsstand;
     private int _start;
@@ -40,6 +41,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
     [ObservableProperty] private string _fahrzeitText = "–";
     [ObservableProperty] private string _anzahlText = "–";
     [ObservableProperty] private string _statusText = "Filter wählen und aktualisieren.";
+    [ObservableProperty] private string _saisonText = string.Empty;
     [ObservableProperty] private string _zukunftsHinweis = string.Empty;
     [ObservableProperty] private bool _laedt;
     [ObservableProperty] private int _gesamtTouren;
@@ -83,8 +85,18 @@ public partial class ApiUebersichtViewModel : ObservableObject
 
     partial void OnKennzahlChanged(ApiDiagrammkennzahl value)
     {
+        AktualisiereSaisonText();
         if (_perioden.Count > 0) ZeichneDiagramm();
     }
+
+    private void AktualisiereSaisonText() => SaisonText = Kennzahl switch
+    {
+        ApiDiagrammkennzahl.Kilometer => _saisonTexte.Kilometer,
+        ApiDiagrammkennzahl.Hoehenmeter => _saisonTexte.Hoehenmeter,
+        ApiDiagrammkennzahl.Anzahl => _saisonTexte.Anzahl,
+        ApiDiagrammkennzahl.Fahrzeit => _saisonTexte.Fahrzeit,
+        _ => string.Empty
+    };
 
     partial void OnVonDatumChanged(DateTime? value) => FilterGeaendert();
     partial void OnBisDatumChanged(DateTime? value) => FilterGeaendert();
@@ -123,6 +135,8 @@ public partial class ApiUebersichtViewModel : ObservableObject
         AusgewaehlteTour = null;
         Diagramm = new PlotModel { Background = OxyColors.White };
         DistanzKmText = HoehenmeterText = FahrzeitText = AnzahlText = "–";
+        _saisonTexte = ApiSaisonTexte.Leer;
+        SaisonText = string.Empty;
         ZukunftsHinweis = string.Empty;
         Touren.Clear();
         GesamtTouren = 0;
@@ -178,6 +192,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
             var tabellenfilterPlan = ApiTabellenfilterOptionenPlan.Erstellen(page.TabellenfilterOptionen,
                 tabellenfilterSnapshot?.EquipmentName, tabellenfilterSnapshot?.Trainingsbereich);
             var tabellensummeText = ApiTourTabellensummeAnzeige.Erstellen(page);
+            var saisonTexte = ApiSaisonAnzeige.Erstellen(result.Saisonfortschritt, von, bis);
 
             if (plan.AuswahlGeaendert) LeereAnzeige();
             UebernehmeFilterOptionen(plan);
@@ -198,6 +213,8 @@ public partial class ApiUebersichtViewModel : ObservableObject
                 : string.Empty;
             SetzeSeite(page);
             TabellensummeText = tabellensummeText;
+            _saisonTexte = saisonTexte;
+            AktualisiereSaisonText();
             ZeichneDiagramm();
             StatusText = plan.Hinweis ?? (page.Gesamt == 0
                 ? "Keine Touren im gewählten Zeitraum und Filter."
@@ -213,6 +230,11 @@ public partial class ApiUebersichtViewModel : ObservableObject
         {
             if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested)
                 StatusText = "Tourenseite ist unvollständig oder ungültig. Bitte Backend-Version und Verbindung prüfen.";
+        }
+        catch (ApiSaisonAntwortException)
+        {
+            if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested)
+                StatusText = "Saisonkennzahlen sind unvollständig oder ungültig.";
         }
         catch (Exception)
         {
