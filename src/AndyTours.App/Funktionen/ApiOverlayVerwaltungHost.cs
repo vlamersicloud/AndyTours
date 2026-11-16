@@ -54,11 +54,11 @@ public sealed class ApiOverlayVerwaltungHost : IDisposable
             if (window is not null)
             {
                 window.Closed -= ManagerClosed;
-                if (window.IsVisible) window.Owner = null;
-                if (window.IsVisible) window.Close();
+                if (window.IsVisible) window.SchliesseFuerHostShutdown();
+                else vm?.Dispose();
                 _fenster = null;
             }
-            vm?.Dispose();
+            else vm?.Dispose();
             if (_owner.IsVisible) MessageBox.Show(_owner, "Overlay-Verwaltung konnte nicht geöffnet werden.", "Overlays", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
