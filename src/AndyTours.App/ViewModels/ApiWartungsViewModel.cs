@@ -17,6 +17,10 @@ public partial class ApiWartungsViewModel : ObservableObject
     private readonly Func<string, bool> _bestaetigen;
     private WartungsbestandAntwort? _bestand;
     private StammdatenAntwort? _meta;
+    private bool _filterSuspendiert;
+    private bool _erstesLaden = true;
+    private bool _hasLoaded;
+    private long _generation;
 
     [ObservableProperty] private ApiFilterOption? _aktivitaetAuswahl;
     [ObservableProperty] private ApiFilterOption? _equipmentAuswahl;
@@ -49,12 +53,35 @@ public partial class ApiWartungsViewModel : ObservableObject
     public event EventHandler<WartungBearbeitenViewModel>? WartungEditorAngefordert;
     public event EventHandler<AlarmBearbeitenViewModel>? AlarmEditorAngefordert;
 
-    partial void OnAktivitaetAuswahlChanged(ApiFilterOption? value) => FilterChanged();
-    partial void OnEquipmentAuswahlChanged(ApiFilterOption? value) => FilterChanged();
+    partial void OnAktivitaetAuswahlChanged(ApiFilterOption? value)
+    {
+        if (_filterSuspendiert) return;
+        UpdateEquipmentOptions();
+        FilterChanged();
+    }
+    partial void OnEquipmentAuswahlChanged(ApiFilterOption? value)
+    {
+        if (!_filterSuspendiert) FilterChanged();
+    }
+    partial void OnLaedtChanged(bool value) => NotifyCommands();
+    partial void OnAendertChanged(bool value) => NotifyCommands();
+    partial void OnEditorOffenChanged(bool value) => NotifyCommands();
+    partial void OnWartungIdsChanged(IReadOnlyList<long> value) => NotifyCommands();
+    partial void OnAlarmIdsChanged(IReadOnlyList<long> value) => NotifyCommands();
+
+    private void NotifyCommands()
+    {
+        LadenCommand.NotifyCanExecuteChanged(); NeueWartungCommand.NotifyCanExecuteChanged();
+        WartungBearbeitenCommand.NotifyCanExecuteChanged(); NeuerAlarmCommand.NotifyCanExecuteChanged();
+        AlarmBearbeitenCommand.NotifyCanExecuteChanged(); WartungenLoeschenCommand.NotifyCanExecuteChanged();
+        AlarmeLoeschenCommand.NotifyCanExecuteChanged(); AlarmeUmschaltenCommand.NotifyCanExecuteChanged();
+    }
 
     private void FilterChanged()
     {
+        Interlocked.Increment(ref _generation);
         Wartungszeilen.Clear(); Alarmzeilen.Clear(); WartungIds = []; AlarmIds = [];
+        _hasLoaded = false; _bestand = null;
         HatAenderungen = true; Status = "Filter geändert – bitte neu laden.";
     }
 
@@ -65,38 +92,62 @@ public partial class ApiWartungsViewModel : ObservableObject
     private async Task LoadCore(CancellationToken ct)
     {
         if (Laedt) return;
+        var generation = Interlocked.Increment(ref _generation);
         Laedt = true;
         try
         {
-            var metaTask = _stammdaten.Laden(ct);
-            var overviewTask = _wartungen.Laden(new(AktivitaetAuswahl?.Id, EquipmentAuswahl?.Id), ct);
-            await Task.WhenAll(metaTask, overviewTask);
-            _meta = await metaTask;
-            var overview = await overviewTask;
+            var meta = await _stammdaten.Laden(ct);
+            var previousActivity = AktivitaetAuswahl?.Id;
+            var previousEquipment = EquipmentAuswahl?.Id;
+            var activity = meta.Aktivitaeten.FirstOrDefault(a => a.Id == previousActivity);
+            if (activity is null && _erstesLaden)
+                activity = meta.Aktivitaeten.FirstOrDefault(a => a.IstHaupt);
+            if (activity is null && previousActivity is not null)
+                Status = "Die zuvor gewählte Aktivität ist nicht mehr verfügbar; alle Aktivitäten werden angezeigt.";
+
+            _filterSuspendiert = true;
+            try
+            {
+                _meta = meta;
+                AktivitaetsOptionen.Clear(); AktivitaetsOptionen.Add(new(null, "Alle Aktivitäten"));
+                foreach (var a in meta.Aktivitaeten) AktivitaetsOptionen.Add(new(a.Id, a.Name));
+                AktivitaetAuswahl = activity is null ? AktivitaetsOptionen[0] : AktivitaetsOptionen.First(x => x.Id == activity.Id);
+                UpdateEquipmentOptions();
+                EquipmentAuswahl = EquipmentOptionen.FirstOrDefault(x => x.Id == previousEquipment) ?? EquipmentOptionen[0];
+            }
+            finally { _filterSuspendiert = false; }
+            _erstesLaden = false;
+            var overview = await _wartungen.Laden(new(AktivitaetAuswahl?.Id, EquipmentAuswahl?.Id), ct);
+            if (generation != Interlocked.Read(ref _generation)) return;
             _bestand = overview.Bestand;
-            Taetigkeiten = overview.Taetigkeiten;
-            OnPropertyChanged(nameof(Taetigkeiten));
-            AktivitaetsOptionen.Clear(); AktivitaetsOptionen.Add(new(null, "Alle Aktivitäten"));
-            foreach (var a in _meta.Aktivitaeten) AktivitaetsOptionen.Add(new(a.Id, a.Name));
-            if (AktivitaetAuswahl is null || !AktivitaetsOptionen.Any(x => x.Id == AktivitaetAuswahl.Id))
-                AktivitaetAuswahl = AktivitaetsOptionen.FirstOrDefault(x => x.Id is long id && _meta.Aktivitaeten.FirstOrDefault(a => a.Id == id)?.IstHaupt == true) ?? AktivitaetsOptionen[0];
-            EquipmentOptionen.Clear(); EquipmentOptionen.Add(new(null, "Alle Equipments"));
-            foreach (var e in _meta.Equipments.Where(e => !e.Ausgemustert && (!AktivitaetAuswahl?.Id.HasValue ?? true || e.AktivitaetId == AktivitaetAuswahl!.Id)))
-                EquipmentOptionen.Add(new(e.Id, e.Name));
-            if (!EquipmentOptionen.Any(x => x.Id == EquipmentAuswahl?.Id)) EquipmentAuswahl = EquipmentOptionen[0];
+            Taetigkeiten = overview.Taetigkeiten; OnPropertyChanged(nameof(Taetigkeiten));
             Wartungszeilen.Clear(); foreach (var row in overview.Wartungszeilen) Wartungszeilen.Add(row);
             Alarmzeilen.Clear(); foreach (var row in overview.Alarmzeilen) Alarmzeilen.Add(row);
-            HatAenderungen = false; Status = string.Empty;
+            _hasLoaded = true; HatAenderungen = false;
+            if (string.IsNullOrEmpty(Status) || Status == "Filter geändert – bitte neu laden.") Status = string.Empty;
         }
-        catch (Exception) { Status = "Wartungsdaten konnten nicht geladen werden."; }
-        finally { Laedt = false; LadenCommand.NotifyCanExecuteChanged(); }
+        catch (Exception) { if (generation == Interlocked.Read(ref _generation)) Status = "Wartungsdaten konnten nicht geladen werden."; }
+        finally { Laedt = false; NotifyCommands(); }
     }
 
-    [RelayCommand(CanExecute = nameof(CanEdit))] private Task NeueWartungAsync() => EditMaintenance(null);
-    [RelayCommand(CanExecute = nameof(CanEdit))] private Task WartungBearbeitenAsync() => EditMaintenance(WartungIds.Count == 1 ? WartungIds[0] : null);
-    [RelayCommand(CanExecute = nameof(CanEdit))] private Task NeuerAlarmAsync() => EditAlarm(null);
-    [RelayCommand(CanExecute = nameof(CanEdit))] private Task AlarmBearbeitenAsync() => EditAlarm(AlarmIds.Count == 1 ? AlarmIds[0] : null);
-    private bool CanEdit() => !Laedt && !Aendert && !EditorOffen && _bestand is not null && _meta is not null;
+    private void UpdateEquipmentOptions()
+    {
+        if (_meta is null) return;
+        var selected = EquipmentAuswahl?.Id;
+        EquipmentOptionen.Clear(); EquipmentOptionen.Add(new(null, "Alle Equipments"));
+        foreach (var e in _meta.Equipments.Where(e => !e.Ausgemustert && (AktivitaetAuswahl?.Id is not long aid || e.AktivitaetId == aid)))
+            EquipmentOptionen.Add(new(e.Id, e.Name));
+        if (!EquipmentOptionen.Any(x => x.Id == selected)) EquipmentAuswahl = EquipmentOptionen[0];
+    }
+
+    [RelayCommand(CanExecute = nameof(CanNew))] private Task NeueWartungAsync() => EditMaintenance(null);
+    [RelayCommand(CanExecute = nameof(CanEditMaintenance))] private Task WartungBearbeitenAsync() => WartungIds.Count == 1 ? EditMaintenance(WartungIds[0]) : Task.CompletedTask;
+    [RelayCommand(CanExecute = nameof(CanNew))] private Task NeuerAlarmAsync() => EditAlarm(null);
+    [RelayCommand(CanExecute = nameof(CanEditAlarm))] private Task AlarmBearbeitenAsync() => AlarmIds.Count == 1 ? EditAlarm(AlarmIds[0]) : Task.CompletedTask;
+    private bool CanNew() => IsIdleWithSnapshot();
+    private bool CanEditMaintenance() => IsIdleWithSnapshot() && WartungIds.Count == 1;
+    private bool CanEditAlarm() => IsIdleWithSnapshot() && AlarmIds.Count == 1;
+    private bool IsIdleWithSnapshot() => !Laedt && !Aendert && !EditorOffen && _hasLoaded && _bestand is not null && _meta is not null;
 
     private async Task EditMaintenance(long? id)
     {
@@ -104,7 +155,7 @@ public partial class ApiWartungsViewModel : ObservableObject
         var snapshot = loaded.Value.Bestand; var meta = loaded.Value.Meta;
         Wartung? existing = id is long selected ? snapshot.Eintraege.FirstOrDefault(x => x.Id == selected && x.Art == Wartungsart.Wartung) is { } item ? ToCore(item) : null : null;
         if (id is not null && existing is null) { Status = "Die ausgewählte Wartung ist nicht mehr vorhanden. Bitte neu laden."; return; }
-        var basis = existing ?? new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = EquipmentAuswahl?.Id ?? _meta!.Equipments.FirstOrDefault(e => !e.Ausgemustert && e.AktivitaetId == AktivitaetAuswahl?.Id)?.Id ?? 0, Taetigkeit = "", Typ = WartungsTyp.Wartung, Aktiv = true };
+        var basis = existing ?? new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = EquipmentAuswahl?.Id, Taetigkeit = "", Typ = WartungsTyp.Wartung, Aktiv = true };
         var data = CoreData(meta, snapshot);
         var vm = new WartungBearbeitenViewModel(basis, ErmittleWartungsraeder.Ausfuehren(data, AktivitaetAuswahl?.Id, existing?.EquipmentId), Taetigkeiten, id is null ? "Neue Wartung" : "Wartung bearbeiten", async value => await SaveMaintenance(value, snapshot.Version), DateOnly.FromDateTime(DateTime.Today), data);
         EditorOffen = true; try { WartungEditorAngefordert?.Invoke(this, vm); } finally { EditorOffen = false; }
@@ -117,7 +168,7 @@ public partial class ApiWartungsViewModel : ObservableObject
         var snapshot = loaded.Value.Bestand; var meta = loaded.Value.Meta;
         Wartung? existing = id is long selected ? snapshot.Eintraege.FirstOrDefault(x => x.Id == selected && x.Art == Wartungsart.Alarm) is { } item ? ToCore(item) : null : null;
         if (id is not null && existing is null) { Status = "Der ausgewählte Alarm ist nicht mehr vorhanden. Bitte neu laden."; return; }
-        var basis = existing ?? new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = EquipmentAuswahl?.Id ?? _meta!.Equipments.FirstOrDefault(e => !e.Ausgemustert && e.AktivitaetId == AktivitaetAuswahl?.Id)?.Id ?? 0, Taetigkeit = "", Typ = WartungsTyp.Alarm, AlarmKm = 5000, Aktiv = true };
+        var basis = existing ?? new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = EquipmentAuswahl?.Id, Taetigkeit = "", Typ = WartungsTyp.Alarm, AlarmKm = 5000, Aktiv = true };
         var data = CoreData(meta, snapshot);
         var vm = new AlarmBearbeitenViewModel(basis, ErmittleWartungsraeder.Ausfuehren(data, AktivitaetAuswahl?.Id, existing?.EquipmentId), Taetigkeiten, id is null ? "Neuer Alarm" : "Alarm bearbeiten", async value => await SaveAlarm(value, snapshot.Version), data);
         EditorOffen = true; try { AlarmEditorAngefordert?.Invoke(this, vm); } finally { EditorOffen = false; }
@@ -169,19 +220,22 @@ public partial class ApiWartungsViewModel : ObservableObject
         finally { Aendert = false; }
     }
 
-    [RelayCommand(CanExecute = nameof(CanBulk))] private Task WartungenLoeschenAsync() => BulkDelete(WartungIds);
-    [RelayCommand(CanExecute = nameof(CanBulk))] private Task AlarmeLoeschenAsync() => BulkDelete(AlarmIds);
+    [RelayCommand(CanExecute = nameof(CanDeleteMaintenance))] private Task WartungenLoeschenAsync() => BulkDelete(WartungIds);
+    [RelayCommand(CanExecute = nameof(CanDeleteAlarm))] private Task AlarmeLoeschenAsync() => BulkDelete(AlarmIds);
     private async Task BulkDelete(IReadOnlyList<long> ids)
     {
         if (_bestand is null || ids.Count == 0 || !_bestaetigen("Ausgewählte Einträge löschen?")) return;
         Aendert = true; try { _bestand = await _wartungen.Loeschen(new(_bestand.Version, ids)); await ReloadAfterSave(); } catch (Exception) { Status = "Löschen fehlgeschlagen oder Status unklar; bitte neu laden."; } finally { Aendert = false; }
     }
-    [RelayCommand(CanExecute = nameof(CanBulk))] private async Task AlarmeUmschaltenAsync()
+    [RelayCommand(CanExecute = nameof(CanToggleAlarm))] private async Task AlarmeUmschaltenAsync()
     {
         if (_bestand is null || AlarmIds.Count == 0) return;
         Aendert = true; try { _bestand = await _wartungen.AlarmeUmschalten(new(_bestand.Version, AlarmIds)); await ReloadAfterSave(); } catch (Exception) { Status = "Umschalten fehlgeschlagen oder Status unklar; bitte neu laden."; } finally { Aendert = false; }
     }
-    private bool CanBulk() => !Laedt && !Aendert && !EditorOffen && _bestand is not null;
+    private bool CanBulk() => !Laedt && !Aendert && !EditorOffen && _hasLoaded && _bestand is not null;
+    private bool CanDeleteMaintenance() => CanBulk() && WartungIds.Count > 0;
+    private bool CanDeleteAlarm() => CanBulk() && AlarmIds.Count > 0;
+    private bool CanToggleAlarm() => CanBulk() && AlarmIds.Count > 0;
 
     private async Task ReloadAfterSave() { await LoadCore(CancellationToken.None); if (!string.IsNullOrEmpty(Status)) Status = "Gespeichert; die Liste konnte nicht aktualisiert werden. Bitte neu laden."; }
     private static Wartung ToCore(WartungsdatensatzAntwort x) => new() { Id=x.Id, Datum=x.Datum, EquipmentId=x.EquipmentId, Taetigkeit=x.Taetigkeit, Kommentar=x.Kommentar, Typ=x.Art switch { Wartungsart.Wartung=>WartungsTyp.Wartung, Wartungsart.Alarm=>WartungsTyp.Alarm, _=>throw new InvalidOperationException() }, AlarmKm=x.AlarmKm, Aktiv=x.Aktiv };
