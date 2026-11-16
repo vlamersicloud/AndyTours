@@ -153,8 +153,11 @@ public partial class ApiFitImportViewModel : ObservableObject, IDisposable
         HochladenCommand.NotifyCanExecuteChanged();
         LadenCommand.NotifyCanExecuteChanged();
         NotifyPruefCommands();
+        NotifyGeraeteCommands();
     }
     partial void NotifyPruefCommands();
+    partial void NotifyGeraeteCommands();
+    partial void DisposeGeraete();
     partial void OnLaedtChanged(bool value) => NotifyCommands();
     partial void OnAendertChanged(bool value) => NotifyCommands();
     partial void OnEditorOffenChanged(bool value) => NotifyCommands();
@@ -165,6 +168,7 @@ public partial class ApiFitImportViewModel : ObservableObject, IDisposable
         _disposed = true;
         _lifetime.Cancel();
         _lifetime.Dispose();
+        DisposeGeraete();
         NotifyCommands();
         GC.SuppressFinalize(this);
     }
