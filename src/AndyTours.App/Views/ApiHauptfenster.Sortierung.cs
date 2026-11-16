@@ -14,6 +14,26 @@ public partial class ApiHauptfenster
 
         var sortierung = e.Column.SortMemberPath switch
         {
+            "Anzeige.Datum" => TourenSortierschluessel.Datum,
+            "Anzeige.Startzeit" => TourenSortierschluessel.Startzeit,
+            "Anzeige.Name" => TourenSortierschluessel.Name,
+            "Anzeige.Aktivitaet" => TourenSortierschluessel.Aktivitaet,
+            "Anzeige.Kategorien" => TourenSortierschluessel.Kategorien,
+            "Anzeige.Equipment" => TourenSortierschluessel.Equipment,
+            "Anzeige.DistanzKm" => TourenSortierschluessel.DistanzKm,
+            "Anzeige.Hoehenmeter" => TourenSortierschluessel.Hoehenmeter,
+            "Anzeige.FahrzeitSekunden" => TourenSortierschluessel.Fahrzeit,
+            "Anzeige.DurchschnittKmh" => TourenSortierschluessel.DurchschnittKmh,
+            "Anzeige.MaxKmh" => TourenSortierschluessel.MaxKmh,
+            "Anzeige.HfDurchschnitt" => TourenSortierschluessel.HfDurchschnitt,
+            "Anzeige.HfMax" => TourenSortierschluessel.HfMax,
+            "Anzeige.Trittfrequenz" => TourenSortierschluessel.Trittfrequenz,
+            "Anzeige.Temperatur" => TourenSortierschluessel.Temperatur,
+            "Anzeige.MaxHoehe" => TourenSortierschluessel.MaxHoehe,
+            "Anzeige.Trainingsbereich" => TourenSortierschluessel.Trainingsbereich,
+            "Anzeige.Kommentar" => TourenSortierschluessel.Kommentar,
+
+            // Alte XAML-Pfade bleiben als Routing-Aliase erhalten.
             "Werte.Datum" => TourenSortierschluessel.Datum,
             "Werte.Startzeit" => TourenSortierschluessel.Startzeit,
             "Werte.Name" => TourenSortierschluessel.Name,

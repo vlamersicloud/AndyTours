@@ -11,6 +11,46 @@
     <Window.Resources>
         <local:DauerConverter x:Key="DauerConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <Style x:Key="TourNumber" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Right"/>
+            <Setter Property="Padding" Value="4,0"/>
+        </Style>
+        <Style x:Key="TourBestDistance" TargetType="TextBlock" BasedOn="{StaticResource TourNumber}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Anzeige.IstBestDistanz}" Value="True"><Setter Property="Foreground" Value="Red"/></DataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Anzeige.IstBestDistanz}" Value="True"/>
+                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Foreground" Value="#FFFFC8C8"/><Setter Property="FontWeight" Value="SemiBold"/>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="TourBestHeight" TargetType="TextBlock" BasedOn="{StaticResource TourNumber}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Anzeige.IstBestHoehenmeter}" Value="True"><Setter Property="Foreground" Value="Red"/></DataTrigger>
+                <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding Anzeige.IstBestHoehenmeter}" Value="True"/><Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True"/></MultiDataTrigger.Conditions><Setter Property="Foreground" Value="#FFFFC8C8"/><Setter Property="FontWeight" Value="SemiBold"/></MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="TourBestDuration" TargetType="TextBlock" BasedOn="{StaticResource TourNumber}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Anzeige.IstBestFahrzeit}" Value="True"><Setter Property="Foreground" Value="Red"/></DataTrigger>
+                <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding Anzeige.IstBestFahrzeit}" Value="True"/><Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True"/></MultiDataTrigger.Conditions><Setter Property="Foreground" Value="#FFFFC8C8"/><Setter Property="FontWeight" Value="SemiBold"/></MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="TourBestAverageSpeed" TargetType="TextBlock" BasedOn="{StaticResource TourNumber}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Anzeige.IstBestDurchschnittKmh}" Value="True"><Setter Property="Foreground" Value="Red"/></DataTrigger>
+                <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding Anzeige.IstBestDurchschnittKmh}" Value="True"/><Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True"/></MultiDataTrigger.Conditions><Setter Property="Foreground" Value="#FFFFC8C8"/><Setter Property="FontWeight" Value="SemiBold"/></MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="TourBestMaxSpeed" TargetType="TextBlock" BasedOn="{StaticResource TourNumber}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Anzeige.IstBestMaxKmh}" Value="True"><Setter Property="Foreground" Value="Red"/></DataTrigger>
+                <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding Anzeige.IstBestMaxKmh}" Value="True"/><Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True"/></MultiDataTrigger.Conditions><Setter Property="Foreground" Value="#FFFFC8C8"/><Setter Property="FontWeight" Value="SemiBold"/></MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
     <Grid Margin="24">
         <Grid.RowDefinitions>
@@ -154,18 +194,30 @@
                                   Sorting="TourenDataGrid_Sorting" PreviewKeyDown="TourenDataGrid_PreviewKeyDownMehrfach" CanUserSortColumns="True"
                                   IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False"
                                   CanUserDeleteRows="False" SelectionMode="Extended" SelectionUnit="FullRow" HeadersVisibility="Column"
-                                  EnableRowVirtualization="True" GridLinesVisibility="Horizontal">
+                                  EnableRowVirtualization="True" EnableColumnVirtualization="True" HorizontalScrollBarVisibility="Auto" GridLinesVisibility="Horizontal">
                             <DataGrid.InputBindings>
                                 <KeyBinding Key="F2" Command="{Binding TourBearbeitenCommand}"/>
                                 <KeyBinding Key="Enter" Command="{Binding TourBearbeitenCommand}"/>
                             </DataGrid.InputBindings>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Datum" SortMemberPath="Werte.Datum" SortDirection="Descending" Binding="{Binding Werte.Datum, StringFormat={}{0:dd.MM.yyyy}}" Width="110"/>
-                                <DataGridTextColumn Header="Startzeit" SortMemberPath="Werte.Startzeit" Binding="{Binding Werte.Startzeit, StringFormat={}{0:HH:mm}}" Width="90"/>
-                                <DataGridTextColumn Header="Name" SortMemberPath="Werte.Name" Binding="{Binding Werte.Name}" Width="*"/>
-                                <DataGridTextColumn Header="Distanz (km)" SortMemberPath="Werte.DistanzKm" Binding="{Binding Werte.DistanzKm, StringFormat={}{0:N1}}" Width="120"/>
-                                <DataGridTextColumn Header="Höhenmeter" SortMemberPath="Werte.Hoehenmeter" Binding="{Binding Werte.Hoehenmeter, StringFormat={}{0:N0}}" Width="110"/>
-                                <DataGridTextColumn Header="Fahrzeit" SortMemberPath="Werte.FahrzeitSekunden" Binding="{Binding Werte.FahrzeitSekunden, Converter={StaticResource DauerConverter}}" Width="110"/>
+                                <DataGridTextColumn Header="Datum" SortMemberPath="Anzeige.Datum" SortDirection="Descending" Binding="{Binding Anzeige.Datum, Mode=OneWay, StringFormat='ddd, dd.MM.yyyy'}" Width="130"/>
+                                <DataGridTextColumn Header="Start" SortMemberPath="Anzeige.Startzeit" Binding="{Binding Anzeige.Startzeit, StringFormat={}{0:HH:mm}, Mode=OneWay}" Width="85"/>
+                                <DataGridTextColumn Header="Name" SortMemberPath="Anzeige.Name" Binding="{Binding Anzeige.Name, Mode=OneWay}" Width="180"/>
+                                <DataGridTextColumn Header="Aktivität" SortMemberPath="Anzeige.Aktivitaet" Binding="{Binding Anzeige.Aktivitaet, Mode=OneWay}" Width="125"/>
+                                <DataGridTextColumn Header="Kategorien" SortMemberPath="Anzeige.Kategorien" Binding="{Binding Anzeige.Kategorien, Mode=OneWay}" Width="150"/>
+                                <DataGridTextColumn Header="Equipment" SortMemberPath="Anzeige.Equipment" Binding="{Binding Anzeige.Equipment, Mode=OneWay}" Width="145"/>
+                                <DataGridTextColumn Header="km" SortMemberPath="Anzeige.DistanzKm" Binding="{Binding Anzeige.DistanzKm, StringFormat={}{0:N2}, Mode=OneWay}" ElementStyle="{StaticResource TourBestDistance}" Width="90"/>
+                                <DataGridTextColumn Header="hm" SortMemberPath="Anzeige.Hoehenmeter" Binding="{Binding Anzeige.Hoehenmeter, StringFormat={}{0:N0}, Mode=OneWay}" ElementStyle="{StaticResource TourBestHeight}" Width="80"/>
+                                <DataGridTextColumn Header="Fahrzeit" SortMemberPath="Anzeige.FahrzeitSekunden" Binding="{Binding Anzeige.FahrzeitSekunden, Converter={StaticResource DauerConverter}, Mode=OneWay}" ElementStyle="{StaticResource TourBestDuration}" Width="105"/>
+                                <DataGridTextColumn Header="Ø km/h" SortMemberPath="Anzeige.DurchschnittKmh" Binding="{Binding Anzeige.DurchschnittKmh, StringFormat={}{0:N1}, Mode=OneWay}" ElementStyle="{StaticResource TourBestAverageSpeed}" Width="85"/>
+                                <DataGridTextColumn Header="max km/h" SortMemberPath="Anzeige.MaxKmh" Binding="{Binding Anzeige.MaxKmh, StringFormat={}{0:N1}, Mode=OneWay}" ElementStyle="{StaticResource TourBestMaxSpeed}" Width="85"/>
+                                <DataGridTextColumn Header="Ø Puls" SortMemberPath="Anzeige.HfDurchschnitt" Binding="{Binding Anzeige.HfDurchschnitt, StringFormat={}{0:N0}, Mode=OneWay}" Width="75" ElementStyle="{StaticResource TourNumber}"/>
+                                <DataGridTextColumn Header="max Puls" SortMemberPath="Anzeige.HfMax" Binding="{Binding Anzeige.HfMax, StringFormat={}{0:N0}, Mode=OneWay}" Width="75" ElementStyle="{StaticResource TourNumber}"/>
+                                <DataGridTextColumn Header="Trittfrequenz" SortMemberPath="Anzeige.Trittfrequenz" Binding="{Binding Anzeige.Trittfrequenz, StringFormat={}{0:N0}, Mode=OneWay}" Width="105" ElementStyle="{StaticResource TourNumber}"/>
+                                <DataGridTextColumn Header="°C" SortMemberPath="Anzeige.Temperatur" Binding="{Binding Anzeige.Temperatur, StringFormat={}{0:N0}, Mode=OneWay}" Width="65" ElementStyle="{StaticResource TourNumber}"/>
+                                <DataGridTextColumn Header="max Höhe" SortMemberPath="Anzeige.MaxHoehe" Binding="{Binding Anzeige.MaxHoehe, StringFormat={}{0:N0}, Mode=OneWay}" Width="90" ElementStyle="{StaticResource TourNumber}"/>
+                                <DataGridTextColumn Header="Bereich" SortMemberPath="Anzeige.Trainingsbereich" Binding="{Binding Anzeige.Trainingsbereich, Mode=OneWay}" Width="95"/>
+                                <DataGridTextColumn Header="Kommentar" SortMemberPath="Anzeige.Kommentar" Binding="{Binding Anzeige.Kommentar, Mode=OneWay}" Width="180"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </DockPanel>

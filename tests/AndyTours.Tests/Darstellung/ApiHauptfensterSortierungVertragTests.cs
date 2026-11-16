@@ -8,13 +8,22 @@ public sealed class ApiHauptfensterSortierungVertragTests
 {
     private static readonly XNamespace P = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
     private static readonly XNamespace X = "http://schemas.microsoft.com/winfx/2006/xaml";
-    private static readonly string[] SortPfade = ["Werte.Datum", "Werte.Startzeit", "Werte.Name", "Werte.DistanzKm", "Werte.Hoehenmeter", "Werte.FahrzeitSekunden"] ;
+    private static readonly string[] SortPfade =
+    [
+        "Anzeige.Datum", "Anzeige.Startzeit", "Anzeige.Name", "Anzeige.Aktivitaet",
+        "Anzeige.Kategorien", "Anzeige.Equipment", "Anzeige.DistanzKm", "Anzeige.Hoehenmeter",
+        "Anzeige.FahrzeitSekunden", "Anzeige.DurchschnittKmh", "Anzeige.MaxKmh", "Anzeige.HfDurchschnitt",
+        "Anzeige.HfMax", "Anzeige.Trittfrequenz", "Anzeige.Temperatur", "Anzeige.MaxHoehe",
+        "Anzeige.Trainingsbereich", "Anzeige.Kommentar"
+    ];
     private static XDocument LoadXaml()
     {
         using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AndyTours.ApiHauptfenster.xaml");
         Assert.NotNull(stream);
         return XDocument.Load(stream!);
     }
+
+    private static string ReadXamlText() => Read("AndyTours.ApiHauptfenster.xaml");
 
     private static string Read(string resource)
     {
@@ -38,6 +47,45 @@ public sealed class ApiHauptfensterSortierungVertragTests
         Assert.All(columns.Skip(1), x => Assert.Null(x.Attribute("SortDirection")));
         Assert.Equal("True", (string?)grid.Attribute("IsReadOnly"));
         Assert.Equal("True", (string?)grid.Attribute("EnableRowVirtualization"));
+        Assert.Equal("True", (string?)grid.Attribute("EnableColumnVirtualization"));
+        Assert.Equal("Auto", (string?)grid.Attribute("HorizontalScrollBarVisibility"));
+        Assert.All(columns, column =>
+        {
+            var binding = (string?)column.Attribute("Binding");
+            Assert.NotNull(binding);
+            Assert.Equal(1, binding!.Split("Mode=OneWay", StringSplitOptions.None).Length - 1);
+        });
+        Assert.Contains("StringFormat='ddd, dd.MM.yyyy'", (string?)columns[0].Attribute("Binding"), StringComparison.Ordinal);
+        Assert.Equal("{StaticResource TourBestDistance}", (string?)columns[6].Attribute("ElementStyle"));
+        Assert.Equal("{StaticResource TourBestHeight}", (string?)columns[7].Attribute("ElementStyle"));
+        Assert.Equal("{StaticResource TourBestDuration}", (string?)columns[8].Attribute("ElementStyle"));
+        Assert.Equal("{StaticResource TourBestAverageSpeed}", (string?)columns[9].Attribute("ElementStyle"));
+        Assert.Equal("{StaticResource TourBestMaxSpeed}", (string?)columns[10].Attribute("ElementStyle"));
+        Assert.Contains("TextAlignment\" Value=\"Right\"", ReadXamlText(), StringComparison.Ordinal);
+        foreach (var (style, flag) in new[]
+        {
+            ("TourBestDistance", "Anzeige.IstBestDistanz"),
+            ("TourBestHeight", "Anzeige.IstBestHoehenmeter"),
+            ("TourBestDuration", "Anzeige.IstBestFahrzeit"),
+            ("TourBestAverageSpeed", "Anzeige.IstBestDurchschnittKmh"),
+            ("TourBestMaxSpeed", "Anzeige.IstBestMaxKmh")
+        })
+        {
+            var definition = Assert.Single(document.Descendants(P + "Style"), x => (string?)x.Attribute(X + "Key") == style);
+            Assert.Contains(definition.Descendants(P + "DataTrigger"), x =>
+                (string?)x.Attribute("Value") == "True" &&
+                ((string?)x.Attribute("Binding"))?.Contains(flag, StringComparison.Ordinal) == true &&
+                x.Elements(P + "Setter").Any(s => (string?)s.Attribute("Property") == "Foreground" && (string?)s.Attribute("Value") == "Red"));
+            Assert.Contains(definition.Descendants(P + "Setter"), x => (string?)x.Attribute("Property") == "Foreground" && (string?)x.Attribute("Value") == "#FFFFC8C8");
+            Assert.Contains(definition.Descendants(P + "Setter"), x => (string?)x.Attribute("Property") == "FontWeight" && (string?)x.Attribute("Value") == "SemiBold");
+            var multi = Assert.Single(definition.Descendants(P + "MultiDataTrigger"));
+            Assert.Contains(multi.Descendants(P + "Condition"), x =>
+                ((string?)x.Attribute("Binding"))?.Contains(flag, StringComparison.Ordinal) == true &&
+                (string?)x.Attribute("Value") == "True");
+            Assert.Contains(multi.Descendants(P + "Condition"), x =>
+                ((string?)x.Attribute("Binding"))?.Contains("AncestorType=DataGridRow", StringComparison.Ordinal) == true &&
+                (string?)x.Attribute("Value") == "True");
+        }
     }
 
     [Fact]
@@ -47,7 +95,7 @@ public sealed class ApiHauptfensterSortierungVertragTests
         var handled = source.IndexOf("e.Handled = true;", StringComparison.Ordinal);
         var guard = source.IndexOf("if (_geschlossen", StringComparison.Ordinal);
         Assert.True(handled >= 0 && guard > handled);
-        foreach (var path in new[] { "Werte.Datum", "Werte.Startzeit", "Werte.Name", "Werte.DistanzKm", "Werte.Hoehenmeter", "Werte.FahrzeitSekunden" })
+        foreach (var path in SortPfade)
             Assert.Contains("\"" + path + "\" => TourenSortierschluessel.", source, StringComparison.Ordinal);
         Assert.Contains("var ct = _lifetime.Token;", source, StringComparison.Ordinal);
         Assert.Contains("SortiereTourenAsync(key, absteigend, ct)", source, StringComparison.Ordinal);
