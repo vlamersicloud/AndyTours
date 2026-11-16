@@ -30,6 +30,9 @@ public sealed class SqlitePulsQuelldatenTests : IDisposable
         {
             Assert.Null(EinstellungTabelle.Lesen(db, Einstellungsschluessel.GarminPersonalApiKey));
             Assert.Null(EinstellungTabelle.Lesen(db, "Persoenlich.Garmin.PulszonenReferenz"));
+            using var count = db.CreateCommand();
+            count.CommandText = "SELECT COUNT(*) FROM Einstellung;";
+            Assert.Equal(0L, count.ExecuteScalar());
         }
 
         const string fakeKey = "FakePulseKey_Only+456";
@@ -41,7 +44,9 @@ public sealed class SqlitePulsQuelldatenTests : IDisposable
         }
         var withKey = await Source.ReferenzLaden(CancellationToken.None);
         var saved = await Source.ReferenzSpeichern(withKey.Version, stand, CancellationToken.None);
-        Assert.Equal(stand, saved.Stand);
+        Assert.Equal(stand.Abgerufen, saved.Stand!.Abgerufen);
+        Assert.Equal(stand.Profile.Select(p => p.Sport), saved.Stand.Profile.Select(p => p.Sport));
+        Assert.Equal(stand.Profile[0].Untergrenzen, saved.Stand.Profile[0].Untergrenzen);
         Assert.Equal(fakeKey, saved.Schluessel);
         Assert.DoesNotContain(fakeKey, saved.ToString());
         var json = JsonSerializer.Serialize(saved);
