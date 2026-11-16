@@ -31,6 +31,9 @@ public sealed partial class GarminImportPruefung
         var equipment = snapshot.Bestand.Equipments.Where(x => !x.Ausgemustert).Select(x => new EquipmentAntwort(
             x.Id, x.Name, x.AktivitaetId, x.Geraetezuordnung, x.StandardKategorie, x.IstStandard, x.Ausgemustert,
             x.Anschaffungsdatum, x.AnfangsdistanzKm)).ToArray();
-        return new GarminImportPruefungAntwort(jobId, snapshot.Auftrag.Version, rows, equipment);
+        return new GarminImportPruefungAntwort(jobId, snapshot.Auftrag.Version, rows, equipment)
+        {
+            FallbackZeitzoneId = _fallbackZeitzone.Id
+        };
     }
 }
