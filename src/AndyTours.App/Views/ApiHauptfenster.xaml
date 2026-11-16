@@ -147,6 +147,7 @@
                         <DataGrid x:Name="TourenDataGrid" ItemsSource="{Binding Touren}"
                                   SelectedItem="{Binding AusgewaehlteTour, Mode=TwoWay}"
                                   MouseDoubleClick="TourenDataGrid_MouseDoubleClick"
+                                  Sorting="TourenDataGrid_Sorting" CanUserSortColumns="True"
                                   IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False"
                                   CanUserDeleteRows="False" SelectionMode="Extended" SelectionUnit="FullRow" HeadersVisibility="Column"
                                   EnableRowVirtualization="True" GridLinesVisibility="Horizontal">
@@ -156,12 +157,12 @@
                                 <KeyBinding Key="Delete" Command="{Binding TourLoeschenCommand}"/>
                             </DataGrid.InputBindings>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Datum" Binding="{Binding Werte.Datum, StringFormat={}{0:dd.MM.yyyy}}" Width="110"/>
-                                <DataGridTextColumn Header="Startzeit" Binding="{Binding Werte.Startzeit, StringFormat={}{0:HH:mm}}" Width="90"/>
-                                <DataGridTextColumn Header="Name" Binding="{Binding Werte.Name}" Width="*"/>
-                                <DataGridTextColumn Header="Distanz (km)" Binding="{Binding Werte.DistanzKm, StringFormat={}{0:N1}}" Width="120"/>
-                                <DataGridTextColumn Header="Höhenmeter" Binding="{Binding Werte.Hoehenmeter, StringFormat={}{0:N0}}" Width="110"/>
-                                <DataGridTextColumn Header="Fahrzeit" Binding="{Binding Werte.FahrzeitSekunden, Converter={StaticResource DauerConverter}}" Width="110"/>
+                                <DataGridTextColumn Header="Datum" SortMemberPath="Werte.Datum" SortDirection="Descending" Binding="{Binding Werte.Datum, StringFormat={}{0:dd.MM.yyyy}}" Width="110"/>
+                                <DataGridTextColumn Header="Startzeit" SortMemberPath="Werte.Startzeit" Binding="{Binding Werte.Startzeit, StringFormat={}{0:HH:mm}}" Width="90"/>
+                                <DataGridTextColumn Header="Name" SortMemberPath="Werte.Name" Binding="{Binding Werte.Name}" Width="*"/>
+                                <DataGridTextColumn Header="Distanz (km)" SortMemberPath="Werte.DistanzKm" Binding="{Binding Werte.DistanzKm, StringFormat={}{0:N1}}" Width="120"/>
+                                <DataGridTextColumn Header="Höhenmeter" SortMemberPath="Werte.Hoehenmeter" Binding="{Binding Werte.Hoehenmeter, StringFormat={}{0:N0}}" Width="110"/>
+                                <DataGridTextColumn Header="Fahrzeit" SortMemberPath="Werte.FahrzeitSekunden" Binding="{Binding Werte.FahrzeitSekunden, Converter={StaticResource DauerConverter}}" Width="110"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </DockPanel>
