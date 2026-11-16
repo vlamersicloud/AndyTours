@@ -50,6 +50,7 @@ public sealed class BackendClientSitzung : IDisposable
         GarminImportPruefung = new GarminImportPruefungHttpClient(_importHttpClient);
         FitUploads = new FitUploadsHttpClient(_importHttpClient);
         Tourdetail = new TourdetailHttpClient(_importHttpClient);
+        Puls = new PulsAuswertungHttpClient(_importHttpClient);
         CourseExport = new CourseExportHttpClient(_importHttpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
@@ -70,6 +71,7 @@ public sealed class BackendClientSitzung : IDisposable
     public IGarminImportPruefung GarminImportPruefung { get; }
     public IFitUploads FitUploads { get; }
     public ITourdetailLeser Tourdetail { get; }
+    public IPulsAuswertung Puls { get; }
     public ICourseExport CourseExport { get; }
     public IBackendVerbindung Verbindung { get; }
 
