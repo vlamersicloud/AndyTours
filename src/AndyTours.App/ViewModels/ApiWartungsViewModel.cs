@@ -200,7 +200,7 @@ public partial class ApiWartungsViewModel : ObservableObject
             _bestand = response; HatAenderungen = true; WartungIds = []; AlarmIds = []; return true;
         }
         catch (StammdatenException e) { Status = e.Message; return false; }
-        catch (Exception) { Status = "Speicherstatus unklar. Bitte vor einem erneuten Versuch den Bestand prüfen."; return false; }
+        catch (Exception) { HatAenderungen = true; Status = "Speicherstatus unklar. Bitte vor einem erneuten Versuch den Bestand prüfen."; return false; }
         finally { Aendert = false; }
     }
 
@@ -216,7 +216,7 @@ public partial class ApiWartungsViewModel : ObservableObject
             _bestand = response; HatAenderungen = true; WartungIds = []; AlarmIds = []; return true;
         }
         catch (StammdatenException e) { Status = e.Message; return false; }
-        catch (Exception) { Status = "Speicherstatus unklar. Bitte vor einem erneuten Versuch den Bestand prüfen."; return false; }
+        catch (Exception) { HatAenderungen = true; Status = "Speicherstatus unklar. Bitte vor einem erneuten Versuch den Bestand prüfen."; return false; }
         finally { Aendert = false; }
     }
 
