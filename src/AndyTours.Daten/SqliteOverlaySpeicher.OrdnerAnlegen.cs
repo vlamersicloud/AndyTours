@@ -16,7 +16,7 @@ public sealed partial class SqliteOverlaySpeicher
     public Task<OverlayAnlegenAntwort> OrdnerAnlegen(
         OverlayOrdnerAnlegenAnfrage anfrage, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(anfrage);
+        if (anfrage is null) throw new StammdatenException(StammdatenFehlerart.Ungueltig, FehlerUngueltig);
         PruefeVersion(anfrage.Version);
         if (anfrage.AnfrageId == Guid.Empty)
             throw new StammdatenException(StammdatenFehlerart.Ungueltig, FehlerUngueltig);

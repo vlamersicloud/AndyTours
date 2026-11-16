@@ -10,7 +10,7 @@ public sealed partial class SqliteOverlaySpeicher : IOverlayVerwaltung
     public Task<OverlayBestandAntwort> OverlayAendern(
         long overlayId, OverlayAendernAnfrage anfrage, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(anfrage);
+        if (anfrage is null) throw new StammdatenException(StammdatenFehlerart.Ungueltig, FehlerUngueltig);
         PruefeId(overlayId);
         PruefeVersion(anfrage.Version);
         PruefeOptionaleId(anfrage.OrdnerId);
@@ -50,7 +50,7 @@ public sealed partial class SqliteOverlaySpeicher : IOverlayVerwaltung
     public Task<OverlayBestandAntwort> Sichtbarkeit(
         OverlaySichtbarkeitAnfrage anfrage, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(anfrage);
+        if (anfrage is null) throw new StammdatenException(StammdatenFehlerart.Ungueltig, FehlerUngueltig);
         PruefeVersion(anfrage.Version);
         if (anfrage.OverlayIds is null || anfrage.OverlayIds.Count == 0 ||
             anfrage.OverlayIds.Any(id => id <= 0) ||
@@ -80,7 +80,7 @@ public sealed partial class SqliteOverlaySpeicher : IOverlayVerwaltung
     public Task<OverlayBestandAntwort> GemeinsameFarbe(
         OverlayGemeinsameFarbeAnfrage anfrage, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(anfrage);
+        if (anfrage is null) throw new StammdatenException(StammdatenFehlerart.Ungueltig, FehlerUngueltig);
         PruefeVersion(anfrage.Version);
         if (!Enum.IsDefined(anfrage.Farbe))
             throw new StammdatenException(StammdatenFehlerart.Ungueltig, FehlerUngueltig);

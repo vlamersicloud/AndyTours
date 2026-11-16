@@ -94,15 +94,21 @@ public sealed partial class SqliteOverlaySpeicher
         command.Parameters.AddWithValue("$id", requestId.ToString("D"));
         using var reader = command.ExecuteReader();
         if (!reader.Read()) return null;
+        string storedHash = reader.GetString(1);
         if (!string.Equals(reader.GetString(0), art, StringComparison.Ordinal) ||
-            !CryptographicOperations.FixedTimeEquals(Convert.FromHexString(reader.GetString(1)), Convert.FromHexString(requestHash)))
+            storedHash is not { Length: 64 } || !storedHash.All(Uri.IsHexDigit) ||
+            !CryptographicOperations.FixedTimeEquals(Convert.FromHexString(storedHash), Convert.FromHexString(requestHash)))
             throw new StammdatenException(StammdatenFehlerart.Konflikt, FehlerKonflikt);
         try
         {
-            return JsonSerializer.Deserialize<OverlayAnlegenAntwort>(reader.GetString(2))
-                ?? throw new JsonException();
+            var response = JsonSerializer.Deserialize<OverlayAnlegenAntwort>(reader.GetString(2));
+            if (response?.Id <= 0 || response.Bestand is null ||
+                response.Bestand.Version is not { Length: 64 } || !response.Bestand.Version.All(Uri.IsHexDigit) ||
+                response.Bestand.Ordner is null || response.Bestand.Overlays is null)
+                throw new JsonException();
+            return response;
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or NotSupportedException)
         {
             throw new StammdatenException(StammdatenFehlerart.Konflikt, FehlerKonflikt);
         }

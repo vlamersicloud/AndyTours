@@ -12,7 +12,7 @@ public sealed partial class SqliteOverlaySpeicher
     public Task<OverlayBestandAntwort> OrdnerAendern(
         long ordnerId, OverlayOrdnerAendernAnfrage anfrage, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(anfrage);
+        if (anfrage is null) throw new StammdatenException(StammdatenFehlerart.Ungueltig, FehlerUngueltig);
         PruefeId(ordnerId);
         PruefeVersion(anfrage.Version);
         PruefeOptionaleId(anfrage.ElternId);
