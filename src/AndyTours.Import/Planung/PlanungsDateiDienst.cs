@@ -6,14 +6,14 @@ using AndyTours.Import.Planung;
 
 namespace AndyTours.Import.Planung;
 
-public sealed partial class PlanungsDateiDienst
+public sealed partial class PlanungsDateiDienst : IPlanungsDateien
 {
-    public static async Task<AndyTours.Contracts.V1.PlanungsStand> Lesen(Stream stream, CancellationToken cancellationToken)
+    public async Task<AndyTours.Contracts.V1.PlanungsStand> Lesen(Stream stream, CancellationToken cancellationToken)
     {
-        if (stream is null || !stream.CanRead) throw Invalid();
-        cancellationToken.ThrowIfCancellationRequested();
         try
         {
+            if (stream is null || !stream.CanRead) throw Invalid();
+            cancellationToken.ThrowIfCancellationRequested();
             using var buffer = new MemoryStream();
             var chunk = new byte[64 * 1024];
             long total = 0;
@@ -46,7 +46,7 @@ public sealed partial class PlanungsDateiDienst
         catch (PlanungsDateiZuGrossException) { throw; }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch (StammdatenException) { throw; }
-        catch (Exception ex) when (ex is IOException or ObjectDisposedException or XmlException or InvalidOperationException or ArgumentException or FormatException or OverflowException)
+        catch (Exception ex) when (ex is IOException or ObjectDisposedException or XmlException or InvalidOperationException or ArgumentException or FormatException or OverflowException or UnauthorizedAccessException)
         { throw Invalid(); }
     }
 

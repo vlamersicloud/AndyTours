@@ -11,7 +11,7 @@ namespace AndyTours.Import.Planung;
 
 public sealed partial class PlanungsDateiDienst
 {
-    public static Task<PlanungsGpxExportAntwort> Schreiben(PlanungsGpxExportAnfrage anfrage, CancellationToken cancellationToken)
+    public Task<PlanungsGpxExportAntwort> Schreiben(PlanungsGpxExportAnfrage anfrage, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         try
