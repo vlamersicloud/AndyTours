@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using AndyTours.App.ViewModels;
+using AndyTours.App.Funktionen;
 
 namespace AndyTours.App.Views;
 
@@ -15,6 +16,7 @@ public partial class ApiRoutingKonfigurationFenster : Window, IDisposable
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _viewModel.Bestaetigung = Confirm;
         InitializeComponent();
+        Oberflaechenskalierung.Anmelden(this);
         DataContext = viewModel;
         Loaded += LoadedWindow;
         Closing += ClosingWindow;
@@ -26,6 +28,7 @@ public partial class ApiRoutingKonfigurationFenster : Window, IDisposable
     {
         try { await _viewModel.LadenCommand.ExecuteAsync(default); }
         catch (OperationCanceledException) { }
+        catch { if (!_disposed) _viewModel.Hinweis = "Routingkonfiguration konnte nicht geladen werden."; }
     }
 
     private bool Confirm(string message) =>
@@ -61,7 +64,6 @@ public partial class ApiRoutingKonfigurationFenster : Window, IDisposable
                 : "Ungespeicherte Entwürfe beim Schließen verwerfen?";
             if (!Confirm(text)) { e.Cancel = true; return; }
         }
-        Cleanup();
     }
 
     private void ClosedWindow(object? sender, EventArgs e) => Cleanup();
@@ -75,6 +77,7 @@ public partial class ApiRoutingKonfigurationFenster : Window, IDisposable
         Closing -= ClosingWindow;
         Closed -= ClosedWindow;
         _viewModel.EntwurfLeeren -= ClearPassword;
+        OrsSchluesselFeld.PasswordChanged -= OrsSchluesselFeld_PasswordChanged;
         _clearingPassword = true;
         try { OrsSchluesselFeld.Clear(); }
         finally { _clearingPassword = false; }

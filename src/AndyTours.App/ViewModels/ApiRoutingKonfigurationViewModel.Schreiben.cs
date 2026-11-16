@@ -121,6 +121,7 @@ public partial class ApiRoutingKonfigurationViewModel
         _hatUnklarenSpeicherstatus = false;
         OnPropertyChanged(nameof(HatUnklarenSpeicherstatus));
         _confirmedDienst = response.Dienst;
+        OnPropertyChanged(nameof(DienstStatus));
         if (!preserveDienstDraft) Dienst = response.Dienst;
         _gespeicherteAdresse = response.BRouterAdresse;
         OnPropertyChanged(nameof(GespeicherteAdresse));

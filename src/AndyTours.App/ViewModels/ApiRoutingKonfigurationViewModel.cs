@@ -37,6 +37,7 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
 
     public IReadOnlyList<RoutingAnbieter> DienstOptionen { get; } = Enum.GetValues<RoutingAnbieter>();
     public bool StatusGeladen => _loaded && !_disposed;
+    public string DienstStatus => !_loaded ? "Gespeicherter Anbieter unbekannt." : $"Gespeicherter Anbieter: {_confirmedDienst}.";
     public bool HatUnklarenSpeicherstatus => _hatUnklarenSpeicherstatus;
     public bool Busy => Laedt || Aendert;
     public bool KannBearbeiten => StatusGeladen && !Busy;
@@ -58,6 +59,7 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
         OnPropertyChanged(nameof(StatusGeladen));
         OnPropertyChanged(nameof(AdresseStatus));
         OnPropertyChanged(nameof(OrsSchluesselStatus));
+        OnPropertyChanged(nameof(DienstStatus));
         LadenCommand.NotifyCanExecuteChanged();
         AbbrechenCommand.NotifyCanExecuteChanged();
         DienstSpeichernCommand.NotifyCanExecuteChanged();

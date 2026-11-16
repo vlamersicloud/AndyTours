@@ -26,7 +26,7 @@ public sealed class ApiRoutingKonfigurationFensterVertragTests
         })
             Assert.Contains(buttons, button => (string?)button.Attribute("Command") == "{Binding " + command + "}");
 
-        Assert.Contains(document.Descendants(P + "TextBox"), node => (string?)node.Attribute("Text") == "{Binding GespeicherteAdresse}");
+        Assert.Contains(document.Descendants(P + "TextBox"), node => (string?)node.Attribute("Text") == "{Binding GespeicherteAdresse, Mode=OneWay}");
         Assert.Contains(document.Descendants(P + "TextBlock"), node => (string?)node.Attribute("Text") == "{Binding AdresseStatus}");
         Assert.Contains(document.Descendants(P + "TextBox"), node => ((string?)node.Attribute("Text"))?.Contains("AdresseEntwurf", StringComparison.Ordinal) == true);
         var password = Assert.Single(document.Descendants(P + "PasswordBox"));
