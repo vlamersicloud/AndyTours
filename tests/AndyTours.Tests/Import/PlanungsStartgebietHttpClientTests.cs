@@ -13,11 +13,21 @@ public sealed class PlanungsStartgebietHttpClientTests
     [InlineData("{\"suedWest\":{\"breite\":47,\"laenge\":10},\"nordOst\":{\"breite\":48,\"laenge\":11}}")]
     public async Task Accepts_null_pair_point_bounds_and_normal_bounds(string json)
     {
-        using var handler = new Handler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new TrackingContent(json) });
+        var content = new TrackingContent(json);
+        using var handler = new Handler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
-        var result = await new PlanungsStartgebietHttpClient(http).Laden(default);
+        var client = new PlanungsStartgebietHttpClient(http);
+        var result = await client.Laden(default);
         Assert.Equal("/api/v1/planung/startgebiet", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.True(handler.Disposed);
+        Assert.True(content.Disposed);
+        Assert.False(handler.Disposed);
+
+        var secondContent = new TrackingContent(json);
+        handler.SetResponse(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = secondContent });
+        await client.Laden(default);
+        Assert.True(secondContent.Disposed);
+        Assert.Equal(2, handler.Sends);
+        Assert.False(handler.Disposed);
         Assert.Equal(json.Contains("null", StringComparison.Ordinal), result.SuedWest is null);
     }
 
@@ -27,17 +37,20 @@ public sealed class PlanungsStartgebietHttpClientTests
     [InlineData("{\"suedWest\":{\"breite\":91,\"laenge\":2},\"nordOst\":{\"breite\":91,\"laenge\":2}}")]
     public async Task Rejects_invalid_bounds_and_does_not_read_error_body(string json)
     {
-        using var handler = new Handler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new TrackingContent(json) });
+        var content = new TrackingContent(json);
+        using var handler = new Handler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
         await Assert.ThrowsAsync<HttpRequestException>(() => new PlanungsStartgebietHttpClient(http).Laden(default));
-        Assert.True(handler.Disposed);
+        Assert.True(content.Disposed);
+        Assert.False(handler.Disposed);
 
         var error = new TrackingContent("private backend detail");
         using var failedHandler = new Handler(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = error });
         using var failedHttp = new HttpClient(failedHandler) { BaseAddress = new Uri("https://unit.test/") };
         await Assert.ThrowsAsync<HttpRequestException>(() => new PlanungsStartgebietHttpClient(failedHttp).Laden(default));
         Assert.False(error.Read);
-        Assert.True(failedHandler.Disposed);
+        Assert.True(error.Disposed);
+        Assert.False(failedHandler.Disposed);
     }
 
     [Fact]
@@ -52,11 +65,13 @@ public sealed class PlanungsStartgebietHttpClientTests
 
     private sealed class Handler(Func<HttpRequestMessage, HttpResponseMessage> response) : HttpMessageHandler
     {
+        private Func<HttpRequestMessage, HttpResponseMessage> _response = response;
         public int Sends { get; private set; }
         public HttpRequestMessage? Request { get; private set; }
         public bool Disposed { get; private set; }
+        public void SetResponse(Func<HttpRequestMessage, HttpResponseMessage> next) => _response = next;
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        { Sends++; Request = request; cancellationToken.ThrowIfCancellationRequested(); return Task.FromResult(response(request)); }
+        { Sends++; Request = request; cancellationToken.ThrowIfCancellationRequested(); return Task.FromResult(_response(request)); }
         protected override void Dispose(bool disposing) { Disposed = true; base.Dispose(disposing); }
     }
 
