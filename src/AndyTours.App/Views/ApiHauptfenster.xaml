@@ -88,6 +88,41 @@
                         <TextBlock Text="Volles Kalenderjahr, nicht auf den gewählten Zeitraum umgerechnet; Kategorien ändern das Aktivitätsziel nicht. Für Fahrzeit gibt es kein Ziel." TextWrapping="Wrap" Foreground="#637083" Margin="0,10,0,0" />
                     </StackPanel></ScrollViewer>
                 </TabItem>
+                <TabItem Header="Pulsbereiche">
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="3*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding PulsReferenzText}" TextWrapping="Wrap" Foreground="#46566A" Margin="0,0,0,8"/>
+                        <WrapPanel Grid.Row="1" IsEnabled="{Binding FilterControlsEnabled}" Margin="0,0,0,8">
+                            <ComboBox Width="190" Margin="0,0,8,8" ItemsSource="{Binding Pulsprofile}"
+                                      SelectedItem="{Binding Pulsprofil, Mode=TwoWay}" DisplayMemberPath="Sport"/>
+                            <CheckBox Content="10-bpm-Bereiche statt Garmin-Zonen" IsChecked="{Binding BpmBereiche, Mode=TwoWay}"
+                                      VerticalAlignment="Center" Margin="0,0,12,8"/>
+                            <Button Content="Gespeicherte Referenz laden" Command="{Binding PulsreferenzLadenCommand}" Padding="10,5" Margin="0,0,8,8"/>
+                            <Button Content="Aktuelle Garmin-Referenz abrufen…" Command="{Binding GarminZonenAktualisierenCommand}"
+                                    Padding="10,5" Margin="0,0,8,8" ToolTip="Ruft Garmin nur auf ausdrücklichen Klick ab."/>
+                            <Button Content="Pulsanalyse laden" Command="{Binding PulsdatenLadenCommand}" Padding="10,5" Margin="0,0,8,8"/>
+                        </WrapPanel>
+                        <oxy:PlotView Grid.Row="2" Model="{Binding PulsDiagramm}" MinHeight="180" Margin="0,0,0,8"/>
+                        <DataGrid Grid.Row="3" ItemsSource="{Binding Pulszeilen, Mode=OneWay}" IsReadOnly="True"
+                                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                                  EnableRowVirtualization="True" MinHeight="140" HeadersVisibility="Column">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Zeitraum" Binding="{Binding Zeitraum, Mode=OneWay}" Width="*"/>
+                                <DataGridTextColumn Header="Zone" Binding="{Binding Zone, Mode=OneWay}" Width="120"/>
+                                <DataGridTextColumn Header="Pulsbereich" Binding="{Binding Pulsbereich, Mode=OneWay}" Width="150"/>
+                                <DataGridTextColumn Header="Messzeit" Binding="{Binding Messzeit, Mode=OneWay}" Width="110"/>
+                                <DataGridTextColumn Header="Anteil" Binding="{Binding Anteil, Mode=OneWay}" Width="90"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <TextBlock Grid.Row="4" Text="{Binding PulsStatus}" TextWrapping="Wrap" Foreground="#46566A" Margin="0,8,0,0"/>
+                    </Grid>
+                </TabItem>
                 <TabItem Header="Touren">
                     <DockPanel Margin="12">
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
