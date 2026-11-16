@@ -37,6 +37,9 @@ builder.Services.AddSingleton<IProfilVerwaltung>(_ => new SqliteProfilVerwaltung
 builder.Services.AddSingleton<ITextlistenVerwaltung>(_ => new SqliteTextlistenVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<ISaisonzieleVerwaltung>(_ => new SqliteSaisonzieleVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IGarminEinstellungen>(_ => new SqliteGarminEinstellungen(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton(sp => new SqliteGarminImportJobs(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<IGarminImportJobs>(sp => sp.GetRequiredService<SqliteGarminImportJobs>());
+builder.Services.AddSingleton<IGarminImportArbeitspeicher>(sp => sp.GetRequiredService<SqliteGarminImportJobs>());
 builder.Services.AddSingleton<IWartungsverwaltung>(_ => new SqliteWartungsverwaltung(Path.Combine(dataDirectory, "andytours.db")));
 
 var app = builder.Build();
@@ -89,6 +92,7 @@ app.MapTextlisten();
 app.MapSaisonziele();
 app.MapWartungen();
 app.MapGarminEinstellungen();
+app.MapGarminImport();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
 var touren = app.MapGroup("/api/v1/touren").WithTags("Touren");
