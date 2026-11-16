@@ -30,6 +30,31 @@ public sealed class SqliteWartungsverwaltungTests : IDisposable
     }
 
     [Fact]
+    public async Task TaetigkeitsauswahlFaelltNurBeiNichtAngelegterListeZurueck()
+    {
+        await CreateMaintenance(_equipment1, new DateOnly(2020, 1, 1), "Kette", "");
+        var result = await _service.Laden(new(null, null));
+        Assert.Equal("Kette", Assert.Single(result.Taetigkeiten));
+        using var db = OeffneDatenbank.Ausfuehren(_database);
+        Assert.Null(AuswahllisteEinstellung.Laden(db, Auswahlliste.Taetigkeit));
+        using var command = db.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'Einstellung';";
+        Assert.Equal(0L, command.ExecuteScalar());
+    }
+
+    [Fact]
+    public async Task ExplizitLeereTaetigkeitsauswahlBleibtLeer()
+    {
+        await CreateMaintenance(_equipment1, new DateOnly(2020, 1, 1), "Kette", "");
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+            AuswahllisteEinstellung.Speichern(db, null, Auswahlliste.Taetigkeit, []);
+        var result = await _service.Laden(new(null, null));
+        Assert.Empty(result.Taetigkeiten);
+        using var verify = OeffneDatenbank.Ausfuehren(_database);
+        Assert.Empty(AuswahllisteEinstellung.Laden(verify, Auswahlliste.Taetigkeit)!);
+    }
+
+    [Fact]
     public async Task StaleCasVerweigertMutationUndErhaeltBestand()
     {
         var old = await _service.Laden(new(null, null));

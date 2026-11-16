@@ -27,6 +27,9 @@ public sealed class SqliteWartungsverwaltung(string datenbankpfad) : IWartungsve
             !Wartungsaktivitaet.Passt(data.Equipments.Single(e => e.Id == selectedId), activityId))
             throw Invalid("Equipment gehört nicht zur gefilterten Aktivität.");
         var raw = Raw(data);
+        var gespeicherteTaetigkeiten = AuswahllisteEinstellung.Laden(c, Auswahlliste.Taetigkeit);
+        var grundlage = gespeicherteTaetigkeiten ?? ErmittleNamensliste.Ausfuehren(data.Wartungen.Select(w => w.Taetigkeit));
+        var taetigkeiten = OrdneTaetigkeitenNachHaeufigkeit.Ausfuehren(grundlage, data.Wartungen);
         var rows = ErstelleWartungszeilen.Ausfuehren(data, filter.EquipmentId, filter.AktivitaetId)
             .Select(x => new WartungszeileAntwort(x.Id, x.Datum, x.Rad, x.KmStand, x.KmSeitLetzter, x.TageSeitLetzter, x.Taetigkeit, x.Kommentar)).ToArray();
         var alarms = ErstelleAlarmzeilen.Ausfuehren(data, filter.EquipmentId, filter.AktivitaetId)
@@ -39,7 +42,7 @@ public sealed class SqliteWartungsverwaltung(string datenbankpfad) : IWartungsve
                 _ => throw new InvalidOperationException("Unbekannter Alarmzustand.")
             })).ToArray();
         ct.ThrowIfCancellationRequested(); tx.Commit();
-        return Task.FromResult(new WartungsuebersichtAntwort(raw, rows, alarms));
+        return Task.FromResult(new WartungsuebersichtAntwort(raw, rows, alarms, taetigkeiten));
     }
 
     public Task<WartungsbestandAntwort> WartungAnlegen(WartungSpeichernAnfrage anfrage, CancellationToken ct = default)

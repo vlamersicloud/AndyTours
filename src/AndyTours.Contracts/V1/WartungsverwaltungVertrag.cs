@@ -26,7 +26,8 @@ public sealed record AlarmzeileAntwort(long Id, string Rad, string Taetigkeit, d
 
 /// <summary>Bestand und nach den aktuellen Filtern berechnete Übersicht.</summary>
 public sealed record WartungsuebersichtAntwort(WartungsbestandAntwort Bestand,
-    IReadOnlyList<WartungszeileAntwort> Wartungszeilen, IReadOnlyList<AlarmzeileAntwort> Alarmzeilen);
+    IReadOnlyList<WartungszeileAntwort> Wartungszeilen, IReadOnlyList<AlarmzeileAntwort> Alarmzeilen,
+    IReadOnlyList<string> Taetigkeiten);
 
 /// <summary>Anfrage zum Anlegen oder Ändern einer Wartung.</summary>
 public sealed record WartungSpeichernAnfrage(string Version, DateOnly Datum, long? EquipmentId,
