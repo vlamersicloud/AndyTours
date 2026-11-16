@@ -20,10 +20,26 @@ public sealed class ApiHauptfensterVertragTests
     {
         var d=LadeXaml(); var buttons=d.Descendants(Presentation+"Button").Select(x=>(string?)x.Attribute("Command")).ToHashSet(StringComparer.Ordinal);
         Assert.Contains("{Binding NeueTourCommand}",buttons); Assert.Contains("{Binding TourBearbeitenCommand}",buttons); Assert.Contains("{Binding TourKopierenCommand}",buttons); Assert.Contains("{Binding TourLoeschenCommand}",buttons);
-        var grid=Assert.Single(d.Descendants(Presentation+"DataGrid")); Assert.Equal("Extended",(string?)grid.Attribute("SelectionMode")); Assert.Equal("{Binding AusgewaehlteTour, Mode=TwoWay}",(string?)grid.Attribute("SelectedItem")); Assert.Equal("TourenDataGrid_MouseDoubleClick",(string?)grid.Attribute("MouseDoubleClick"));
+        var grid=Assert.Single(d.Descendants(Presentation+"DataGrid"),x=>(string?)x.Attribute(Xaml+"Name")=="TourenDataGrid"); Assert.Equal("Extended",(string?)grid.Attribute("SelectionMode")); Assert.Equal("{Binding AusgewaehlteTour, Mode=TwoWay}",(string?)grid.Attribute("SelectedItem")); Assert.Equal("TourenDataGrid_MouseDoubleClick",(string?)grid.Attribute("MouseDoubleClick"));
         var tourdetails=Assert.Single(d.Descendants(Presentation+"Button"),x=>(string?)x.Attribute("Content")=="Tourdetails…"); Assert.Equal("TourdetailOeffnen_Click",(string?)tourdetails.Attribute("Click"));
         var keys=grid.Element(Presentation+"DataGrid.InputBindings")!.Elements(Presentation+"KeyBinding").ToDictionary(x=>(string)x.Attribute("Key")!);
         Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["F2"].Attribute("Command")!); Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["Enter"].Attribute("Command")!); Assert.Equal("{Binding TourLoeschenCommand}",(string)keys["Delete"].Attribute("Command")!);
+    }
+    [Fact] public void PulsbereicheTabUndMesswerttabelleSindGebundenUndSchreibgeschuetzt()
+    {
+        var d=LadeXaml();
+        var tab=Assert.Single(d.Descendants(Presentation+"TabItem"),x=>(string?)x.Attribute("Header")=="Pulsbereiche");
+        var values=tab.Descendants().Attributes().Select(a=>a.Value).ToHashSet(StringComparer.Ordinal);
+        foreach(var item in new[]{"PulsreferenzLadenCommand","GarminZonenAktualisierenCommand","PulsdatenLadenCommand","Pulsprofile","Pulsprofil","BpmBereiche","PulsReferenzText","PulsStatus","PulsDiagramm","Pulszeilen"})
+            Assert.Contains("{Binding "+item+"}",values);
+        var grid=Assert.Single(tab.Descendants(Presentation+"DataGrid"));
+        Assert.Equal("True",(string?)grid.Attribute("IsReadOnly"));
+        Assert.Equal("True",(string?)grid.Attribute("EnableRowVirtualization"));
+        Assert.Equal("True",(string?)grid.Attribute("EnableColumnVirtualization"));
+        Assert.Equal("False",(string?)grid.Attribute("CanUserAddRows"));
+        Assert.Equal("{Binding Pulszeilen, Mode=OneWay}",(string?)grid.Attribute("ItemsSource"));
+        Assert.Equal(new[]{"Zeitraum","Zone","Pulsbereich","Messzeit","Anteil"},grid.Elements(Presentation+"DataGrid.Columns").Elements(Presentation+"DataGridTextColumn").Select(x=>(string?)x.Attribute("Header")).ToArray());
+        Assert.All(grid.Elements(Presentation+"DataGrid.Columns").Elements(Presentation+"DataGridTextColumn"),column=>Assert.Contains("Mode=OneWay",(string?)column.Attribute("Binding")));
     }
     [Fact] public void FilterDiagrammUndKpisBleibenGebunden()
     {
