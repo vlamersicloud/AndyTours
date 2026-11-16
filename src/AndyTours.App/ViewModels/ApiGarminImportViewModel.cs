@@ -85,6 +85,7 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
         AbbrechenCommand.NotifyCanExecuteChanged();
         VorigeSeiteCommand.NotifyCanExecuteChanged();
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
+        PruefenCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand(CanExecute = nameof(Idle))]
