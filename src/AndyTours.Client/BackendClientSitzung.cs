@@ -5,6 +5,7 @@ using AndyTours.Application.Auswertung;
 using AndyTours.Application.Export;
 using AndyTours.Application.Garmin;
 using AndyTours.Application.Import;
+using AndyTours.Application.Overlays;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Application.Touren;
 using AndyTours.Application.Verbindungen;
@@ -51,6 +52,9 @@ public sealed class BackendClientSitzung : IDisposable
         FitUploads = new FitUploadsHttpClient(_importHttpClient);
         Tourdetail = new TourdetailHttpClient(_importHttpClient);
         Puls = new PulsAuswertungHttpClient(_importHttpClient);
+        OverlayLeser = new OverlayLeserHttpClient(_importHttpClient);
+        OverlayVerwaltung = new OverlayVerwaltungHttpClient(_importHttpClient);
+        OverlayGpxImport = new OverlayGpxImportHttpClient(_importHttpClient);
         CourseExport = new CourseExportHttpClient(_importHttpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
@@ -72,6 +76,9 @@ public sealed class BackendClientSitzung : IDisposable
     public IFitUploads FitUploads { get; }
     public ITourdetailLeser Tourdetail { get; }
     public IPulsAuswertung Puls { get; }
+    public IOverlayLeser OverlayLeser { get; }
+    public IOverlayVerwaltung OverlayVerwaltung { get; }
+    public IOverlayGpxImport OverlayGpxImport { get; }
     public ICourseExport CourseExport { get; }
     public IBackendVerbindung Verbindung { get; }
 
