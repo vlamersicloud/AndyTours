@@ -43,7 +43,11 @@ public sealed partial class ApiOverlayknoten : ObservableObject
         get => _istEingeschaltet;
         set
         {
-            if (value != _istEingeschaltet) _umschalten(this, value == true);
+            if (value != _istEingeschaltet)
+            {
+                _umschalten(this, value == true);
+                OnPropertyChanged();
+            }
         }
     }
 
