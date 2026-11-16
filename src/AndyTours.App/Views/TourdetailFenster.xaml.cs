@@ -126,7 +126,7 @@ public partial class TourdetailFenster : Window
     /// </summary>
     private void OverlaysOeffnen_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is TourdetailViewModel { IstApiModus: true })
+        if (_apiOverlayKontext is not null || DataContext is TourdetailViewModel { IstApiModus: true })
         {
             if (_apiOverlayKontext?.VerwaltungOeffnen is { } open) open();
             else MessageBox.Show(this, "Die Overlay-Verwaltung ist noch nicht bereit.", "Overlays", MessageBoxButton.OK, MessageBoxImage.Information);

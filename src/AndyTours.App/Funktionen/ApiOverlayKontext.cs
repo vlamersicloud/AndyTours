@@ -24,11 +24,11 @@ public sealed class ApiOverlayKontext : IDisposable
     private long _generation;
     private bool _beendet;
 
-    public ApiOverlayKontext(IOverlayLeser leser, Action? verwaltungOeffnen = null)
+    public ApiOverlayKontext(IOverlayLeser leser, Action? verwaltungOeffnen = null, SynchronizationContext? uiContext = null)
     {
         _leser = leser ?? throw new ArgumentNullException(nameof(leser));
         VerwaltungOeffnen = verwaltungOeffnen;
-        _uiContext = SynchronizationContext.Current;
+        _uiContext = uiContext ?? SynchronizationContext.Current;
         _lebensdauerToken = _lebensdauer.Token;
     }
 

@@ -1,3 +1,4 @@
+using Mapsui.Layers;
 using Mapsui;
 using AndyTours.App.ViewModels;
 using AndyTours.App.Funktionen;
@@ -18,7 +19,16 @@ public partial class TourdetailFenster
         }
 
         var state = _apiOverlayKontext?.Anzeige;
-        Overlaydarstellung.Fuelle(karte, state?.Eingeschaltete ?? Array.Empty<Overlay>(), state?.Farbe ?? Overlayfarbe.Violett);
+        if (state is null)
+        {
+            if (karte.Layers.FirstOrDefault(layer => layer.Name == "Overlays") is MemoryLayer overlayLayer)
+            {
+                overlayLayer.Features = [];
+                karte.Refresh();
+            }
+            return;
+        }
+        Overlaydarstellung.Fuelle(karte, state.Eingeschaltete, state.Farbe);
     }
 
     private void ApiOverlaysGeaendert(object? sender, EventArgs e) => FuelleOverlays(Karte.Map);
