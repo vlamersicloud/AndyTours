@@ -58,6 +58,7 @@ public sealed class BackendClientSitzung : IDisposable
         OverlayGpxImport = new OverlayGpxImportHttpClient(_importHttpClient);
         CourseExport = new CourseExportHttpClient(_importHttpClient);
         PlanungsRouting = new PlanungsRoutingHttpClient(_importHttpClient);
+        PlanungsProfil = new PlanungsProfilHttpClient(_importHttpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
@@ -83,6 +84,7 @@ public sealed class BackendClientSitzung : IDisposable
     public IOverlayGpxImport OverlayGpxImport { get; }
     public ICourseExport CourseExport { get; }
     public IPlanungsRouting PlanungsRouting { get; }
+    public IPlanungsProfil PlanungsProfil { get; }
     public IBackendVerbindung Verbindung { get; }
 
     public void Dispose()
