@@ -27,10 +27,11 @@ public partial class ApiHauptfenster
             ? !_viewModel.TourenAbsteigend
             : false;
 
+        var ct = _lifetime.Token;
         try
         {
-            var erfolgreich = await _viewModel.SortiereTourenAsync(key, absteigend, _lifetime.Token);
-            if (!erfolgreich || _geschlossen || _lifetime.IsCancellationRequested) return;
+            var erfolgreich = await _viewModel.SortiereTourenAsync(key, absteigend, ct);
+            if (!erfolgreich || _geschlossen || ct.IsCancellationRequested) return;
             foreach (var column in TourenDataGrid.Columns) column.SortDirection = null;
             var confirmed = TourenDataGrid.Columns.FirstOrDefault(column => column.SortMemberPath == e.Column.SortMemberPath);
             if (confirmed is not null)
@@ -38,7 +39,7 @@ public partial class ApiHauptfenster
         }
         catch
         {
-            if (!_geschlossen && !_lifetime.IsCancellationRequested)
+            if (!_geschlossen && !ct.IsCancellationRequested)
                 _viewModel.StatusText = "Tourensortierung konnte nicht angewendet werden.";
         }
     }

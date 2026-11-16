@@ -20,19 +20,20 @@ public partial class ApiUebersichtViewModel
         }
 
         ct.ThrowIfCancellationRequested();
+        var von = DateOnly.FromDateTime(VonDatum.Value);
+        var bis = DateOnly.FromDateTime(BisDatum.Value);
+        var aktivitaetId = AktivitaetAuswahl?.Id;
+        var kategorieId = KategorieAuswahl?.Id;
+        var filter = new TourenListenfilter(von, bis, aktivitaetId, kategorieId)
+        { Sortierung = schluessel, Absteigend = absteigend };
         var generation = Interlocked.Increment(ref _generation);
         Laedt = true;
         try
         {
-            var von = DateOnly.FromDateTime(VonDatum.Value);
-            var bis = DateOnly.FromDateTime(BisDatum.Value);
-            var aktivitaetId = AktivitaetAuswahl?.Id;
-            var kategorieId = KategorieAuswahl?.Id;
-            var filter = new TourenListenfilter(von, bis, aktivitaetId, kategorieId)
-            { Sortierung = schluessel, Absteigend = absteigend };
             var page = await _touren.ListeGefiltert(0, 50, filter, ct);
             ct.ThrowIfCancellationRequested();
             if (generation != Interlocked.Read(ref _generation)) return false;
+            ValidiereSortierantwort(page);
 
             _tourenSortierung = schluessel;
             OnPropertyChanged(nameof(TourenSortierung));
@@ -45,7 +46,6 @@ public partial class ApiUebersichtViewModel
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            if (generation == Interlocked.Read(ref _generation)) StatusText = "Sortierung abgebrochen; bisherige Sortierung bleibt aktiv.";
             return false;
         }
         catch (Exception)
@@ -55,7 +55,16 @@ public partial class ApiUebersichtViewModel
         }
         finally
         {
-            if (generation == Interlocked.Read(ref _generation)) Laedt = false;
+            Laedt = false;
         }
+    }
+
+    private static void ValidiereSortierantwort(TourListeAntwort? page)
+    {
+        if (page is null || page.Start != 0 || page.Anzahl != 50 || page.Gesamt < 0 ||
+            page.Eintraege is null || page.Eintraege.Count > 50 || page.Eintraege.Count > page.Gesamt ||
+            page.Eintraege.Any(t => t is null || t.Id <= 0) ||
+            page.Eintraege.Select(t => t.Id).Distinct().Count() != page.Eintraege.Count)
+            throw new InvalidOperationException("Ungültige Tourenseitenantwort.");
     }
 }
