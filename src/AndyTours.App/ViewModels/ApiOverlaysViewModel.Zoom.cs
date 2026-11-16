@@ -21,7 +21,7 @@ public sealed partial class ApiOverlaysViewModel
             _kontext.ZeigeGanz(id);
     }
 
-    private bool KannZeigeGanz() => !_beendet && !IstBeschaeftigt;
+    private bool KannZeigeGanz() => !_beendet && IstBereit && !IstBeschaeftigt;
     private bool IstAktuellerOverlayknoten(ApiOverlayknoten node) =>
         node.IstOverlay && Wurzeln.SelectMany(Flatten).Any(current => ReferenceEquals(current, node));
 

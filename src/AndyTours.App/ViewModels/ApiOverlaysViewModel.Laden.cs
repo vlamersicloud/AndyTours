@@ -81,6 +81,7 @@ public sealed partial class ApiOverlaysViewModel
         LoeschenCommand.NotifyCanExecuteChanged();
         EigeneFarbeAendernCommand.NotifyCanExecuteChanged();
         GemeinsameFarbeAendernCommand.NotifyCanExecuteChanged();
+        GpxHinzufuegenCommand.NotifyCanExecuteChanged();
         VerschiebenCommand.NotifyCanExecuteChanged();
         GpxHinzufuegenCommand.NotifyCanExecuteChanged();
         ZeigeGanzCommand.NotifyCanExecuteChanged();
