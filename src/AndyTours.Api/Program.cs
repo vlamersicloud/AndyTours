@@ -150,10 +150,15 @@ app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
 var touren = app.MapGroup("/api/v1/touren").WithTags("Touren");
 touren.MapGet("/", async (int? start, int? anzahl, DateOnly? von, DateOnly? bis,
-        long? aktivitaetId, long? kategorieId, ITourenSpeicher store, CancellationToken ct) =>
+        long? aktivitaetId, long? kategorieId, TourenSortierschluessel? sortierung, bool? absteigend,
+        ITourenSpeicher store, CancellationToken ct) =>
     Results.Ok(await store.ListeGefiltert(start ?? 0, anzahl ?? 50,
-        new TourenListenfilter(von, bis, aktivitaetId, kategorieId), ct)))
-    .WithDescription("Optionale inklusive Datumsgrenzen sowie Aktivitäts- und Kategorienfilter werden vor Gesamtanzahl und Paging angewendet.")
+        new TourenListenfilter(von, bis, aktivitaetId, kategorieId)
+        {
+            Sortierung = sortierung ?? TourenSortierschluessel.Bestand,
+            Absteigend = absteigend ?? false
+        }, ct)))
+    .WithDescription("Optionale Datums-, Aktivitäts- und Kategorienfilter werden vor Sortierung, Gesamtanzahl und Paging angewendet. Sortierschlüssel und Richtung sind typisiert und optional; ohne Angabe gilt die bestehende Reihenfolge.")
     .Produces<TourListeAntwort>().ProducesProblem(400);
 touren.MapGet("/{id:long}", async (long id, ITourenSpeicher store, HttpContext ctx, CancellationToken ct) =>
 {

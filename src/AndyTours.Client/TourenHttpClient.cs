@@ -19,12 +19,17 @@ public sealed class TourenHttpClient(HttpClient http) : ITourenSpeicher
     public async Task<TourListeAntwort> ListeGefiltert(int start, int anzahl, TourenListenfilter filter, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
+        ct.ThrowIfCancellationRequested();
+        if (!Enum.IsDefined(filter.Sortierung))
+            throw new UngueltigeTourException("Tourensortierung ist ungültig.");
         var query = $"?start={start.ToString(CultureInfo.InvariantCulture)}&anzahl={anzahl.ToString(CultureInfo.InvariantCulture)}";
         if (filter.Von.HasValue) query += $"&von={Uri.EscapeDataString(filter.Von.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}";
         if (filter.Bis.HasValue) query += $"&bis={Uri.EscapeDataString(filter.Bis.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}";
         if (filter.AktivitaetId.HasValue) query += $"&aktivitaetId={filter.AktivitaetId.Value.ToString(CultureInfo.InvariantCulture)}";
         if (filter.KategorieId.HasValue) query += $"&kategorieId={filter.KategorieId.Value.ToString(CultureInfo.InvariantCulture)}";
-        using var response = await http.GetAsync(Basis + query, ct);
+        query += $"&sortierung={((int)filter.Sortierung).ToString(CultureInfo.InvariantCulture)}&absteigend={filter.Absteigend.ToString().ToLowerInvariant()}";
+        using var request = new HttpRequestMessage(HttpMethod.Get, Basis + query);
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         await Pruefe(response, ct);
         return await response.Content.ReadFromJsonAsync<TourListeAntwort>(cancellationToken: ct)
             ?? throw new BackendApiException(response.StatusCode);
