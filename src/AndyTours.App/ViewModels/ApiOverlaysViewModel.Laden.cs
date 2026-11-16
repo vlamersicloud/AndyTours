@@ -81,5 +81,6 @@ public sealed partial class ApiOverlaysViewModel
         LoeschenCommand.NotifyCanExecuteChanged();
         EigeneFarbeAendernCommand.NotifyCanExecuteChanged();
         GemeinsameFarbeAendernCommand.NotifyCanExecuteChanged();
+        ZeigeGanzCommand.NotifyCanExecuteChanged();
     }
 }
