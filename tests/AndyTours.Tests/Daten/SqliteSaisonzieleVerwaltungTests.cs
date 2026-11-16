@@ -77,9 +77,16 @@ public sealed class SqliteSaisonzieleVerwaltungTests : IDisposable
         using (var db = OeffneDatenbank.Ausfuehren(_path))
         using (var tx = db.BeginTransaction())
         {
-            var activity = AktivitaetenTabelle.Laden(db).Single(x => x.Id == _a1); activity.ZielKm = 1700;
-            AktivitaetenTabelle.Aendern(db, tx, activity); tx.Commit();
+            using var command = db.CreateCommand();
+            command.Transaction = tx;
+            command.CommandText = "UPDATE Aktivitaet SET ZielKm=@ziel WHERE Id=@id;";
+            command.Parameters.AddWithValue("@ziel", 1700);
+            command.Parameters.AddWithValue("@id", _a1);
+            Assert.Equal(1, command.ExecuteNonQuery());
+            tx.Commit();
         }
+        using (var verifyBase = OeffneDatenbank.Ausfuehren(_path))
+            Assert.Equal(1700, AktivitaetenTabelle.Laden(verifyBase).Single(x => x.Id == _a1).ZielKm);
         var error = await Assert.ThrowsAsync<StammdatenException>(() => _service.Speichern(new(stale.Version, [2025], [])));
         Assert.Equal(StammdatenFehlerart.Konflikt, error.Art);
         using var verify = OeffneDatenbank.Ausfuehren(_path); Assert.Empty(SaisonzieleTabelle.Laden(verify));
