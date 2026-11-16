@@ -33,6 +33,8 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ProblemExceptionHandler>();
 builder.Services.AddOpenApi("v1");
 builder.Services.AddSingleton<ITourenSpeicher>(_ => new SqliteTourenSpeicher(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<ITourdetailQuelldaten>(_ => new SqliteTourdetailQuelldaten(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<ITourdetailLeser>(sp => new AndyTours.Import.Dateien.TourdetailLeser(sp.GetRequiredService<ITourdetailQuelldaten>(), dataDirectory));
 builder.Services.AddSingleton<IImportUploadSpeicher>(_ => new SqliteImportUploadSpeicher(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IFitUploads>(sp => new AndyTours.Import.Dateien.FitUploadDienst(
     sp.GetRequiredService<IImportUploadSpeicher>(), dataDirectory, fitZone));
@@ -111,6 +113,7 @@ app.MapWartungen();
 app.MapGarminEinstellungen();
 app.MapGarminImport();
 app.MapFitUploads();
+app.MapTourdetail();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
 var touren = app.MapGroup("/api/v1/touren").WithTags("Touren");
