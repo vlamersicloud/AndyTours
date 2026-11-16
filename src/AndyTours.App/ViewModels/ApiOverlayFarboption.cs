@@ -8,16 +8,11 @@ public sealed record ApiOverlayFarboption(OverlayFarbe? Farbe, string Name, stri
 public static class ApiOverlayFarboptionen
 {
     public static IReadOnlyList<ApiOverlayFarboption> Alle() => Enum.GetValues<OverlayFarbe>()
-        .Select(farbe =>
-        {
-            var core = ApiOverlayMapper.Farbe(farbe);
-            var ton = Overlayfarben.Wert(core);
-            return new ApiOverlayFarboption(farbe, ton.Name, ton.Hex);
-        }).ToArray();
-
+        .Select(farbe => { var tone = Overlayfarben.Wert(ApiOverlayMapper.Farbe(farbe)); return new ApiOverlayFarboption(farbe, tone.Name, tone.Hex); }).ToArray();
     public static ApiOverlayFarboption Gemeinsam(OverlayFarbe gemeinsam)
     {
-        var ton = Overlayfarben.Wert(ApiOverlayMapper.Farbe(gemeinsam));
-        return new ApiOverlayFarboption(null, $"Gemeinsame Farbe ({ton.Name})", ton.Hex);
+        var tone = Overlayfarben.Wert(ApiOverlayMapper.Farbe(gemeinsam));
+        return new ApiOverlayFarboption(null, $"Gemeinsame Farbe ({tone.Name})", tone.Hex);
     }
+    public static string FarbeHex(OverlayFarbe farbe) => Overlayfarben.Wert(ApiOverlayMapper.Farbe(farbe)).Hex;
 }
