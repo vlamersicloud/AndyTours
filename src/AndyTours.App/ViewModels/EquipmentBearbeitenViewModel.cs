@@ -156,7 +156,7 @@ public partial class EquipmentBearbeitenViewModel : ObservableObject
         }
         catch
         {
-            Hinweis = "Speichern fehlgeschlagen oder Status unklar. Bitte Verbindung prüfen; Änderungen wurden nicht übernommen.";
+            Hinweis = "Speicherstatus unklar. Bitte Bestand neu laden und prüfen; nicht blind erneut speichern.";
         }
         finally
         {

@@ -137,12 +137,12 @@ public sealed class SqliteEquipmentsVerwaltungTests : IDisposable
             KategorienTabelle.Einfuegen(c, tx, new Kategorie { Name = "Tour" });
             tx.Commit();
         }
-        var req = Values("  Trek  ", _activity1, standard: true, km: 1234.5, mapping: "legacy raw", category: " tour ")
+        var req = Values("  Trek  ", _activity1, standard: true, km: 1234.5, category: " tour ")
             with { Anschaffungsdatum = new DateOnly(2020, 2, 29) };
         var created = await _sut.Anlegen(Request((await _sut.Laden()).Version, req));
         var entry = created.Eintraege.Single();
         Assert.Equal("Trek", entry.Name); Assert.Equal(_activity1, entry.AktivitaetId);
-        Assert.Equal("legacy raw", entry.Geraetezuordnung); Assert.Equal("Tour", entry.StandardKategorie);
+        Assert.Equal(string.Empty, entry.Geraetezuordnung); Assert.Equal("Tour", entry.StandardKategorie);
         Assert.True(entry.IstStandard); Assert.Equal(new DateOnly(2020, 2, 29), entry.Anschaffungsdatum);
         Assert.Equal(1234.5, entry.AnfangsdistanzKm);
         using (var c = OeffneDatenbank.Ausfuehren(_db))
@@ -159,6 +159,16 @@ public sealed class SqliteEquipmentsVerwaltungTests : IDisposable
         Assert.Equal("Trek II", answer.Name); Assert.Equal(_activity2, answer.AktivitaetId);
         Assert.Equal(new DateOnly(2021, 3, 1), answer.Anschaffungsdatum); Assert.Equal(9, answer.AnfangsdistanzKm);
         Assert.Equal("Tour", answer.StandardKategorie);
+        using (var c = OeffneDatenbank.Ausfuehren(_db))
+        {
+            var saved = EquipmentsTabelle.Laden(c).Single(e => e.Id == entry.Id);
+            Assert.Equal(answer.Name, saved.Name);
+            Assert.Equal(answer.AktivitaetId, saved.AktivitaetId);
+            Assert.Equal(answer.Anschaffungsdatum, saved.Anschaffungsdatum);
+            Assert.Equal(answer.AnfangsdistanzKm, saved.AnfangsdistanzKm);
+            Assert.Equal(answer.StandardKategorie, saved.StandardKategorie);
+            Assert.Equal(answer.Geraetezuordnung, saved.Geraetezuordnung);
+        }
     }
 
     private async Task<long> Add(string name, long? activity, bool standard = false) =>
