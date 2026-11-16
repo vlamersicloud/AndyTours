@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -310,6 +310,8 @@ public partial class HauptfensterViewModel : ObservableObject
         }
 
         _bestand = geladen;
+        _aufzeichnungsgeraete.Clear();
+        _ausgewaehltesAufzeichnungsgeraet = AlleAufzeichnungsgeraete;
         _trainingsbereiche = trainingsbereiche;
         _taetigkeiten = taetigkeiten;
         Datenordner = ordner;
@@ -375,11 +377,16 @@ public partial class HauptfensterViewModel : ObservableObject
         // Auswahllisten der Filterleiste: nur Werte der Auswahl, die gewählte Eintragung bleibt erhalten
         if (listenNeu)
         {
+            AktualisiereAufzeichnungsgeraete();
             Filter.UebernimmListen(ErmittleFilterwerte.Ausfuehren(auswahl, _bestand, Filter.ErstelleFilter()));
         }
 
         // Filter der Filterleiste anwenden
         List<Trainingseinheit> angezeigt = FiltereEinheiten.Ausfuehren(auswahl, Filter.ErstelleFilter(), _bestand);
+        if (AusgewaehltesAufzeichnungsgeraet != AlleAufzeichnungsgeraete)
+        {
+            angezeigt = angezeigt.Where(e => Aufzeichnungsgeraet(e.Id) == AusgewaehltesAufzeichnungsgeraet).ToList();
+        }
 
         // Tabelle neu füllen (dieselbe Sammlung, damit die gewählte Sortierung erhalten bleibt);
         // die Bestwerte werden dabei aus den angezeigten Einheiten bestimmt

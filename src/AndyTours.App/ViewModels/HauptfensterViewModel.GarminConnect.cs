@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
@@ -37,10 +37,12 @@ public partial class HauptfensterViewModel
         {
             string? schluessel;
             bool automatisch;
+            DateOnly? startdatum;
             using (SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei))
             {
                 schluessel = GarminEinstellung.Laden(verbindung);
                 automatisch = GarminEinstellung.AutomatischLaden(verbindung);
+                startdatum = GarminEinstellung.StartdatumLaden(verbindung);
             }
 
             if (string.IsNullOrWhiteSpace(schluessel))
@@ -87,7 +89,7 @@ public partial class HauptfensterViewModel
                         foreach ((long id, string pfad) in paket.Dateien)
                         {
                             _garminConnectIds.Add(pfad, id);
-                            Lies(pfad, vorhanden, gelesen);
+                            Lies(pfad, vorhanden, gelesen, startdatum);
                         }
 
                         return gelesen;

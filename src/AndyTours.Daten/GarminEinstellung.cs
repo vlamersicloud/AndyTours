@@ -1,4 +1,4 @@
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 
 namespace AndyTours.Daten;
 
@@ -6,6 +6,17 @@ namespace AndyTours.Daten;
 /// <remarks>Der Schlüssel liegt unverschlüsselt in SQLite und damit auch in Sicherungen. Niemals protokollieren.</remarks>
 public static class GarminEinstellung
 {
+    /// <summary>Liest das inklusive Startdatum; ohne Datum werden alle Touren angeboten.</summary>
+    public static DateOnly? StartdatumLaden(SqliteConnection verbindung) =>
+        DateOnly.TryParseExact(EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.GarminImportStartdatum),
+            "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out DateOnly datum) ? datum : null;
+
+    /// <summary>Speichert das Datum unabhängig vom API-Key; null hebt die Einschränkung auf.</summary>
+    public static void StartdatumSpeichern(SqliteConnection verbindung, DateOnly? datum) =>
+        EinstellungTabelle.Schreiben(verbindung, null, Einstellungsschluessel.GarminImportStartdatum,
+            datum?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+
     /// <summary>Liest den hinterlegten Key; ohne Einstellung wird kein Umgebungsvariablen-Fallback verwendet.</summary>
     public static string? Laden(SqliteConnection verbindung) =>
         EinstellungTabelle.Lesen(verbindung, Einstellungsschluessel.GarminPersonalApiKey);

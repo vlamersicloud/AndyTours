@@ -1,4 +1,4 @@
-using AndyTours.Daten;
+﻿using AndyTours.Daten;
 using Microsoft.Data.Sqlite;
 
 namespace AndyTours.Tests.Garmin;
@@ -63,6 +63,32 @@ public sealed class GarminEinstellungTests
         GarminEinstellung.AutomatischSpeichern(db, false);
         Assert.False(GarminEinstellung.AutomatischLaden(db));
         Assert.Null(EinstellungTabelle.Lesen(db, Einstellungsschluessel.GarminAllePaketeAutomatisch));
+    }
+
+    /// <summary>Startdatum bleibt nach dem Löschen des Keys bestehen und kann separat entfernt werden.</summary>
+    [Fact]
+    public void StartdatumWirdGespeichertUndUnabhaengigVomKeyEntfernt()
+    {
+        using SqliteConnection db = Oeffne();
+        Assert.Null(GarminEinstellung.StartdatumLaden(db));
+        DateOnly datum = new(2026, 11, 16);
+        GarminEinstellung.StartdatumSpeichern(db, datum);
+        Assert.Equal(datum, GarminEinstellung.StartdatumLaden(db));
+        Assert.Equal("2026-11-16", EinstellungTabelle.Lesen(db, Einstellungsschluessel.GarminImportStartdatum));
+        GarminEinstellung.Speichern(db, "test-key");
+        GarminEinstellung.Speichern(db, null);
+        Assert.Equal(datum, GarminEinstellung.StartdatumLaden(db));
+        GarminEinstellung.StartdatumSpeichern(db, null);
+        Assert.Null(GarminEinstellung.StartdatumLaden(db));
+    }
+
+    /// <summary>Beschädigte Einstellungen dürfen keine falsche Datumsgrenze erzeugen.</summary>
+    [Fact]
+    public void UngueltigesStartdatumBleibtOhneGrenze()
+    {
+        using SqliteConnection db = Oeffne();
+        EinstellungTabelle.Schreiben(db, null, Einstellungsschluessel.GarminImportStartdatum, "unbekannt");
+        Assert.Null(GarminEinstellung.StartdatumLaden(db));
     }
 
     private static SqliteConnection Oeffne()

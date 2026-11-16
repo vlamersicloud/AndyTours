@@ -1,4 +1,4 @@
-<!--
+﻿<!--
   Einstellungen von AndyTours (Menü „Extras → Einstellungen…“).
 
   Aufbau: fünf Karteikarten (zusätzlich „Persönlich“ mit Garmin-Key), darunter fest die Schaltfläche „Schließen“
@@ -97,6 +97,10 @@
                                     <Button Content="Key _entfernen" Command="{Binding GarminSchluesselEntfernenCommand}"
                                             Padding="8,3" MinWidth="110" Margin="8,0,0,0" />
                                 </StackPanel>
+                                <Label Content="Import ab (einschließlich):" Margin="0,12,0,0" />
+                                <DatePicker SelectedDate="{Binding GarminImportStartdatum, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Leer = alle Touren. Ältere FIT-Aufzeichnungen werden nicht zum Import angeboten; bestehende Touren bleiben erhalten."
+                                           TextWrapping="Wrap" Foreground="Gray" />
                                 <CheckBox Content="Alle Pakete automatisch herunterladen (je 20 Aktivitäten)"
                                           IsChecked="{Binding GarminAllePaketeAutomatisch, UpdateSourceTrigger=PropertyChanged}"
                                           Margin="0,12,0,0" />

@@ -1,4 +1,4 @@
-<!--
+﻿<!--
   Hauptfenster von AndyTours.
 
   Aufbau von oben nach unten (DockPanel):
@@ -91,6 +91,11 @@
                 <ComboBox Width="140"
                           ItemsSource="{Binding Aktivitaeten}"
                           SelectedItem="{Binding AusgewaehlteAktivitaet}" />
+                <Separator />
+                <Label Content="Aufzeichnungsgerät:" VerticalAlignment="Center" />
+                <ComboBox Width="170" ItemsSource="{Binding Aufzeichnungsgeraete}"
+                          SelectedItem="{Binding AusgewaehltesAufzeichnungsgeraet}"
+                          ToolTip="Filtert nur die Tourentabelle und deren Summenzeile nach dem Gerätemodell, nicht nach Sensoren oder Fahrrad." />
                 <Separator />
                 <!-- Summen der Auswahl bzw. Hinweis „Noch keine Touren vorhanden.“; ändern sich sofort mit der Auswahl -->
                 <TextBlock Text="{Binding Summentext}"

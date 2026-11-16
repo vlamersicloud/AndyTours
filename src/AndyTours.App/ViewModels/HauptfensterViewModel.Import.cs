@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -203,12 +203,18 @@ public partial class HauptfensterViewModel
     /// Jede aufgenommene Tour kommt auch in <paramref name="vorhanden"/>, damit dieselbe Tour aus einer zweiten
     /// Datei (z. B. von zwei Geräten) nur einmal erscheint.
     /// </remarks>
-    private static void Lies(string pfad, List<Trainingseinheit> vorhanden, Leseergebnis ergebnis)
+    private static void Lies(string pfad, List<Trainingseinheit> vorhanden, Leseergebnis ergebnis, DateOnly? startdatum = null)
     {
         (Aufzeichnung? aufzeichnung, string? fehler) = LeseFitAufzeichnung.Ausfuehren(pfad);
         if (aufzeichnung is null)
         {
             ergebnis.Uebersprungen.Add($"{Path.GetFileName(pfad)}: {fehler}");
+            return;
+        }
+
+        // Das FIT-Datum ist maßgeblich, unabhängig von Zeitzone oder Sortierung der API-Liste.
+        if (startdatum is DateOnly ab && aufzeichnung.Datum < ab)
+        {
             return;
         }
 
@@ -362,15 +368,23 @@ public partial class HauptfensterViewModel
         Trainingseinheit einheit = ErstelleImportierteEinheit.Ausfuehren(_bestand, aufzeichnung, equipmentId, relativerPfad);
         (long Id, long FahrerId) neu = default;
         if (!Schreibe(verbindung => neu = TrainingseinheitenTabelle.Einfuegen(verbindung, einheit,
-                    _garminConnectIds.TryGetValue(zeile.Quelldatei, out long garminId)
-                        ? (db, transaktion, einheitId) => GarminImportZuordnung.Speichern(db, transaktion, garminId, einheitId)
-                        : null),
+                    (db, transaktion, einheitId) =>
+                    {
+                        EinstellungTabelle.Schreiben(db, transaktion,
+                            Einstellungsschluessel.GarminGeraetVorsilbe + einheitId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                            aufzeichnung.Geraet);
+                        if (_garminConnectIds.TryGetValue(zeile.Quelldatei, out long garminId))
+                        {
+                            GarminImportZuordnung.Speichern(db, transaktion, garminId, einheitId);
+                        }
+                    }),
                 $"Die Tour {aufzeichnung.Dateiname} konnte nicht gespeichert werden"))
         {
             return false;
         }
 
         einheit.Id = neu.Id;
+        _aufzeichnungsgeraete[neu.Id] = aufzeichnung.Geraet;
         einheit.FahrerId = neu.FahrerId;
         if (_bestand.Fahrer.All(f => f.Id != neu.FahrerId))
         {

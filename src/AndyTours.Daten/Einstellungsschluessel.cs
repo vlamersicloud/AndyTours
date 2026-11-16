@@ -1,4 +1,4 @@
-namespace AndyTours.Daten;
+﻿namespace AndyTours.Daten;
 
 /// <summary>
 /// Schlüssel der Einträge in der Tabelle <c>Einstellung</c>.
@@ -9,6 +9,12 @@ namespace AndyTours.Daten;
 /// </remarks>
 public static class Einstellungsschluessel
 {
+    /// <summary>Inklusives Startdatum des Connect-Imports im ISO-Format.</summary>
+    public const string GarminImportStartdatum = "Garmin.ImportStartdatum";
+
+    /// <summary>Aufzeichnendes Gerätemodell je Trainingseinheit, nicht das verwendete Fahrrad.</summary>
+    public const string GarminGeraetVorsilbe = "Garmin.Geraet.";
+
     /// <summary>Alle Garmin-Pakete ohne Zwischenfrage laden; die endgültige Importauswahl bleibt manuell.</summary>
     public const string GarminAllePaketeAutomatisch = "Persoenlich.Garmin.AllePaketeAutomatisch";
 

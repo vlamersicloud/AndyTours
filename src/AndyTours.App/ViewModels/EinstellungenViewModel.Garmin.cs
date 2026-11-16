@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using AndyTours.Daten;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,6 +9,20 @@ namespace AndyTours.App.ViewModels;
 /// <summary>Persönliche Garmin-Einstellungen: maskierte Eingabe, explizites Speichern und Entfernen.</summary>
 public partial class EinstellungenViewModel
 {
+    /// <summary>Inklusiver erster Importtag; ein leeres Feld erlaubt die gesamte Historie.</summary>
+    [ObservableProperty]
+    private DateTime? _garminImportStartdatum;
+
+    /// <summary>Übernimmt Änderungen sofort; bei Speicherfehler wird der gespeicherte Stand neu geladen.</summary>
+    partial void OnGarminImportStartdatumChanged(DateTime? value)
+    {
+        if (!_wirdAngezeigt && !SpeichereEinstellung(db => GarminEinstellung.StartdatumSpeichern(db,
+                value is DateTime datum ? DateOnly.FromDateTime(datum) : null)))
+        {
+            ZeigeGarmineinstellung();
+        }
+    }
+
     /// <summary>Alle 20er-Pakete ohne Zwischenfragen herunterladen; gilt sofort für den Datenordner.</summary>
     [ObservableProperty]
     private bool _garminAllePaketeAutomatisch;
@@ -90,12 +104,14 @@ public partial class EinstellungenViewModel
             using SqliteConnection verbindung = OeffneDatenbank.Ausfuehren(Datenbankdatei);
             GarminSchluessel = GarminEinstellung.Laden(verbindung) ?? string.Empty;
             GarminAllePaketeAutomatisch = GarminEinstellung.AutomatischLaden(verbindung);
+            GarminImportStartdatum = GarminEinstellung.StartdatumLaden(verbindung)?.ToDateTime(TimeOnly.MinValue);
             GarminStatus = GarminSchluessel.Length == 0 ? "Kein Garmin-Key hinterlegt." : "Garmin-Key hinterlegt.";
         }
         catch (Exception fehler) when (fehler is SqliteException or IOException or UnauthorizedAccessException)
         {
             GarminSchluessel = string.Empty;
             GarminAllePaketeAutomatisch = false;
+            GarminImportStartdatum = null;
             GarminStatus = "Garmin-Einstellung konnte nicht gelesen werden.";
         }
         finally

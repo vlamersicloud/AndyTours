@@ -1,4 +1,4 @@
-# Garmin Connect – Live-Import
+﻿# Garmin Connect – Live-Import
 
 ## Projektanalyse und Umfang
 
@@ -223,3 +223,23 @@ Manuelle Abnahme unter Windows:
   keine ungefragte Speicherung; fertig geladene ZIPs werden beim nächsten Mal wiederverwendet.
 - Auswahl abbrechen: Datenbestand unverändert, Key/Option beim Neustart und
   Datenordnerwechsel korrekt laden.
+
+## Importdatum und Anzeigefilter
+
+Unter Extras → Einstellungen → Persönlich → Garmin Connect kann „Import ab“
+gewählt werden. Das Datum gilt einschließlich; leer bedeutet die gesamte Historie.
+Maßgeblich ist das lokale Tourdatum aus der FIT-Aufzeichnung. Der Abruf der
+Aktivitätenliste und älterer Originaldateien bleibt unverändert; ältere Touren
+werden anschließend vor der Importauswahl ausgeschlossen. Bestehende Touren werden
+nicht gelöscht. Das Datum gilt nur für den Connect-Import.
+
+Die Hauptwerkzeugleiste bietet „Aufzeichnungsgerät“. Der Filter wirkt nur auf
+Tourentabelle, Tabellenbestwerte und Tabellensummenzeile, zusätzlich zu den übrigen
+Filtern. Die Jahres-/Aktivitätssumme und die Auswertung „Aktuell“ bleiben unverändert.
+„Alle Geräte“ hebt ihn auf. Importiert werden weiterhin Touren aller Geräte.
+Die Modellbezeichnung stammt aus der FIT-Datei, nicht aus einer ungesicherten
+Garmin-API-Zuordnung. Gleichartige Geräte desselben Modells werden zusammengefasst;
+Sensoren und Fahrrad-Equipment sind keine Aufzeichnungsgeräte.
+Neue Importe speichern die Modellbezeichnung zusammen mit der Tour.
+Für ältere Touren werden vorhandene FIT-Anhänge beim Öffnen des Datenbestands
+einmalig ausgewertet. Fehlende Informationen erscheinen als „Unbekannt“.
