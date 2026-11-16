@@ -20,22 +20,21 @@ public sealed partial class SqliteOverlaySpeicher : IOverlayLeser
         using var db = OeffneDatenbank.Ausfuehren(_datenbankpfad);
         using var tx = db.BeginTransaction(deferred: true);
         cancellationToken.ThrowIfCancellationRequested();
-        var bestand = ReadBestand(db, tx, cancellationToken);
-        var meta = bestand.Overlays.SingleOrDefault(o => o.Id == overlayId)
-            ?? throw new StammdatenException(StammdatenFehlerart.NichtGefunden, "Overlay nicht gefunden.");
-        if (!CryptographicOperations.FixedTimeEquals(Convert.FromHexString(meta.Version), Convert.FromHexString(erwarteteVersion)))
-            throw new StammdatenException(StammdatenFehlerart.Konflikt, "Overlay wurde geändert; Bestand bitte neu laden.");
-
-        cancellationToken.ThrowIfCancellationRequested();
+        OverlayMetadatenAntwort meta;
         byte[] bytes;
         using (var cmd = db.CreateCommand())
         {
             cmd.Transaction = tx;
-            cmd.CommandText = "SELECT Punkte FROM Overlay WHERE Id = $id;";
+            cmd.CommandText = "SELECT Id, OrdnerId, Name, Farbe, Eingeschaltet, Punkte FROM Overlay WHERE Id = $id;";
             cmd.Parameters.AddWithValue("$id", overlayId);
-            using var stream = cmd.ExecuteReader();
-            if (!stream.Read()) throw new StammdatenException(StammdatenFehlerart.NichtGefunden, "Overlay nicht gefunden.");
-            using var blob = stream.GetStream(0);
+            using var reader = cmd.ExecuteReader();
+            if (!reader.Read()) throw new StammdatenException(StammdatenFehlerart.NichtGefunden, "Overlay nicht gefunden.");
+            cancellationToken.ThrowIfCancellationRequested();
+            meta = ReadMetadata(reader, cancellationToken);
+            if (!CryptographicOperations.FixedTimeEquals(Convert.FromHexString(meta.Version), Convert.FromHexString(erwarteteVersion)))
+                throw new StammdatenException(StammdatenFehlerart.Konflikt, "Overlay wurde geändert; Bestand bitte neu laden.");
+
+            using var blob = reader.GetStream(5);
             if (blob.Length > MaxInhaltBytes)
                 throw new StammdatenException(StammdatenFehlerart.Ungueltig, "Overlay-Inhalt überschreitet das zulässige Größenlimit.");
             using var memory = new MemoryStream((int)blob.Length);

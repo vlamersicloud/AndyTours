@@ -60,15 +60,7 @@ public sealed partial class SqliteOverlaySpeicher
             while (reader.Read())
             {
                 ct.ThrowIfCancellationRequested();
-                long id = reader.GetInt64(0);
-                long? folderId = reader.IsDBNull(1) ? null : reader.GetInt64(1);
-                string name = reader.GetString(2);
-                string? rawColor = reader.IsDBNull(3) ? null : reader.GetString(3);
-                bool enabled = reader.GetBoolean(4);
-                string geometryHash = HashBlob(reader.GetStream(5), ct);
-                string itemVersion = HashJson(new { id, folderId, name, rawColor, enabled, geometryHash });
-                items.Add(new OverlayMetadatenAntwort(id, folderId, name, Farbe(rawColor),
-                    enabled, itemVersion));
+                items.Add(ReadMetadata(reader, ct));
             }
         }
 
@@ -89,6 +81,19 @@ public sealed partial class SqliteOverlaySpeicher
             commonRaw
         });
         return new OverlayBestandAntwort(aggregate, commonColor, folders, items);
+    }
+
+    internal static OverlayMetadatenAntwort ReadMetadata(SqliteDataReader reader, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        long id = reader.GetInt64(0);
+        long? folderId = reader.IsDBNull(1) ? null : reader.GetInt64(1);
+        string name = reader.GetString(2);
+        string? rawColor = reader.IsDBNull(3) ? null : reader.GetString(3);
+        bool enabled = reader.GetBoolean(4);
+        string geometryHash = HashBlob(reader.GetStream(5), ct);
+        string itemVersion = HashJson(new { id, folderId, name, rawColor, enabled, geometryHash });
+        return new OverlayMetadatenAntwort(id, folderId, name, Farbe(rawColor), enabled, itemVersion);
     }
 
     internal static string HashBlob(Stream stream, CancellationToken ct)
