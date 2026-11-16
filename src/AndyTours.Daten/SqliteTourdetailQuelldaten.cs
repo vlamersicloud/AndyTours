@@ -7,8 +7,16 @@ using Microsoft.Data.Sqlite;
 namespace AndyTours.Daten;
 
 /// <summary>Loads tour detail source metadata from one consistent server-side SQLite snapshot.</summary>
-public sealed class SqliteTourdetailQuelldaten(string datenbankpfad) : ITourdetailQuelldaten
+public sealed class SqliteTourdetailQuelldaten : ITourdetailQuelldaten
 {
+    private readonly string _datenbankpfad;
+
+    public SqliteTourdetailQuelldaten(string datenbankpfad)
+    {
+        if (string.IsNullOrWhiteSpace(datenbankpfad) || !Path.IsPathFullyQualified(datenbankpfad))
+            throw new ArgumentException("Ein absoluter Datenbankpfad ist erforderlich.", nameof(datenbankpfad));
+        _datenbankpfad = Path.GetFullPath(datenbankpfad);
+    }
     public Task<TourdetailQuellbestand> Laden(IReadOnlyList<long> tourIds, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -16,13 +24,14 @@ public sealed class SqliteTourdetailQuelldaten(string datenbankpfad) : ITourdeta
             tourIds.Any(id => id <= 0) || tourIds.Distinct().Count() != tourIds.Count)
             throw new StammdatenException(StammdatenFehlerart.Ungueltig, "Tourauswahl ungültig.");
 
-        using var connection = OeffneDatenbank.Ausfuehren(datenbankpfad);
+        using var connection = OeffneDatenbank.Ausfuehren(_datenbankpfad);
         using var transaction = connection.BeginTransaction(deferred: true);
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var ids = tourIds.ToHashSet();
             var all = TrainingseinheitenTabelle.Laden(connection)
-                .Where(t => tourIds.Contains(t.Id))
+                .Where(t => ids.Contains(t.Id))
                 .ToArray();
             if (all.Length != tourIds.Count)
                 throw new StammdatenException(StammdatenFehlerart.NichtGefunden, "Mindestens eine Tour wurde nicht gefunden.");
