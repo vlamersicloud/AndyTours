@@ -10,6 +10,7 @@ public sealed class SqliteGarminEinstellungenTests : IDisposable
     private readonly string _dir=Path.Combine(Path.GetTempPath(),"AndyTours-GarminTest-"+Guid.NewGuid().ToString("N"));
     private string Db=>Path.Combine(_dir,"test.db");
     private SqliteGarminEinstellungen Service=>new(Db);
+    private static readonly string[] ExpectedStatusProperties = ["AllePaketeAutomatisch", "HatSchluessel", "Version"];
     public SqliteGarminEinstellungenTests(){Directory.CreateDirectory(_dir); using var db=OeffneDatenbank.Ausfuehren(Db);}
     [Fact] public async Task LadenLeerIstSchreibfreiUndKeyBleibtGeheim()
     {
@@ -17,7 +18,7 @@ public sealed class SqliteGarminEinstellungenTests : IDisposable
         using(var db=OeffneDatenbank.Ausfuehren(Db)) Assert.Null(EinstellungTabelle.Lesen(db,Einstellungsschluessel.GarminPersonalApiKey));
         const string fake="FakeKey_Only+123"; var saved=await Service.SchluesselSpeichern(new(empty.Version,fake));
         var json=JsonSerializer.Serialize(saved); Assert.DoesNotContain(fake,json); Assert.True(saved.HatSchluessel);
-        using(var status=JsonDocument.Parse(json)) Assert.Equal(new[]{"Version","HatSchluessel","AllePaketeAutomatisch"},status.RootElement.EnumerateObject().Select(p=>p.Name).OrderBy(x=>x,StringComparer.Ordinal).ToArray());
+        using(var status=JsonDocument.Parse(json)) Assert.Equal(ExpectedStatusProperties,status.RootElement.EnumerateObject().Select(p=>p.Name).OrderBy(x=>x,StringComparer.Ordinal).ToArray());
         Assert.DoesNotContain(fake,new GarminSchluesselAnfrage(saved.Version,fake).ToString());
     }
     [Fact] public async Task AutomatikUndEntfernenLassenJeweilsAndereEinstellungUnveraendert()
