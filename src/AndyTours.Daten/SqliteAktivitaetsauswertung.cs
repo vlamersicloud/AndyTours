@@ -7,7 +7,7 @@ using AndyTours.Core.Modell;
 namespace AndyTours.Daten;
 
 /// <summary>Erzeugt aggregierte Aktivitätsauswertungen aus einem konsistenten SQLite-Lesesnapshot.</summary>
-public sealed class SqliteAktivitaetsauswertung(string datenbankpfad) : IAktivitaetsauswertung
+public sealed class SqliteAktivitaetsauswertung(string datenbankpfad, TimeProvider? zeit = null) : IAktivitaetsauswertung
 {
     public Task<AktivitaetsauswertungAntwort> Laden(AktivitaetsauswertungAnfrage anfrage, CancellationToken ct = default)
     {
@@ -15,6 +15,7 @@ public sealed class SqliteAktivitaetsauswertung(string datenbankpfad) : IAktivit
         if (anfrage is null || anfrage.Von > anfrage.Bis || !Enum.IsDefined(anfrage.Raster) ||
             anfrage.AktivitaetId is <= 0 || anfrage.KategorieId is <= 0)
             throw new UngueltigeTourException("Filter oder Zeitraum der Auswertung sind ungültig.");
+        var heute = DateOnly.FromDateTime((zeit ?? TimeProvider.System).GetLocalNow().DateTime);
         try
         {
             using var verbindung = OeffneDatenbank.Ausfuehren(datenbankpfad);
@@ -41,7 +42,6 @@ public sealed class SqliteAktivitaetsauswertung(string datenbankpfad) : IAktivit
             var distanz = perioden.Sum(p => p.DistanzKm);
             var hoehenmeter = perioden.Aggregate(0L, (summe, p) => checked(summe + p.Hoehenmeter));
             var fahrzeit = perioden.Aggregate(0L, (summe, p) => checked(summe + p.FahrzeitSekunden));
-            var heute = DateOnly.FromDateTime(DateTime.Today);
             var zukuenftig = einheiten.Count(t => t.Datum > heute);
             var tourenImZeitraum = einheiten.Where(t => t.Datum >= anfrage.Von && t.Datum <= anfrage.Bis).ToList();
             var projektion = new Datenbestand { Trainingseinheiten = tourenImZeitraum, Aktivitaeten = aktivitaeten, Saisonziele = saisonziele };
@@ -50,6 +50,22 @@ public sealed class SqliteAktivitaetsauswertung(string datenbankpfad) : IAktivit
             var jahresrekorde = beschrieben.Jahresrekorde.Select(x => new BestleistungszeileAntwort(x.Bezeichnung, x.Wert, x.Herkunft, x.IstLaufendesJahr, x.EinheitId)).ToArray();
             var einzelrekorde = beschrieben.Einzelrekorde.Select(x => new BestleistungszeileAntwort(x.Bezeichnung, x.Wert, x.Herkunft, x.IstLaufendesJahr, x.EinheitId)).ToArray();
             var zielAktivitaeten = anfrage.AktivitaetId is { } id ? aktivitaeten.Where(a => a.Id == id).ToList() : aktivitaeten;
+            SaisonfortschrittAntwort? saisonfortschritt = null;
+            if (anfrage.Von == new DateOnly(heute.Year, 1, 1) && anfrage.Bis == heute)
+            {
+                var saisonBestand = new Datenbestand
+                {
+                    Trainingseinheiten = einheiten.Where(t => t.Datum <= heute).ToList(),
+                    Aktivitaeten = aktivitaeten,
+                    Saisonziele = saisonziele
+                };
+                var kilometer = ErmittleJahresfortschritt.Ausfuehren(saisonBestand, anfrage.AktivitaetId, null, Fortschrittswert.Kilometer, heute).Kennzahlen;
+                var hm = ErmittleJahresfortschritt.Ausfuehren(saisonBestand, anfrage.AktivitaetId, null, Fortschrittswert.Hoehenmeter, heute).Kennzahlen;
+                var anzahlSaison = ErmittleJahresfortschritt.Ausfuehren(saisonBestand, anfrage.AktivitaetId, null, Fortschrittswert.Anzahl, heute).Kennzahlen;
+                var fahrzeitSaison = ErmittleJahresfortschritt.Ausfuehren(saisonBestand, anfrage.AktivitaetId, null, Fortschrittswert.Fahrzeit, heute).Kennzahlen;
+                saisonfortschritt = SaisonfortschrittMapper.ToAntwort(heute, kilometer, hm, anzahlSaison, fahrzeitSaison);
+            }
+            ct.ThrowIfCancellationRequested();
             var jahresziele = Enumerable.Range(anfrage.Von.Year, checked(anfrage.Bis.Year - anfrage.Von.Year + 1)).Select(jahr =>
             {
                 long km = 0, hm = 0, anzahlZiele = 0;
@@ -69,7 +85,8 @@ public sealed class SqliteAktivitaetsauswertung(string datenbankpfad) : IAktivit
             {
                 Jahresrekorde = jahresrekorde,
                 Einzelrekorde = einzelrekorde,
-                Jahresziele = jahresziele
+                Jahresziele = jahresziele,
+                Saisonfortschritt = saisonfortschritt
             });
         }
         catch (ArgumentException ex) { throw new UngueltigeTourException(ex.Message); }
