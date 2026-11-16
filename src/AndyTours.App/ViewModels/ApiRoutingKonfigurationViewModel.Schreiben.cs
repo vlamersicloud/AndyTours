@@ -19,8 +19,12 @@ public partial class ApiRoutingKonfigurationViewModel
     private bool CanWrite() => !_disposed && _loaded && !Busy;
 
     [RelayCommand(CanExecute = nameof(CanWrite))]
-    private Task DienstSpeichernAsync() => RunWrite(
-        (version, token) => _service.DienstSpeichern(new(version, Dienst), token), null, "Routinganbieter gespeichert.");
+    private Task DienstSpeichernAsync()
+    {
+        if (!CanWrite()) return Task.CompletedTask;
+        RoutingAnbieter submitted = Dienst;
+        return RunWrite((version, token) => _service.DienstSpeichern(new(version, submitted), token), null, "Routinganbieter gespeichert.");
+    }
 
     [RelayCommand(CanExecute = nameof(CanWrite))]
     private Task AdresseSpeichernAsync()
@@ -110,7 +114,8 @@ public partial class ApiRoutingKonfigurationViewModel
             !response.AdresseAusgeblendet && response.BRouterAdresse is null ||
             response.BRouterAdresse is not null && !RoutingKonfigurationRegeln.IstAdresseSichtbar(response.BRouterAdresse))
             throw new InvalidOperationException();
-        bool preserveDienstDraft = _loaded && Dienst != _confirmedDienst;
+        bool preserveDienstDraft = _hasConfirmedDienst && Dienst != _confirmedDienst;
+        _hasConfirmedDienst = true;
         _version = version;
         _loaded = true;
         _hatUnklarenSpeicherstatus = false;

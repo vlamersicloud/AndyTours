@@ -15,6 +15,7 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
     private string _version = string.Empty;
     private bool _loaded;
     private RoutingAnbieter _confirmedDienst;
+    private bool _hasConfirmedDienst;
     private string? _gespeicherteAdresse;
     private bool _disposed;
     private bool _hatUnklarenSpeicherstatus;
@@ -40,7 +41,7 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
     public bool Busy => Laedt || Aendert;
     public bool KannBearbeiten => StatusGeladen && !Busy;
     public string? GespeicherteAdresse => _gespeicherteAdresse;
-    public bool HatEntwuerfe => AdresseEntwurf.Length > 0 || OrsSchluesselEntwurf.Length > 0 || (_loaded && Dienst != _confirmedDienst);
+    public bool HatEntwuerfe => AdresseEntwurf.Length > 0 || OrsSchluesselEntwurf.Length > 0 || (_hasConfirmedDienst && Dienst != _confirmedDienst);
     public Func<string, bool>? Bestaetigung { get; set; }
     public event EventHandler? EntwurfLeeren;
 
@@ -83,7 +84,8 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
                 !response.AdresseAusgeblendet && response.BRouterAdresse is null ||
                 response.BRouterAdresse is not null && !RoutingKonfigurationRegeln.IstAdresseSichtbar(response.BRouterAdresse))
                 throw new InvalidOperationException();
-            bool preserveDienstDraft = _loaded && Dienst != _confirmedDienst;
+            bool preserveDienstDraft = _hasConfirmedDienst && Dienst != _confirmedDienst;
+            _hasConfirmedDienst = true;
             _version = version;
             _confirmedDienst = response.Dienst;
             if (!preserveDienstDraft) Dienst = response.Dienst;
@@ -139,6 +141,7 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
         OrsSchluesselEntwurf = string.Empty;
         AdresseEntwurf = string.Empty;
         _loaded = false;
+        _hasConfirmedDienst = false;
         EntwurfLeeren = null;
         Bestaetigung = null;
         NotifyState();

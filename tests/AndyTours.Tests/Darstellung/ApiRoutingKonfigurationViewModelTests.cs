@@ -29,7 +29,7 @@ public sealed class ApiRoutingKonfigurationViewModelTests
             vm.OrsSchluesselEntwurf = "new-fake-key";
             Assert.True(vm.HatEntwuerfe);
             using var verify = OeffneDatenbank.Ausfuehren(dbPath);
-            Assert.Equal("BRouter", EinstellungTabelle.Lesen(verify, Einstellungsschluessel.RoutingDienst));
+            Assert.Null(EinstellungTabelle.Lesen(verify, Einstellungsschluessel.RoutingDienst));
             Assert.Equal("https://router.example/path", EinstellungTabelle.Lesen(verify, Einstellungsschluessel.RoutingBRouterAdresse));
             Assert.Equal("FAKE-KEY", EinstellungTabelle.Lesen(verify, Einstellungsschluessel.RoutingOpenrouteserviceSchluessel));
             vm.Dispose();
@@ -68,16 +68,20 @@ public sealed class ApiRoutingKonfigurationViewModelTests
         var vm = new ApiRoutingKonfigurationViewModel(port);
         await vm.LadenCommand.ExecuteAsync(default);
         vm.AdresseEntwurf = "https://draft.example";
+        vm.Dienst = RoutingAnbieter.Openrouteservice;
         port.FailWrite = true;
         await vm.AdresseSpeichernCommand.ExecuteAsync(null);
         Assert.False(vm.StatusGeladen);
         Assert.Equal("https://draft.example", vm.AdresseEntwurf);
-        Assert.True(vm.AdresseSpeichernCommand.CanExecute(null));
+        Assert.False(vm.AdresseSpeichernCommand.CanExecute(null));
+        Assert.True(vm.HatEntwuerfe);
         await vm.AdresseSpeichernCommand.ExecuteAsync(null);
         Assert.Equal(1, port.Writes);
         port.FailWrite = false;
         await vm.LadenCommand.ExecuteAsync(default);
         Assert.True(vm.StatusGeladen);
+        Assert.Equal(RoutingAnbieter.Openrouteservice, vm.Dienst);
+        Assert.True(vm.HatEntwuerfe);
 
         var pending = new ControlledPort { DelayWrite = true };
         var lateVm = new ApiRoutingKonfigurationViewModel(pending);
