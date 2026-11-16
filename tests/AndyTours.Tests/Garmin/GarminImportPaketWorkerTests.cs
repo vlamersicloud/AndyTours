@@ -21,7 +21,7 @@ public sealed class GarminImportPaketWorkerTests
         {
             var path = request.RequestUri?.AbsolutePath ?? throw new InvalidOperationException();
             Paths.Add(path);
-            if (path.Contains("oauth", StringComparison.OrdinalIgnoreCase))
+            if (path.Equals("/personalapitoken-service/personal-api/personal-api-key/token", StringComparison.Ordinal))
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("FAKE-TOKEN") });
             if (path.Contains("activities/search/activities", StringComparison.Ordinal))
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
@@ -93,7 +93,8 @@ public sealed class GarminImportPaketWorkerTests
         Assert.DoesNotContain("FAKE-WORKER-KEY", serialized, StringComparison.Ordinal);
         Assert.DoesNotContain(f.Root, serialized, StringComparison.Ordinal);
         Assert.NotNull(handler);
-        Assert.Equal(2, handler!.Paths.Count(path => path.StartsWith("/download-service/files/activity/", StringComparison.Ordinal)));
+        Assert.Equal(1, handler!.Paths.Count(path => path == "/personalapitoken-service/personal-api/personal-api-key/token"));
+        Assert.Equal(2, handler.Paths.Count(path => path.StartsWith("/download-service/files/activity/", StringComparison.Ordinal)));
     }
 
     private static byte[] CreateZip(string root)
