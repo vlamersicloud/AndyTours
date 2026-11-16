@@ -23,18 +23,19 @@ public sealed partial class SqliteTourenMehrfachverwaltung
         var receipt = LeseQuittung(connection, transaction, anfrageId, anfrageHash);
         if (receipt is not null)
         {
+            ValidiereAntwort(anfrageId, referenzen, receipt);
             cancellationToken.ThrowIfCancellationRequested();
             return receipt;
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        var alle = TrainingseinheitenTabelle.Laden(connection);
+        var alle = TrainingseinheitenTabelle.Laden(connection).ToDictionary(t => t.Id);
         var ausgewaehlt = new List<Trainingseinheit>(referenzen.Count);
         foreach (var referenz in referenzen)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var aktuell = alle.SingleOrDefault(t => t.Id == referenz.Id)
-                ?? throw new TourNichtGefundenException(referenz.Id);
+            if (!alle.TryGetValue(referenz.Id, out var aktuell))
+                throw new TourNichtGefundenException(referenz.Id);
             var version = TourenMapper.ToAntwort(aktuell).Version;
             if (!CryptographicOperations.FixedTimeEquals(
                     Convert.FromHexString(version), Convert.FromHexString(referenz.Version)))
@@ -67,7 +68,7 @@ public sealed partial class SqliteTourenMehrfachverwaltung
             geaenderteIds.All(id => id > 0) &&
             geaenderteIds.Distinct().Count() == geaenderteIds.Length &&
             geaenderteIds.SequenceEqual(erwarteteIds) &&
-            antwort.Eintraege.All(e => e is not null && e.Werte is not null);
+            antwort.Eintraege.All(e => e is not null && e.Werte is not null && HashGueltig(e.Version));
         var nurGeloescht = antwort.Eintraege.Count == 0 &&
             geloeschteIds.Length == erwarteteIds.Length &&
             geloeschteIds.All(id => id > 0) &&

@@ -5,7 +5,7 @@ using Microsoft.Data.Sqlite;
 
 namespace AndyTours.Daten;
 
-/// <summary>Implementiert alle vier Versionierten Mehrfachoperationen des Application-Ports.</summary>
+/// <summary>Implementiert das versionierte Löschen als Operation des Application-Ports.</summary>
 public sealed partial class SqliteTourenMehrfachverwaltung : ITourenMehrfachverwaltung
 {
     /// <summary>Löscht alle referenzierten Touren atomar; Anhangdateien werden nicht verändert.</summary>

@@ -7,8 +7,8 @@ using Microsoft.Data.Sqlite;
 
 namespace AndyTours.Daten;
 
-/// <summary>Receipt-Helfer für zukünftige atomare Touren-Mehrfachoperationen.</summary>
-/// <remarks>Diese Grundlage exponiert noch keine Operationen und übernimmt weder Transaktionen noch Schemaanlage.</remarks>
+/// <summary>SQLite-Speicher für atomare Touren-Mehrfachoperationen mit idempotenten Receipts.</summary>
+/// <remarks>Operationen verwenden eine gemeinsame caller-owned Transaktion; Receipts überleben das Löschen ihrer Touren.</remarks>
 public sealed partial class SqliteTourenMehrfachverwaltung
 {
     private readonly string _databasePath;
