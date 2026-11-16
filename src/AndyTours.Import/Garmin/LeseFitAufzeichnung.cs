@@ -128,7 +128,13 @@ public static partial class LeseFitAufzeichnung
             return (null, "keine Tourdaten enthalten");
         }
 
-        System.DateTime start = Ortszeit(sitzung.GetStartTime(), aktivitaet, fallbackZeitzone);
+        var startUtc = sitzung.GetStartTime();
+        if (startUtc is null)
+        {
+            return (null, "Startzeit fehlt in der FIT-Datei");
+        }
+
+        System.DateTime start = Ortszeit(startUtc, aktivitaet, fallbackZeitzone);
         var aufzeichnung = new Aufzeichnung
         {
             Dateiname = Path.GetFileName(pfad),

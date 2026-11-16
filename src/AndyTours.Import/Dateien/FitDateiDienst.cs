@@ -45,7 +45,12 @@ public sealed class FitDateiDienst
             return new FitDateiSnapshot(parsed, fileHash, version, temporary);
         }
         catch (OperationCanceledException) { TryDelete(temporary); throw; }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException or FormatException or OverflowException)
+        catch (StammdatenException)
+        {
+            TryDelete(temporary);
+            throw;
+        }
+        catch (Exception)
         {
             TryDelete(temporary);
             throw new StammdatenException(StammdatenFehlerart.Ungueltig, "FIT-Datei ungültig.");
@@ -92,12 +97,20 @@ public sealed class FitDateiDienst
 
     private string Resolve(string path)
     {
-        var full = Path.GetFullPath(path);
-        var prefix = _root.EndsWith(Path.DirectorySeparatorChar) ? _root : _root + Path.DirectorySeparatorChar;
-        if (!string.Equals(full, _root, StringComparison.OrdinalIgnoreCase) &&
-            !full.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        try
+        {
+            var full = Path.GetFullPath(path);
+            var prefix = _root.EndsWith(Path.DirectorySeparatorChar) ? _root : _root + Path.DirectorySeparatorChar;
+            var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            if (!string.Equals(full, _root, comparison) && !full.StartsWith(prefix, comparison))
+                throw new StammdatenException(StammdatenFehlerart.Ungueltig, "FIT-Pfad ungültig.");
+            return full;
+        }
+        catch (StammdatenException) { throw; }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
             throw new StammdatenException(StammdatenFehlerart.Ungueltig, "FIT-Pfad ungültig.");
-        return full;
+        }
     }
 
     private static async Task CopyBounded(Stream input, Stream output, CancellationToken cancellationToken)
