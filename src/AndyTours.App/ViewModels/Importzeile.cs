@@ -53,6 +53,9 @@ public partial class Importzeile : ObservableObject
     /// <summary>Name des Geräts, z. B. „Edge 1040“.</summary>
     public string Geraet => Aufzeichnung.Geraet;
 
+    /// <summary>Optionaler Prüfh inweis für die Anzeige; enthält keine Serverpfade.</summary>
+    public string Hinweis { get; init; } = string.Empty;
+
     /// <summary>Angehakt = wird importiert.</summary>
     [ObservableProperty]
     private bool _importieren = true;

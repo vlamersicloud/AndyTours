@@ -11,6 +11,7 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
 {
     private const int PageSize = 50;
     private readonly IGarminImportJobs _jobs;
+    private readonly IGarminImportPruefung _pruefung;
     private readonly CancellationTokenSource _lifetime = new();
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private Guid? _pendingStartId;
@@ -24,12 +25,16 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _laedt;
     [ObservableProperty] private bool _aendert;
     [ObservableProperty] private bool _hatAenderungen;
+    [ObservableProperty] private bool _editorOffen;
     [ObservableProperty] private string _status = string.Empty;
 
     public ObservableCollection<GarminImportKandidatAntwort> Kandidaten { get; } = [];
 
-    public ApiGarminImportViewModel(IGarminImportJobs jobs) =>
+    public ApiGarminImportViewModel(IGarminImportJobs jobs, IGarminImportPruefung pruefung)
+    {
         _jobs = jobs ?? throw new ArgumentNullException(nameof(jobs));
+        _pruefung = pruefung ?? throw new ArgumentNullException(nameof(pruefung));
+    }
 
     public string StatusText => Auftrag is null ? "Kein Importauftrag." : Auftrag.Status switch
     {
@@ -53,7 +58,7 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
     public bool KannAbbrechen => Idle() && Auftrag is not null &&
         Auftrag.Status is not (GarminImportJobStatus.Fertig or GarminImportJobStatus.Abgebrochen);
 
-    private bool Idle() => !_closing && !_disposed && !Laedt && !Aendert;
+    private bool Idle() => !_closing && !_disposed && !Laedt && !Aendert && !EditorOffen;
     private bool CanFortsetzen() => KannFortsetzen;
     private bool CanAbbrechen() => KannAbbrechen;
     private bool CanPrevious() => Idle() && Start > 0;
@@ -70,6 +75,7 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
     partial void OnGesamtChanged(int value) => NotifyCommands();
     partial void OnLaedtChanged(bool value) => NotifyCommands();
     partial void OnAendertChanged(bool value) => NotifyCommands();
+    partial void OnEditorOffenChanged(bool value) => NotifyCommands();
 
     private void NotifyCommands()
     {

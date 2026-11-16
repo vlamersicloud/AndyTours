@@ -187,7 +187,7 @@ public partial class App
 
             fenster.GarminImportAngefordert += () =>
             {
-                var vm = new ApiGarminImportViewModel(uebergebeneSitzung.GarminImportJobs);
+                var vm = new ApiGarminImportViewModel(uebergebeneSitzung.GarminImportJobs, uebergebeneSitzung.GarminImportPruefung);
                 var dialog = new ApiGarminImportFenster(vm) { Owner = fenster };
                 try { dialog.ShowDialog(); }
                 finally { dialog.Dispose(); }
