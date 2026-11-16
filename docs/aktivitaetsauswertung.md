@@ -136,3 +136,5 @@ umzuschreiben. Lokal bauen/starten wie in README beschrieben.
 Die Aktivitätsübersicht zeigt ein einziges Diagramm. Unter „Diagramminhalt → Werte auswählen“ lassen sich Strecke, Puls und Höhenmeter unabhängig anhaken; standardmäßig ist Strecke gewählt. Ohne Häkchen werden keine Datenreihen dargestellt. Strecke (km), Höhenmeter (hm) und Pulsbereichszeiten (Minuten) verwenden getrennte, beschriftete Achsen und dieselbe Zeitraumgruppierung.
 
 Für Puls bleibt „Pulsanalyse laden“ erforderlich; die geladenen Garmin-Zonen bzw. 10-bpm-Bereiche erscheinen im gemeinsamen Diagramm. Profil- und Zeitraumänderungen verwerfen die alte Pulsanalyse; die Kennzahlauswahl erhält bereits geladene Ergebnisse. Das zweite Pulsdiagramm entfällt, die Detailtabelle bleibt erhalten.
+
+Unter „Darstellung“ kann für alle ausgewählten Datenreihen gemeinsam zwischen Balken und Linie gewechselt werden. Die Auswahl ändert keine Filter und erfordert kein erneutes Laden der Pulsanalyse. Pulslinien zeigen die Minuten des einzelnen Bereichs (nicht die kumulierte Stapelhöhe); Perioden ohne Messzeit erscheinen mit null Minuten.

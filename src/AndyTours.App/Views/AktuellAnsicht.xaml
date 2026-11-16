@@ -59,6 +59,9 @@
                     <TextBlock Text="Gruppierung:" VerticalAlignment="Center" Margin="0,0,4,0" />
                     <ComboBox ItemsSource="{Binding Raster}" DisplayMemberPath="Value" SelectedValuePath="Key"
                               SelectedValue="{Binding Gruppierung}" Width="180" Margin="0,0,12,4" />
+                    <TextBlock Text="Darstellung:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <ComboBox ItemsSource="{Binding Darstellungen}" SelectedIndex="{Binding Darstellung, Mode=TwoWay}"
+                              Width="110" Margin="0,0,12,4" />
                     <TextBlock Text="Diagramminhalt:" VerticalAlignment="Center" Margin="0,0,4,0" />
                     <Menu Margin="0,0,12,4">
                         <MenuItem Header="Werte auswählen">

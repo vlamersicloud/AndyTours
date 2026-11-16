@@ -27,6 +27,11 @@ public partial class JahresfortschrittViewModel : ObservableObject
     private readonly LinearAxis _pulsachse = new() { Key = "puls", Position = AxisPosition.Right, PositionTier = 1, Title = "Pulsbereiche (Minuten)", Minimum = 0, IsPanEnabled = false, IsZoomEnabled = false };
     private readonly List<RectangleBarSeries> _pulsserien = [];
 
+    /// <summary>Darstellungsart gilt gemeinsam für alle ausgewählten Kennzahlen.</summary>
+    public IReadOnlyList<string> Darstellungen { get; } = ["Balken", "Linie"];
+    [ObservableProperty] private int _darstellung;
+    partial void OnDarstellungChanged(int value) => Zeichne();
+
     [ObservableProperty] private bool _zeigeStrecke = true;
     [ObservableProperty] private bool _zeigeHoehenmeter;
     [ObservableProperty] private bool _zeigePuls;
@@ -192,6 +197,30 @@ public partial class JahresfortschrittViewModel : ObservableObject
             (string zielstand, string zielausblick) = BeschreibeJahresfortschritt.Kennzahlen(
                 ErmittleJahresfortschritt.Ausfuehren(begrenzt, _aktivitaetId, _kategorie, Wert, _heute));
             Ausblick += "\nSaison: " + zielstand + " · " + zielausblick;
+        }
+
+        if (Darstellung == 1)
+        {
+            // Pulsbalken sind gestapelt: als Linien die einzelnen Bereichszeiten,
+            // nicht die kumulierten Oberkanten darstellen.
+            var balken = Diagramm.Series.OfType<RectangleBarSeries>().ToArray();
+            Diagramm.Series.Clear();
+            foreach (var quelle in balken)
+            {
+                var linie = new LineSeries {
+                    Title = quelle.Title, YAxisKey = quelle.YAxisKey,
+                    Color = quelle.FillColor, StrokeThickness = 2,
+                    MarkerType = MarkerType.Circle, MarkerSize = 3,
+                    TrackerFormatString = "{0}: {4:0.##}" };
+                var werte = quelle.Items.ToDictionary(
+                    item => (int)Math.Round((item.X0 + item.X1) / 2),
+                    item => item.Y1 - item.Y0);
+                for (int i = 0; i < perioden.Count; i++)
+                {
+                    linie.Points.Add(new DataPoint(i, werte.GetValueOrDefault(i)));
+                }
+                Diagramm.Series.Add(linie);
+            }
         }
 
         Diagramm.InvalidatePlot(true);
