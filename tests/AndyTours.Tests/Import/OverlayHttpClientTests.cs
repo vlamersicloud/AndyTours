@@ -1,6 +1,8 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using AndyTours.Application.Overlays;
+using AndyTours.Application.Stammdaten;
 using AndyTours.Client;
 using AndyTours.Contracts.V1;
 
@@ -43,7 +45,6 @@ public sealed class OverlayHttpClientTests
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
         var reader = new OverlayLeserHttpClient(http);
         var manager = new OverlayVerwaltungHttpClient(http);
-
         var loaded = await reader.Inhalt(7, "ITEM-V", default);
         Assert.Equal("ITEM-V", loaded.Version);
         Assert.Equal(2, loaded.Abschnitte.Count);
@@ -80,28 +81,78 @@ public sealed class OverlayHttpClientTests
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
         using var input = new MemoryStream(bytes);
         var client = new OverlayGpxImportHttpClient(http);
-        var result = await client.Importieren(
-            new("old", Guid.Parse("55555555-5555-5555-5555-555555555555"), 12, "Grüße.gpx"), input, default);
+        var result = await client.Importieren(new("old", Guid.Parse("55555555-5555-5555-5555-555555555555"), 12, "Grüße.gpx"), input, default);
         Assert.Equal(9, result.Id);
         Assert.True(input.CanRead);
         Assert.True(responseContent.WasDisposed);
         Assert.Equal(1, handler.Count);
     }
 
-    private static StringContent Json<T>(T value) => new(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
+    [Fact]
+    public async Task Fehler_und_Abbruch_sind_sicher_validierung_passiert_vor_send()
+    {
+        var errorContent = new TrackingErrorContent();
+        var handler = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.Conflict) { Content = errorContent }));
+        using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
+        var import = new OverlayGpxImportHttpClient(http);
+        var manager = new OverlayVerwaltungHttpClient(http);
+        using var stream = new MemoryStream([1, 2, 3]);
+        var request = new OverlayGpxImportAnfrage(new string('A', 64), Guid.NewGuid(), null, "route.gpx");
+        var conflict = await Assert.ThrowsAsync<StammdatenException>(() => import.Importieren(request, stream, default));
+        Assert.Equal(StammdatenFehlerart.Konflikt, conflict.Art);
+        Assert.False(errorContent.WasRead);
+        Assert.True(errorContent.WasDisposed);
+        Assert.True(stream.CanRead);
 
+        var tooLarge = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.RequestEntityTooLarge) { Content = new TrackingErrorContent() }));
+        using var httpLarge = new HttpClient(tooLarge) { BaseAddress = new Uri("https://unit.test/") };
+        using var streamLarge = new MemoryStream([4]);
+        await Assert.ThrowsAsync<OverlayGpxZuGrossException>(() => new OverlayGpxImportHttpClient(httpLarge).Importieren(request, streamLarge, default));
+        Assert.True(streamLarge.CanRead);
+
+        await Assert.ThrowsAsync<StammdatenException>(() => import.Importieren(request with { Dateiname = "../secret.gpx" }, stream, default));
+        await Assert.ThrowsAsync<StammdatenException>(() => import.Importieren(request with { AnfrageId = Guid.Empty }, stream, default));
+        await Assert.ThrowsAsync<StammdatenException>(() => manager.OrdnerLoeschen(0, new string('A', 64), default));
+        await Assert.ThrowsAsync<StammdatenException>(() => manager.OrdnerLoeschen(1, "bad", default));
+        Assert.Equal(1, handler.Count);
+
+        using var cts = new CancellationTokenSource();
+        var cancelHandler = new RecordingHandler((_, ct) =>
+        {
+            cts.Cancel();
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        using var cancelHttp = new HttpClient(cancelHandler) { BaseAddress = new Uri("https://unit.test/") };
+        using var cancelStream = new MemoryStream([7, 8]);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            new OverlayGpxImportHttpClient(cancelHttp).Importieren(request, cancelStream, cts.Token));
+        Assert.Equal(1, cancelHandler.Count);
+        Assert.True(cancelStream.CanRead);
+    }
+
+    private static StringContent Json<T>(T value) => new(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
     private sealed class RecordingHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
     {
         public int Count { get; private set; }
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         { Count++; return send(request, cancellationToken); }
     }
-
     private sealed class TrackingContent(HttpContent inner) : HttpContent
     {
         public bool WasDisposed { get; private set; }
         protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context) => inner.CopyToAsync(stream);
         protected override bool TryComputeLength(out long length) { length = 0; return true; }
         protected override void Dispose(bool disposing) { WasDisposed = true; inner.Dispose(); base.Dispose(disposing); }
+    }
+    private sealed class TrackingErrorContent : HttpContent
+    {
+        public bool WasRead { get; private set; }
+        public bool WasDisposed { get; private set; }
+        protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context) { WasRead = true; throw new InvalidOperationException(); }
+        protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context, CancellationToken cancellationToken) { WasRead = true; throw new InvalidOperationException(); }
+        protected override bool TryComputeLength(out long length) { length = 0; return false; }
+        protected override Task<Stream> CreateContentReadStreamAsync() { WasRead = true; throw new InvalidOperationException(); }
+        protected override void Dispose(bool disposing) { WasDisposed = true; base.Dispose(disposing); }
     }
 }
