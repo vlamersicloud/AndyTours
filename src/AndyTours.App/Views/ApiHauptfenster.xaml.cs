@@ -21,6 +21,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     public event Func<Task>? EquipmentsVerwaltenAngefordert;
     public event Func<Task>? ProfilBearbeitenAngefordert;
     public event Func<Task>? GarminEinstellungenAngefordert;
+    public event Func<Task>? GarminImportAngefordert;
     public event Func<Task>? SaisonzieleVerwaltenAngefordert;
     public event Func<Task>? WartungVerwaltenAngefordert;
     public event Func<AndyTours.Contracts.V1.Textlistenart, Task>? TextlisteVerwaltenAngefordert;
@@ -203,6 +204,19 @@ public partial class ApiHauptfenster : Window, IDisposable
         if (_geschlossen || !IsVisible) return;
         try { await _viewModel.AktualisierenAsync(CancellationToken.None); }
         catch (Exception) { _viewModel.StatusText = "Übersicht konnte nach den Garmin-Einstellungen nicht aktualisiert werden."; }
+    }
+
+    private async void GarminImport_Click(object sender, RoutedEventArgs e)
+    {
+        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        _verwaltungOffen = true;
+        _viewModel.Laedt = true;
+        try { if (GarminImportAngefordert is { } handler) await handler(); }
+        catch (Exception) { _viewModel.StatusText = "Garmin-Downloadaufträge konnten nicht geöffnet werden."; }
+        finally { _viewModel.Laedt = false; _verwaltungOffen = false; }
+        if (_geschlossen || !IsVisible) return;
+        try { await _viewModel.AktualisierenAsync(CancellationToken.None); }
+        catch (Exception) { _viewModel.StatusText = "Übersicht konnte nach den Garmin-Downloadaufträgen nicht aktualisiert werden."; }
     }
 
     private void TourenDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)

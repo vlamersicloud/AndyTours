@@ -42,4 +42,12 @@ public sealed class ApiHauptfensterVertragTests
         var containers=new[]{"Grid","StackPanel","DockPanel","Menu","MenuItem"};
         Assert.DoesNotContain(d.Descendants().Where(x=>containers.Contains(x.Name.LocalName)),x=>x.Nodes().OfType<XText>().Any(t=>!string.IsNullOrWhiteSpace(t.Value)));
     }
+    [Fact] public void GarminImportMenuIstEindeutigUndVerweistAufHandler()
+    {
+        var d=LadeXaml();
+        var garmin=Assert.Single(d.Descendants(Presentation+"MenuItem"),x=>(string?)x.Attribute("Header")=="Garmin Connect");
+        Assert.Single(garmin.Elements(Presentation+"MenuItem"),x=>(string?)x.Attribute("Header")=="Downloadaufträge…");
+        Assert.Single(garmin.Elements(Presentation+"MenuItem"),x=>(string?)x.Attribute("Header")=="Garmin Connect – Einstellungen…");
+    }
+
 }

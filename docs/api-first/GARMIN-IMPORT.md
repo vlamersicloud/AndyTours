@@ -16,7 +16,7 @@ Der Garmin Personal-Key bleibt in der bestehenden Backend-Einstellung `Persoenli
 
 ## Noch offen
 
-- Kein WPF-Jobfenster/ViewModel oder Nutzer-Reviewpfad.
+- Das WPF-Jobstatusfenster und ViewModel sind angebunden; FIT-Review und Tourimport bleiben offen.
 - Keine Review-/Import-Commit-Verträge oder Equipmentauswahl.
 - Keine atomare Erstellung einer Trainingseinheit samt `GarminImportZuordnung.Speichern` innerhalb derselben SQLite-Transaktion; Kandidaten werden daher noch nicht als Touren importiert.
 - Kein vollständiger Reimport-/Crash-Recovery-Nachweis über Tourcommit und Garmin-Zuordnung hinweg.

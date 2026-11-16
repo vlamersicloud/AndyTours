@@ -30,6 +30,9 @@
                         <MenuItem Header="Tätigkeiten…" Click="TaetigkeitenVerwalten_Click"/>
                         <MenuItem Header="Saisonziele…" Click="SaisonzieleVerwalten_Click"/>
                         <MenuItem Header="Persönliche Daten…" Click="ProfilBearbeiten_Click"/>
+                    </MenuItem>
+                    <MenuItem Header="Garmin Connect" Padding="10,6">
+                        <MenuItem Header="Downloadaufträge…" Click="GarminImport_Click"/>
                         <MenuItem Header="Garmin Connect – Einstellungen…" Click="GarminEinstellungen_Click"/>
                     </MenuItem>
                 </Menu>
