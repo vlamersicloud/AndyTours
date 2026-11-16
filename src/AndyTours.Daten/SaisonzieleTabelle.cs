@@ -78,7 +78,14 @@ public static class SaisonzieleTabelle
     public static void SpeichereJahre(SqliteConnection verbindung, IReadOnlyCollection<int> jahre, IEnumerable<Saisonziel> ziele)
     {
         using SqliteTransaction transaktion = verbindung.BeginTransaction();
+        SpeichereJahre(verbindung, transaktion, jahre, ziele);
+        transaktion.Commit();
+    }
 
+    /// <summary>Ersetzt Ziele nur für die angegebenen Jahre innerhalb der aufrufenden Transaktion.</summary>
+    public static void SpeichereJahre(SqliteConnection verbindung, SqliteTransaction transaktion,
+        IReadOnlyCollection<int> jahre, IEnumerable<Saisonziel> ziele)
+    {
         using (SqliteCommand loeschen = verbindung.CreateCommand())
         {
             loeschen.Transaction = transaktion;
@@ -90,8 +97,6 @@ public static class SaisonzieleTabelle
                 loeschen.ExecuteNonQuery();
             }
         }
-
         Speichern(verbindung, transaktion, ziele.Where(z => jahre.Contains(z.AbJahr)));
-        transaktion.Commit();
     }
 }
