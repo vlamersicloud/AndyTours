@@ -37,6 +37,8 @@
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiFormularMapper.cs" Link="Presentation\ApiFormularMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourdetailMapper.cs" Link="Presentation\ApiTourdetailMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiPulsDarstellung.cs" Link="Presentation\ApiPulsDarstellung.cs" />
+    <Compile Include="..\..\src\AndyTours.App\Funktionen\ApiOverlayMapper.cs" Link="Presentation\ApiOverlayMapper.cs" />
+    <Compile Include="..\..\src\AndyTours.App\Funktionen\ApiOverlayKontext.cs" Link="Presentation\ApiOverlayKontext.cs" />
     <ProjectReference Include="..\..\src\AndyTours.Core\AndyTours.Core.csproj" />
     <ProjectReference Include="..\..\src\AndyTours.Client\AndyTours.Client.csproj" />
     <ProjectReference Include="..\..\src\AndyTours.Daten\AndyTours.Daten.csproj" />
