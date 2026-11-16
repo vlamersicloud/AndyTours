@@ -38,8 +38,13 @@ public sealed partial class PulsAuswertungDienst
             return MappaReferenz(saved.Stand, saved.Version);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw new StammdatenException(StammdatenFehlerart.Ungueltig,
+                "Garmin-Pulsreferenz konnte nicht aktualisiert werden.");
+        }
         catch (StammdatenException) { throw; }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or
+        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or
                                    System.Text.Json.JsonException or ArgumentException or
                                    InvalidOperationException or TaskCanceledException)
         {
