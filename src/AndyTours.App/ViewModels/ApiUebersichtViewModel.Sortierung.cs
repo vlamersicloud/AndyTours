@@ -37,6 +37,7 @@ public partial class ApiUebersichtViewModel
             ValidiereSortierantwort(page);
             var tablePlan = ApiTabellenfilterOptionenPlan.Erstellen(page.TabellenfilterOptionen,
                 tabellenfilterSnapshot?.EquipmentName, tabellenfilterSnapshot?.Trainingsbereich);
+            var tabellensummeText = ApiTourTabellensummeAnzeige.Erstellen(page);
 
             _tourenSortierung = schluessel;
             OnPropertyChanged(nameof(TourenSortierung));
@@ -45,6 +46,7 @@ public partial class ApiUebersichtViewModel
             Tabellenfilter.Uebernehmen(tablePlan);
             _start = 0;
             SetzeSeite(page);
+            TabellensummeText = tabellensummeText;
             StatusText = page.Gesamt == 0 ? "Keine Touren im gewählten Zeitraum und Filter." : string.Empty;
             return true;
         }

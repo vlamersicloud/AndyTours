@@ -44,6 +44,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
     [ObservableProperty] private bool _laedt;
     [ObservableProperty] private int _gesamtTouren;
     [ObservableProperty] private string _seitenText = "Keine Daten geladen";
+    [ObservableProperty] private string _tabellensummeText = "Keine Tabellensumme geladen.";
     [ObservableProperty] private TourAntwort? _ausgewaehlteTour;
     [ObservableProperty] private ApiFilterOption? _aktivitaetAuswahl;
     [ObservableProperty] private ApiFilterOption? _kategorieAuswahl;
@@ -100,6 +101,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
         GesamtTouren = 0;
         _start = 0;
         SeitenText = "Keine Daten geladen";
+        TabellensummeText = "Keine Tabellensumme geladen.";
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
         VorherigeSeiteCommand.NotifyCanExecuteChanged();
         StatusText = "Tabellenfilter geändert – bitte aktualisieren.";
@@ -126,6 +128,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
         GesamtTouren = 0;
         _start = 0;
         SeitenText = "Keine Daten geladen";
+        TabellensummeText = "Keine Tabellensumme geladen.";
         LeerePulsanzeige();
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
         VorherigeSeiteCommand.NotifyCanExecuteChanged();
@@ -174,6 +177,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
             ApiTourSeitenRegeln.Validieren(page, 0, 50);
             var tabellenfilterPlan = ApiTabellenfilterOptionenPlan.Erstellen(page.TabellenfilterOptionen,
                 tabellenfilterSnapshot?.EquipmentName, tabellenfilterSnapshot?.Trainingsbereich);
+            var tabellensummeText = ApiTourTabellensummeAnzeige.Erstellen(page);
 
             if (plan.AuswahlGeaendert) LeereAnzeige();
             UebernehmeFilterOptionen(plan);
@@ -193,6 +197,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
                 ? $"{result.ZukuenftigeAktivitaeten} zukünftige Aktivität(en) im Datenbestand."
                 : string.Empty;
             SetzeSeite(page);
+            TabellensummeText = tabellensummeText;
             ZeichneDiagramm();
             StatusText = plan.Hinweis ?? (page.Gesamt == 0
                 ? "Keine Touren im gewählten Zeitraum und Filter."
@@ -290,9 +295,11 @@ public partial class ApiUebersichtViewModel : ObservableObject
             ApiTourSeitenRegeln.Validieren(page, start, 50);
             var tablePlan = ApiTabellenfilterOptionenPlan.Erstellen(page.TabellenfilterOptionen,
                 tabellenfilterSnapshot?.EquipmentName, tabellenfilterSnapshot?.Trainingsbereich);
+            var tabellensummeText = ApiTourTabellensummeAnzeige.Erstellen(page);
             Tabellenfilter.Uebernehmen(tablePlan);
             _start = start;
             SetzeSeite(page);
+            TabellensummeText = tabellensummeText;
             StatusText = string.Empty;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)

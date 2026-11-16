@@ -56,6 +56,7 @@
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourTabellenfilterViewModel.cs" Link="Presentation\ApiTourTabellenfilterViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTabellenfilterOptionenPlan.cs" Link="Presentation\ApiTabellenfilterOptionenPlan.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourDauerText.cs" Link="Presentation\ApiTourDauerText.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourTabellensummeAnzeige.cs" Link="Presentation\ApiTourTabellensummeAnzeige.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourSeitenRegeln.cs" Link="Presentation\ApiTourSeitenRegeln.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiPulsDarstellung.cs" Link="Presentation\ApiPulsDarstellung.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiEquipmentEinsatzViewModel.cs" Link="Presentation\ApiEquipmentEinsatzViewModel.cs" />
