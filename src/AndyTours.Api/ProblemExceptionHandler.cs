@@ -1,6 +1,7 @@
 using AndyTours.Application.Touren;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Application.Import;
+using AndyTours.Application.Overlays;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
@@ -13,10 +14,10 @@ public sealed class ProblemExceptionHandler : IExceptionHandler
     /// <inheritdoc />
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        if (exception is FitUploadZuGrossException or BadHttpRequestException { StatusCode: 413 })
+        if (exception is FitUploadZuGrossException or OverlayGpxZuGrossException or BadHttpRequestException { StatusCode: 413 })
         {
             await Results.Problem(statusCode: 413, title: "Anfrage überschreitet die zulässige Größe.",
-                extensions: new Dictionary<string, object?> { ["traceId"] = httpContext.TraceIdentifier, ["code"] = "fit_upload.zu_gross" })
+                extensions: new Dictionary<string, object?> { ["traceId"] = httpContext.TraceIdentifier, ["code"] = exception is OverlayGpxZuGrossException ? "overlay_gpx.zu_gross" : "fit_upload.zu_gross" })
                 .ExecuteAsync(httpContext);
             return true;
         }

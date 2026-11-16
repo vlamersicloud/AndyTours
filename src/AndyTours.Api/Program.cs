@@ -70,6 +70,8 @@ builder.Services.AddSingleton<IWartungsverwaltung>(_ => new SqliteWartungsverwal
 builder.Services.AddSingleton(sp => new SqliteOverlaySpeicher(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IOverlayLeser>(sp => sp.GetRequiredService<SqliteOverlaySpeicher>());
 builder.Services.AddSingleton<IOverlayVerwaltung>(sp => sp.GetRequiredService<SqliteOverlaySpeicher>());
+builder.Services.AddSingleton<IOverlayGpxSpeicher>(sp => sp.GetRequiredService<SqliteOverlaySpeicher>());
+builder.Services.AddSingleton<IOverlayGpxImport>(sp => new AndyTours.Import.Overlays.OverlayGpxImportDienst(sp.GetRequiredService<IOverlayGpxSpeicher>()));
 
 var app = builder.Build();
 app.UseExceptionHandler();
@@ -128,6 +130,7 @@ app.MapPuls();
 app.MapOverlays();
 app.MapOverlayOrdner();
 app.MapOverlayAenderungen();
+app.MapOverlayGpx();
 app.MapCourseExport();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
