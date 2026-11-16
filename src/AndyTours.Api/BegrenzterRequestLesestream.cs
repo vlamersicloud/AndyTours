@@ -12,7 +12,7 @@ internal sealed class BegrenzterRequestLesestream : Stream
     public BegrenzterRequestLesestream(Stream inner, long maxBytes)
     {
         if (inner is null || !inner.CanRead) throw new ArgumentException("Lesbarer Eingabestream erforderlich.", nameof(inner));
-        if (maxBytes <= 0) throw new ArgumentOutOfRangeException(nameof(maxBytes));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxBytes);
         _inner = inner;
         _maxBytes = maxBytes;
     }
@@ -28,7 +28,7 @@ internal sealed class BegrenzterRequestLesestream : Stream
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
         Check(await _inner.ReadAsync(buffer, cancellationToken).ConfigureAwait(false));
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
-        Check(await _inner.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false));
+        Check(await _inner.ReadAsync(buffer.AsMemory(offset, count), cancellationToken).ConfigureAwait(false));
     private int Check(int count)
     {
         _read += count;
