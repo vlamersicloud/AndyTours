@@ -23,7 +23,7 @@ public static class ApiTourdetailAnzeige
             var stages = ApiTourdetailMapper.AlsEtappen(response);
             if (stages.Count == 1 && stages[0].Verlauf is null)
             {
-                MessageBox.Show(owner, TourdetailViewModel.KeineAufzeichnung, "Tourdetails",
+                MessageBox.Show(owner, "Für diese Tour ist keine lesbare Aufzeichnung vorhanden.", "Tourdetails",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -48,23 +48,28 @@ public static class ApiTourdetailAnzeige
             var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var detailToken = lifetime.Token;
             TourdetailFenster? detailWindow = null;
-            var vm = new TourdetailViewModel(stages, ApiGpxOrdner.Laden, ApiGpxOrdner.Speichern,
-                rows => detailWindow?.IsVisible == true
-                    ? ApiCourseUebertragung.Zeige(detailWindow, rows, export, detailToken)
-                    : Task.CompletedTask);
+            var lifetimeReleased = false;
+            void ReleaseLifetime()
+            {
+                if (lifetimeReleased) return;
+                lifetimeReleased = true;
+                lifetime.Cancel();
+                lifetime.Dispose();
+            }
+
             try
             {
+                var vm = new TourdetailViewModel(stages, ApiGpxOrdner.Laden, ApiGpxOrdner.Speichern,
+                    rows => detailWindow?.IsVisible == true
+                        ? ApiCourseUebertragung.Zeige(detailWindow, rows, export, detailToken)
+                        : Task.CompletedTask);
                 detailWindow = new TourdetailFenster(vm) { Owner = owner };
-                detailWindow.Closed += (_, _) => { lifetime.Cancel(); lifetime.Dispose(); };
+                detailWindow.Closed += (_, _) => ReleaseLifetime();
                 detailWindow.Show();
             }
             catch
             {
-                if (detailWindow is null || !detailWindow.IsVisible)
-                {
-                    lifetime.Cancel();
-                    lifetime.Dispose();
-                }
+                ReleaseLifetime();
                 throw;
             }
         }
