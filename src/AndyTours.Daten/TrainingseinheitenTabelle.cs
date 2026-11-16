@@ -307,12 +307,14 @@ public static class TrainingseinheitenTabelle
     /// <param name="ids">Die Nummern der zu löschenden Einheiten.</param>
     public static void Loeschen(SqliteConnection verbindung, IEnumerable<long> ids)
     {
+        var zuLoeschendeIds = ids.Distinct().ToArray();
         using SqliteTransaction transaktion = verbindung.BeginTransaction();
+        GarminImportZuordnung.EntferneFuerEinheiten(verbindung, transaktion, zuLoeschendeIds.ToHashSet());
         using SqliteCommand befehl = verbindung.CreateCommand();
         befehl.Transaction = transaktion;
         befehl.CommandText = "DELETE FROM Trainingseinheit WHERE Id = $id;";
         SqliteParameter id = befehl.Parameters.Add("$id", SqliteType.Integer);
-        foreach (long nummer in ids)
+        foreach (long nummer in zuLoeschendeIds)
         {
             id.Value = nummer;
             befehl.ExecuteNonQuery();

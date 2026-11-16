@@ -131,11 +131,14 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
         if (aktuell is null) throw new TourNichtGefundenException(id);
         if (TourenMapper.ToAntwort(aktuell).Version != version) throw new TourVersionskonfliktException();
 
+        ct.ThrowIfCancellationRequested();
+        GarminImportZuordnung.EntferneFuerEinheiten(verbindung, transaktion, new HashSet<long> { id });
         using var befehl = verbindung.CreateCommand();
         befehl.Transaction = transaktion;
         befehl.CommandText = "DELETE FROM Trainingseinheit WHERE Id=@id";
         befehl.Parameters.AddWithValue("@id", id);
         befehl.ExecuteNonQuery();
+        ct.ThrowIfCancellationRequested();
         transaktion.Commit();
         return Task.CompletedTask;
     }
