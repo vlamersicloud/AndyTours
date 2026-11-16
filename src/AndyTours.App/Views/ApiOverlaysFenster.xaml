@@ -15,12 +15,15 @@
     <Button Content="Auswahl verwerfen" Command="{Binding GpxAuswahlVerwerfenCommand}" Margin="2"/>
    </WrapPanel>
    <TextBlock Text="{Binding Hinweis}" TextWrapping="Wrap" Margin="2,8"/>
-   <ItemsControl ItemsSource="{Binding Importdateien}" MaxHeight="120">
-    <ItemsControl.ItemTemplate><DataTemplate><DockPanel Margin="2">
-     <TextBlock Text="{Binding Dateiname}" FontWeight="SemiBold"/>
-     <TextBlock Text="{Binding Status}" Margin="12,0,0,0" TextWrapping="Wrap"/>
-    </DockPanel></DataTemplate></ItemsControl.ItemTemplate>
-   </ItemsControl>
+   <DataGrid ItemsSource="{Binding Importdateien}" Height="120" IsReadOnly="True"
+             EnableRowVirtualization="True" EnableColumnVirtualization="True"
+             AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+             HeadersVisibility="Column" ScrollViewer.CanContentScroll="True">
+    <DataGrid.Columns>
+     <DataGridTextColumn Header="Datei" Binding="{Binding Dateiname, Mode=OneWay}" Width="2*"/>
+     <DataGridTextColumn Header="Status" Binding="{Binding Status, Mode=OneWay}" Width="3*"/>
+    </DataGrid.Columns>
+   </DataGrid>
   </StackPanel>
   <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
    <DockPanel><Button DockPanel.Dock="Right" Content="Übernehmen" Command="{Binding NameUebernehmenCommand}"/>
@@ -32,7 +35,7 @@
     <ComboBox ItemsSource="{Binding GemeinsameFarbauswahl}" SelectedItem="{Binding GewaehlteGemeinsameFarbe}" DisplayMemberPath="Name" Width="180" Margin="4,0" IsEnabled="{Binding KannAendern}"/>
    </WrapPanel>
   </StackPanel>
-  <TreeView ItemsSource="{Binding Wurzeln}" IsEnabled="{Binding IstBereit}" MouseDoubleClick="BaumDoppelklick" PreviewMouseRightButtonDown="BaumRechtsklick">
+  <TreeView ItemsSource="{Binding Wurzeln}" Height="260" VerticalAlignment="Stretch" IsEnabled="{Binding IstBereit}" MouseDoubleClick="BaumDoppelklick" PreviewMouseRightButtonDown="BaumRechtsklick">
    <TreeView.ItemContainerStyle><Style TargetType="TreeViewItem"><Setter Property="IsSelected" Value="{Binding IstAusgewaehlt, Mode=TwoWay}"/><Setter Property="IsExpanded" Value="{Binding IstAufgeklappt, Mode=TwoWay}"/></Style></TreeView.ItemContainerStyle>
    <TreeView.Resources><HierarchicalDataTemplate DataType="{x:Type local:ApiOverlayknoten}" ItemsSource="{Binding Kinder}"><StackPanel Orientation="Horizontal"><CheckBox IsThreeState="True" IsChecked="{Binding IstEingeschaltet, Mode=TwoWay}"/><TextBlock Text="{Binding Name}" Margin="5,0"/><TextBlock Text="{Binding Farbe}" Foreground="{Binding Farbe}" Margin="4,0"/></StackPanel></HierarchicalDataTemplate>
    </TreeView.Resources>
