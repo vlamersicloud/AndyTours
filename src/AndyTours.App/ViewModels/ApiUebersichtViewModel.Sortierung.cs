@@ -24,8 +24,9 @@ public partial class ApiUebersichtViewModel
         var bis = DateOnly.FromDateTime(BisDatum.Value);
         var aktivitaetId = AktivitaetAuswahl?.Id;
         var kategorieId = KategorieAuswahl?.Id;
+        var tabellenfilterSnapshot = Tabellenfilter.ErstelleAnfrage();
         var filter = new TourenListenfilter(von, bis, aktivitaetId, kategorieId)
-        { Sortierung = schluessel, Absteigend = absteigend };
+        { Sortierung = schluessel, Absteigend = absteigend, Tabellenfilter = tabellenfilterSnapshot };
         var generation = Interlocked.Increment(ref _generation);
         Laedt = true;
         try
@@ -34,11 +35,14 @@ public partial class ApiUebersichtViewModel
             ct.ThrowIfCancellationRequested();
             if (generation != Interlocked.Read(ref _generation)) return false;
             ValidiereSortierantwort(page);
+            var tablePlan = ApiTabellenfilterOptionenPlan.Erstellen(page.TabellenfilterOptionen,
+                tabellenfilterSnapshot?.EquipmentName, tabellenfilterSnapshot?.Trainingsbereich);
 
             _tourenSortierung = schluessel;
             OnPropertyChanged(nameof(TourenSortierung));
             _tourenAbsteigend = absteigend;
             OnPropertyChanged(nameof(TourenAbsteigend));
+            Tabellenfilter.Uebernehmen(tablePlan);
             _start = 0;
             SetzeSeite(page);
             StatusText = page.Gesamt == 0 ? "Keine Touren im gewählten Zeitraum und Filter." : string.Empty;

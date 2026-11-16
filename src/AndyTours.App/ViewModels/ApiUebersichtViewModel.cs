@@ -55,12 +55,14 @@ public partial class ApiUebersichtViewModel : ObservableObject
         _auswertung = auswertung;
         _touren = touren;
         _stammdatenLeser = stammdatenLeser;
+        Tabellenfilter.Geaendert += TabellenfilterGeaendert;
         Touren = [];
         AktivitaetsOptionen = [new ApiFilterOption(null, "Alle Aktivitäten")];
         KategorieOptionen = [new ApiFilterOption(null, "Alle Kategorien")];
     }
 
     public ObservableCollection<TourAntwort> Touren { get; }
+    public ApiTourTabellenfilterViewModel Tabellenfilter { get; } = new();
     public long Aktualisierungsstand => _aktualisierungsstand;
     public ObservableCollection<ApiFilterOption> AktivitaetsOptionen { get; }
     public ObservableCollection<ApiFilterOption> KategorieOptionen { get; }
@@ -88,6 +90,20 @@ public partial class ApiUebersichtViewModel : ObservableObject
     partial void OnRasterChanged(Auswertungsraster value) => FilterGeaendert();
     partial void OnAktivitaetAuswahlChanged(ApiFilterOption? value) { if (!_filterAenderungSuspendiert) FilterGeaendert(); }
     partial void OnKategorieAuswahlChanged(ApiFilterOption? value) { if (!_filterAenderungSuspendiert) FilterGeaendert(); }
+
+    private void TabellenfilterGeaendert()
+    {
+        Interlocked.Increment(ref _generation);
+        Touren.Clear();
+        AusgewaehlteTour = null;
+        SetzeTourenauswahl(0);
+        GesamtTouren = 0;
+        _start = 0;
+        SeitenText = "Keine Daten geladen";
+        NaechsteSeiteCommand.NotifyCanExecuteChanged();
+        VorherigeSeiteCommand.NotifyCanExecuteChanged();
+        StatusText = "Tabellenfilter geändert – bitte aktualisieren.";
+    }
 
     private void FilterGeaendert()
     {
@@ -123,6 +139,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
         var vonSnapshot = VonDatum;
         var bisSnapshot = BisDatum;
         var rasterSnapshot = Raster;
+        var tabellenfilterSnapshot = Tabellenfilter.ErstelleAnfrage();
         var vorherAktivitaetId = AktivitaetAuswahl?.Id;
         var vorherKategorieId = KategorieAuswahl?.Id;
         var initial = !_lookupsGeladen;
@@ -145,7 +162,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
             var kategorieId = plan.Kategorie.Id;
             var request = new AktivitaetsauswertungAnfrage(von, bis, rasterSnapshot, aktivitaetId, kategorieId);
             var filter = new TourenListenfilter(von, bis, aktivitaetId, kategorieId)
-            { Sortierung = TourenSortierung, Absteigend = TourenAbsteigend };
+            { Sortierung = TourenSortierung, Absteigend = TourenAbsteigend, Tabellenfilter = tabellenfilterSnapshot };
             var auswertungTask = _auswertung.Laden(request, ct);
             var tourenTask = _touren.ListeGefiltert(0, 50, filter, ct);
             await Task.WhenAll(auswertungTask, tourenTask);
@@ -155,9 +172,12 @@ public partial class ApiUebersichtViewModel : ObservableObject
             var result = await auswertungTask;
             var page = await tourenTask;
             ApiTourSeitenRegeln.Validieren(page, 0, 50);
+            var tabellenfilterPlan = ApiTabellenfilterOptionenPlan.Erstellen(page.TabellenfilterOptionen,
+                tabellenfilterSnapshot?.EquipmentName, tabellenfilterSnapshot?.Trainingsbereich);
 
             if (plan.AuswahlGeaendert) LeereAnzeige();
             UebernehmeFilterOptionen(plan);
+            Tabellenfilter.Uebernehmen(tabellenfilterPlan);
             _start = 0;
 
             _perioden.Clear();
@@ -256,9 +276,10 @@ public partial class ApiUebersichtViewModel : ObservableObject
     private async Task LadeSeiteAsync(int start, CancellationToken ct)
     {
         if (Laedt || VonDatum is null || BisDatum is null || VonDatum > BisDatum) return;
+        var tabellenfilterSnapshot = Tabellenfilter.ErstelleAnfrage();
         var filter = new TourenListenfilter(DateOnly.FromDateTime(VonDatum.Value),
             DateOnly.FromDateTime(BisDatum.Value), AktivitaetAuswahl?.Id, KategorieAuswahl?.Id)
-        { Sortierung = TourenSortierung, Absteigend = TourenAbsteigend };
+        { Sortierung = TourenSortierung, Absteigend = TourenAbsteigend, Tabellenfilter = tabellenfilterSnapshot };
         var generation = Interlocked.Read(ref _generation);
         Laedt = true;
         try
@@ -267,6 +288,9 @@ public partial class ApiUebersichtViewModel : ObservableObject
             ct.ThrowIfCancellationRequested();
             if (generation != Interlocked.Read(ref _generation)) return;
             ApiTourSeitenRegeln.Validieren(page, start, 50);
+            var tablePlan = ApiTabellenfilterOptionenPlan.Erstellen(page.TabellenfilterOptionen,
+                tabellenfilterSnapshot?.EquipmentName, tabellenfilterSnapshot?.Trainingsbereich);
+            Tabellenfilter.Uebernehmen(tablePlan);
             _start = start;
             SetzeSeite(page);
             StatusText = string.Empty;
