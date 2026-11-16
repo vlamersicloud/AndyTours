@@ -18,8 +18,6 @@ public sealed partial class SqliteImportUploadSpeicher : IImportUploadSpeicher
         CancellationToken cancellationToken)
     {
         var requestHash = ValidateUebernahmeAnfrage(anfrage);
-        if (vorbereitet is null || vorbereitet.Any(x => x is null))
-            throw Invalid("FIT-Vorbereitung ungültig.");
         cancellationToken.ThrowIfCancellationRequested();
         using var db = OeffneDatenbank.Ausfuehren(_datenbankpfad);
         using var tx = db.BeginTransaction(deferred: false);
@@ -38,21 +36,27 @@ public sealed partial class SqliteImportUploadSpeicher : IImportUploadSpeicher
         if (!CryptographicOperations.FixedTimeEquals(Convert.FromHexString(currentSetVersion), Convert.FromHexString(anfrage.Version)))
             throw Conflict("FIT-Uploadauswahl wurde zwischenzeitlich geändert.");
 
-        var preparedById = vorbereitet.ToDictionary(x => x.UploadId);
-        var selected = anfrage.Auswahl.Where(x => x.Uebernehmen).ToArray();
-        if (preparedById.Count != selected.Length || selected.Any(x => !preparedById.ContainsKey(x.UploadId)) ||
-            vorbereitet.Any(x => !selected.Any(s => s.UploadId == x.UploadId)))
-            throw Invalid("FIT-Vorbereitung ungültig.");
-        foreach (var choice in anfrage.Auswahl)
-            if (!CryptographicOperations.FixedTimeEquals(Convert.FromHexString(uploads.Single(x => x.UploadId == choice.UploadId).Version),
-                    Convert.FromHexString(choice.DateiVersion)))
-                throw Conflict("FIT-Datei wurde zwischenzeitlich geändert.");
-
         var bestand = DatenbestandTabellen.Laden(db);
+        var liveTours = bestand.Trainingseinheiten;
+        var requiredPreparationIds = anfrage.Auswahl
+            .Where(choice => choice.Uebernehmen)
+            .Where(choice =>
+            {
+                var upload = uploads.Single(x => x.UploadId == choice.UploadId);
+                return upload.Status != FitUploadStatus.Importiert || upload.TourId is not long tourId || !liveTours.Any(t => t.Id == tourId);
+            })
+            .Select(choice => choice.UploadId)
+            .ToHashSet();
+        if (vorbereitet is null || vorbereitet.Any(x => x is null) ||
+            vorbereitet.Select(x => x.UploadId).Distinct().Count() != vorbereitet.Count ||
+            vorbereitet.Any(x => !requiredPreparationIds.Contains(x.UploadId)) ||
+            requiredPreparationIds.Any(id => !vorbereitet.Any(x => x.UploadId == id)))
+            throw Invalid("FIT-Vorbereitung ungültig.");
+        // The Import facade verifies each content+timezone interpretation token against authoritative server bytes.
+        var preparedById = vorbereitet.ToDictionary(x => x.UploadId);
         var mainActivity = bestand.Aktivitaeten.FirstOrDefault(x => x.IstHaupt);
         var results = new List<FitUploadUebernahmeZeile>(anfrage.Auswahl.Count);
         var changed = new Dictionary<Guid, (FitUploadStatus Status, long? TourId)>();
-        var liveTours = bestand.Trainingseinheiten;
 
         foreach (var choice in anfrage.Auswahl)
         {
@@ -106,7 +110,7 @@ public sealed partial class SqliteImportUploadSpeicher : IImportUploadSpeicher
             results.Add(new FitUploadUebernahmeZeile(choice.UploadId, saved.Id, true, null));
         }
 
-        var now = DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+        var now = Format(_zeit.GetUtcNow());
         foreach (var (id, update) in changed)
         {
             cancellationToken.ThrowIfCancellationRequested();
