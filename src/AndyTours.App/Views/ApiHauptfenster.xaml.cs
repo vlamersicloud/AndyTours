@@ -70,6 +70,8 @@ public partial class ApiHauptfenster : Window, IDisposable
         {
             await _viewModel.AktualisierenAsync(_lifetime.Token);
             if (_geschlossen || !IsVisible || _lifetime.IsCancellationRequested) return;
+            await _viewModel.PulsreferenzLadenCommand.ExecuteAsync(null);
+            if (_geschlossen || !IsVisible || _lifetime.IsCancellationRequested) return;
             if (FaelligeAlarmeLadenAngefordert is not { } handler) return;
             _viewModel.Laedt = true;
             try
