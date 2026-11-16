@@ -102,7 +102,7 @@ public sealed partial class SqliteOverlaySpeicher
         try
         {
             var response = JsonSerializer.Deserialize<OverlayAnlegenAntwort>(reader.GetString(2));
-            if (response?.Id <= 0 || response.Bestand is null ||
+            if (response is null || response.Id <= 0 || response.Bestand is null ||
                 response.Bestand.Version is not { Length: 64 } || !response.Bestand.Version.All(Uri.IsHexDigit) ||
                 response.Bestand.Ordner is null || response.Bestand.Overlays is null)
                 throw new JsonException();
