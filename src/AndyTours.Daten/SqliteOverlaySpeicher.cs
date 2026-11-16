@@ -16,6 +16,8 @@ public sealed partial class SqliteOverlaySpeicher
     public SqliteOverlaySpeicher(string datenbankpfad)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(datenbankpfad);
+        if (!Path.IsPathFullyQualified(datenbankpfad))
+            throw new ArgumentException("Ein absoluter Datenbankpfad ist erforderlich.", nameof(datenbankpfad));
         _datenbankpfad = Path.GetFullPath(datenbankpfad);
     }
 
@@ -74,7 +76,8 @@ public sealed partial class SqliteOverlaySpeicher
         using (var command = db.CreateCommand())
         {
             command.Transaction = tx;
-            command.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = 'OverlayFarbe' LIMIT 1;";
+            command.CommandText = "SELECT Wert FROM Einstellung WHERE Schluessel = $key LIMIT 1;";
+            command.Parameters.AddWithValue("$key", Einstellungsschluessel.OverlayFarbe);
             commonRaw = command.ExecuteScalar() as string;
         }
         var commonColor = Farbe(commonRaw) ?? OverlayFarbe.Violett;
@@ -107,21 +110,10 @@ public sealed partial class SqliteOverlaySpeicher
     internal static string HashJson<T>(T value) =>
         Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value)));
 
-    private static OverlayFarbe? Farbe(string? raw) =>
-        raw switch
-        {
-            "Violett" => OverlayFarbe.Violett,
-            "Blau" => OverlayFarbe.Blau,
-            "Hellblau" => OverlayFarbe.Hellblau,
-            "Tuerkis" => OverlayFarbe.Tuerkis,
-            "Gruen" => OverlayFarbe.Gruen,
-            "Gelb" => OverlayFarbe.Gelb,
-            "Orange" => OverlayFarbe.Orange,
-            "Rot" => OverlayFarbe.Rot,
-            "Pink" => OverlayFarbe.Pink,
-            "Braun" => OverlayFarbe.Braun,
-            "Grau" => OverlayFarbe.Grau,
-            "Schwarz" => OverlayFarbe.Schwarz,
-            _ => null
-        };
+    private static OverlayFarbe? Farbe(string? raw)
+    {
+        if (!Enum.TryParse(raw, out AndyTours.Core.Modell.Overlayfarbe coreColor) || !Enum.IsDefined(coreColor))
+            return null;
+        return (OverlayFarbe)(int)coreColor;
+    }
 }
