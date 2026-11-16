@@ -51,8 +51,11 @@ public static class RoutingKonfigurationRegeln
 
     public static bool IstAdresseSichtbar(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value) ||
-            !Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+        if (string.IsNullOrWhiteSpace(value) || value.Length > 4096 || value.Any(char.IsControl))
+            return false;
+        try { StrictUtf8.GetByteCount(value); }
+        catch (EncoderFallbackException) { return false; }
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
             return false;
         return string.IsNullOrEmpty(uri.UserInfo) && string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.Fragment);
