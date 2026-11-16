@@ -28,6 +28,8 @@ Der normale Start ohne `--api` bleibt Legacy. Der API-Modus bietet Verbindung lo
 
 Garmin Connect ist im API-Modus über dauerhafte Downloadjobs, Paketresume, ZIP-Cache, serverseitige FIT-Prüfung, Equipmentauswahl und transaktionale Tour-/Garmin-Zuordnung einschließlich Review-UI angebunden. Der Schlüssel bleibt serverseitig in SQLite/Sicherungen und wird nicht an den Client zurückgegeben; kein Env-Fallback. USB/MTP und FIT-Upload sowie Puls-/Planungsintegration bleiben offen.
 
+Die optionale Konfiguration `Backend__FitZeitzone=<OS_ZONE_ID>` bestimmt die Fallback-Zeitzone; ohne Angabe gilt die Systemzeitzone des Backends. Die lokale WPF-Anwendung übermittelt ihre lokale Zone ausdrücklich. Eine ungültige konfigurierte Zone verhindert den Backendstart. Explizite lokale FIT-Zeitstempel haben Vorrang. Die Review zeigt die Fallback-Zone vor der Bestätigung; der Hash aus Dateiinhalt und Zeitzonenregeln macht eine alte Preview bei geänderter Interpretation ungültig. Bestehende Tourdaten werden nicht umgerechnet oder umgeschrieben.
+
 Über das Stammdatenmenü sind Aktivitätenverwaltung (sieben Abläufe) und Kategorienverwaltung (sechs Abläufe) in der UI angebunden. Bestleistungs- und Jahreszielprojektionen sind serverseitig verbunden; Rekord-Tournavigation und Zielverlaufsgrafik bleiben offen. Saisonzieleditor ist angebunden. Equipmentverwaltung ist mit Backend, API, typisiertem Client und UI für Anlegen, Bearbeiten, Löschen, Ausmustern, Standardkennzeichen und Entfernen gemerkter Gerätekennungen angebunden. Einsatz/Haltbarkeit und weitere Inventarabläufe, einschließlich Sortierung, sind noch offen.
 
 ## Funktionsinventar / Paritätsprüfung
@@ -65,6 +67,7 @@ Der produktive WPF-Client darf weder `AndyTours.Daten` noch `AndyTours.Import` b
 
 ```text
 Backend__Datenordner=<ABSOLUTER_SERVERPFAD>
+Backend__FitZeitzone=<OS_ZONE_ID; optional, Standard: Backend-Systemzeitzone>
 Backend__Zugriffstoken=<ZUFÄLLIGES_GEHEIMNIS_MIT_MINDESTENS_32_BYTES>
 ASPNETCORE_URLS=<OPTIONALE_BINDUNG; Standard: http://localhost:5000>
 ```
@@ -84,7 +87,7 @@ Der Installer-Publish ist self-contained `win-x64`; Source-Checkouts benötigen 
 
 ## Verifikation und verbleibende Lücken
 
-- Testserver-Builds und Windows-`win-x64`-Cross-Publish waren erfolgreich.
+- Testserver-Builds und Windows-`win-x64`-Cross-Publish waren für einen früheren Stand vor den aktuellen Garmin-Änderungen erfolgreich; das belegt weder deren aktuellen Cross-Publish noch Laufzeitverhalten. Für die aktuellen Garmin-Änderungen liegt Compile-Evidenz vor.
 - Tests wurden kompiliert, nicht ausgeführt. Neue XAML-StaticResource-Verweise müssen eine definierte, erreichbare lokale Ressource besitzen; der Build allein validiert keine Laufzeitauflösung. Dafür sind strukturelle XAML-Tests bereitzustellen. Windows-Rendering und visuelle Bedienung wurden nicht geprüft.
 - Installer/ISCC sowie Windows-Start, Dialogverbindung und UI-Rendering wurden nicht geprüft.
 - Saisonziele- und Rekordprojektionstests wurden ergänzt/vorbereitet und kompiliert, aber nicht ausgeführt; dies ist kein Testergebnis.

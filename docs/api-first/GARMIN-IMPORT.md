@@ -4,6 +4,8 @@
 
 Der Garmin Personal-Key bleibt in der bestehenden Backend-Einstellung `Persoenlich.Garmin.PersonalApiKey`; kein Environment-Fallback. Schlüssel, Tokens, Garmin-Rohantworten, Dateipfade und Exceptiontexte gehören weder in Jobzeilen/API-Antworten noch in Logs oder Fehlertexte.
 
+Die optionale Konfiguration `Backend__FitZeitzone=<OS_ZONE_ID>` verwendet ohne Angabe die Systemzeitzone des Backends; die lokale WPF-Anwendung übermittelt ihre lokale Zone ausdrücklich. Eine ungültige Zone verhindert den Backendstart. Explizite lokale FIT-Zeitstempel haben Vorrang. Die Review zeigt die Fallback-Zone vor der Bestätigung; der Inhalts-/Zeitzonenregel-Hash macht veraltete Preview-Interpretationen ungültig. Bestehende Tourdaten werden nicht umgerechnet oder umgeschrieben.
+
 ## Implementiert
 
 - Verträge in `src/AndyTours.Contracts/V1/GarminImportVertrag.cs` und Jobport `src/AndyTours.Application/Garmin/IGarminImportJobs.cs`: idempotenter Start, Status, Kandidatenseiten, Fortsetzen und Abbrechen.
