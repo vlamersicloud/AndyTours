@@ -68,7 +68,8 @@ public sealed class OverlayGpxImportDienstTests
             cmd.Parameters.AddWithValue("$id", created.Id);
             cmd.ExecuteNonQuery();
         }
-        var afterDelete = await importer.Importieren(request, new MemoryStream(body), CancellationToken.None);
+        using var afterDeleteStream = new MemoryStream(body);
+        var afterDelete = await importer.Importieren(request, afterDeleteStream, CancellationToken.None);
         Assert.Equal(created.Id, afterDelete.Id);
         Assert.Empty((await store.Laden(CancellationToken.None)).Overlays);
         Assert.NotNull(await store.Quittung(request, hash, CancellationToken.None));
@@ -123,10 +124,10 @@ public sealed class OverlayGpxImportDienstTests
         var metadata = Assert.Single(result.Bestand.Overlays);
         var content = await store.Inhalt(result.Id, metadata.Version, CancellationToken.None);
         Assert.Equal(2, content.Abschnitte.Count);
-        Assert.Equal(new OverlayPosition(1, 2), Assert.Single(content.Abschnitte[0]));
-        Assert.Collection(content.Abschnitte[1],
-            point => Assert.Equal(new OverlayPosition(3, 4), point),
-            point => Assert.Equal(new OverlayPosition(5, 6), point));
+        Assert.Collection(content.Abschnitte[0],
+            point => Assert.Equal(new OverlayPosition(1, 2), point),
+            point => Assert.Equal(new OverlayPosition(3, 4), point));
+        Assert.Equal(new OverlayPosition(5, 6), Assert.Single(content.Abschnitte[1]));
     }
 
     private sealed class CountingStream(byte[] data) : MemoryStream(data)
