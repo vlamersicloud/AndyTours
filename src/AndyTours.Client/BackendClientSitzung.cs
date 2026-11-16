@@ -47,6 +47,7 @@ public sealed class BackendClientSitzung : IDisposable
         Equipments = new EquipmentsVerwaltungHttpClient(_httpClient);
         Profil = new ProfilVerwaltungHttpClient(_httpClient);
         Textlisten = new TextlistenVerwaltungHttpClient(_httpClient);
+        Saisonziele = new SaisonzieleVerwaltungHttpClient(_httpClient);
         Wartung = new WartungsverwaltungHttpClient(_httpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
@@ -67,6 +68,8 @@ public sealed class BackendClientSitzung : IDisposable
     public IEquipmentsVerwaltung Equipments { get; }
     /// <summary>Versionierte Verwaltung persönlicher Profildaten.</summary>
     public IProfilVerwaltung Profil { get; }
+    /// <summary>Versionierte Verwaltung saisonaler Ziele.</summary>
+    public ISaisonzieleVerwaltung Saisonziele { get; }
     /// <summary>Versionierte Verwaltung der unterstützten Textlisten.</summary>
     public ITextlistenVerwaltung Textlisten { get; }
     /// <summary>Versionierte Verwaltung von Wartungen und Alarmen.</summary>
