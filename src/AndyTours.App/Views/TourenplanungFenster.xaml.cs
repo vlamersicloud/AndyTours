@@ -386,6 +386,12 @@ public partial class TourenplanungFenster : Window
     /// </remarks>
     private void FensterSchliesst(object? sender, CancelEventArgs e)
     {
+        if (_viewModel.ApiDateiBeschaeftigt)
+        {
+            e.Cancel = true;
+            MessageBox.Show(this, "Der API-Dateivorgang läuft noch. Bitte kurz warten.", "Tour planen", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
         if (!_schliessenBestaetigt && !_viewModel.DarfVerwerfen())
         {
             e.Cancel = true;

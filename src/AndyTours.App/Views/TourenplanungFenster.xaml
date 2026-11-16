@@ -38,7 +38,7 @@
             </StackPanel>
             <!-- Die Fluent-Schaltflächen sind breiter als die klassischen: Reicht die Fensterbreite nicht, brechen
                  die Schaltflächen in eine zweite Zeile um, statt abgeschnitten zu werden -->
-            <WrapPanel>
+            <WrapPanel IsEnabled="{Binding KannApiBedienen}">
                 <Label Content="_Fahrprofil:" Target="{Binding ElementName=ProfilAuswahl}" VerticalAlignment="Center" />
                 <ComboBox x:Name="ProfilAuswahl" Width="290" VerticalContentAlignment="Center"
                           ItemsSource="{Binding Fahrprofile}" DisplayMemberPath="Value" SelectedValuePath="Key"
@@ -57,11 +57,12 @@
             <TextBlock Foreground="Gray" TextWrapping="Wrap"
                        Text="Klick in die Karte: Wegpunkt anhängen · Wegpunkt ziehen: verschieben · Linie ziehen: Zwischenpunkt einfügen · Rechtsklick auf einen Wegpunkt: entfernen · Karte ziehen: verschieben" />
             <TextBlock Text="{Binding Hinweis}" Foreground="Firebrick" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ApiProfilHinweis}" Foreground="Firebrick" TextWrapping="Wrap" />
         </StackPanel>
 
         <!-- 3. Karte -->
         <Grid>
-            <mapsui:MapControl x:Name="Karte" />
+            <mapsui:MapControl x:Name="Karte" IsEnabled="{Binding KannApiBedienen}" />
             <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="#C8FFFFFF" Padding="4,1" IsHitTestVisible="False">
                 <TextBlock Text="© OpenStreetMap-Mitwirkende · Routing: BRouter bzw. openrouteservice" FontSize="11" />
             </Border>
