@@ -93,9 +93,18 @@
                           SelectedItem="{Binding AusgewaehlteAktivitaet}" />
                 <Separator />
                 <Label Content="Aufzeichnungsgerät:" VerticalAlignment="Center" />
-                <ComboBox Width="170" ItemsSource="{Binding Aufzeichnungsgeraete}"
-                          SelectedItem="{Binding AusgewaehltesAufzeichnungsgeraet}"
-                          ToolTip="Filtert nur die Tourentabelle und deren Summenzeile nach dem Gerätemodell, nicht nach Sensoren oder Fahrrad." />
+                <Menu ToolTip="Mehrere Geräte anhaken. Ohne Auswahl werden alle Geräte angezeigt.">
+                    <MenuItem Header="Geräte auswählen" ItemsSource="{Binding Aufzeichnungsgeraete}">
+                        <MenuItem.ItemContainerStyle>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="Header" Value="{Binding Name}" />
+                                <Setter Property="IsCheckable" Value="True" />
+                                <Setter Property="IsChecked" Value="{Binding IstAusgewaehlt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <Setter Property="StaysOpenOnClick" Value="True" />
+                            </Style>
+                        </MenuItem.ItemContainerStyle>
+                    </MenuItem>
+                </Menu>
                 <Separator />
                 <!-- Summen der Auswahl bzw. Hinweis „Noch keine Touren vorhanden.“; ändern sich sofort mit der Auswahl -->
                 <TextBlock Text="{Binding Summentext}"

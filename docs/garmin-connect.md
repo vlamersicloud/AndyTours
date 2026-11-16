@@ -236,7 +236,10 @@ nicht gelöscht. Das Datum gilt nur für den Connect-Import.
 Die Hauptwerkzeugleiste bietet „Aufzeichnungsgerät“. Der Filter wirkt nur auf
 Tourentabelle, Tabellenbestwerte und Tabellensummenzeile, zusätzlich zu den übrigen
 Filtern. Die Jahres-/Aktivitätssumme und die Auswertung „Aktuell“ bleiben unverändert.
-„Alle Geräte“ hebt ihn auf. Importiert werden weiterhin Touren aller Geräte.
+Das Menü „Geräte auswählen“ erlaubt mehrere Häkchen gleichzeitig (ODER-Verknüpfung).
+Ohne Häkchen werden alle Geräte angezeigt. Die Auswahl bleibt beim Aktualisieren
+der Tourenliste erhalten und wird beim Datenordnerwechsel zurückgesetzt.
+Importiert werden weiterhin Touren aller Geräte.
 Die Modellbezeichnung stammt aus der FIT-Datei, nicht aus einer ungesicherten
 Garmin-API-Zuordnung. Gleichartige Geräte desselben Modells werden zusammengefasst;
 Sensoren und Fahrrad-Equipment sind keine Aufzeichnungsgeräte.

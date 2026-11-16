@@ -311,7 +311,11 @@ public partial class HauptfensterViewModel : ObservableObject
 
         _bestand = geladen;
         _aufzeichnungsgeraete.Clear();
-        _ausgewaehltesAufzeichnungsgeraet = AlleAufzeichnungsgeraete;
+        foreach (var geraet in Aufzeichnungsgeraete)
+        {
+            geraet.PropertyChanged -= GeraeteauswahlGeaendert;
+        }
+        Aufzeichnungsgeraete.Clear();
         _trainingsbereiche = trainingsbereiche;
         _taetigkeiten = taetigkeiten;
         Datenordner = ordner;
@@ -383,9 +387,11 @@ public partial class HauptfensterViewModel : ObservableObject
 
         // Filter der Filterleiste anwenden
         List<Trainingseinheit> angezeigt = FiltereEinheiten.Ausfuehren(auswahl, Filter.ErstelleFilter(), _bestand);
-        if (AusgewaehltesAufzeichnungsgeraet != AlleAufzeichnungsgeraete)
+        var ausgewaehlteGeraete = Aufzeichnungsgeraete.Where(g => g.IstAusgewaehlt)
+            .Select(g => g.Name).ToHashSet();
+        if (ausgewaehlteGeraete.Count > 0)
         {
-            angezeigt = angezeigt.Where(e => Aufzeichnungsgeraet(e.Id) == AusgewaehltesAufzeichnungsgeraet).ToList();
+            angezeigt = angezeigt.Where(e => ausgewaehlteGeraete.Contains(Aufzeichnungsgeraet(e.Id))).ToList();
         }
 
         // Tabelle neu füllen (dieselbe Sammlung, damit die gewählte Sortierung erhalten bleibt);

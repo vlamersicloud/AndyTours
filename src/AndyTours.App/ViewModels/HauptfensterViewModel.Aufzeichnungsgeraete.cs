@@ -11,22 +11,16 @@ namespace AndyTours.App.ViewModels;
 /// <summary>Filtert die Tourenansicht nach dem im FIT gespeicherten Aufzeichnungsgerät (Modell).</summary>
 public partial class HauptfensterViewModel
 {
-    private const string AlleAufzeichnungsgeraete = "Alle Geräte";
     private const string UnbekanntesAufzeichnungsgeraet = "Unbekannt";
     private readonly Dictionary<long, string> _aufzeichnungsgeraete = new();
     private bool _geraeteWerdenGefuellt;
 
-    /// <summary>Modelle des gesamten Datenbestands einschließlich Touren ohne Geräteinformation.</summary>
-    public ObservableCollection<string> Aufzeichnungsgeraete { get; } = [AlleAufzeichnungsgeraete];
+    /// <summary>Mehrfachauswahl; ohne Häkchen werden alle Geräte angezeigt.</summary>
+    public ObservableCollection<AufzeichnungsgeraetAuswahl> Aufzeichnungsgeraete { get; } = [];
 
-    /// <summary>Nur ein Anzeigefilter: gespeicherte Touren und Downloads werden nicht verändert.</summary>
-    [ObservableProperty]
-    private string _ausgewaehltesAufzeichnungsgeraet = AlleAufzeichnungsgeraete;
-
-    /// <summary>Berechnet Tabelle und Tabellensummen mit dem neuen Gerätefilter.</summary>
-    partial void OnAusgewaehltesAufzeichnungsgeraetChanged(string value)
+    private void GeraeteauswahlGeaendert(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (!_geraeteWerdenGefuellt)
+        if (!_geraeteWerdenGefuellt && e.PropertyName == nameof(AufzeichnungsgeraetAuswahl.IstAusgewaehlt))
         {
             AktualisiereSummen(listenNeu: false);
         }
@@ -81,23 +75,37 @@ public partial class HauptfensterViewModel
             _aufzeichnungsgeraete[einheit.Id] = name;
         }
 
-        string gewaehlt = AusgewaehltesAufzeichnungsgeraet;
+        HashSet<string> gewaehlt = Aufzeichnungsgeraete.Where(g => g.IstAusgewaehlt)
+            .Select(g => g.Name).ToHashSet();
         _geraeteWerdenGefuellt = true;
         try
         {
+            foreach (var geraet in Aufzeichnungsgeraete)
+            {
+                geraet.PropertyChanged -= GeraeteauswahlGeaendert;
+            }
             Aufzeichnungsgeraete.Clear();
-            Aufzeichnungsgeraete.Add(AlleAufzeichnungsgeraete);
             foreach (string name in _bestand.Trainingseinheiten.Select(e => Aufzeichnungsgeraet(e.Id))
                          .Distinct().OrderBy(n => n, StringComparer.CurrentCultureIgnoreCase))
             {
-                Aufzeichnungsgeraete.Add(name);
+                var geraet = new AufzeichnungsgeraetAuswahl(name) { IstAusgewaehlt = gewaehlt.Contains(name) };
+                geraet.PropertyChanged += GeraeteauswahlGeaendert;
+                Aufzeichnungsgeraete.Add(geraet);
             }
-            AusgewaehltesAufzeichnungsgeraet = Aufzeichnungsgeraete.Contains(gewaehlt) ? gewaehlt : AlleAufzeichnungsgeraete;
-            OnPropertyChanged(nameof(AusgewaehltesAufzeichnungsgeraet));
         }
         finally
         {
             _geraeteWerdenGefuellt = false;
         }
     }
+}
+
+
+/// <summary>Ein unabhängig auswählbares Gerätemodell im Anzeigefilter.</summary>
+public partial class AufzeichnungsgeraetAuswahl(string name) : ObservableObject
+{
+    public string Name { get; } = name;
+
+    [ObservableProperty]
+    private bool _istAusgewaehlt;
 }
