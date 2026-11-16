@@ -97,7 +97,8 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
             if (!Idle() || !IsCurrent(generation, linked.Token)) return;
             Laedt = true;
             var prior = Auftrag;
-            var loadedJob = prior is null
+            var reconcileStart = _pendingStartId.HasValue;
+            var loadedJob = prior is null || reconcileStart
                 ? await _jobs.AktuellenLaden(linked.Token)
                 : await _jobs.Laden(prior.JobId, linked.Token);
             if (!IsCurrent(generation, linked.Token)) return;
@@ -108,7 +109,8 @@ public partial class ApiGarminImportViewModel : ObservableObject, IDisposable
                 return;
             }
 
-            var pageStart = prior?.JobId == loadedJob.JobId ? Start : 0;
+            if (reconcileStart) _pendingStartId = null;
+            var pageStart = prior?.JobId == loadedJob.JobId && !reconcileStart ? Start : 0;
             var firstPage = await _jobs.Kandidaten(loadedJob.JobId, pageStart, PageSize, linked.Token);
             if (!IsCurrent(generation, linked.Token)) return;
             pageStart = firstPage.Start;
