@@ -54,8 +54,9 @@ public partial class HauptfensterViewModel : ObservableObject
     {
         Jahre = new ObservableCollection<string> { AlleJahre };
         Aktivitaeten = new ObservableCollection<string> { AlleAktivitaeten };
-        AusgewaehltesJahr = AlleJahre;
-        AusgewaehlteAktivitaet = AlleAktivitaeten;
+        // Noch keine Change-Callbacks: Der Datenordner wird erst in LadeDatenbank gesetzt.
+        _ausgewaehltesJahr = AlleJahre;
+        _ausgewaehlteAktivitaet = AlleAktivitaeten;
 
         // Jede Änderung der Filterleiste baut nur die Tabelle neu auf; die Auswahllisten bleiben, wie sie sind
         Filter.Geaendert += (_, _) => AktualisiereSummen(listenNeu: false);
