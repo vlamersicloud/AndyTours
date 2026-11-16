@@ -13,33 +13,26 @@ namespace AndyTours.Client;
 public sealed class BackendClientSitzung : IDisposable
 {
     private readonly HttpClient _httpClient;
+    private readonly HttpClient _importHttpClient;
     private readonly SocketsHttpHandler _handler;
 
-    /// <summary>Erstellt eine Sitzung mit Redirects deaktiviert.</summary>
     public BackendClientSitzung(Uri basisAdresse, string zugriffstoken)
     {
         ArgumentNullException.ThrowIfNull(basisAdresse);
         if (!basisAdresse.IsAbsoluteUri ||
             (!string.Equals(basisAdresse.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
              !(string.Equals(basisAdresse.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) && basisAdresse.IsLoopback)) ||
-            !string.IsNullOrEmpty(basisAdresse.UserInfo) ||
-            !string.IsNullOrEmpty(basisAdresse.Query) ||
-            !string.IsNullOrEmpty(basisAdresse.Fragment))
+            !string.IsNullOrEmpty(basisAdresse.UserInfo) || !string.IsNullOrEmpty(basisAdresse.Query) || !string.IsNullOrEmpty(basisAdresse.Fragment))
             throw new ArgumentException("Backendadresse muss HTTPS oder loopback-HTTP ohne Zusatzdaten sein.", nameof(basisAdresse));
-        if (string.IsNullOrWhiteSpace(zugriffstoken) || Encoding.UTF8.GetByteCount(zugriffstoken) < 32 ||
-            zugriffstoken.Contains('\r') || zugriffstoken.Contains('\n'))
+        if (string.IsNullOrWhiteSpace(zugriffstoken) || Encoding.UTF8.GetByteCount(zugriffstoken) < 32 || zugriffstoken.Contains('\r') || zugriffstoken.Contains('\n'))
             throw new ArgumentException("Zugriffstoken muss mindestens 32 Bytes umfassen.", nameof(zugriffstoken));
 
-        BasisAdresse = basisAdresse.AbsoluteUri.EndsWith('/')
-            ? basisAdresse
-            : new Uri(basisAdresse.AbsoluteUri + "/", UriKind.Absolute);
+        BasisAdresse = basisAdresse.AbsoluteUri.EndsWith('/') ? basisAdresse : new Uri(basisAdresse.AbsoluteUri + "/", UriKind.Absolute);
         _handler = new SocketsHttpHandler { AllowAutoRedirect = false };
-        _httpClient = new HttpClient(_handler, disposeHandler: false)
-        {
-            BaseAddress = BasisAdresse,
-            Timeout = TimeSpan.FromSeconds(30)
-        };
+        _httpClient = new HttpClient(_handler, disposeHandler: false) { BaseAddress = BasisAdresse, Timeout = TimeSpan.FromSeconds(30) };
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", zugriffstoken);
+        _importHttpClient = new HttpClient(_handler, disposeHandler: false) { BaseAddress = BasisAdresse, Timeout = TimeSpan.FromMinutes(10) };
+        _importHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", zugriffstoken);
         Touren = new TourenHttpClient(_httpClient);
         Auswertung = new AktivitaetsauswertungHttpClient(_httpClient);
         Stammdaten = new StammdatenHttpClient(_httpClient);
@@ -52,41 +45,29 @@ public sealed class BackendClientSitzung : IDisposable
         Wartung = new WartungsverwaltungHttpClient(_httpClient);
         GarminEinstellungen = new GarminEinstellungenHttpClient(_httpClient);
         GarminImportJobs = new GarminImportJobsHttpClient(_httpClient);
+        GarminImportPruefung = new GarminImportPruefungHttpClient(_importHttpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
-    /// <summary>Tokenfreie Backend-Basisadresse.</summary>
     public Uri BasisAdresse { get; }
-    /// <summary>Tourenressourcen.</summary>
     public ITourenSpeicher Touren { get; }
-    /// <summary>Aktivitätsauswertung.</summary>
     public IAktivitaetsauswertung Auswertung { get; }
-    /// <summary>Lesezugriff auf die Stammdaten.</summary>
     public IStammdatenLeser Stammdaten { get; }
-    /// <summary>Versionierte Verwaltungsoperationen für Aktivitäten.</summary>
     public IAktivitaetenVerwaltung Aktivitaeten { get; }
-    /// <summary>Versionierte Verwaltungsoperationen für Kategorien.</summary>
     public IKategorienVerwaltung Kategorien { get; }
-    /// <summary>Versionierte Verwaltungsoperationen für Equipment.</summary>
     public IEquipmentsVerwaltung Equipments { get; }
-    /// <summary>Versionierte Verwaltung persönlicher Profildaten.</summary>
     public IProfilVerwaltung Profil { get; }
-    /// <summary>Versionierte Verwaltung saisonaler Ziele.</summary>
-    public ISaisonzieleVerwaltung Saisonziele { get; }
-    /// <summary>Versionierte Verwaltung der unterstützten Textlisten.</summary>
     public ITextlistenVerwaltung Textlisten { get; }
-    /// <summary>Versionierte Verwaltung von Wartungen und Alarmen.</summary>
+    public ISaisonzieleVerwaltung Saisonziele { get; }
     public IWartungsverwaltung Wartung { get; }
-    /// <summary>Versionierte Garmin-Einstellungen ohne Schlüssel-Lesezugriff.</summary>
     public IGarminEinstellungen GarminEinstellungen { get; }
-    /// <summary>Durable Garmin import jobs.</summary>
     public IGarminImportJobs GarminImportJobs { get; }
-    /// <summary>Verbindungsprüfung.</summary>
+    public IGarminImportPruefung GarminImportPruefung { get; }
     public IBackendVerbindung Verbindung { get; }
 
-    /// <inheritdoc />
     public void Dispose()
     {
+        _importHttpClient.Dispose();
         _httpClient.Dispose();
         _handler.Dispose();
     }
