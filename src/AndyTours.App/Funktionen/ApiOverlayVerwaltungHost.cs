@@ -29,7 +29,7 @@ public sealed class ApiOverlayVerwaltungHost : IDisposable
 
     public void Oeffnen()
     {
-        if (_disposed || !_owner.IsLoaded || _owner.Dispatcher.HasShutdownStarted) return;
+        if (_disposed || !_owner.IsLoaded || !_owner.IsVisible || _owner.Dispatcher.HasShutdownStarted) return;
         if (_fenster is { IsVisible: true } existing)
         {
             if (existing.WindowState == WindowState.Minimized) existing.WindowState = WindowState.Normal;
@@ -51,9 +51,15 @@ public sealed class ApiOverlayVerwaltungHost : IDisposable
         }
         catch (Exception)
         {
-            if (window is not null) { window.Closed -= ManagerClosed; _fenster = null; }
+            if (window is not null)
+            {
+                window.Closed -= ManagerClosed;
+                if (window.IsVisible) window.Owner = null;
+                if (window.IsVisible) window.Close();
+                _fenster = null;
+            }
             vm?.Dispose();
-            MessageBox.Show(_owner, "Overlay-Verwaltung konnte nicht geöffnet werden.", "Overlays", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (_owner.IsVisible) MessageBox.Show(_owner, "Overlay-Verwaltung konnte nicht geöffnet werden.", "Overlays", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -65,7 +71,7 @@ public sealed class ApiOverlayVerwaltungHost : IDisposable
 
     private void OwnerClosing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        if (_disposed || _fenster is not { IsVisible: true } manager) return;
+        if (e.Cancel || _disposed || _fenster is not { IsVisible: true } manager) return;
         manager.Close();
         if (manager.IsVisible) e.Cancel = true;
     }
@@ -80,9 +86,8 @@ public sealed class ApiOverlayVerwaltungHost : IDisposable
         _owner.Closed -= OwnerClosed;
         if (_fenster is { IsVisible: true } manager)
         {
-            // Root closure is approved; the child cannot outlive its owner.
+            manager.SchliesseFuerHostShutdown();
             manager.Closed -= ManagerClosed;
-            manager.Close();
             _fenster = null;
         }
         Kontext.Dispose();

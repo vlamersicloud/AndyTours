@@ -76,6 +76,13 @@ public partial class ApiOverlaysFenster : Window
         _closingApproved = true;
     }
 
+    internal void SchliesseFuerHostShutdown()
+    {
+        _vm.Dispose();
+        _closingApproved = true;
+        Close();
+    }
+
     private void FensterGeschlossen(object? sender, EventArgs e)
     {
         _vm.GpxDateienAngefordert -= GpxDateienAngefordert;
