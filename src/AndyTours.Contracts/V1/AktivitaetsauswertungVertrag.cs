@@ -41,4 +41,12 @@ public sealed record AktivitaetsauswertungAntwort(
     long Hoehenmeter,
     long FahrzeitSekunden,
     int ZukuenftigeAktivitaeten,
-    IReadOnlyList<AktivitaetsperiodenAntwort> Perioden);
+    IReadOnlyList<AktivitaetsperiodenAntwort> Perioden)
+{
+    public IReadOnlyList<BestleistungszeileAntwort> Jahresrekorde { get; init; } = [];
+    public IReadOnlyList<BestleistungszeileAntwort> Einzelrekorde { get; init; } = [];
+    public IReadOnlyList<JahreszielAntwort> Jahresziele { get; init; } = [];
+};
+
+public sealed record BestleistungszeileAntwort(string Bezeichnung, string Wert, string Herkunft, bool IstLaufendesJahr, long? TourId);
+public sealed record JahreszielAntwort(int Jahr, long ZielKm, long ZielHm, long ZielAnzahl);
