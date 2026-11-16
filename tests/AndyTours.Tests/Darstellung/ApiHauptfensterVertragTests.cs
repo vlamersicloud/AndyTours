@@ -63,6 +63,7 @@ public sealed class ApiHauptfensterVertragTests
     {
         var d = LadeXaml();
         var datei = Assert.Single(d.Descendants(Presentation + "MenuItem"), x => (string?)x.Attribute("Header") == "Datei");
+        Assert.Single(datei.Descendants(Presentation + "MenuItem"), x => (string?)x.Attribute("Click") == "OverlaysOeffnen_Click");
         Assert.Single(datei.Descendants(Presentation + "MenuItem"), x => (string?)x.Attribute("Click") == "FitDateienImportieren_Click");
         Assert.Single(datei.Descendants(Presentation + "MenuItem"), x => (string?)x.Attribute("Click") == "GarminGeraetImportieren_Click");
         var handlers = datei.Descendants(Presentation + "MenuItem").Select(x => (string?)x.Attribute("Click"))
