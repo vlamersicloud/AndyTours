@@ -21,6 +21,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     public event Func<Task>? EquipmentsVerwaltenAngefordert;
     public event Func<Task>? ProfilBearbeitenAngefordert;
     public event Func<Task>? WartungVerwaltenAngefordert;
+    public event Func<CancellationToken, Task<string?>>? FaelligeAlarmeLadenAngefordert;
 
     public ApiHauptfenster(ApiUebersichtViewModel viewModel, Uri backendAdresse)
     {
@@ -59,7 +60,22 @@ public partial class ApiHauptfenster : Window, IDisposable
     {
         if (_geladen || _geschlossen) return;
         _geladen = true;
-        try { await _viewModel.AktualisierenAsync(_lifetime.Token); }
+        try
+        {
+            await _viewModel.AktualisierenAsync(_lifetime.Token);
+            if (_geschlossen || !IsVisible || _lifetime.IsCancellationRequested) return;
+            if (FaelligeAlarmeLadenAngefordert is not { } handler) return;
+            _viewModel.Laedt = true;
+            try
+            {
+                var warning = await handler(_lifetime.Token);
+                if (!_lifetime.IsCancellationRequested && !_geschlossen && IsVisible && !string.IsNullOrWhiteSpace(warning))
+                    MessageBox.Show(this, warning, "Wartungen fällig", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
+            catch (Exception) { /* Startup-Warnung darf den Start nicht verhindern. */ }
+            finally { _viewModel.Laedt = false; }
+        }
         catch (OperationCanceledException) { }
     }
 

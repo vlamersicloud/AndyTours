@@ -113,6 +113,9 @@ public partial class App
                 }
             };
 
+            fenster.FaelligeAlarmeLadenAngefordert += async ct =>
+                (await uebergebeneSitzung.Wartung.Laden(new(null, null), ct)).FaelligkeitsHinweis;
+
             fenster.WartungVerwaltenAngefordert += async () =>
             {
                 ApiWartungsFenster? admin = null;

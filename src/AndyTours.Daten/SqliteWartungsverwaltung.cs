@@ -42,7 +42,8 @@ public sealed class SqliteWartungsverwaltung(string datenbankpfad) : IWartungsve
                 _ => throw new InvalidOperationException("Unbekannter Alarmzustand.")
             })).ToArray();
         ct.ThrowIfCancellationRequested(); tx.Commit();
-        return Task.FromResult(new WartungsuebersichtAntwort(raw, rows, alarms, taetigkeiten));
+        var faelligkeitsHinweis = BeschreibeFaelligeAlarme.Ausfuehren(data);
+        return Task.FromResult(new WartungsuebersichtAntwort(raw, rows, alarms, taetigkeiten, faelligkeitsHinweis));
     }
 
     public Task<WartungsbestandAntwort> WartungAnlegen(WartungSpeichernAnfrage anfrage, CancellationToken ct = default)
