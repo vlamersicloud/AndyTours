@@ -1,9 +1,7 @@
-# Entwurf: Routingkonfiguration im API-Modus
+# Routingkonfiguration im API-Modus
 
-Status: Designvorschlag, nicht implementiert. Quellen: `src/AndyTours.Daten/RoutingEinstellung.cs` (drei bestehende Schlüssel: Dienst, BRouter-Adresse, ORS-Schlüssel), `src/AndyTours.App/ViewModels/EinstellungenViewModel.cs` und `EinstellungenViewModel.Routing.cs`; Garmin-Muster: `IGarminEinstellungen` und `GarminEinstellungenVertrag.cs`.
+Status: implementiert und in der API-WPF-Oberfläche unter Datei → Routing-Einstellungen erreichbar. Der Backend-Port bietet sechs begrenzte Operationen: Metadaten laden sowie Dienst, Adresse, Adress-Reset, ORS-Schlüssel speichern und ORS-Schlüssel entfernen. Jede Mutation ist feldbezogen und nutzt einen CAS über die Rohwerte der Routing-Schlüssel; der ORS-Schlüssel wird gehasht, nicht im Klartext als Version geführt.
 
-Empfehlung: sechs explizite Aktionen — `Laden`, `DienstSpeichern`, `AdresseSpeichern`, `AdresseZuruecksetzen`, `OrsKeySpeichern`, `OrsKeyEntfernen`. Ein gemeinsames CAS über die Rohwerte aller drei Routing-Schlüssel verhindert verlorene parallele Änderungen; jede Mutation schreibt nur ihr eigenes Feld und erhält die anderen unverändert.
+GET liefert nur öffentliche Metadaten: nie den Schlüssel und keine URI mit Zugangsdaten; unsichere gespeicherte URI bleibt verborgen und unverändert. Schlüsselwechsel und Resets benötigen explizite Aktionen. Der typisierte Client führt keine Providerabfrage aus. Das unabhängige Einstellungsfenster hängt am bestehenden API-Client, hält Eingaben als Entwürfe, verlangt manuelles Neuladen nach Konflikt oder unklarem ACK und unterstützt Abbruch. Es gibt keine automatischen Speichervorgänge.
 
-GET liefert Dienst, sichere Adresse (oder verborgen/ungültig-Flag) und nur `HatSchluessel`, nie den Schlüssel. Eine Adresse darf normalisiert nur als HTTP(S)-URI ohne UserInfo, Query oder Fragment ausgegeben werden. Bereits gespeicherte nicht sichere URI bleibt verborgen und unverändert, bis der Nutzer sie ausdrücklich ersetzt oder zurücksetzt. Request-DTOs redigieren `ToString`; Schlüssel speichern/entfernen erfordert ausdrückliche Aktion. BRouter bleibt konfigurierbarer Provider, aber Clients wählen keine URL pro Route. Keine Providerabfrage beim Laden/Speichern der Konfiguration.
-
-UI: unabhängiges API-Einstellungsfenster, ohne Legacy-SQL-ViewModel.
+Die strukturellen und ViewModel-Tests sind vorbereitet und kompiliert, wurden aber nicht ausgeführt. Windows- und Provider-Laufzeitverhalten bleiben unverified.

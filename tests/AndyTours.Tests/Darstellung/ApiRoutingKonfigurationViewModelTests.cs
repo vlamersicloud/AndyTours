@@ -96,6 +96,24 @@ public sealed class ApiRoutingKonfigurationViewModelTests
     }
 
     [Fact]
+    public async Task Provider_draft_survives_conflict_and_reload_while_status_tracks_confirmed_provider()
+    {
+        var port = new ControlledPort();
+        var vm = new ApiRoutingKonfigurationViewModel(port);
+        await vm.LadenCommand.ExecuteAsync(default);
+        vm.Dienst = RoutingAnbieter.Openrouteservice;
+        port.FailWrite = true;
+        await vm.DienstSpeichernCommand.ExecuteAsync(null);
+        Assert.False(vm.StatusGeladen);
+        port.FailWrite = false;
+        port.Response = port.Response with { Dienst = RoutingAnbieter.BRouter };
+        await vm.LadenCommand.ExecuteAsync(default);
+        Assert.Equal(RoutingAnbieter.Openrouteservice, vm.Dienst);
+        Assert.Contains("BRouter", vm.DienstStatus, StringComparison.Ordinal);
+        vm.Dispose();
+    }
+
+    [Fact]
     public async Task Delayed_ack_preserves_newer_secret_and_other_drafts_and_abort_after_ack_stays_confirmed()
     {
         var port = new ControlledPort { DelayWrite = true };

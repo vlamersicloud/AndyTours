@@ -1,6 +1,6 @@
 # API-first: Planung und Routing
 
-**Status:** API-Planungsablauf ist teilweise angebunden: serverseitiges Routing, versionsgeschütztes Fahrprofil, GPX-Öffnen/Speichern, geplanter Course-Export und Geräteadapter verwenden typisierte Ports. Der vorhandene Course-Export für aufgezeichnete Tracks ist davon getrennt. Die API-Planungsansicht nutzt denselben Overlaykontext; Startausschnitt: gemerkte lokale Grenzen; andernfalls werden höchstens die fünf jüngsten vorhandenen FIT-Aufzeichnungen geprüft und der erste nutzbare GPS-Ausschnitt übernommen. Fehlende Dateien zählen nicht; ohne nutzbaren Ausschnitt gilt der bisherige Deutschland-Ausschnitt. Routingkonfigurations-UI bleibt Legacy-only.
+**Status:** API-Planungsablauf ist teilweise angebunden: serverseitiges Routing, versionsgeschütztes Fahrprofil, GPX-Öffnen/Speichern, geplanter Course-Export und Geräteadapter verwenden typisierte Ports. Der vorhandene Course-Export für aufgezeichnete Tracks ist davon getrennt. Die API-Planungsansicht nutzt denselben Overlaykontext; Startausschnitt: gemerkte lokale Grenzen; andernfalls werden höchstens die fünf jüngsten vorhandenen FIT-Aufzeichnungen geprüft und der erste nutzbare GPS-Ausschnitt übernommen. Fehlende Dateien zählen nicht; ohne nutzbaren Ausschnitt gilt der bisherige Deutschland-Ausschnitt. Routingkonfiguration ist über Datei → Routing-Einstellungen im API-Modus verfügbar.
 
 ## Quellseams
 

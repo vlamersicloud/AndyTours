@@ -15,6 +15,17 @@ public sealed class ApiRoutingKonfigurationFensterVertragTests
     }
 
     [Fact]
+    public void Root_menu_contains_one_routing_settings_action_under_file()
+    {
+        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AndyTours.ApiHauptfenster.xaml");
+        Assert.NotNull(stream);
+        var root = XDocument.Load(stream!);
+        var item = Assert.Single(root.Descendants(P + "MenuItem"), node => (string?)node.Attribute("Click") == "RoutingKonfiguration_Click");
+        Assert.Equal("Routing-Einstellungen…", (string?)item.Attribute("Header"));
+        Assert.Equal("Datei", (string?)item.Parent?.Attribute("Header"));
+    }
+
+    [Fact]
     public void Routing_settings_window_exposes_explicit_operations_and_safe_password_input()
     {
         var document = Load();
@@ -28,6 +39,7 @@ public sealed class ApiRoutingKonfigurationFensterVertragTests
 
         Assert.Contains(document.Descendants(P + "TextBox"), node => (string?)node.Attribute("Text") == "{Binding GespeicherteAdresse, Mode=OneWay}");
         Assert.Contains(document.Descendants(P + "TextBlock"), node => (string?)node.Attribute("Text") == "{Binding AdresseStatus}");
+        Assert.Contains(document.Descendants(P + "TextBlock"), node => (string?)node.Attribute("Text") == "{Binding DienstStatus}");
         Assert.Contains(document.Descendants(P + "TextBox"), node => ((string?)node.Attribute("Text"))?.Contains("AdresseEntwurf", StringComparison.Ordinal) == true);
         var password = Assert.Single(document.Descendants(P + "PasswordBox"));
         Assert.Equal("OrsSchluesselFeld_PasswordChanged", (string?)password.Attribute("PasswordChanged"));
