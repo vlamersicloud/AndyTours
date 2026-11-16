@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using AndyTours.Application.Auswertung;
+using AndyTours.Application.Export;
 using AndyTours.Application.Garmin;
 using AndyTours.Application.Import;
 using AndyTours.Application.Stammdaten;
@@ -49,6 +50,7 @@ public sealed class BackendClientSitzung : IDisposable
         GarminImportPruefung = new GarminImportPruefungHttpClient(_importHttpClient);
         FitUploads = new FitUploadsHttpClient(_importHttpClient);
         Tourdetail = new TourdetailHttpClient(_importHttpClient);
+        CourseExport = new CourseExportHttpClient(_importHttpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
@@ -68,6 +70,7 @@ public sealed class BackendClientSitzung : IDisposable
     public IGarminImportPruefung GarminImportPruefung { get; }
     public IFitUploads FitUploads { get; }
     public ITourdetailLeser Tourdetail { get; }
+    public ICourseExport CourseExport { get; }
     public IBackendVerbindung Verbindung { get; }
 
     public void Dispose()
