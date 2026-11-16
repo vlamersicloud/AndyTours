@@ -40,6 +40,11 @@ public partial class AlarmBearbeitenFenster : Window
     /// <param name="e">Ereignisdaten; <c>Cancel</c> verhindert das Schließen.</param>
     protected override void OnClosing(CancelEventArgs e)
     {
+        if (_viewModel.Speichert && !_viewModel.IstGespeichert)
+        {
+            e.Cancel = true;
+            return;
+        }
         base.OnClosing(e);
         if (_viewModel.IstGespeichert || !_viewModel.IstGeaendert)
         {

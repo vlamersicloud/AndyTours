@@ -32,7 +32,7 @@ public partial class AlarmBearbeitenViewModel : ObservableObject
     private readonly Datenbestand _bestand;
 
     /// <summary>Speichert den fertigen Alarm; liefert <c>true</c> bei Erfolg.</summary>
-    private readonly Func<Wartung, bool> _speichern;
+    private readonly Func<Wartung, Task<bool>> _speichern;
 
     /// <summary><c>true</c>, wenn die Liste „Tätigkeit“ beim Öffnen leer war.</summary>
     private readonly bool _ohneTaetigkeiten;
@@ -59,10 +59,22 @@ public partial class AlarmBearbeitenViewModel : ObservableObject
         string titel,
         Func<Wartung, bool> speichern,
         Datenbestand bestand)
+        : this(alarm, raeder, taetigkeiten, titel, alarmAsync: item => Task.FromResult(speichern(item)), bestand)
+    {
+    }
+
+    /// <summary>Erzeugt das ViewModel mit asynchronem Speichercallback.</summary>
+    public AlarmBearbeitenViewModel(
+        Wartung alarm,
+        IReadOnlyList<Auswahleintrag> raeder,
+        IReadOnlyList<string> taetigkeiten,
+        string titel,
+        Func<Wartung, Task<bool>> alarmAsync,
+        Datenbestand bestand)
     {
         _basis = alarm;
         _bestand = bestand;
-        _speichern = speichern;
+        _speichern = alarmAsync;
         _ohneTaetigkeiten = taetigkeiten.Count == 0;
         Titel = titel;
         Raeder = raeder;
@@ -131,18 +143,42 @@ public partial class AlarmBearbeitenViewModel : ObservableObject
     /// Befehl „OK“: nur ohne fehlerhafte Felder wählbar. Gelingt das Speichern, schließt sich das Fenster;
     /// sonst bleibt es mit den Eingaben offen (die Fehlermeldung zeigt das Hauptfenster).
     /// </summary>
+    [ObservableProperty]
+    private bool _speichert;
+
+    /// <summary>Speichert asynchron; ein unklarer Fehler lässt Dialog und Eingaben offen.</summary>
     [RelayCommand(CanExecute = nameof(KannSpeichern))]
-    private void Speichern()
+    private async Task Speichern()
     {
-        if (AlarmEingaben.AlsAlarm(AktuelleEingaben(), _basis, _bestand).Alarm is Wartung alarm && _speichern(alarm))
+        if (AlarmEingaben.AlsAlarm(AktuelleEingaben(), _basis, _bestand).Alarm is not Wartung alarm) return;
+        Hinweis = string.Empty;
+        Speichert = true;
+        try
         {
-            IstGespeichert = true;
-            SchliessenAngefordert?.Invoke(this, EventArgs.Empty);
+            if (await _speichern(alarm))
+            {
+                IstGespeichert = true;
+                SchliessenAngefordert?.Invoke(this, EventArgs.Empty);
+            }
+            else if (string.IsNullOrEmpty(Hinweis))
+            {
+                Hinweis = "Der Alarm wurde nicht bestätigt. Der Speicherstatus kann unklar sein; bitte vor einem erneuten Versuch den Bestand prüfen.";
+            }
+        }
+        catch (Exception)
+        {
+            Hinweis = "Der Speicherstatus des Alarms ist unklar. Die Eingaben bleiben erhalten; bitte vor einem erneuten Versuch den Bestand prüfen.";
+        }
+        finally
+        {
+            Speichert = false;
         }
     }
 
-    /// <summary>Wählbarkeit von „OK“: keine fehlerhaften Felder.</summary>
-    private bool KannSpeichern() => _fehler.Count == 0;
+    partial void OnSpeichertChanged(bool value) => SpeichernCommand.NotifyCanExecuteChanged();
+
+    /// <summary>Wählbarkeit von „OK“: keine fehlerhaften Felder und kein laufender Speichervorgang.</summary>
+    private bool KannSpeichern() => !Speichert && _fehler.Count == 0;
 
     /// <summary>
     /// Prüft nach jeder Änderung eines Feldes alle Eingaben.
