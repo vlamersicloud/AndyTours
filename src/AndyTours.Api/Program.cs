@@ -33,6 +33,7 @@ builder.Services.AddSingleton<IAktivitaetenVerwaltung>(_ => new SqliteAktivitaet
 builder.Services.AddSingleton<IKategorienVerwaltung>(_ => new SqliteKategorienVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IEquipmentsVerwaltung>(_ => new SqliteEquipmentsVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IProfilVerwaltung>(_ => new SqliteProfilVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<ITextlistenVerwaltung>(_ => new SqliteTextlistenVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IWartungsverwaltung>(_ => new SqliteWartungsverwaltung(Path.Combine(dataDirectory, "andytours.db")));
 
 var app = builder.Build();
@@ -81,6 +82,7 @@ app.MapAktivitaeten();
 app.MapKategorien();
 app.MapEquipments();
 app.MapProfil();
+app.MapTextlisten();
 app.MapWartungen();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
