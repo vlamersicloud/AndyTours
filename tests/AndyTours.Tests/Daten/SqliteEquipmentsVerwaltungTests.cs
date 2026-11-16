@@ -53,8 +53,11 @@ public sealed class SqliteEquipmentsVerwaltungTests : IDisposable
     {
         var id = await Add("A", _activity1); var before = await _sut.Laden();
         await Assert.ThrowsAsync<StammdatenException>(() => _sut.Anlegen(Request(before.Version, Values("B", 999999))));
+        Assert.Equal(before.Version, (await _sut.Laden()).Version);
         before = await _sut.Laden(); await Assert.ThrowsAsync<StammdatenException>(() => _sut.Anlegen(Request(before.Version, Values(" a ", _activity1))));
+        Assert.Equal(before.Version, (await _sut.Laden()).Version);
         before = await _sut.Laden(); await Assert.ThrowsAsync<StammdatenException>(() => _sut.Aendern(id, Request(before.Version, Values("A", _activity1, km: double.NaN))));
+        Assert.Equal(before.Version, (await _sut.Laden()).Version);
         before = await _sut.Laden(); await Assert.ThrowsAsync<StammdatenException>(() => _sut.Aendern(id, Request(before.Version, Values("A", _activity1, km: -1))));
         before = await _sut.Laden(); await Assert.ThrowsAsync<StammdatenException>(() => _sut.Aendern(id, Request(before.Version, Values("A", _activity1, km: double.PositiveInfinity))));
         using var c = OeffneDatenbank.Ausfuehren(_db); Assert.Equal("A", EquipmentsTabelle.Laden(c).Single().Name);
@@ -110,12 +113,52 @@ public sealed class SqliteEquipmentsVerwaltungTests : IDisposable
         var id = await Add("Legacy", _activity1);
         await Change(id, Values("Legacy", _activity1, category: " tour "));
         Assert.Equal("Tour", (await _sut.Laden()).Eintraege.Single().StandardKategorie);
+        using (var c = OeffneDatenbank.Ausfuehren(_db))
+        {
+            using var tx = c.BeginTransaction();
+            var equipment = EquipmentsTabelle.Laden(c).Single(e => e.Id == id);
+            equipment.StandardKategorie = "Unknown legacy";
+            EquipmentsTabelle.Aendern(c, tx, equipment);
+            tx.Commit();
+        }
         await Change(id, Values("Legacy", _activity1, category: "Unknown legacy"));
         Assert.Equal("Unknown legacy", (await _sut.Laden()).Eintraege.Single().StandardKategorie);
         var snap = await _sut.Laden();
         var ex = await Assert.ThrowsAsync<StammdatenException>(() => _sut.Aendern(id, Request(snap.Version, Values("Legacy", _activity1, category: "Unknown new"))));
         Assert.Equal(StammdatenFehlerart.Ungueltig, ex.Art);
         Assert.Equal("Unknown legacy", (await _sut.Laden()).Eintraege.Single().StandardKategorie);
+    }
+
+    [Fact] public async Task VollstaendigeWerteWerdenInAntwortUndDatenbankErhalten()
+    {
+        using (var c = OeffneDatenbank.Ausfuehren(_db))
+        using (var tx = c.BeginTransaction())
+        {
+            KategorienTabelle.Einfuegen(c, tx, new Kategorie { Name = "Tour" });
+            tx.Commit();
+        }
+        var req = Values("  Trek  ", _activity1, standard: true, km: 1234.5, mapping: "legacy raw", category: " tour ")
+            with { Anschaffungsdatum = new DateOnly(2020, 2, 29) };
+        var created = await _sut.Anlegen(Request((await _sut.Laden()).Version, req));
+        var entry = created.Eintraege.Single();
+        Assert.Equal("Trek", entry.Name); Assert.Equal(_activity1, entry.AktivitaetId);
+        Assert.Equal("legacy raw", entry.Geraetezuordnung); Assert.Equal("Tour", entry.StandardKategorie);
+        Assert.True(entry.IstStandard); Assert.Equal(new DateOnly(2020, 2, 29), entry.Anschaffungsdatum);
+        Assert.Equal(1234.5, entry.AnfangsdistanzKm);
+        using (var c = OeffneDatenbank.Ausfuehren(_db))
+        {
+            var saved = EquipmentsTabelle.Laden(c).Single(e => e.Id == entry.Id);
+            Assert.Equal(entry.Name, saved.Name); Assert.Equal(entry.AktivitaetId, saved.AktivitaetId);
+            Assert.Equal(entry.Geraetezuordnung, saved.Geraetezuordnung); Assert.Equal(entry.StandardKategorie, saved.StandardKategorie);
+            Assert.Equal(entry.IstStandard, saved.IstStandard); Assert.Equal(entry.Anschaffungsdatum, saved.Anschaffungsdatum);
+            Assert.Equal(entry.AnfangsdistanzKm, saved.AnfangsdistanzKm);
+        }
+        var changed = Values("Trek II", _activity2, km: 9, category: "Tour") with { Anschaffungsdatum = new DateOnly(2021, 3, 1) };
+        var updated = await _sut.Aendern(entry.Id, Request(created.Version, changed));
+        var answer = updated.Eintraege.Single(e => e.Id == entry.Id);
+        Assert.Equal("Trek II", answer.Name); Assert.Equal(_activity2, answer.AktivitaetId);
+        Assert.Equal(new DateOnly(2021, 3, 1), answer.Anschaffungsdatum); Assert.Equal(9, answer.AnfangsdistanzKm);
+        Assert.Equal("Tour", answer.StandardKategorie);
     }
 
     private async Task<long> Add(string name, long? activity, bool standard = false) =>
