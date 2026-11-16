@@ -27,6 +27,10 @@ public sealed class FitFallbackZeitzoneTests
         try
         {
             FitTestdatei.Schreibe(path, new FitTestdatei.Werte(new DateTime(2026, 4, 1, 8, 0, 0, DateTimeKind.Utc), OhneOrtszeit: true));
+            var (utcRecord, utcError) = LeseFitAufzeichnung.Ausfuehren(path, TimeZoneInfo.Utc);
+            Assert.Null(utcError);
+            Assert.Equal(new TimeOnly(8, 0), utcRecord!.Startzeit);
+
             var plusTwo = TimeZoneInfo.CreateCustomTimeZone("test-plus-two", TimeSpan.FromHours(2), "test", "test");
             var (record, error) = LeseFitAufzeichnung.Ausfuehren(path, plusTwo);
             Assert.Null(error);

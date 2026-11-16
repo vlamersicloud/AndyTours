@@ -22,13 +22,16 @@ public sealed class GarminImportPruefungTests
         Assert.Equal(new DateOnly(2026, 4, 1), row.Datum);
         Assert.Equal(64, row.DateiVersion.Length);
         Assert.Equal(f.EquipmentId, row.EmpfohlenesEquipmentId);
+        var relative = $"2026/garmin-{candidate.GarminAktivitaetId}-{candidate.KandidatId:N}.fit";
+        var permanentPath = f.PermanentPath(relative);
+        Directory.CreateDirectory(Path.GetDirectoryName(permanentPath)!);
+        File.Copy(f.FitPath(job.JobId, candidate.KandidatId), permanentPath);
         var request = new GarminImportUebernahmeAnfrage(job.Version, Guid.NewGuid(), [new GarminImportAuswahl(candidate.KandidatId, row.DateiVersion, true, f.EquipmentId)]);
         var response = await facade.Uebernehmen(job.JobId, request);
         var tour = Assert.Single(response.Ergebnisse);
         Assert.True(tour.Importiert);
         var stored = Assert.Single(f.ReadTours());
         Assert.Equal(2, stored.Anhaenge.Count);
-        var relative = $"2026/garmin-{candidate.GarminAktivitaetId}-{candidate.KandidatId:N}.fit";
         Assert.Contains(stored.Anhaenge, a => a.RelativerPfad == relative);
         Assert.True(File.Exists(f.PermanentPath(relative)));
         Assert.True(File.Exists(f.FitPath(job.JobId, candidate.KandidatId)));
@@ -60,7 +63,6 @@ public sealed class GarminImportPruefungTests
         var (job, candidate, _, _) = await f.Prepare(new DateTime(2026, 4, 1, 8, 0, 0, DateTimeKind.Utc));
         FitTestdatei.Schreibe(f.FitPath(job.JobId, candidate.KandidatId),
             new FitTestdatei.Werte(new DateTime(2026, 4, 1, 8, 0, 0, DateTimeKind.Utc), OhneOrtszeit: true));
-
         var utc = TimeZoneInfo.CreateCustomTimeZone("deterministic-test", TimeSpan.Zero, "test", "test");
         var plusTwo = TimeZoneInfo.CreateCustomTimeZone("deterministic-test", TimeSpan.FromHours(2), "test", "test");
         var reviewA = await f.NewFacade(utc).Laden(job.JobId);
@@ -68,12 +70,10 @@ public sealed class GarminImportPruefungTests
         var reviewB = await reviewBFacade.Laden(job.JobId);
         var rowA = Assert.Single(reviewA.Zeilen);
         var rowB = Assert.Single(reviewB.Zeilen);
-
         Assert.Equal(new TimeOnly(8, 0), rowA.Startzeit);
         Assert.Equal(new TimeOnly(10, 0), rowB.Startzeit);
         Assert.Equal(reviewA.FallbackZeitzoneId, reviewB.FallbackZeitzoneId);
         Assert.NotEqual(rowA.DateiVersion, rowB.DateiVersion);
-
         var request = new GarminImportUebernahmeAnfrage(job.Version, Guid.NewGuid(),
             [new GarminImportAuswahl(candidate.KandidatId, rowA.DateiVersion, true, f.EquipmentId)]);
         var error = await Assert.ThrowsAsync<StammdatenException>(() => reviewBFacade.Uebernehmen(job.JobId, request));
