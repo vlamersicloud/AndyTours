@@ -23,6 +23,7 @@ public partial class ApiWartungsViewModel : ObservableObject, IDisposable
     private long _generation;
     private readonly CancellationTokenSource _readLifetime = new();
     private bool _closing;
+    private bool _disposed;
 
     [ObservableProperty] private ApiFilterOption? _aktivitaetAuswahl;
     [ObservableProperty] private ApiFilterOption? _equipmentAuswahl;
@@ -129,7 +130,15 @@ public partial class ApiWartungsViewModel : ObservableObject, IDisposable
             }
             finally { _filterSuspendiert = false; }
             _erstesLaden = false;
-            var overview = await _wartungen.Laden(new(AktivitaetAuswahl?.Id, EquipmentAuswahl?.Id), readToken);
+            var effectiveActivity = AktivitaetAuswahl?.Id;
+            var effectiveEquipment = EquipmentAuswahl?.Id;
+            if (previousActivity != effectiveActivity || previousEquipment != effectiveEquipment)
+            {
+                _hasLoaded = false; _bestand = null;
+                Wartungszeilen.Clear(); Alarmzeilen.Clear(); WartungIds = []; AlarmIds = [];
+                NotifyCommands();
+            }
+            var overview = await _wartungen.Laden(new(effectiveActivity, effectiveEquipment), readToken);
             if (generation != Interlocked.Read(ref _generation)) return false;
             _bestand = overview.Bestand;
             Taetigkeiten = overview.Taetigkeiten; OnPropertyChanged(nameof(Taetigkeiten));
@@ -276,6 +285,8 @@ public partial class ApiWartungsViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
         AbbrechenLesenderVorgaenge();
         _readLifetime.Dispose();
         GC.SuppressFinalize(this);

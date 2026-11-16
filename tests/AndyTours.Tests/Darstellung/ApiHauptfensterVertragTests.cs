@@ -84,4 +84,17 @@ public sealed class ApiHauptfensterVertragTests
         Assert.Contains("{Binding FahrzeitText}", values);
         Assert.Contains("{Binding AnzahlText}", values);
     }
+    [Fact]
+    public void StammdatenMenuClickHandlerSindEindeutig()
+    {
+        var document = LadeXaml();
+        var menu = Assert.Single(document.Descendants(Presentation + "MenuItem"),
+            item => (string?)item.Attribute("Header") == "Stammdaten");
+        var handlers = menu.Elements(Presentation + "MenuItem")
+            .Select(item => (string?)item.Attribute("Click"))
+            .Where(handler => !string.IsNullOrWhiteSpace(handler))
+            .ToArray();
+        Assert.Equal(handlers.Length, handlers.Distinct(StringComparer.Ordinal).Count());
+    }
+
 }

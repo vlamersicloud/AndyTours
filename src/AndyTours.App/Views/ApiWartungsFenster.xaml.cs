@@ -90,17 +90,11 @@ public partial class ApiWartungsFenster : Window, IDisposable
             e.Cancel = true;
             return;
         }
-        _viewModel.AbbrechenLesenderVorgaenge();
-        CancelCommands();
         CancelAndDispose();
     }
 
     private void ClosedWindow(object? sender, EventArgs e)
     {
-        _viewModel.WartungEditorAngefordert -= WartungEditorAngefordert;
-        _viewModel.AlarmEditorAngefordert -= AlarmEditorAngefordert;
-        _viewModel.Dispose();
-        CancelCommands();
         CancelAndDispose();
     }
 
@@ -123,6 +117,11 @@ public partial class ApiWartungsFenster : Window, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        _viewModel.AbbrechenLesenderVorgaenge();
+        _viewModel.WartungEditorAngefordert -= WartungEditorAngefordert;
+        _viewModel.AlarmEditorAngefordert -= AlarmEditorAngefordert;
+        CancelCommands();
+        _viewModel.Dispose();
         _lifetime.Cancel();
         _lifetime.Dispose();
     }

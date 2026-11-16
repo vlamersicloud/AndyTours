@@ -27,7 +27,6 @@
                         <MenuItem Header="Equipment…" Click="EquipmentsVerwalten_Click"/>
                         <MenuItem Header="Wartungen und Alarme…" Click="WartungenVerwalten_Click"/>
                         <MenuItem Header="Persönliche Daten…" Click="ProfilBearbeiten_Click"/>
-                        <MenuItem Header="Persönliche Daten…" Click="ProfilBearbeiten_Click"/>
                     </MenuItem>
                 </Menu>
             </StackPanel>
