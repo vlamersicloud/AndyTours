@@ -57,7 +57,7 @@ public sealed partial class SqliteOverlaySpeicher : IOverlayLeser
         return Task.FromResult(new OverlayInhaltAntwort(overlayId, meta.Version, sections));
     }
 
-    private static IReadOnlyList<IReadOnlyList<OverlayPosition>> Decode(byte[] bytes, CancellationToken ct)
+    private static List<IReadOnlyList<OverlayPosition>> Decode(byte[] bytes, CancellationToken ct)
     {
         try
         {
