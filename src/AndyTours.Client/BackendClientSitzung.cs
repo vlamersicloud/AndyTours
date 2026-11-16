@@ -45,6 +45,7 @@ public sealed class BackendClientSitzung : IDisposable
         Aktivitaeten = new AktivitaetenHttpVerwaltung(_httpClient);
         Kategorien = new KategorienVerwaltungHttpClient(_httpClient);
         Equipments = new EquipmentsVerwaltungHttpClient(_httpClient);
+        Profil = new ProfilVerwaltungHttpClient(_httpClient);
         Verbindung = new BackendHttpVerbindung(_httpClient);
     }
 
@@ -62,6 +63,8 @@ public sealed class BackendClientSitzung : IDisposable
     public IKategorienVerwaltung Kategorien { get; }
     /// <summary>Versionierte Verwaltungsoperationen für Equipment.</summary>
     public IEquipmentsVerwaltung Equipments { get; }
+    /// <summary>Versionierte Verwaltung persönlicher Profildaten.</summary>
+    public IProfilVerwaltung Profil { get; }
     /// <summary>Verbindungsprüfung.</summary>
     public IBackendVerbindung Verbindung { get; }
 
