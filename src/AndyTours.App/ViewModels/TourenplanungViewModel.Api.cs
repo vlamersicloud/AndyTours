@@ -28,6 +28,8 @@ public partial class TourenplanungViewModel
             OeffnenCommand.NotifyCanExecuteChanged(); LetztenPunktEntfernenCommand.NotifyCanExecuteChanged(); AllesLoeschenCommand.NotifyCanExecuteChanged();
         }
     }
+    private bool _apiProfilSpeichert;
+    public bool ApiProfilSpeichert { get => _apiProfilSpeichert; set => SetProperty(ref _apiProfilSpeichert, value); }
     private string _apiProfilHinweis = string.Empty;
     public string ApiProfilHinweis { get => _apiProfilHinweis; set => SetProperty(ref _apiProfilHinweis, value); }
     public bool KannApiBedienen => !ApiDateiBeschaeftigt;

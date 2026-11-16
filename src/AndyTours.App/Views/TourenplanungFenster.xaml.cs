@@ -392,6 +392,13 @@ public partial class TourenplanungFenster : Window
             MessageBox.Show(this, "Der API-Dateivorgang läuft noch. Bitte kurz warten.", "Tour planen", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
+        if (_viewModel.ApiProfilSpeichert &&
+            MessageBox.Show(this, "Fahrprofil noch nicht bestätigt; beim Schließen kann Speicherstatus unklar bleiben. Trotzdem schließen?",
+                "Tour planen", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
+        {
+            e.Cancel = true;
+            return;
+        }
         if (!_schliessenBestaetigt && !_viewModel.DarfVerwerfen())
         {
             e.Cancel = true;

@@ -22,6 +22,7 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
     private readonly CancellationTokenSource _lifetime;
     private readonly CancellationToken _lifetimeToken;
     private bool _disposed;
+    private int _profileOperations;
 
     public ApiTourenplanungSteuerung(TourenplanungFenster window, TourenplanungViewModel vm, IPlanungsDateien files,
         IPlanungsCourseExport courses, ApiPlanungsProfilSitzung profile, CancellationToken parentToken = default)
@@ -39,17 +40,28 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
 
     private async Task ProfilSynchronisieren()
     {
-        try { if (!_disposed) await _profile.Setzen(ToContract(_vm.Profil), _lifetimeToken); }
+        try { await MitProfilstatus(() => _profile.Setzen(ToContract(_vm.Profil), _lifetimeToken)); }
         catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested) { }
         catch { if (!_disposed) _vm.ApiProfilHinweis = "Planungsprofil konnte nicht synchronisiert werden."; }
     }
 
     private async void ProfilGeaendert(Fahrprofil profil)
     {
-        try { if (!_disposed) await _profile.Setzen(ToContract(profil), _lifetimeToken); }
+        try { await MitProfilstatus(() => _profile.Setzen(ToContract(profil), _lifetimeToken)); }
         catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested) { }
         catch { if (!_disposed) _vm.ApiProfilHinweis = "Planungsprofil konnte nicht gespeichert werden."; }
     }
+    private async Task MitProfilstatus(Func<Task> operation)
+    {
+        if (_disposed) return;
+        if (Interlocked.Increment(ref _profileOperations) == 1) _vm.ApiProfilSpeichert = true;
+        try { await operation(); }
+        finally
+        {
+            if (Interlocked.Decrement(ref _profileOperations) == 0 && !_disposed) _vm.ApiProfilSpeichert = false;
+        }
+    }
+
     private void ProfilAktualisiert(object? sender, EventArgs e) { if (!_disposed) _vm.ApiProfilHinweis = _profile.Hinweis; }
 
     private async Task Oeffnen() => await Datei(async ct =>
@@ -121,6 +133,7 @@ public sealed class ApiTourenplanungSteuerung : IDisposable
         if (_vm.ApiGarminUebertragen == Garmin) _vm.ApiGarminUebertragen = null;
         _vm.ApiProfilGeaendert = null;
         _vm.ApiProfilSynchronisieren = null;
+        _vm.ApiProfilSpeichert = false;
         _profile.Dispose(); _lifetime.Dispose();
     }
     private static CourseFahrprofil ToContract(Fahrprofil p) => p switch { Fahrprofil.Rennrad => CourseFahrprofil.Rennrad, Fahrprofil.Trekking => CourseFahrprofil.Trekking, Fahrprofil.Mountainbike => CourseFahrprofil.Mountainbike, _ => throw Invalid() };
