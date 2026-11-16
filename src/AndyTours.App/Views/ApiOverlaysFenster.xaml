@@ -3,6 +3,7 @@
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:AndyTours.App.ViewModels"
  Title="Overlays" Width="680" Height="720" MinWidth="400" MinHeight="420"
  WindowStartupLocation="CenterOwner" Loaded="FensterGeladen" Closing="FensterSchliesst" Closed="FensterGeschlossen">
+ <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
  <DockPanel Margin="10">
   <StackPanel DockPanel.Dock="Top">
    <WrapPanel>
@@ -41,4 +42,5 @@
    </TreeView.Resources>
   </TreeView>
  </DockPanel>
+ </ScrollViewer>
 </Window>

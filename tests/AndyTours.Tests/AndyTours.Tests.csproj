@@ -32,6 +32,8 @@
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\GarminImportFenster.xaml" LogicalName="AndyTours.GarminImportFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiEquipmentsFenster.xaml"
                       LogicalName="AndyTours.ApiEquipmentsFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiOverlaysFenster.xaml"
+                      LogicalName="AndyTours.ApiOverlaysFenster.xaml" />
   </ItemGroup>
 
   <ItemGroup>
