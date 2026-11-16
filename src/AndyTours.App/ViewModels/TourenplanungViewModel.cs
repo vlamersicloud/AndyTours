@@ -227,43 +227,45 @@ public partial class TourenplanungViewModel : ObservableObject
         _ermittlung?.Dispose();
         var ermittlung = new CancellationTokenSource();
         _ermittlung = ermittlung;
+        CancellationToken ct = ermittlung.Token;
         Hinweis = string.Empty;
-
         try
         {
             while (Planung.Teilstuecke.ToList().FindIndex(t => t is null) is int nummer and >= 0)
             {
+                ct.ThrowIfCancellationRequested();
+                if (!ReferenceEquals(_ermittlung, ermittlung)) return;
                 ErmitteltGerade = true;
                 Geoposition von = Planung.Wegpunkte[nummer], nach = Planung.Wegpunkte[nummer + 1];
-                Routinganfrage? anfrage = BildeRoutinganfrage.Ausfuehren(_ladeRouting(), Planung.Profil, von, nach);
-                Teilstueck? teilstueck = anfrage is null ? null : await Routingabruf.Ermittle(anfrage, ermittlung.Token);
-                ermittlung.Token.ThrowIfCancellationRequested();
-
-                if (teilstueck is null)
+                Fahrprofil profil = Planung.Profil;
+                Teilstueck? teilstueck;
+                if (ApiRouting is not null)
                 {
-                    Hinweis = anfrage is null ? EinstellungenUnvollstaendig : DienstNichtErreichbar;
-                    teilstueck = ErstelleLuftlinie.Ausfuehren(von, nach);
-                }
-
-                if (nummer < Planung.Teilstuecke.Count && Planung.Teilstuecke[nummer] is null
-                    && Planung.Wegpunkte[nummer] == von && Planung.Wegpunkte[nummer + 1] == nach)
-                {
-                    Uebernimm(Planungsaenderung.SetzeTeilstueck(Planung, nummer, teilstueck));
+                    teilstueck = await ErmittleApiTeilstueck(profil, von, nach, ct);
                 }
                 else
                 {
-                    // Kann nur nach einer Änderung ohne Abbruch passieren; dann nicht endlos weiterfragen
-                    break;
+                    Routinganfrage? anfrage = BildeRoutinganfrage.Ausfuehren(_ladeRouting(), profil, von, nach);
+                    teilstueck = anfrage is null ? null : await Routingabruf.Ermittle(anfrage, ct);
+                    if (teilstueck is null)
+                    {
+                        Hinweis = anfrage is null ? EinstellungenUnvollstaendig : DienstNichtErreichbar;
+                        teilstueck = ErstelleLuftlinie.Ausfuehren(von, nach);
+                    }
                 }
+                ct.ThrowIfCancellationRequested();
+                if (!ReferenceEquals(_ermittlung, ermittlung)) return;
+                if (nummer < Planung.Teilstuecke.Count && Planung.Profil == profil && Planung.Teilstuecke[nummer] is null
+                    && Planung.Wegpunkte[nummer] == von && Planung.Wegpunkte[nummer + 1] == nach)
+                    Uebernimm(Planungsaenderung.SetzeTeilstueck(Planung, nummer, teilstueck!));
+                else break;
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) { return; }
+        finally
         {
-            // Eine neuere Ermittlung hat übernommen
-            return;
+            if (ReferenceEquals(_ermittlung, ermittlung)) ErmitteltGerade = false;
         }
-
-        ErmitteltGerade = false;
     }
 
     /// <summary>Merkt geänderte Planungseinstellungen.</summary>
