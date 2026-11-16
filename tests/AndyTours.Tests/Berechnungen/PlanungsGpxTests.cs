@@ -1,3 +1,4 @@
+using System.Xml;
 using System.Xml.Linq;
 using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
@@ -130,4 +131,23 @@ public class PlanungsGpxTests
 
         Assert.Null(PlanungsGpx.Lesen(dokument.ToString()));
     }
+
+    [Fact]
+    public async Task Async_reader_matches_legacy_and_preserves_caller_ownership()
+    {
+        string xml = PlanungsGpx.Schreiben(Planung(), "Test");
+        using XmlReader reader = XmlReader.Create(new StringReader(xml), new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, Async = true });
+        Tourenplanung expected = PlanungsGpx.Lesen(xml)!;
+        Tourenplanung actual = (await PlanungsGpx.Lesen(reader, CancellationToken.None))!;
+        Assert.Equal(expected.Profil, actual.Profil);
+        Assert.Equal(expected.Wegpunkte, actual.Wegpunkte);
+        Assert.Equal(expected.Teilstuecke[0]!.Punkte, actual.Teilstuecke[0]!.Punkte);
+        Assert.Equal(expected.Teilstuecke[0]!.Abbiegepunkte, actual.Teilstuecke[0]!.Abbiegepunkte);
+        Assert.True(actual.Teilstuecke[1]!.IstLuftlinie);
+        Assert.False(reader.ReadState == ReadState.Closed);
+        using var cts = new CancellationTokenSource(); cts.Cancel();
+        using XmlReader cancelledReader = XmlReader.Create(new StringReader(xml), new XmlReaderSettings { Async = true });
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => PlanungsGpx.Lesen(cancelledReader, cts.Token));
+    }
+
 }
