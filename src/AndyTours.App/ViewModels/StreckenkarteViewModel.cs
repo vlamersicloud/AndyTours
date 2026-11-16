@@ -267,7 +267,7 @@ public partial class StreckenkarteViewModel : ObservableObject
     /// <see cref="CourseUebertragenViewModel.Zeige"/>. Nur wählbar, wenn es eine Strecke gibt.
     /// </remarks>
     [RelayCommand(CanExecute = nameof(HatStrecke))]
-    private void GarminUebertragen()
+    private async Task GarminUebertragen()
     {
         List<Coursezeile> zeilen = IstBearbeitet && _einheit is not null
             ? [new Coursezeile(_bearbeitet, BildeCoursename.FuerEtappe(new Etappe(_einheit, _bearbeitet), bearbeitet: true), "Strecke")]
@@ -275,6 +275,13 @@ public partial class StreckenkarteViewModel : ObservableObject
                 _alleEtappen.Count > 1 ? $"Etappe {Nummer(e)}" : "Strecke"))];
         Window? fenster = global::System.Windows.Application.Current?.Windows.OfType<TourdetailFenster>()
             .FirstOrDefault(f => f.DataContext is TourdetailViewModel tourdetail && tourdetail.Streckenkarte == this);
+        if (ApiCourseUebertragung is { } api)
+        {
+            try { await api(zeilen); }
+            catch (OperationCanceledException) { }
+            catch { Exporthinweis = "Course-Übertragung konnte nicht geöffnet werden."; }
+            return;
+        }
         CourseUebertragenViewModel.Zeige(fenster, zeilen, _ladeProfil(), _ladeRouting);
 
         // Nummer der Etappe unter allen Etappen des Tourdetails, ab 1
