@@ -7,7 +7,7 @@ namespace AndyTours.Daten;
 
 public sealed partial class SqliteGarminImportJobs
 {
-    public Task<IReadOnlyList<GarminImportKandidatAntwort>> BeobachteteKandidaten(
+    public Task<IReadOnlyList<GarminImportBeobachtung>> BeobachteteKandidaten(
         GarminImportLease lease, CancellationToken ct = default)
     {
         ValidateLease(lease);
@@ -18,7 +18,7 @@ public sealed partial class SqliteGarminImportJobs
         var result = ReadCandidates(db, tx, lease.JobId);
         ct.ThrowIfCancellationRequested();
         tx.Commit();
-        return Task.FromResult<IReadOnlyList<GarminImportKandidatAntwort>>(result);
+        return Task.FromResult<IReadOnlyList<GarminImportBeobachtung>>(result);
     }
 
     public Task<GarminImportKandidatAntwort> DownloadKandidatSpeichern(
@@ -92,22 +92,23 @@ public sealed partial class SqliteGarminImportJobs
         if (command.ExecuteScalar() is null) throw Konflikt("Garmin-Worker-Lease ist nicht mehr gültig.");
     }
 
-    private static List<GarminImportKandidatAntwort> ReadCandidates(SqliteConnection db, SqliteTransaction tx, Guid jobId)
+    private static List<GarminImportBeobachtung> ReadCandidates(SqliteConnection db, SqliteTransaction tx, Guid jobId)
     {
-        var items = new List<GarminImportKandidatAntwort>();
+        var items = new List<GarminImportBeobachtung>();
         using var command = db.CreateCommand();
         command.Transaction = tx;
         command.CommandText = """
-            SELECT KandidatId,GarminAktivitaetId,Zustand,Datum,Name,DistanzKm,FahrzeitSekunden,Warncode
+            SELECT Paketnummer,KandidatId,GarminAktivitaetId,Zustand,Datum,Name,DistanzKm,FahrzeitSekunden,Warncode
             FROM GarminImportKandidat WHERE JobId=$job ORDER BY Paketnummer,GarminAktivitaetId;
             """;
         command.Parameters.AddWithValue("$job", jobId.ToString("D"));
         using var reader = command.ExecuteReader();
         while (reader.Read())
-            items.Add(new GarminImportKandidatAntwort(Guid.Parse(reader.GetString(0)), reader.GetInt64(1),
-                (GarminImportKandidatStatus)reader.GetInt32(2), reader.IsDBNull(3) ? null : DateOnly.Parse(reader.GetString(3), System.Globalization.CultureInfo.InvariantCulture),
-                reader.GetString(4), reader.IsDBNull(5) ? null : reader.GetDouble(5),
-                reader.IsDBNull(6) ? null : reader.GetInt64(6), reader.IsDBNull(7) ? null : reader.GetString(7)));
+            items.Add(new GarminImportBeobachtung(reader.GetInt32(0),
+                new GarminImportKandidatAntwort(Guid.Parse(reader.GetString(1)), reader.GetInt64(2),
+                (GarminImportKandidatStatus)reader.GetInt32(3), reader.IsDBNull(4) ? null : DateOnly.Parse(reader.GetString(4), System.Globalization.CultureInfo.InvariantCulture),
+                reader.GetString(5), reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                reader.IsDBNull(7) ? null : reader.GetInt64(7), reader.IsDBNull(8) ? null : reader.GetString(8))));
         return items;
     }
 

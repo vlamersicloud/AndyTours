@@ -26,6 +26,11 @@ public sealed partial class SqliteGarminImportJobs : IGarminImportArbeitspeicher
         var pending = ScalarLong(db, tx,
             "SELECT COUNT(*) FROM GarminImportKandidat WHERE JobId=$job AND Zustand=2;",
             ("$job", lease.JobId.ToString("D"))) > 0;
+        var unfinished = ScalarLong(db, tx,
+            "SELECT COUNT(*) FROM GarminImportKandidat WHERE JobId=$job AND Paketnummer=$packet AND Zustand IN(0,1);",
+            ("$job", lease.JobId.ToString("D")), ("$packet", current.Paketnummer)) > 0;
+        if (!unterbrochen && unfinished)
+            throw Konflikt("Das aktuelle Garmin-Paket enthält noch nicht abgeschlossene Kandidaten.");
 
         GarminImportJobStatus state;
         var packet = current.Paketnummer;

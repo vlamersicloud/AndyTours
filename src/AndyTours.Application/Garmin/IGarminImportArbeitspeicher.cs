@@ -9,7 +9,7 @@ public interface IGarminImportArbeitspeicher
 
     Task<GarminImportLease?> Verlaengern(GarminImportLease lease, TimeSpan dauer, CancellationToken ct = default);
 
-    Task<IReadOnlyList<GarminImportKandidatAntwort>> BeobachteteKandidaten(GarminImportLease lease, CancellationToken ct = default);
+    Task<IReadOnlyList<GarminImportBeobachtung>> BeobachteteKandidaten(GarminImportLease lease, CancellationToken ct = default);
 
     Task<GarminImportKandidatAntwort> DownloadKandidatSpeichern(GarminImportLease lease, GarminImportKandidatAntwort kandidat, CancellationToken ct = default);
 
@@ -20,6 +20,9 @@ public interface IGarminImportArbeitspeicher
         IReadOnlyList<string> warncodes,
         CancellationToken ct = default);
 }
+
+/// <summary>Server-only candidate observation paired with its durable packet number; never mapped to HTTP.</summary>
+public sealed record GarminImportBeobachtung(int Paketnummer, GarminImportKandidatAntwort Kandidat);
 
 /// <summary>A fencing token for one time-bounded worker claim.</summary>
 public sealed record GarminImportLease(

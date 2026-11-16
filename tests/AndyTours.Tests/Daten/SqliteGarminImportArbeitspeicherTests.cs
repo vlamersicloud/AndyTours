@@ -123,7 +123,7 @@ public sealed class SqliteGarminImportArbeitspeicherTests
     {
         using var f = new Fixture(automatic: true);
         var lease = f.Claim();
-        await f.Jobs.DownloadKandidatSpeichern(lease, Fixture.Candidate(606));
+        await f.Jobs.DownloadKandidatSpeichern(lease, Fixture.Candidate(606, GarminImportKandidatStatus.FitBereit));
         var completed = await f.Jobs.PaketAbschliessen(lease, false, true, []);
         Assert.Equal(2, completed.Paketnummer);
         Assert.Equal(GarminImportJobStatus.Wartend, completed.Status);
