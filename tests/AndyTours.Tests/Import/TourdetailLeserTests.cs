@@ -36,6 +36,32 @@ public sealed class TourdetailLeserTests
         Assert.Empty(Directory.GetFiles(Path.Combine(f.Root, ".fit-snapshots"), ".fit-verlauf-*.tmp"));
     }
 
+    [Fact]
+    public async Task LiestRecordOnlyFitOhneSessionOderActivityNachricht()
+    {
+        using var f = new Fixture(); var id = f.Add("record-only.fit");
+        var path = Path.Combine(f.Root, "record-only.fit"); var start = new Dynastream.Fit.DateTime(new DateTime(2026, 4, 1, 8, 0, 0, DateTimeKind.Utc));
+        using (var file = new FileStream(path, FileMode.Create, FileAccess.ReadWrite))
+        {
+            var encoder = new Dynastream.Fit.Encode(Dynastream.Fit.ProtocolVersion.V20); encoder.Open(file);
+            var fileId = new Dynastream.Fit.FileIdMesg(); fileId.SetType(Dynastream.Fit.File.Activity); fileId.SetManufacturer(Dynastream.Fit.Manufacturer.Garmin); fileId.SetTimeCreated(start); encoder.Write(fileId);
+            for (uint i = 0; i < 2; i++) { var record = new Dynastream.Fit.RecordMesg(); record.SetTimestamp(new Dynastream.Fit.DateTime(start.GetTimeStamp() + i * 10)); record.SetDistance(i * 100); record.SetHeartRate((byte)(120 + i * 10)); encoder.Write(record); }
+            encoder.Close();
+        }
+        var response = await f.Reader.Laden(new([id]), CancellationToken.None); var points = Assert.Single(response.Etappen).Verlauf!;
+        Assert.Equal(2, points.Count); Assert.Equal(new long[] { 0, 10000 }, points.Select(p => p.FahrzeitMillisekunden)); Assert.Equal(0.1, points[1].DistanzKm);
+        Assert.Equal(DateTimeOffset.Parse("2026-04-01T08:00:00Z", System.Globalization.CultureInfo.InvariantCulture), points[0].ZeitpunktUtc); Assert.Equal(DateTimeOffset.Parse("2026-04-01T08:00:10Z", System.Globalization.CultureInfo.InvariantCulture), points[1].ZeitpunktUtc);
+        Assert.Equal(new int?[] { 120, 130 }, points.Select(p => p.Puls)); Assert.Null(response.Etappen[0].Warncode); Assert.Empty(Directory.GetFiles(Path.Combine(f.Root, ".fit-snapshots"), ".fit-verlauf-*.tmp"));
+    }
+
+    [Fact]
+    public void ParserOverloadsHonorPrecancelBeforeFileAccess()
+    {
+        using var cts = new CancellationTokenSource(); cts.Cancel();
+        Assert.ThrowsAny<OperationCanceledException>(() => AndyTours.Import.Garmin.LeseFitAufzeichnung.Ausfuehren("missing.fit", TimeZoneInfo.Utc, cts.Token));
+        Assert.ThrowsAny<OperationCanceledException>(() => AndyTours.Import.Garmin.LeseFitVerlauf.Ausfuehren("missing.fit", cts.Token));
+    }
+
     private sealed class Fixture : IDisposable
     {
         public string Root { get; } = Path.Combine(Path.GetTempPath(), "TourdetailLeser-" + Guid.NewGuid().ToString("N")); private readonly string _db; private readonly long _activity; public TourdetailLeser Reader { get; }
