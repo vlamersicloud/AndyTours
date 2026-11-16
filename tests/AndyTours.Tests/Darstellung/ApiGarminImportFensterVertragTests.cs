@@ -6,29 +6,33 @@ namespace AndyTours.Tests.Darstellung;
 
 public sealed class ApiGarminImportFensterVertragTests
 {
-    private static readonly XNamespace Presentation = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
-    private static XDocument Load()
+    private static readonly XNamespace P = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+    private static readonly XNamespace X = "http://schemas.microsoft.com/winfx/2006/xaml";
+    private static XDocument Load(string name)
     {
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AndyTours.ApiGarminImportFenster.xaml");
+        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
         Assert.NotNull(stream);
         return XDocument.Load(stream!);
     }
-
     [Fact]
-    public void DefinesResourcesAndAllJobCommands()
+    public void DefinesResourcesAndReviewCommand()
     {
-        var document = Load();
-        var window = document.Root!;
-        var resourceKeys = window.Element(Presentation + "Window.Resources")!.Elements()
-            .Select(element => (string?)element.Attribute(XNamespace.Get("http://schemas.microsoft.com/winfx/2006/xaml") + "Key"))
-            .Where(key => key is not null).ToHashSet(StringComparer.Ordinal);
-        Assert.Contains("VisibleWhenTrue", resourceKeys);
-        Assert.Contains("CandidateStatusConverter", resourceKeys);
-        Assert.Contains("DurationConverter", resourceKeys);
-        var commands = document.Descendants(Presentation + "Button").Select(button => (string?)button.Attribute("Command")).ToArray();
-        foreach (var name in new[] { "StartenCommand", "LadenAktuellenCommand", "FortsetzenCommand", "AbbrechenCommand", "VorigeSeiteCommand", "NaechsteSeiteCommand" })
-            Assert.Contains("{Binding " + name + "}", commands);
-        Assert.Single(document.Descendants(Presentation + "WrapPanel"));
-        Assert.Contains(document.Descendants(Presentation + "TextBlock"), element => ((string?)element.Attribute("Text"))?.Contains("Prüfung und Übernahme", StringComparison.Ordinal) == true);
+        var d = Load("AndyTours.ApiGarminImportFenster.xaml");
+        var keys = d.Root!.Element(P + "Window.Resources")!.Elements().Select(e => (string?)e.Attribute(X + "Key")).ToHashSet(StringComparer.Ordinal);
+        Assert.Contains("VisibleWhenTrue", keys); Assert.Contains("CandidateStatusConverter", keys); Assert.Contains("DurationConverter", keys);
+        var commands = d.Descendants(P + "Button").Select(b => (string?)b.Attribute("Command")).ToArray();
+        foreach (var name in new[] { "StartenCommand", "LadenAktuellenCommand", "FortsetzenCommand", "AbbrechenCommand", "VorigeSeiteCommand", "NaechsteSeiteCommand", "PruefenCommand" }) Assert.Contains("{Binding " + name + "}", commands);
+        Assert.Single(d.Descendants(P + "WrapPanel"));
+        Assert.Contains(d.Descendants(P + "TextBlock"), e => ((string?)e.Attribute("Text"))?.Contains("FIT-Dateien", StringComparison.Ordinal) == true);
+    }
+    [Fact]
+    public void ReviewDialogLocksAndShowsHintsWhileSaving()
+    {
+        var d = Load("AndyTours.GarminImportFenster.xaml");
+        Assert.Contains(d.Descendants(P + "DataGrid"), grid => grid.Element(P + "DataGrid.Style")?.Descendants(P + "DataTrigger").Any(t => (string?)t.Attribute("Binding") == "{Binding Speichert}" && t.Elements(P + "Setter").Any(s => (string?)s.Attribute("Property") == "IsEnabled" && (string?)s.Attribute("Value") == "False")) == true);
+        var cancel = Assert.Single(d.Descendants(P + "Button"), b => (string?)b.Attribute(X + "Name") == "AbbrechenButton");
+        Assert.Contains(cancel.Descendants(P + "DataTrigger"), t => (string?)t.Attribute("Binding") == "{Binding Speichert}" && t.Elements(P + "Setter").Any(s => (string?)s.Attribute("Property") == "IsEnabled" && (string?)s.Attribute("Value") == "False"));
+        Assert.Contains(d.Descendants(P + "DataGridTextColumn"), c => (string?)c.Attribute("Header") == "Hinweis" && (string?)c.Attribute("Binding") == "{Binding Hinweis, Mode=OneWay}");
+        Assert.Contains(d.Descendants(P + "TextBlock"), t => (string?)t.Attribute("Text") == "{Binding ErklaerungText}");
     }
 }
