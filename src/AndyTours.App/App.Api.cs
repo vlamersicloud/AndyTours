@@ -26,7 +26,7 @@ public partial class App
 
             sitzung = dialog.Sitzung;
             lokalesBackend = dialog.LokalesBackend;
-            var viewModel = new ApiUebersichtViewModel(sitzung.Auswertung, sitzung.Touren, sitzung.Stammdaten);
+            var viewModel = new ApiUebersichtViewModel(sitzung.Auswertung, sitzung.Touren, sitzung.Stammdaten, sitzung.Puls);
             hauptfenster = new ApiHauptfenster(viewModel, sitzung.BasisAdresse);
             var fenster = hauptfenster;
             var uebergebeneSitzung = sitzung;
