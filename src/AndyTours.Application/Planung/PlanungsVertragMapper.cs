@@ -2,7 +2,7 @@ using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 using AndyTours.Core.Modell;
 
-namespace AndyTours.Import.Planung;
+namespace AndyTours.Application.Planung;
 
 public static class PlanungsVertragMapper
 {

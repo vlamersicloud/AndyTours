@@ -1,7 +1,7 @@
 using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 using AndyTours.Core.Modell;
-using AndyTours.Import.Planung;
+using AndyTours.Application.Planung;
 
 namespace AndyTours.Tests.Import;
 
