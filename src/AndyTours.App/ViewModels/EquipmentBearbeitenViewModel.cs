@@ -25,7 +25,7 @@ public partial class EquipmentBearbeitenViewModel : ObservableObject
     private readonly Func<Equipmenteingaben, string?> _pruefen;
 
     /// <summary>Speichert die Eingaben; <c>false</c>, wenn das Speichern fehlgeschlagen ist.</summary>
-    private readonly Func<Equipmenteingaben, bool> _speichern;
+    private readonly Func<Equipmenteingaben, Task<bool>> _speichern;
 
     /// <summary>
     /// Erzeugt das ViewModel und füllt die Felder mit den Eingaben des Equipments.
@@ -43,6 +43,18 @@ public partial class EquipmentBearbeitenViewModel : ObservableObject
         string titel,
         Func<Equipmenteingaben, string?> pruefen,
         Func<Equipmenteingaben, bool> speichern)
+        : this(eingaben, aktivitaeten, kategorien, titel, pruefen, values => Task.FromResult(speichern(values)))
+    {
+    }
+
+    /// <summary>Erzeugt das ViewModel mit asynchronem Speicher-Callback.</summary>
+    public EquipmentBearbeitenViewModel(
+        Equipmenteingaben eingaben,
+        IEnumerable<Auswahleintrag> aktivitaeten,
+        IEnumerable<string> kategorien,
+        string titel,
+        Func<Equipmenteingaben, string?> pruefen,
+        Func<Equipmenteingaben, Task<bool>> speichern)
     {
         _pruefen = pruefen;
         _speichern = speichern;
@@ -73,6 +85,10 @@ public partial class EquipmentBearbeitenViewModel : ObservableObject
 
     /// <summary>Wird ausgelöst, sobald gespeichert wurde; das Fenster schließt sich dann.</summary>
     public event EventHandler? Gespeichert;
+
+    /// <summary>Gibt an, ob gerade gespeichert wird.</summary>
+    [ObservableProperty]
+    private bool _speichert;
 
     /// <summary>Titel des Fensters.</summary>
     public string Titel { get; }
@@ -130,16 +146,34 @@ public partial class EquipmentBearbeitenViewModel : ObservableObject
 
     /// <summary>Befehl „OK“: speichert und schließt das Fenster; bei einem Fehler bleibt es offen.</summary>
     [RelayCommand(CanExecute = nameof(IstGueltig))]
-    private void Ok()
+    private async Task OkAsync()
     {
-        if (_speichern(AktuelleEingaben()))
+        if (!IstGueltig()) return;
+        Speichert = true;
+        try
         {
-            Gespeichert?.Invoke(this, EventArgs.Empty);
+            if (await _speichern(AktuelleEingaben())) Gespeichert?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            Hinweis = "Speichern fehlgeschlagen oder Status unklar. Bitte Verbindung prüfen; Änderungen wurden nicht übernommen.";
+        }
+        finally
+        {
+            Speichert = false;
+            OkCommand.NotifyCanExecuteChanged();
+            KennungEntfernenCommand.NotifyCanExecuteChanged();
         }
     }
 
-    /// <summary>Wählbarkeit von „OK“: keine ungültige Eingabe.</summary>
-    private bool IstGueltig() => Hinweis.Length == 0;
+    partial void OnSpeichertChanged(bool value)
+    {
+        OkCommand.NotifyCanExecuteChanged();
+        KennungEntfernenCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>Wählbarkeit von „OK“: gültige Eingaben und kein laufender Speichervorgang.</summary>
+    private bool IstGueltig() => !Speichert && Hinweis.Length == 0;
 
     /// <summary>
     /// Befehl „Entfernen“ der Gerätezuordnung: nimmt die markierte Kennung aus der Liste.
@@ -158,13 +192,13 @@ public partial class EquipmentBearbeitenViewModel : ObservableObject
     }
 
     /// <summary>Wählbarkeit von „Entfernen“: eine Kennung ist markiert.</summary>
-    private bool IstKennungMarkiert() => MarkierteKennung is not null;
+    private bool IstKennungMarkiert() => !Speichert && MarkierteKennung is not null;
 
     /// <summary>Prüft nach jeder Änderung eines Feldes neu; ohne Möglichkeit für Standard wird er abgeschaltet.</summary>
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
-        if (e.PropertyName is nameof(Hinweis) or nameof(KannStandard))
+        if (e.PropertyName is nameof(Hinweis) or nameof(KannStandard) or nameof(Speichert))
         {
             return;
         }

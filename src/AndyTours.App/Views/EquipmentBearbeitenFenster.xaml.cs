@@ -14,6 +14,8 @@ namespace AndyTours.App.Views;
 /// </remarks>
 public partial class EquipmentBearbeitenFenster : Window
 {
+    private readonly EquipmentBearbeitenViewModel _viewModel;
+    private bool _saveSucceeded;
     /// <summary>
     /// Erzeugt das Fenster und verbindet es mit dem ViewModel.
     /// </summary>
@@ -23,9 +25,18 @@ public partial class EquipmentBearbeitenFenster : Window
         InitializeComponent();
         Oberflaechenskalierung.Anmelden(this);
         DataContext = viewModel;
-        viewModel.Gespeichert += (_, _) => DialogResult = true;
+        viewModel.Gespeichert += (_, _) => { _saveSucceeded = true; DialogResult = true; };
+        _viewModel = viewModel;
+        Closing += OnClosing;
 
         // Tastaturbedienung: Fokus in den Namen
         Loaded += (_, _) => NameFeld.Focus();
+    }
+    private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (_viewModel.Speichert && !_saveSucceeded)
+        {
+            e.Cancel = true;
+        }
     }
 }
