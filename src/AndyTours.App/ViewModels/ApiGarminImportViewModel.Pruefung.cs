@@ -67,12 +67,12 @@ public partial class ApiGarminImportViewModel
                         StammdatenFehlerart.NichtGefunden => "Importauftrag nicht gefunden.",
                         _ => "Übernahmeanfrage ungültig."
                     };
-                    if (IsAlive()) { Status = message; editor.Hinweis = message; }
+                    if (IsAlive()) { Status = message; if (editor is not null) editor.Hinweis = message; }
                     return false;
                 }
                 catch
                 {
-                    if (IsAlive()) { HatAenderungen = true; Status = "Ergebnis unklar; Auftrag möglicherweise verarbeitet. Status aktualisieren, nicht blind erneut bestätigen."; editor.Hinweis = Status; }
+                    if (IsAlive()) { HatAenderungen = true; Status = "Ergebnis unklar; Auftrag möglicherweise verarbeitet. Status aktualisieren, nicht blind erneut bestätigen."; if (editor is not null) editor.Hinweis = Status; }
                     return false;
                 }
                 finally { if (IsAlive()) Aendert = false; }
