@@ -71,7 +71,8 @@ public sealed class SqliteKategorienVerwaltungTests : IDisposable
         Assert.Equal(StammdatenFehlerart.Konflikt, usedByTour.Art);
 
         var categoryEquipment = await LegeKategorieAn("Equipmarke");
-        var equipmentCategory = Assert.Single(categoryEquipment.Eintraege);
+        Assert.Equal(2, categoryEquipment.Eintraege.Count);
+        var equipmentCategory = categoryEquipment.Eintraege.Single(k => k.Name == "Equipmarke");
         FuegeEquipmentHinzu("Bike", equipmentCategory.Name);
         var usedByEquipment = await Assert.ThrowsAsync<StammdatenException>(() =>
             _kategorien.Loeschen(equipmentCategory.Id, categoryEquipment.Version));

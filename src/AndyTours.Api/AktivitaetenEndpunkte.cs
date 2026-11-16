@@ -38,7 +38,7 @@ public static class AktivitaetenEndpunkte
                 ? version[1..^1]
                 : version;
             return MitVersion(await verwaltung.Loeschen(id, normalizedVersion, ct), ctx);
-        }).WithDescription("If-Match enthält die unquotierte Familienversion der vollständigen geordneten Aktivitätsliste.")
+        }).WithDescription("If-Match enthält die Familienversion der vollständigen geordneten Aktivitätsliste als unquotierten Hash oder quotierten starken ETag; Wildcards, schwache und Listen-Tags sind ungültig.")
             .Produces<AktivitaetenAntwort>().ProducesProblem(400).ProducesProblem(404).ProducesProblem(409);
 
         gruppe.MapPut("/hauptaktivitaet", async (AktivitaetAuswahlAnfrage anfrage, IAktivitaetenVerwaltung verwaltung, HttpContext ctx, CancellationToken ct) =>

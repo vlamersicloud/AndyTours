@@ -14,7 +14,7 @@ public sealed class AktivitaetenHttpVerwaltung(HttpClient http) : IAktivitaetenV
 
     public async Task<AktivitaetenAntwort> Laden(CancellationToken ct = default)
     {
-        using var response = await http.GetAsync(Basis, ct);
+        using var response = await http.GetAsync(Basis, HttpCompletionOption.ResponseHeadersRead, ct);
         await Pruefe(response, ct);
         return await LiesAntwort(response, ct);
     }
@@ -29,7 +29,7 @@ public sealed class AktivitaetenHttpVerwaltung(HttpClient http) : IAktivitaetenV
     {
         using var request = new HttpRequestMessage(HttpMethod.Delete, Basis + Id(id));
         request.Headers.TryAddWithoutValidation("If-Match", $"\"{version}\"");
-        using var response = await http.SendAsync(request, ct);
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         await Pruefe(response, ct);
         return await LiesAntwort(response, ct);
     }
@@ -46,7 +46,7 @@ public sealed class AktivitaetenHttpVerwaltung(HttpClient http) : IAktivitaetenV
     private async Task<AktivitaetenAntwort> SendeJson<T>(HttpMethod methode, string pfad, T anfrage, CancellationToken ct)
     {
         using var request = new HttpRequestMessage(methode, pfad) { Content = JsonContent.Create(anfrage) };
-        using var response = await http.SendAsync(request, ct);
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         await Pruefe(response, ct);
         return await LiesAntwort(response, ct);
     }

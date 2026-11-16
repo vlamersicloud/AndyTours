@@ -14,7 +14,7 @@ public sealed class KategorienVerwaltungHttpClient(HttpClient http) : IKategorie
 
     public async Task<KategorienAntwort> Laden(CancellationToken ct = default)
     {
-        using var response = await http.GetAsync(Basis, ct);
+        using var response = await http.GetAsync(Basis, HttpCompletionOption.ResponseHeadersRead, ct);
         await Pruefe(response, ct);
         return await LiesAntwort(response, ct);
     }
@@ -29,7 +29,7 @@ public sealed class KategorienVerwaltungHttpClient(HttpClient http) : IKategorie
     {
         using var request = new HttpRequestMessage(HttpMethod.Delete, Basis + Id(id));
         request.Headers.TryAddWithoutValidation("If-Match", $"\"{version}\"");
-        using var response = await http.SendAsync(request, ct);
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         await Pruefe(response, ct);
         return await LiesAntwort(response, ct);
     }
@@ -43,7 +43,7 @@ public sealed class KategorienVerwaltungHttpClient(HttpClient http) : IKategorie
     private async Task<KategorienAntwort> SendeJson<T>(HttpMethod methode, string pfad, T anfrage, CancellationToken ct)
     {
         using var request = new HttpRequestMessage(methode, pfad) { Content = JsonContent.Create(anfrage) };
-        using var response = await http.SendAsync(request, ct);
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         await Pruefe(response, ct);
         return await LiesAntwort(response, ct);
     }
