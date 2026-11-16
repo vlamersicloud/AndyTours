@@ -24,11 +24,20 @@ public partial class TourenplanungViewModel
             cancellationToken.ThrowIfCancellationRequested();
             var dto = new PlanungsStand(ToContract(profil), [new(von.Breite, von.Laenge), new(nach.Breite, nach.Laenge)],
                 [new(response.Punkte, response.Abbiegepunkte, response.IstLuftlinie)]);
-            return PlanungsVertragMapper.ToCore(dto, cancellationToken).Teilstuecke[0];
+            var segment = PlanungsVertragMapper.ToCore(dto, cancellationToken).Teilstuecke[0];
+            if (segment?.IstLuftlinie == true)
+                Hinweis = response.Warncode switch
+                {
+                    "routing_einstellungen_unvollstaendig" => EinstellungenUnvollstaendig,
+                    "routing_nicht_erreichbar" => DienstNichtErreichbar,
+                    _ => "Die Strecke wurde nicht ermittelt und wird als Luftlinie angezeigt."
+                };
+            return segment;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Hinweis = "Die Strecke konnte nicht ermittelt werden; sie wird als Luftlinie angezeigt.";
             return ErstelleLuftlinie.Ausfuehren(von, nach);
         }
