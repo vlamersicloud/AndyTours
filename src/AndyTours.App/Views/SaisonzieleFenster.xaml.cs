@@ -14,6 +14,7 @@ namespace AndyTours.App.Views;
 /// </remarks>
 public partial class SaisonzieleFenster : Window
 {
+    private bool _gespeichert;
     /// <summary>
     /// Erzeugt das Fenster und verbindet es mit dem ViewModel.
     /// </summary>
@@ -23,7 +24,8 @@ public partial class SaisonzieleFenster : Window
         InitializeComponent();
         Oberflaechenskalierung.Anmelden(this);
         DataContext = viewModel;
-        viewModel.Gespeichert += (_, _) => DialogResult = true;
+        viewModel.Gespeichert += (_, _) => { _gespeichert = true; DialogResult = true; };
+        Closing += (_, e) => { if (viewModel.Speichert && !_gespeichert) e.Cancel = true; };
 
         // Tastaturbedienung: Fokus in die Tabelle
         Loaded += (_, _) => Tabelle.Focus();
