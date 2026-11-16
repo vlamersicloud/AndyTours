@@ -27,7 +27,60 @@ public partial class ApiFitImportViewModel : ObservableObject, IDisposable
         _uploads = uploads ?? throw new ArgumentNullException(nameof(uploads));
 
     private bool Idle() => !_disposed && !Laedt && !Aendert && !EditorOffen;
-    private bool KannHochladen() => Idle() && Dateien.Any(x => !x.Hochgeladen);
+    private bool KannHochladen() => Idle() && Dateien.Any(x => !x.Hochgeladen && x.LokalerPfad is not null);
+    private bool KannLaden() => Idle();
+
+    [RelayCommand(CanExecute = nameof(KannLaden))]
+    private async Task LadenAsync()
+    {
+        if (!KannLaden()) return;
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
+        Laedt = true;
+        try
+        {
+            var first = await _uploads.Liste(0, 200, linked.Token);
+            if (!IsAlive(linked.Token)) return;
+            var all = new List<FitUploadAntwort>(first.Eintraege);
+            for (var start = 200; start < first.Gesamt; start += 200)
+            {
+                var page = await _uploads.Liste(start, 200, linked.Token);
+                if (!IsAlive(linked.Token)) return;
+                all.AddRange(page.Eintraege);
+            }
+            var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            foreach (var metadata in all.DistinctBy(x => x.UploadId))
+            {
+                var row = Dateien.FirstOrDefault(x => x.UploadId == metadata.UploadId);
+                if (row is null)
+                {
+                    row = new ApiFitImportDatei(null, metadata.Dateiname, metadata.UploadId);
+                    Dateien.Add(row);
+                }
+                var sameVersion = row.Uploaded?.Version == metadata.Version;
+                row.Uploaded = metadata;
+                if (metadata.Status is FitUploadStatus.Importiert or FitUploadStatus.Uebersprungen)
+                {
+                    row.Abgeschlossen = true;
+                    row.Status = metadata.Status == FitUploadStatus.Importiert ? "Importiert" : "Übersprungen";
+                }
+                else if (!sameVersion || row.Status == "Bereit")
+                {
+                    row.Abgeschlossen = false;
+                    row.Status = "Hochgeladen";
+                }
+            }
+            Status = $"{all.DistinctBy(x => x.UploadId).Count()} vorhandene Uploads wiederhergestellt.";
+        }
+        catch (OperationCanceledException) when (linked.IsCancellationRequested) { }
+        catch
+        {
+            if (IsAlive(linked.Token)) Status = "Vorhandene Uploads konnten nicht geladen werden.";
+        }
+        finally
+        {
+            if (IsAlive(CancellationToken.None)) Laedt = false;
+        }
+    }
 
     public void Hinzufuegen(IEnumerable<string> paths)
     {
@@ -53,12 +106,12 @@ public partial class ApiFitImportViewModel : ObservableObject, IDisposable
         Laedt = true;
         try
         {
-            foreach (var file in Dateien.Where(x => !x.Hochgeladen).ToArray())
+            foreach (var file in Dateien.Where(x => !x.Hochgeladen && x.LokalerPfad is not null).ToArray())
             {
                 if (!IsAlive(linked.Token)) return;
                 try
                 {
-                    await using var stream = new FileStream(file.LokalerPfad, FileMode.Open, FileAccess.Read, FileShare.Read,
+                    await using var stream = new FileStream(file.LokalerPfad!, FileMode.Open, FileAccess.Read, FileShare.Read,
                         81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
                     var uploaded = await _uploads.Hochladen(file.UploadId, file.Dateiname, stream, linked.Token);
                     if (!IsAlive(linked.Token)) return;
@@ -98,6 +151,7 @@ public partial class ApiFitImportViewModel : ObservableObject, IDisposable
     private void NotifyCommands()
     {
         HochladenCommand.NotifyCanExecuteChanged();
+        LadenCommand.NotifyCanExecuteChanged();
         NotifyPruefCommands();
     }
     partial void NotifyPruefCommands();
@@ -119,8 +173,8 @@ public partial class ApiFitImportViewModel : ObservableObject, IDisposable
 /// <summary>A queued local file; its source path is internal and never part of an API DTO.</summary>
 public sealed partial class ApiFitImportDatei : ObservableObject
 {
-    internal string LokalerPfad { get; }
-    public Guid UploadId { get; } = Guid.NewGuid();
+    internal string? LokalerPfad { get; }
+    public Guid UploadId { get; }
     public string Dateiname { get; }
     public bool Hochgeladen => Uploaded is not null;
 
@@ -133,9 +187,10 @@ public sealed partial class ApiFitImportDatei : ObservableObject
         set { if (SetProperty(ref _uploaded, value)) OnPropertyChanged(nameof(Hochgeladen)); }
     }
 
-    internal ApiFitImportDatei(string lokalerPfad, string dateiname)
+    internal ApiFitImportDatei(string? lokalerPfad, string dateiname, Guid? uploadId = null)
     {
         LokalerPfad = lokalerPfad;
         Dateiname = dateiname;
+        UploadId = uploadId ?? Guid.NewGuid();
     }
 }
