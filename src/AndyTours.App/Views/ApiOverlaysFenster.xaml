@@ -29,10 +29,11 @@
    <WrapPanel Margin="0,5"><TextBlock Text="Farbe:" VerticalAlignment="Center"/>
     <ComboBox ItemsSource="{Binding Farbauswahl}" SelectedItem="{Binding GewaehlteFarbe}" IsEnabled="{Binding KannOverlayAendern}" DisplayMemberPath="Name" Width="180" Margin="4,0"/>
     <TextBlock Text="Gemeinsam:" VerticalAlignment="Center"/>
-    <ComboBox ItemsSource="{Binding GemeinsameFarbauswahl}" SelectedItem="{Binding GewaehlteGemeinsameFarbe}" DisplayMemberPath="Name" Width="180" Margin="4,0"/>
+    <ComboBox ItemsSource="{Binding GemeinsameFarbauswahl}" SelectedItem="{Binding GewaehlteGemeinsameFarbe}" DisplayMemberPath="Name" Width="180" Margin="4,0" IsEnabled="{Binding KannAendern}"/>
    </WrapPanel>
   </StackPanel>
-  <TreeView ItemsSource="{Binding Wurzeln}" MouseDoubleClick="BaumDoppelklick" PreviewMouseRightButtonDown="BaumRechtsklick">
+  <TreeView ItemsSource="{Binding Wurzeln}" IsEnabled="{Binding IstBereit}" MouseDoubleClick="BaumDoppelklick" PreviewMouseRightButtonDown="BaumRechtsklick">
+   <TreeView.ItemContainerStyle><Style TargetType="TreeViewItem"><Setter Property="IsSelected" Value="{Binding IstAusgewaehlt, Mode=TwoWay}"/><Setter Property="IsExpanded" Value="{Binding IstAufgeklappt, Mode=TwoWay}"/></Style></TreeView.ItemContainerStyle>
    <TreeView.Resources><HierarchicalDataTemplate DataType="{x:Type local:ApiOverlayknoten}" ItemsSource="{Binding Kinder}"><StackPanel Orientation="Horizontal"><CheckBox IsThreeState="True" IsChecked="{Binding IstEingeschaltet, Mode=TwoWay}"/><TextBlock Text="{Binding Name}" Margin="5,0"/><TextBlock Text="{Binding Farbe}" Foreground="{Binding Farbe}" Margin="4,0"/></StackPanel></HierarchicalDataTemplate>
    </TreeView.Resources>
   </TreeView>
