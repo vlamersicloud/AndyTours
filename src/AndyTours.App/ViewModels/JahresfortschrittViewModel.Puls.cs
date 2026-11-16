@@ -124,6 +124,7 @@ public partial class JahresfortschrittViewModel
             if (_generation != generation || _datenordner != ordner)
             { PulsStatus = "Auswahl wurde geändert. Pulsanalyse bitte erneut laden."; return; }
             ZeichnePulszeiten(perioden, ergebnis.Zeiten, profil);
+            ZeigePuls = true;
             double gemessen = ergebnis.Zeiten.Values.Sum();
             PulsStatus = $"{daten.Count} Aktivitäten; {ergebnis.OhneDaten} ohne auswertbare FIT-Pulsmesszeit. "
                 + $"Auswertbare Messzeit {TimeSpan.FromSeconds(gemessen).TotalHours.ToString("N2", Deutsch)} h, "

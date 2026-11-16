@@ -138,3 +138,7 @@ Die Aktivitätsübersicht zeigt ein einziges Diagramm. Unter „Diagramminhalt �
 Für Puls bleibt „Pulsanalyse laden“ erforderlich; die geladenen Garmin-Zonen bzw. 10-bpm-Bereiche erscheinen im gemeinsamen Diagramm. Profil- und Zeitraumänderungen verwerfen die alte Pulsanalyse; die Kennzahlauswahl erhält bereits geladene Ergebnisse. Das zweite Pulsdiagramm entfällt, die Detailtabelle bleibt erhalten.
 
 Unter „Darstellung“ kann für alle ausgewählten Datenreihen gemeinsam zwischen Balken und Linie gewechselt werden. Die Auswahl ändert keine Filter und erfordert kein erneutes Laden der Pulsanalyse. Pulslinien zeigen die Minuten des einzelnen Bereichs (nicht die kumulierte Stapelhöhe); Perioden ohne Messzeit erscheinen mit null Minuten.
+
+## Kompakte Pulsansicht
+
+Bestleistungen, Saisonhinweise und Pulsdetails sind standardmäßig eingeklappt. Die Pulsdetails enthalten die vollständige Statusmeldung, die Garmin-Referenz und eine separat scrollbar begrenzte Tabelle mit festen, lesbaren Spaltenbreiten. In der Übersicht ist die Statuszeile auf eine Zeile begrenzt; der vollständige Text steht auch im Tooltip. Nach erfolgreichem Laden der Pulsanalyse wird die Pulsreihe im gemeinsamen Diagramm automatisch eingeblendet. Die Übersicht passt sich an die Fensterbreite an; horizontales Scrollen betrifft bei Bedarf nur die Detailtabelle.
