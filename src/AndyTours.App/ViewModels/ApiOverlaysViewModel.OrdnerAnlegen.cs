@@ -86,7 +86,7 @@ public sealed partial class ApiOverlaysViewModel
         foreach (var item in Wurzeln.SelectMany(Flatten)) item.IstAusgewaehlt = ReferenceEquals(item, node);
         var folders = BestehenderBestand?.Ordner.ToDictionary(folder => folder.Id) ?? new Dictionary<long, OverlayOrdnerAntwort>();
         var visited = new HashSet<long>();
-        long? parentId = node.Ordner?.ElternId;
+        long? parentId = node.Ordner?.ElternId ?? node.Overlay?.OrdnerId;
         while (parentId is { } currentId && visited.Add(currentId) && folders.TryGetValue(currentId, out var parent))
         {
             var parentNode = Wurzeln.SelectMany(Flatten).FirstOrDefault(item => item.IstOrdner && item.Id == currentId);

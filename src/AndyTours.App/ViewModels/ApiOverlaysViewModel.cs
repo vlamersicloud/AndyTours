@@ -61,7 +61,7 @@ public sealed partial class ApiOverlaysViewModel : ObservableObject, IDisposable
         _kontext.Geaendert -= KontextGeaendert;
         _lebensdauer.Cancel();
         Laedt = false; Aendert = false;
-        Wurzeln.Clear(); Farbauswahl.Clear(); GemeinsameFarbauswahl.Clear(); GpxZeilenBereinigen();
+        Wurzeln.Clear(); Farbauswahl.Clear(); GemeinsameFarbauswahl.Clear(); GpxZeilenBereinigen(); VerschiebezielWaehlen = null;
         Ausgewaehlt = null; Schliessen = null; NameBearbeiten = null;
         _lebensdauer.Dispose();
         OnPropertyChanged(nameof(IstBereit)); OnPropertyChanged(nameof(KannAendern)); OnPropertyChanged(nameof(KannAuswahlAendern)); OnPropertyChanged(nameof(KannOverlayAendern));
