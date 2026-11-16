@@ -33,10 +33,12 @@ public sealed class SqliteTourenMehrfachLoeschenTests : IDisposable
 
         long firstId;
         long secondId;
+        long activityId;
         using (var connection = OeffneDatenbank.Ausfuehren(Database))
         using (var transaction = connection.BeginTransaction())
         {
             var activity = AktivitaetenTabelle.Einfuegen(connection, transaction, new Aktivitaet { Name = "Rad", IstHaupt = true });
+            activityId = activity;
             var category = KategorienTabelle.Einfuegen(connection, transaction, new Kategorie { Name = "Training" });
             var insertedFirst = TrainingseinheitenTabelle.Einfuegen(connection, transaction, new Trainingseinheit
             {
@@ -93,8 +95,8 @@ public sealed class SqliteTourenMehrfachLoeschenTests : IDisposable
             Assert.Null(EinstellungTabelle.Lesen(verify, "GarminConnect.Aktivitaet.9001"));
             Assert.Null(EinstellungTabelle.Lesen(verify, "GarminConnect.Aktivitaet.9002"));
             Assert.Equal("preserve", EinstellungTabelle.Lesen(verify, "Unrelated.Preference"));
-            Assert.Null(ReadNullable(verify, "SELECT TourId FROM FitUpload WHERE UploadId=$id;", firstUpload));
-            Assert.Null(ReadNullable(verify, "SELECT TourId FROM FitUpload WHERE UploadId=$id;", secondUpload));
+            Assert.IsType<DBNull>(ReadNullable(verify, "SELECT TourId FROM FitUpload WHERE UploadId=$id;", firstUpload));
+            Assert.IsType<DBNull>(ReadNullable(verify, "SELECT TourId FROM FitUpload WHERE UploadId=$id;", secondUpload));
         }
         Assert.Equal(firstBytes, File.ReadAllBytes(firstFile));
         Assert.Equal(secondBytes, File.ReadAllBytes(secondFile));
@@ -107,11 +109,15 @@ public sealed class SqliteTourenMehrfachLoeschenTests : IDisposable
         using (var transaction = connection.BeginTransaction())
         {
             reusedId = TrainingseinheitenTabelle.Einfuegen(connection, transaction,
-                new Trainingseinheit { Datum = new DateOnly(2026, 7, 3), Name = "reused", AktivitaetId = 1 }).Id;
+                new Trainingseinheit { Datum = new DateOnly(2026, 7, 3), Name = "reused", AktivitaetId = activityId }).Id;
             transaction.Commit();
         }
         Assert.Equal(firstId, reusedId);
         var reused = (await tours.Lesen(reusedId))!;
+        var replayAfterReuse = await new SqliteTourenMehrfachverwaltung(Database).Loeschen(request, default);
+        Assert.Equal(new[] { firstId, secondId }, replayAfterReuse.GeloeschteIds);
+        Assert.NotNull(await tours.Lesen(reusedId));
+        Assert.Equal(1, ReceiptCount());
         await Assert.ThrowsAsync<TourVersionskonfliktException>(() => new SqliteTourenMehrfachverwaltung(Database).Loeschen(
             request with { Touren = [new(reusedId, reused.Version)] }, default));
         Assert.NotNull(await tours.Lesen(reusedId));
@@ -124,12 +130,20 @@ public sealed class SqliteTourenMehrfachLoeschenTests : IDisposable
         return (long)command.ExecuteScalar()!;
     }
 
-    private static string? ReadNullable(SqliteConnection connection, string sql, Guid uploadId)
+    private long ReceiptCount()
+    {
+        using var connection = OeffneDatenbank.Ausfuehren(Database);
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM ApiTourMehrfach;";
+        return (long)command.ExecuteScalar()!;
+    }
+
+    private static object? ReadNullable(SqliteConnection connection, string sql, Guid uploadId)
     {
         using var command = connection.CreateCommand();
         command.CommandText = sql;
         command.Parameters.AddWithValue("$id", uploadId.ToString("D"));
-        return command.ExecuteScalar() as string;
+        return command.ExecuteScalar();
     }
 
     public void Dispose()
