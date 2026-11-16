@@ -10,12 +10,14 @@ namespace AndyTours.Import.Garmin;
 public sealed class GarminImportArtefakte
 {
     private readonly string _datenordner;
+    private readonly TimeZoneInfo _fallbackZeitzone;
 
-    public GarminImportArtefakte(string datenordner)
+    public GarminImportArtefakte(string datenordner, TimeZoneInfo? fallbackZeitzone = null)
     {
         if (string.IsNullOrWhiteSpace(datenordner) || !Path.IsPathFullyQualified(datenordner))
             throw new ArgumentException("Serverdatenordner ungültig.", nameof(datenordner));
         _datenordner = Path.GetFullPath(datenordner);
+        _fallbackZeitzone = fallbackZeitzone ?? TimeZoneInfo.Local;
     }
 
     public async Task<GarminImportKandidatAntwort> Laden(
@@ -43,7 +45,7 @@ public sealed class GarminImportArtefakte
             try
             {
                 await LadeGarminConnectAufzeichnungen.EntpackeFitAsync(archive, fitTemp, ct).ConfigureAwait(false);
-                var parsed = LeseFitAufzeichnung.Ausfuehren(fitTemp);
+                var parsed = LeseFitAufzeichnung.Ausfuehren(fitTemp, _fallbackZeitzone);
                 var record = parsed.Aufzeichnung;
                 if (record is null || !double.IsFinite(record.DistanzKm) || record.DistanzKm < 0 ||
                     record.Fahrzeit < TimeSpan.Zero || record.Fahrzeit.Ticks % TimeSpan.TicksPerSecond != 0)

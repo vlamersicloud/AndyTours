@@ -11,13 +11,15 @@ public sealed partial class GarminImportPruefung
 {
     private readonly IGarminImportPruefspeicher _speicher;
     private readonly string _datenordner;
+    private readonly TimeZoneInfo _fallbackZeitzone;
 
-    public GarminImportPruefung(IGarminImportPruefspeicher speicher, string datenordner)
+    public GarminImportPruefung(IGarminImportPruefspeicher speicher, string datenordner, TimeZoneInfo? fallbackZeitzone = null)
     {
         _speicher = speicher ?? throw new ArgumentNullException(nameof(speicher));
         if (string.IsNullOrWhiteSpace(datenordner) || !Path.IsPathFullyQualified(datenordner))
             throw new ArgumentException("Serverdatenordner ungültig.", nameof(datenordner));
         _datenordner = Path.GetFullPath(datenordner);
+        _fallbackZeitzone = fallbackZeitzone ?? TimeZoneInfo.Local;
     }
 
     private async Task<FitSnapshot> LeseSnapshot(Guid jobId, Guid kandidatId, CancellationToken cancellationToken)
@@ -37,7 +39,7 @@ public sealed partial class GarminImportPruefung
             cancellationToken.ThrowIfCancellationRequested();
             await using var snapshotStream = new FileStream(temporary, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
             var hash = Convert.ToHexString(await SHA256.HashDataAsync(snapshotStream, cancellationToken).ConfigureAwait(false));
-            var parsed = LeseFitAufzeichnung.Ausfuehren(temporary);
+            var parsed = LeseFitAufzeichnung.Ausfuehren(temporary, _fallbackZeitzone);
             var record = parsed.Aufzeichnung;
             if (record is null || !double.IsFinite(record.DistanzKm) || record.DistanzKm < 0 || record.Fahrzeit < TimeSpan.Zero || record.Fahrzeit.Ticks % TimeSpan.TicksPerSecond != 0)
                 throw new InvalidDataException();
