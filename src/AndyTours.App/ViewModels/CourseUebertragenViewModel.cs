@@ -199,6 +199,7 @@ public partial class CourseUebertragenViewModel : ObservableObject
             return;
         }
 
+        ErfasseTransferauswahl();
         IstBeschaeftigt = true;
         var quelle = new CancellationTokenSource();
         _abbruch = quelle;
@@ -293,6 +294,7 @@ public partial class CourseUebertragenViewModel : ObservableObject
         }
         finally
         {
+            VerwerfeTransferauswahl();
             _abbruch = null;
             quelle.Dispose();
             IstBeschaeftigt = false;
