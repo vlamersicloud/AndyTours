@@ -79,5 +79,7 @@ public sealed partial class ApiOverlaysViewModel
         OrdnerAnlegenCommand.NotifyCanExecuteChanged();
         NameUebernehmenCommand.NotifyCanExecuteChanged();
         LoeschenCommand.NotifyCanExecuteChanged();
+        EigeneFarbeAendernCommand.NotifyCanExecuteChanged();
+        GemeinsameFarbeAendernCommand.NotifyCanExecuteChanged();
     }
 }
