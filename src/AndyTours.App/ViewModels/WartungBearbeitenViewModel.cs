@@ -166,6 +166,7 @@ public partial class WartungBearbeitenViewModel : ObservableObject
     private async Task Speichern()
     {
         if (WartungEingaben.AlsWartung(AktuelleEingaben(), _basis, _bestand, _heute).Wartung is not Wartung wartung) return;
+        Hinweis = string.Empty;
         Speichert = true;
         try
         {
@@ -174,7 +175,7 @@ public partial class WartungBearbeitenViewModel : ObservableObject
                 IstGespeichert = true;
                 SchliessenAngefordert?.Invoke(this, EventArgs.Empty);
             }
-            else
+            else if (string.IsNullOrEmpty(Hinweis))
             {
                 Hinweis = "Die Wartung wurde nicht bestätigt. Der Speicherstatus kann unklar sein; bitte vor einem erneuten Versuch den Bestand prüfen.";
             }

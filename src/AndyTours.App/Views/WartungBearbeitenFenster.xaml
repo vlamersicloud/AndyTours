@@ -64,7 +64,7 @@
             <Button Content="OK" MinWidth="90" Padding="8,3" IsDefault="True" Command="{Binding SpeichernCommand}" />
             <Button Content="Abbrechen" MinWidth="90" Padding="8,3" Margin="8,0,0,0" IsCancel="True">
                 <Button.Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                    <Style TargetType="Button">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Speichert}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
                         </Style.Triggers>
@@ -75,7 +75,7 @@
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <ScrollViewer.Style>
-                <Style TargetType="ScrollViewer" BasedOn="{StaticResource {x:Type ScrollViewer}}">
+                <Style TargetType="ScrollViewer">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Speichert}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
                     </Style.Triggers>
@@ -117,7 +117,16 @@
                          AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
 
                 <!-- 3. Hinweis -->
-                <TextBlock Text="Speichert…" Margin="0,8,0,0" />
+                <TextBlock Text="Speichert…" Margin="0,8,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Speichert}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
                 <TextBlock Text="{Binding Hinweis}" Foreground="#FFB00000" TextWrapping="Wrap" Margin="0,8,0,0">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
