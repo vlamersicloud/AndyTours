@@ -8,6 +8,7 @@ using AndyTours.App.Funktionen;
 using AndyTours.App.Views;
 using AndyTours.Core.Berechnungen;
 using AndyTours.Core.Modell;
+using AndyTours.Contracts.V1;
 using AndyTours.Import.Garmin;
 
 namespace AndyTours.App.ViewModels;
@@ -40,6 +41,7 @@ public partial class CourseUebertragenViewModel : ObservableObject
 
     /// <summary>Liest die Routingeinstellungen.</summary>
     private readonly Func<Routingeinstellungen> _ladeRouting;
+    private Func<Coursezeile, Fahrprofil, CancellationToken, Task<CourseExportAntwort>>? _apiExport;
 
     /// <summary>Bricht eine laufende Übertragung ab, wenn das Fenster geschlossen wird; sonst <c>null</c>.</summary>
     private CancellationTokenSource? _abbruch;
@@ -59,6 +61,13 @@ public partial class CourseUebertragenViewModel : ObservableObject
         _ziel = ziele[0];
         _profil = profil;
         _ladeRouting = ladeRouting;
+    }
+
+    public CourseUebertragenViewModel(IReadOnlyList<Coursezeile> zeilen, IReadOnlyList<Courseziel> ziele, Fahrprofil profil,
+        Func<Coursezeile, Fahrprofil, CancellationToken, Task<CourseExportAntwort>> apiExport)
+        : this(zeilen, ziele, profil, () => throw new InvalidOperationException("Routing liegt im Backend."))
+    {
+        _apiExport = apiExport ?? throw new ArgumentNullException(nameof(apiExport));
     }
 
     /// <summary>Wird ausgelöst, wenn die Übertragung beendet ist; das Fenster schließt sich dann.</summary>
@@ -133,6 +142,24 @@ public partial class CourseUebertragenViewModel : ObservableObject
         }
 
         var viewModel = new CourseUebertragenViewModel(zeilen, ziele, profil, ladeRouting);
+        new CourseUebertragenFenster(viewModel) { Owner = besitzer }.ShowDialog();
+        if (viewModel.Ergebnis is string ergebnis)
+        {
+            Meldung(besitzer, ergebnis, viewModel.ErgebnisMitWarnung ? MessageBoxImage.Warning : MessageBoxImage.Information);
+        }
+    }
+
+    public static void ZeigeApi(Window? besitzer, IReadOnlyList<Coursezeile> zeilen, Fahrprofil profil,
+        Func<Coursezeile, Fahrprofil, CancellationToken, Task<CourseExportAntwort>> backendExport)
+    {
+        List<Courseziel> ziele = FindeZiele();
+        if (ziele.Count == 0)
+        {
+            Meldung(besitzer, KeinGeraet, MessageBoxImage.Information);
+            return;
+        }
+
+        var viewModel = new CourseUebertragenViewModel(zeilen, ziele, profil, backendExport);
         new CourseUebertragenFenster(viewModel) { Owner = besitzer }.ShowDialog();
         if (viewModel.Ergebnis is string ergebnis)
         {
