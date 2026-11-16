@@ -7,6 +7,12 @@ namespace AndyTours.Import.Dateien;
 
 public sealed partial class FitDateiDienst
 {
+    internal bool VerlaufExistiert(string relativerPfad)
+    {
+        try { return File.Exists(ResolveStoredRelativeFit(relativerPfad)); }
+        catch (Exception ex) when (ex is StammdatenException or IOException or UnauthorizedAccessException or ArgumentException) { return false; }
+    }
+
     internal async Task<FitVerlaufSnapshot> VerlaufLesen(string relativerPfad, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
