@@ -20,20 +20,13 @@
 
 ## Aktueller benutzbarer Einstieg
 
-Die neue API-WPF-Migrationsansicht kann mit folgendem Kommando gestartet werden:
-
 ```powershell
 dotnet run --project src/AndyTours.App -c Release -- --api
 ```
 
-Der normale Start ohne `--api` bleibt Legacy und unverändert. Für Touren-Schreibzugriffe verlangt die API vollständige PUT-Repräsentationen einschließlich aller Pflichtfelder (nullable Felder müssen als Schlüssel vorhanden sein, dürfen aber `null` sein); POST benötigt zusätzlich den `Idempotency-Key`-Header. Der API-Modus öffnet einen Verbindungsdialog für lokales oder zentrales Backend und danach eine Übersicht mit:
+Der normale Start ohne `--api` bleibt Legacy. Der API-Modus bietet Verbindung lokal/zentral und eine Übersicht mit Zeitraum-, Aktivitäts- und Kategorienfiltern, serverseitig gefilterter Tourenliste mit Paging, Statistik, vier Kennzahlen und Diagramm. Touren können im API-Modus angelegt, bearbeitet, kopiert und gelöscht werden; Schreibvorgänge verwenden Versionsprüfung, und Neuanlagen unterstützen Idempotency-Keys. Liste und Statistik verwenden dieselben Datums-, Aktivitäts- und Kategorienfilter.
 
-- Zeitraumfiltern, Raster- und Kennzahlauswahl
-- vier Kennzahlen (Distanz, Höhenmeter, Fahrzeit, Anzahl)
-- Aktivitätsstatistik-Diagramm samt Zukunftshinweis
-- nur lesender Tourentabelle mit serverseitiger Seitennavigation
-
-Die Ansicht deckt noch keine Schreibabläufe oder übrigen Fachmodule ab. Sie ist eine Migrationsansicht, keine abgeschlossene Migration.
+Über das Stammdatenmenü sind Aktivitätenverwaltung (sieben Abläufe) und Kategorienverwaltung (sechs Abläufe) in der UI angebunden. Equipmentverträge und -port sind vorhanden, bilden aber nur die Grundlage; Backend und UI dafür sind noch offen. Inventar ist nur teilweise umgestellt: Sortierung und weitere Abläufe sind offen.
 
 ## Funktionsinventar / Paritätsprüfung
 
@@ -41,42 +34,32 @@ Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutz
 
 | Bereich | Zu erhaltende Abläufe | Status |
 |---|---|---|
-| Start / Verbindung | lokal/zentral, Fehler- und Erreichbarkeitsanzeige | teilweise: `--api`-Start und Verbindungsdialog; kein Windows-Start-/Renderingtest |
-| Touren | Lesen, Filtern, Sortieren, Anlegen, Bearbeiten, Kopieren, Löschen, Mehrfachbearbeitung | teilweise: API-CRUD mit Versionen; API-Ansicht liest und paginiert; Bearbeitungsabläufe noch offen |
-| Aktivitätsstatistik | freie Datumsgrenzen, Kalender-/Kennzahlauswahl, Saisonziele, Bestleistungen | teilweise: Statistikroute/typisierter Client und API-Übersicht für Zeitraum, Raster, Kennzahl, KPIs und Diagramm; Saisonziele/Bestleistungen noch offen |
-| Zuordnungen | Kategorien, Equipment, Aktivitäten, Trainingsbereiche, Zusammenführen | offen |
-| Pulsauswertung | FIT-Messzeiten, aktuelle Garmin-Referenz mit Abrufdatum, Lückenkennzeichnung | offen |
+| Start / Verbindung | lokal/zentral, Fehler- und Erreichbarkeitsanzeige | teilweise; kein Windows-Start-/Renderingtest |
+| Touren | Lesen, Filtern, Sortieren, CRUD, Kopieren, Mehrfachbearbeitung | teilweise: serverseitige Filter/Paging und API-CRUD mit Versionen; Sortierung und Mehrfachbearbeitung offen |
+| Aktivitätsstatistik | Datums-/Aktivitäts-/Kategorienfilter, Kennzahlen, Saisonziele, Bestleistungen | teilweise: Filter, KPIs und Diagramm; Saisonziele/Bestleistungen offen |
+| Aktivitäten | Stammdatenverwaltung | UI angebunden; sieben Abläufe vorhanden |
+| Kategorien | Stammdatenverwaltung und Zusammenführen | UI angebunden; sechs Abläufe vorhanden |
+| Zuordnungen / Inventar | Equipment, Trainingsbereiche, Reihenfolgen, Zusammenführen | teilweise; Equipment nur Contracts/Port, Backend/UI offen; Bulk-Sortierung offen |
+| Pulsauswertung | FIT-Messzeiten, Garmin-Referenz, Lückenkennzeichnung | offen |
 | Tourdetail | Höhenprofil, Messreihen, Karte, Mehrtagestouren, Trackbearbeitung | offen |
-| Garmin Connect | Key-Verwaltung ohne Rückgabe des Werts, 20er-Pakete, Hintergrundauftrag, Duplikatschutz | offen; separates Garmin-Key-/Secret-Management nicht in die API-Ansicht migriert |
-| USB / FIT | lokaler Geräteadapter, Datei-Upload, Vorauswahl, Equipment-Zuordnung, atomarer Import | offen |
-| Equipment | Stammdaten, Rad-/Sensorzuordnung, Ausmusterung, Einsatz/Haltbarkeit | offen |
-| Wartung | Erfassen, Bearbeiten, Löschen, Alarme, Kilometer-/Zeitbezug | offen |
+| Garmin Connect | Key-Verwaltung, Abruf, Duplikatschutz | offen; separates Secret-Management nicht migriert |
+| USB / FIT | Geräteadapter, Upload, Vorauswahl, Equipment-Zuordnung, Import | offen |
+| Equipment | Stammdaten, Rad-/Sensorzuordnung, Ausmusterung, Einsatz/Haltbarkeit | offen; Contracts/Port sind nur Grundlage |
+| Wartung | Erfassen, Bearbeiten, Löschen, Alarme | offen |
 | Persönliche Daten | Fahrerprofil und zugehörige Werte | offen |
-| Auswahllisten | Aktivitäten, Kategorien, Trainingsbereiche, Reihenfolgen, Zusammenführen | offen |
-| Planung | Routing, Profile, Wegpunkte, Teilstücke, Abbiegehinweise, Speichern/Laden | offen |
-| Courses / GPX | FIT-Course-Erstellung, GPX-Export, lokale Geräteübertragung | offen |
-| Overlays | Ordnerbaum, GPX-/FIT-Inhalte, Farben, Ein-/Ausblenden, Verschieben/Löschen | offen |
-| Einstellungen | Datenbestandseinstellungen getrennt von reinem Darstellungszustand | offen |
-| Sicherung | Erstellen, Auflisten, Herunterladen, Wiederherstellen, atomarer Austausch | offen |
-| Bestandsübernahme | SQLite und relative FIT-/Anhangpfade erhalten; explizit importieren, keine ungefragte Migration | offen |
-| Altdatenwerkzeug | vorhandenes Entwicklerwerkzeug weiter kompatibel halten oder explizit ersetzen | offen |
+| Planung / Courses / GPX | Routing, Kurse, Export und Geräteübertragung | offen |
+| Overlays | Ordner, Inhalte, Farben und Verwaltung | offen |
+| Einstellungen / Sicherung | Einstellungen, Backup und Wiederherstellung | offen |
+| Bestandsübernahme | SQLite- und Anhangpfade erhalten, expliziter Import | offen |
+| Altdatenwerkzeug | kompatibel halten oder explizit ersetzen | offen |
 
-Die vier Statistik-Regressionsfälle sind noch offen. Sieben SQLite-Tests wurden ergänzt und kompiliert, aber nicht ausgeführt. Tests bleiben durch den Auftraggeber auszuführen.
+Tests wurden bereitgestellt und kompiliert, aber nicht ausgeführt: sieben Touren-Store-, vier Statistik-, drei Idempotenz-, Aktivitäten-, Kategorien-, Filter- und XAML-Vertragstests. Diese Aufzählung ist keine Aussage über Gesamtparität; keine Gesamtzahl wird daraus abgeleitet. Tests sind durch den Auftraggeber auszuführen.
 
 ## Direkte Frontend-Abhängigkeiten
 
-Inventar beim Branchstart (ohne `bin/obj`):
-- 11 Dateien rufen `OeffneDatenbank.Ausfuehren` auf.
-- 12 Dateien verwenden `SqliteConnection`.
-- 4 Dateien verwenden FIT-Lesefunktionen.
-- 2 Dateien verwenden `GarminPersonalClient`.
-- Je 6 Dateien verwenden direkte File-/Directory-Zugriffe; Geräte- und bewusst lokale Export-/Downloadoperationen sind getrennt von Backendzugriffen zu bewerten.
-
-Abschlussprüfung: Das produktive WPF-Frontend darf weder `AndyTours.Daten` noch `AndyTours.Import` bzw. `Microsoft.Data.Sqlite` referenzieren oder beliebige Server-Dateipfade/SQL-Aufträge über HTTP übertragen. Die Geräteadapter-Ausnahme gilt ausschließlich für USB/MTP und lokale Benutzerauswahl, nicht für Fachlogik.
+Der produktive WPF-Client darf weder `AndyTours.Daten` noch `AndyTours.Import` bzw. `Microsoft.Data.Sqlite` referenzieren oder beliebige Server-Dateipfade/SQL-Aufträge über HTTP übertragen. Die Geräteadapter-Ausnahme gilt ausschließlich für USB/MTP und lokale Benutzerauswahl, nicht für Fachlogik.
 
 ## Backend-Konfiguration (Platzhalter)
-
-Das Backend benötigt einen absoluten Datenordner und ein Geheimnis mit mindestens 32 Bytes. Werte sind ausschließlich in der Serverkonfiguration/Umgebung zu setzen, nicht in Repositorydateien:
 
 ```text
 Backend__Datenordner=<ABSOLUTER_SERVERPFAD>
@@ -84,27 +67,24 @@ Backend__Zugriffstoken=<ZUFÄLLIGES_GEHEIMNIS_MIT_MINDESTENS_32_BYTES>
 ASPNETCORE_URLS=<OPTIONALE_BINDUNG; Standard: http://localhost:5000>
 ```
 
-Die API verlangt Bearer-Authentifizierung; Health ist anonym erreichbar. Nicht-loopback-Zugriffe sind nur über HTTPS zulässig. Das Zugriffstoken gewährt vollen Zugriff auf den konfigurierten Datenbestand; es gibt derzeit keine Mehrbenutzerverwaltung. Es ist kein Garmin-Schlüssel.
+Die API verlangt Bearer-Authentifizierung; Health ist anonym erreichbar. Nicht-loopback-Zugriffe sind nur über HTTPS zulässig. Das Zugriffstoken gewährt datasetweit vollen Zugriff; es gibt keine Mehrbenutzerverwaltung. Keine echten Tokens oder Schlüssel in Repositorydateien eintragen.
 
 ## Build, lokaler Start und Laufzeit
 
-Voraussetzung für Source-Builds: Windows und ein zur `global.json` passendes .NET SDK (10.0.402 im verifizierten Testserver-Build). Unter Windows:
+Source-Builds benötigen ein zur `global.json` passendes .NET SDK (10.0.402 im Testserver-Build). Unter Windows:
 
 ```powershell
 dotnet build AndyTours.slnx -c Release
 dotnet run --project src/AndyTours.App -c Release -- --api
 ```
 
-Der Installer-Publish veröffentlicht App und API als self-contained `win-x64`; im Installer ist daher keine separate .NET Runtime erforderlich. In einem Source-Checkout startet die lokale API aus `src/AndyTours.Api/bin/{Debug|Release}/net10.0/AndyTours.Api.dll` und benötigt die passende .NET Runtime bzw. das SDK. Ein zentrales Backend kann auch dann gewählt werden, wenn die lokale Backenddatei fehlt.
-
-Für ein zentrales Backend sind HTTPS und ein Zugriffstoken mit mindestens 32 Bytes erforderlich. Das Token ist datasetweit voll berechtigt. Das separat verwendete Garmin-Key-Secret ist nicht in die Frontendmigration einbezogen. Keine echten Tokens oder Schlüssel in Dokumentation oder Repository eintragen.
+Der Installer-Publish ist self-contained `win-x64`; Source-Checkouts benötigen die passende .NET Runtime bzw. das SDK. Ein zentrales Backend kann auch gewählt werden, wenn die lokale Backenddatei fehlt.
 
 ## Verifikation und verbleibende Lücken
 
-- Testserver-Builds und Windows-`win-x64`-Cross-Publish von App und API waren erfolgreich.
-- Der Installer (einschließlich ISCC) wurde nicht ausgeführt.
-- Windows-Start, Dialogverbindung und Rendering der API-Ansicht wurden nicht getestet.
-- Die sieben neuen SQLite-Tests wurden kompiliert, aber nicht ausgeführt; vier Statistik-Regressionsfälle fehlen noch.
+- Testserver-Builds und Windows-`win-x64`-Cross-Publish waren erfolgreich.
+- Tests wurden kompiliert, nicht ausgeführt.
+- Installer/ISCC sowie Windows-Start, Dialogverbindung und UI-Rendering wurden nicht geprüft.
 - Keine vollständige Migration behaupten, bis alle offenen Paritätsbereiche umgesetzt und verifiziert sind.
 
-Keine EXE-Dateien werden eingecheckt.
+Keine EXE-Dateien einchecken.
