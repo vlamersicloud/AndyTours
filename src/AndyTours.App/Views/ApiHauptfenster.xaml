@@ -28,6 +28,9 @@
                         <MenuItem Header="FIT-Dateien importieren…" Click="FitDateienImportieren_Click"/>
                         <MenuItem Header="Vom Garmin-Gerät importieren…" Click="GarminGeraetImportieren_Click"/>
                     </MenuItem>
+                    <MenuItem Header="Extras" Padding="10,6">
+                        <MenuItem Header="Equipment-Einsatz…" Click="EquipmentEinsatz_Click"/>
+                    </MenuItem>
                     <MenuItem Header="Stammdaten" Padding="10,6">
                         <MenuItem Header="Aktivitäten…" Click="AktivitaetenVerwalten_Click"/>
                         <MenuItem Header="Kategorien…" Click="KategorienVerwalten_Click"/>
