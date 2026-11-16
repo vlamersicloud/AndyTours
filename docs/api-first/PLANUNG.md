@@ -1,6 +1,6 @@
 # API-first: Planung und Routing
 
-**Status:** Tourenplanung und Routing sind noch nicht API-migriert. Der vorhandene Course-Export (src/AndyTours.App/Funktionen/ApiCourseUebertragung.cs, src/AndyTours.Client/CourseExportHttpClient.cs) überträgt aufgezeichnete Tracks; er ist keine geplante-Tour-Parität.
+**Status:** API-Planungsablauf ist teilweise angebunden: serverseitiges Routing, versionsgeschütztes Fahrprofil, GPX-Öffnen/Speichern, geplanter Course-Export und Geräteadapter verwenden typisierte Ports. Der vorhandene Course-Export für aufgezeichnete Tracks ist davon getrennt. Die API-Planungsansicht nutzt denselben Overlaykontext; Startausschnitt kommt aus lokalen gemerkten Grenzen oder den letzten bis zu fünf vorhandenen FIT-Dateien mit GPS-Daten, sonst gilt der bisherige Deutschland-Ausschnitt. Routingkonfigurations-UI bleibt Legacy-only.
 
 ## Quellseams
 
@@ -15,4 +15,4 @@
 3. Planung bleibt wie heute eine lokale GPX-Datei: gezielte Dateiöffnung/-speicherung bleibt im Client; Parsing und Serialisierung verwenden die bestehenden PlanungsGpx-Regeln. Keine verpflichtende Server-Planungsentität ohne fachliche Entscheidung.
 4. Planned-course Export/GPX und Geräteadapter-Parität mit expliziten Abbruch-, Wiederholungs- und Lebenszyklusgrenzen.
 
-Bis diese Slices und Windows-/Provider-Laufzeitprüfungen abgeschlossen sind, keine Vollständigkeitsbehauptung.
+GPX bleibt eine lokale Clientdatei; Backend-Parsing und -Serialisierung sind auf 128 MiB begrenzt. Profiländerungen verwenden CAS mit koaleszierten Änderungen; bei unbekanntem Versionsstand erfolgt ein GET nur nach manueller Synchronisierung. Viewport und GPX-Ordner bleiben lokale Einstellungen. Routing nutzt serverseitige Providerkonfiguration (8 MiB Antwortlimit, 20 s Zeitlimit); Schlüssel werden nicht an Clients ausgegeben. Windows-, Provider- und Geräte-Laufzeitprüfungen sowie stärkere FIT-Zeitstempel-Testabdeckung bleiben offen. Keine Vollständigkeitsbehauptung.
