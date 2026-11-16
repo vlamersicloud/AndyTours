@@ -73,5 +73,6 @@ public partial class GarminImportViewModel : ObservableObject, IDisposable
         if (_disposed) return;
         _disposed = true;
         foreach (var zeile in Zeilen) zeile.PropertyChanged -= ZeileGeaendert;
+        GC.SuppressFinalize(this);
     }
 }
