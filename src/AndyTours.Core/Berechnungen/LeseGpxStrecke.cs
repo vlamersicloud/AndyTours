@@ -31,35 +31,54 @@ public static class LeseGpxStrecke
     /// </returns>
     public static IReadOnlyList<IReadOnlyList<Geoposition>>? Ausfuehren(string text)
     {
-        XElement? wurzel;
-        try
-        {
-            wurzel = XDocument.Parse(text).Root;
-        }
-        catch (XmlException)
-        {
-            return null;
-        }
+        XElement? root;
+        try { root = XDocument.Parse(text).Root; }
+        catch (XmlException) { return null; }
+        return ParseRoot(root, CancellationToken.None);
+    }
 
-        if (wurzel is null || wurzel.Name.LocalName != "gpx")
-        {
-            return null;
-        }
+    /// <summary>
+    /// Loads GPX XML asynchronously from a caller-configured secure XmlReader.
+    /// The caller must prohibit DTDs, set XmlResolver to null, and enforce input limits.
+    /// </summary>
+    public static async Task<IReadOnlyList<IReadOnlyList<Geoposition>>?> AusfuehrenAsync(
+        XmlReader reader, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        cancellationToken.ThrowIfCancellationRequested();
+        XDocument document;
+        try { document = await XDocument.LoadAsync(reader, LoadOptions.None, cancellationToken).ConfigureAwait(false); }
+        catch (XmlException) { return null; }
+        cancellationToken.ThrowIfCancellationRequested();
+        return ParseRoot(document.Root, cancellationToken);
+    }
 
-        List<IReadOnlyList<Geoposition>> abschnitte = Abschnitte(Kinder(wurzel, "trk").SelectMany(trk => Kinder(trk, "trkseg")), "trkpt");
-        if (abschnitte.Count == 0)
-        {
-            abschnitte = Abschnitte(Kinder(wurzel, "rte"), "rtept");
-        }
-
-        return abschnitte.Count == 0 ? null : abschnitte;
+    private static IReadOnlyList<IReadOnlyList<Geoposition>>? ParseRoot(XElement? root, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (root is null || root.Name.LocalName != "gpx") return null;
+        var sections = Abschnitte(Kinder(root, "trk").SelectMany(track => Kinder(track, "trkseg")), "trkpt", ct);
+        if (sections.Count == 0) sections = Abschnitte(Kinder(root, "rte"), "rtept", ct);
+        return sections.Count == 0 ? null : sections;
     }
 
     /// <summary>Die nicht leeren Abschnitte aus den Punkten der angegebenen Art je Behälter (Segment oder Route).</summary>
-    private static List<IReadOnlyList<Geoposition>> Abschnitte(IEnumerable<XElement> behaelter, string punktname) =>
-        [.. behaelter
-            .Select(b => (IReadOnlyList<Geoposition>)[.. Kinder(b, punktname).Select(Position).OfType<Geoposition>()])
-            .Where(punkte => punkte.Count > 0)];
+    private static List<IReadOnlyList<Geoposition>> Abschnitte(IEnumerable<XElement> containers, string pointName, CancellationToken ct)
+    {
+        var sections = new List<IReadOnlyList<Geoposition>>();
+        foreach (var container in containers)
+        {
+            ct.ThrowIfCancellationRequested();
+            var points = new List<Geoposition>();
+            foreach (var point in Kinder(container, pointName))
+            {
+                ct.ThrowIfCancellationRequested();
+                if (Position(point) is Geoposition position) points.Add(position);
+            }
+            if (points.Count > 0) sections.Add(points);
+        }
+        return sections;
+    }
 
     /// <summary>Die direkten Kindelemente mit dem angegebenen Namen, gleich in welchem Namensraum.</summary>
     private static IEnumerable<XElement> Kinder(XElement element, string name) =>
