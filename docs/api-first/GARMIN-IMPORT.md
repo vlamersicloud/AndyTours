@@ -1,0 +1,39 @@
+# Garmin Connect Import im API-Modus – Entwurfsprüfung
+
+**Status: Design, nicht implementiert.** Die Garmin-Einstellungen-API/UI liefert nur Schlüsselstatus und Automatikflag. Der Personal-Key bleibt ausschließlich in der bestehenden Backend-Einstellung `Persoenlich.Garmin.PersonalApiKey`; keine Jobzeile, API-Antwort, Fehlermeldung oder Log darf ihn, Token, Header, Response-Body, Pfad oder beliebige Pfadfragmente enthalten. Kein Environment-Fallback. Der vorhandene Legacy-Start ohne `--api` bleibt Standard; USB/MTP bleibt ein späterer lokaler Adapter.
+
+## Vorhandene Bausteine und Grenzen
+
+- `src/AndyTours.App/ViewModels/HauptfensterViewModel.GarminConnect.cs` orchestriert heute Login/Key-Lesen, ID-Enumeration, sequenzielle Pakete bis 20, manuelle Fortsetzung oder automatische Folge, FIT-Lesen und Importauswahl. Die Pfade sind lokal/prozessgebunden; `_garminConnectIds` ist nur ein flüchtiges Dictionary.
+- `src/AndyTours.Import/Garmin/GarminPersonalClient.cs` implementiert Garmin Personal API, Paging in 20er-Seiten, Download und Zeitlimits. Instanz und Token gehören heute einem Lauf.
+- `src/AndyTours.Import/Garmin/LadeGarminConnectAufzeichnungen.cs` archiviert Original-ZIPs in `Datenordner/GarminConnect`, entpackt genau eine begrenzte FIT-Datei, erhält fertig geladene ZIPs bei Teilfehlern und liefert Paket-/Unterbrechungsstatus.
+- FIT-Prüfung/Parser bleiben in `src/AndyTours.Import/Garmin/PruefeFitDatei.cs`, `LeseFitAufzeichnung.cs` und `LeseFitVerlauf.cs`; WPF/API darf keine zweite FIT-Implementierung erhalten.
+- `src/AndyTours.App/ViewModels/HauptfensterViewModel.Import.cs` zeigt FIT-Kandidaten samt Equipmentauswahl. Importiert werden ausgewählte Zeilen über `LegeAufzeichnungAb`, `ErstelleImportierteEinheit` und `TrainingseinheitenTabelle.Einfuegen`.
+- `src/AndyTours.Daten/GarminImportZuordnung.cs` speichert `GarminConnect.Aktivitaet.<id>`-Zuordnungen in derselben SQLite-Transaktion wie die Tour. Es ignoriert Zuordnungen, deren Tour gelöscht wurde; ZIPs bleiben damit erneut importierbar. Der transaktionale Doppelimportschutz muss erhalten bleiben.
+
+## Zielarchitektur, weiterhin SQLite und Dateisystem
+
+1. **Application-Verträge/Ports:** `src/AndyTours.Contracts/V1/GarminImportVertrag.cs` mit eng begrenzten `GarminImportJobAntwort` (JobId, Status/Phase, Paketnummer, sichere Zähler/Prozent, Zeitstempel, nicht-sensitive Warncodes), Kandidaten (nur Aktivitäts-ID als opaque technische ID, Datum/Name/Metadaten, Upload-/Reviewstatus), und explizite Aktionstypen. Keine Schlüssel, Tokens, Garmin-Rohantworten, lokale/Server-Dateipfade oder Exceptiontexte. Ports in `src/AndyTours.Application/Garmin/IGarminImportJobs.cs`: Start, Status, Kandidaten, Paket fortsetzen, abbrechen, Review/Import speichern. Jede Abfrage/Mutation mandatorisch an JobId und CAS-Version gebunden.
+2. **Dauerhafter Store:** neue `src/AndyTours.Daten/GarminImportJobTabelle.cs` plus atomare Job-/Kandidaten-/Importstatus-Tabellen im bestehenden SQLite-Schema. Eindeutiger aktiver Job je Datenbestand; unique `(JobId, GarminAktivitaetId)` und globaler Import-Lock/Claim für laufende Garmin-IDs. CAS-Statusübergänge in `BEGIN IMMEDIATE`; DB-Lock statt process-local HashSet/Dictionary, damit mehrere App/API-Instanzen und Neustarts nicht doppelt laden/importieren.
+3. **Worker:** `src/AndyTours.Daten/GarminImportJobWorker.cs` (oder Application-Hosted-Worker; DI in `src/AndyTours.Api/Program.cs`) pollt/recoveriert durable Jobs. Beim Start und nach Neustart: `Running` → `Interrupted/Recoverable`, temporäre `.tmp` entfernen, atomar fertig umbenannte ZIPs wiederverwenden, ZIPs ohne abgeschlossenen Kandidaten erneut entpacken. Resume startet bei fehlenden IDs, nicht bei erster Seite; Seiten-Cursor und beobachtete IDs werden dauerhaft gespeichert. Persistierte Übergänge pro Kandidat (`Pending/Downloading/ZipReady/FitReady/Reviewed/Imported/Skipped/FailedSafe`) ermöglichen Teilabschluss.
+4. **Geheimniszugriff/Netz:** Worker liest den vorhandenen Garmin-Key direkt über die enge bekannte Einstellung intern; key/token nicht in Job, Worker-Nachricht, Fortschritt, Logs oder Exceptions serialisieren. HTTP-Client pro Worker-Lauf, keine Redirects/automatischen Mutation-Retries; nur begrenzte sichere Fehlercodes. Das bestehende `GarminPersonalClient` ist wiederzuverwenden und ggf. so zu refaktorieren, dass ein persistierbarer Cursor 20 IDs pro Seite liefert.
+5. **Pakete:** Start liefert das erste manuelle Paket mit höchstens 20 neuen Kandidaten. Bei `AllePaketeAutomatisch=true` wird nach abgeschlossenem Paket serverseitig das nächste Paket vorbereitet. Manuell wartet der Job bis „Weitere 20 laden“. Expliziter Cancel markiert den Job unter DB-Lock; aktive HTTP/ZIP-Operationen erhalten CancellationToken, aber bereits vollständig gesicherte ZIPs/Kandidaten bleiben abgeschlossen. Teilergebnisse werden immer sichtbar und fortsetzbar.
+6. **Review/UI:** neuer API-Client `src/AndyTours.Client/GarminImportJobsHttpClient.cs`, UI `src/AndyTours.App/ViewModels/ApiGarminImportViewModel.cs` + `Views/ApiGarminImportFenster.xaml(.cs)`. UI pollt Status, zeigt sichere Phase/Progress, bietet Abbrechen/Fortsetzen und pro FIT-Kandidat die vorhandene Auswahl-/Equipmentlogik. Keine Garmin-Requests aus dem WPF-Prozess; keine Key-Eingabe in Jobfenster. Wiederverwendung bestehender Core-/Import-Modelle statt FIT-Neuparsing.
+7. **Atomarer Import:** Kandidaten-Review sendet nur erlaubte Werte/Equipment-Auswahl, Server prüft FIT erneut anhand des serverseitigen Archiv-/FIT-Artefakts, legt Anhang/Tour an und ruft innerhalb derselben `TrainingseinheitenTabelle.Einfuegen`-Transaktion `GarminImportZuordnung.Speichern` auf. Unique Zuordnung schützt parallele Sessions. Persistierter Kandidatenstatus wird erst nach DB-Commit `Imported`; bei Absturz zwischen Tourcommit und Statusupdate repariert Recovery anhand der Zuordnung. Tourlöschung lässt Original-ZIP bestehen und löscht/ignoriert Zuordnung gemäß aktuellem Verhalten, sodass Reimport möglich bleibt.
+
+## Erste sichere End-to-End-Scheibe
+
+1. Nur **manueller** Jobstart, Status und ein Paket mit maximal 20 Kandidaten; dauerhafte Job-/Kandidaten-IDs, Cursor, sichere Fortschrittszählung und Cancel/Resume ohne FIT-Import.
+2. Worker lädt ZIPs atomar in den bestehenden GarminConnect-Archivbereich, FIT wird mit vorhandenen Import-Parsern geprüft; API liefert nur sichere Kandidatenmetadaten und keine Pfade.
+3. WPF zeigt Kandidaten mit bestehender Equipmentauswahl; Importaktionen gehen an den Server und verwenden die gemeinsame DB-Transaktion samt Garmin-Zuordnung.
+4. Erst danach automatische Paketfolge als separate Änderung. Dadurch sind Recovery und Idempotenz zuerst überprüfbar.
+
+## Tests vorzubereiten (nicht ausgeführt)
+
+- SQLite-Jobzustandsübergänge/CAS, Restart-Recovery für Download, ZIP-ready, FIT-ready und Cancel; `.tmp` cleanup ohne fertige ZIPs zu verlieren.
+- Zwei parallele Worker/Clients beanspruchen denselben Job bzw. Garmin-ID: genau ein Claim/Import, keine process-local-only Dedupe.
+- Fake-Key-Sentinels: JSON, ProblemDetails, Logs/diagnostic payloads, job DTOs und `ToString()` enthalten weder Schlüssel noch Token/Body/Pfad.
+- Paging über mehrere manuelle 20er-Pakete und automatische Sequenz, Duplikat-IDs über Seitengrenzen, Teilfehler und sichere Fortsetzung ohne erneute fertige ZIP-Downloads.
+- ZIP atomarer Austausch, Größen-/Pfadtraversalregeln, defekte ZIPs und vorhandene FIT-Parser; keine Garmin-Netztests.
+- Review wählt Equipment, Import schreibt Tour+Garmin-ID atomar; DB-Fehler rollt beides zurück; konkurrierender Import wird abgewiesen; gelöschte Tour bleibt erneut importierbar, Original-ZIP bleibt.
+- API-Vertrag erlaubt nur Jobaktionen und opaque IDs; beliebige Pfade, URL-/Key-/Tokenfelder und Exception-Details werden abgewiesen.
