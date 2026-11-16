@@ -7,7 +7,7 @@ namespace AndyTours.Daten;
 /// <summary>Speichert nur Pulszonengrenzen und Abrufdatum im jeweiligen Datenordner; keinen API-Key oder Token.</summary>
 public static class GarminPulszonenEinstellung
 {
-    private const string Schluessel = "Persoenlich.Garmin.PulszonenReferenz";
+    internal const string Schluessel = "Persoenlich.Garmin.PulszonenReferenz";
     /// <summary>Ungültige Altwerte werden nicht als Zonenreferenz verwendet.</summary>
     public static GarminPulszonenStand? Laden(SqliteConnection verbindung)
     {
@@ -27,5 +27,9 @@ public static class GarminPulszonenEinstellung
 
     /// <summary>Die gespeicherten Gesundheits-/Profilwerte wandern mit Datenbestand und Sicherungen mit.</summary>
     public static void Speichern(SqliteConnection verbindung, GarminPulszonenStand stand) =>
-        EinstellungTabelle.Schreiben(verbindung, null, Schluessel, JsonSerializer.Serialize(stand));
+        Speichern(verbindung, null, stand);
+
+    /// <summary>Schreibt innerhalb einer vom Aufrufer verwalteten Transaktion; committet niemals selbst.</summary>
+    public static void Speichern(SqliteConnection verbindung, SqliteTransaction? transaktion, GarminPulszonenStand stand) =>
+        EinstellungTabelle.Schreiben(verbindung, transaktion, Schluessel, JsonSerializer.Serialize(stand));
 }
