@@ -77,9 +77,15 @@ public static class WartungenTabelle
     /// <param name="verbindung">Geöffnete Verbindung.</param>
     /// <param name="wartung">Die neue Wartung (ihre Nummer wird nicht verwendet).</param>
     /// <returns>Die vergebene Nummer.</returns>
-    public static long Einfuegen(SqliteConnection verbindung, Wartung wartung)
+    public static long Einfuegen(SqliteConnection verbindung, Wartung wartung) => EinfuegenCore(verbindung, null, wartung);
+
+    /// <summary>Fügt eine Wartung innerhalb der aufrufenden Transaktion ein.</summary>
+    public static long Einfuegen(SqliteConnection verbindung, SqliteTransaction transaktion, Wartung wartung) => EinfuegenCore(verbindung, transaktion, wartung);
+
+    private static long EinfuegenCore(SqliteConnection verbindung, SqliteTransaction? transaktion, Wartung wartung)
     {
         using SqliteCommand befehl = verbindung.CreateCommand();
+        befehl.Transaction = transaktion;
         befehl.CommandText = """
             INSERT INTO Wartung (Datum, EquipmentId, Taetigkeit, Kommentar, Typ, AlarmKm, Aktiv)
             VALUES ($datum, $equipmentId, $taetigkeit, $kommentar, $typ, $alarmKm, $aktiv);
@@ -89,15 +95,16 @@ public static class WartungenTabelle
         return (long)befehl.ExecuteScalar()!;
     }
 
-    /// <summary>
-    /// Speichert die geänderten Werte einer vorhandenen Wartung.
-    /// </summary>
-    /// <param name="verbindung">Geöffnete Verbindung.</param>
-    /// <param name="wartung">Die Wartung mit ihrer Nummer.</param>
-    /// <exception cref="InvalidOperationException">Die Wartung gibt es in der Datenbank nicht (mehr).</exception>
-    public static void Aendern(SqliteConnection verbindung, Wartung wartung)
+    /// <summary>Speichert die geänderten Werte ohne eigene Transaktion.</summary>
+    public static void Aendern(SqliteConnection verbindung, Wartung wartung) => AendernCore(verbindung, null, wartung);
+
+    /// <summary>Speichert geänderte Werte innerhalb der aufrufenden Transaktion.</summary>
+    public static void Aendern(SqliteConnection verbindung, SqliteTransaction transaktion, Wartung wartung) => AendernCore(verbindung, transaktion, wartung);
+
+    private static void AendernCore(SqliteConnection verbindung, SqliteTransaction? transaktion, Wartung wartung)
     {
         using SqliteCommand befehl = verbindung.CreateCommand();
+        befehl.Transaction = transaktion;
         befehl.CommandText = """
             UPDATE Wartung SET
                 Datum = $datum, EquipmentId = $equipmentId, Taetigkeit = $taetigkeit, Kommentar = $kommentar,
@@ -107,19 +114,20 @@ public static class WartungenTabelle
         SetzeWerte(befehl, wartung);
         befehl.Parameters.AddWithValue("$id", wartung.Id);
         if (befehl.ExecuteNonQuery() != 1)
-        {
             throw new InvalidOperationException($"Die Wartung Nr. {wartung.Id} ist nicht (mehr) vorhanden.");
-        }
     }
 
-    /// <summary>
-    /// Löscht die Wartungen mit den angegebenen Nummern in einer Transaktion: entweder alle oder keine.
-    /// </summary>
-    /// <param name="verbindung">Geöffnete Verbindung.</param>
-    /// <param name="ids">Die Nummern der zu löschenden Wartungen.</param>
+    /// <summary>Löscht IDs atomar mit eigener Transaktion (Legacy-Signatur).</summary>
     public static void Loeschen(SqliteConnection verbindung, IEnumerable<long> ids)
     {
         using SqliteTransaction transaktion = verbindung.BeginTransaction();
+        Loeschen(verbindung, transaktion, ids);
+        transaktion.Commit();
+    }
+
+    /// <summary>Löscht IDs innerhalb der aufrufenden Transaktion; committed wird niemals hier.</summary>
+    public static void Loeschen(SqliteConnection verbindung, SqliteTransaction transaktion, IEnumerable<long> ids)
+    {
         using SqliteCommand befehl = verbindung.CreateCommand();
         befehl.Transaction = transaktion;
         befehl.CommandText = "DELETE FROM Wartung WHERE Id = $id;";
@@ -129,8 +137,6 @@ public static class WartungenTabelle
             id.Value = nummer;
             befehl.ExecuteNonQuery();
         }
-
-        transaktion.Commit();
     }
 
     /// <summary>

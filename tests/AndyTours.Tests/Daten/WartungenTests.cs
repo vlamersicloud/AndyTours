@@ -5,8 +5,8 @@ using AndyTours.Daten;
 namespace AndyTours.Tests.Daten;
 
 /// <summary>
-/// Tests für <see cref="WartungenTabelle.Einfuegen"/>, <see cref="WartungenTabelle.Aendern"/>,
-/// <see cref="WartungenTabelle.Loeschen"/>, <see cref="WartungenTabelle.ErsetzeTaetigkeit"/>, Alarme und die Liste
+/// Tests für <see cref="WartungenTabelle.Einfuegen(Microsoft.Data.Sqlite.SqliteConnection, AndyTours.Core.Modell.Wartung)"/>, <see cref="WartungenTabelle.Aendern(Microsoft.Data.Sqlite.SqliteConnection, AndyTours.Core.Modell.Wartung)"/>,
+/// <see cref="WartungenTabelle.Loeschen(Microsoft.Data.Sqlite.SqliteConnection, System.Collections.Generic.IEnumerable{System.Int64})"/>, <see cref="WartungenTabelle.ErsetzeTaetigkeit"/>, Alarme und die Liste
 /// „Tätigkeit“ in <see cref="AuswahllisteEinstellung"/>.
 /// </summary>
 public class WartungenTests
@@ -126,5 +126,34 @@ public class WartungenTests
         AuswahllisteEinstellung.Speichern(verbindung, null, Auswahlliste.Taetigkeit, ["Kettenwechsel", "Dämpfer eingestellt"]);
 
         Assert.Equal(["Kettenwechsel", "Dämpfer eingestellt"], AuswahllisteEinstellung.Laden(verbindung, Auswahlliste.Taetigkeit));
+    }
+
+    [Fact]
+    public void Einfuegen_in_Aufrufertransaktion_rollbackt_mit_Aufrufer()
+    {
+        using var connection = DatenbankMitWartungen();
+        using (var transaction = connection.BeginTransaction())
+            WartungenTabelle.Einfuegen(connection, transaction, new Wartung { Datum = new DateOnly(2026, 9, 1), Taetigkeit = "Rollback" });
+        Assert.DoesNotContain(WartungenTabelle.Laden(connection), w => w.Taetigkeit == "Rollback");
+    }
+
+    [Fact]
+    public void Aendern_in_Aufrufertransaktion_rollbackt_mit_Aufrufer()
+    {
+        using var connection = DatenbankMitWartungen();
+        using (var transaction = connection.BeginTransaction())
+            WartungenTabelle.Aendern(connection, transaction, new Wartung { Id = 2, Datum = new DateOnly(2026, 6, 3), Taetigkeit = "Rollback" });
+        var row = WartungenTabelle.Laden(connection).Single(w => w.Id == 2);
+        Assert.Equal(new DateOnly(2026, 6, 1), row.Datum);
+        Assert.Equal("Dämpfer eingestellt", row.Taetigkeit);
+    }
+
+    [Fact]
+    public void Loeschen_in_Aufrufertransaktion_rollbackt_mit_Aufrufer()
+    {
+        using var connection = DatenbankMitWartungen();
+        using (var transaction = connection.BeginTransaction())
+            WartungenTabelle.Loeschen(connection, transaction, [1, 2]);
+        Assert.Equal(new long[] { 1, 2, 3 }, WartungenTabelle.Laden(connection).Select(w => w.Id));
     }
 }
