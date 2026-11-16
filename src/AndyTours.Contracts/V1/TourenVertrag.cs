@@ -50,7 +50,11 @@ public sealed record TourWerte(
     long[] KategorieIds);
 
 /// <summary>Tour mit opaque Versionskennung für optimistische Änderungen.</summary>
-public sealed record TourAntwort(long Id, string Version, TourWerte Werte);
+public sealed record TourAntwort(long Id, string Version, TourWerte Werte)
+{
+    /// <summary>Additive, optionale Anzeigeprojektion; fachliche Identität und Version bleiben auf diesem TourDTO.</summary>
+    public TourAnzeigeAntwort? Anzeige { get; init; }
+}
 
 /// <summary>Seite einer gefilterten Tourenliste.</summary>
 public sealed record TourListeAntwort(IReadOnlyList<TourAntwort> Eintraege, int Gesamt, int Start, int Anzahl);
@@ -79,5 +83,17 @@ public enum TourenSortierschluessel
     Name,
     DistanzKm,
     Hoehenmeter,
-    Fahrzeit
+    Fahrzeit,
+    Aktivitaet,
+    Kategorien,
+    Equipment,
+    DurchschnittKmh,
+    MaxKmh,
+    HfDurchschnitt,
+    HfMax,
+    Trittfrequenz,
+    Temperatur,
+    MaxHoehe,
+    Trainingsbereich,
+    Kommentar
 }

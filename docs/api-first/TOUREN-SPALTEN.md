@@ -1,0 +1,7 @@
+# Tourenspalten im API-Modus
+
+**Additiver Anzeigungsvertrag ergänzt; Projektion/UI offen.** Legacy hat 18 Spalten in `src/AndyTours.App/Views/EinheitenTabelle.xaml`. `Einheitszeile` und `ErstelleEinheitszeilen` lösen Aktivitäts-/Kategorie-/Equipment-IDs auf, sortieren Kategorienamen, berechnen Ø-km/h und behandeln gespeicherte Nullwerte spaltenabhängig als leer; 0 hm bleibt sichtbar. `EinheitenTabelle.xaml.cs` sortiert typisierte `SortMemberPath`s, initial Datum/Start absteigend.
+
+`TourAntwort` behält ID, Version und `Werte`; optionale `Anzeige` bleibt null-kompatibel. `TourAnzeigeAntwort` definiert additive 18-Spaltenprojektion samt Bestwertmarkern, aber wird noch nicht erzeugt oder angezeigt. Sortierschlüssel sind um die zwölf Legacy-Spalten append-only erweitert; bisherige Werte/Bestand bleiben unverändert. Endpunkt muss künftige Sortierung global vor Paging ausführen.
+
+Quellen: `src/AndyTours.Core/Modell/Einheitszeile.cs`, `src/AndyTours.Core/Berechnungen/ErstelleEinheitszeilen.cs`, `src/AndyTours.App/Views/EinheitenTabelle.xaml.cs`, `src/AndyTours.Contracts/V1/TourenVertrag.cs`, `src/AndyTours.Contracts/V1/TourAnzeigeVertrag.cs`. Weiter offen: Serverprojektion, Anzeige/Fehlerbehandlung bei fehlendem `Anzeige`, inline Zellbearbeitung, Filterparität und seitenübergreifende Auswahl. Bulk-CAS/Replay-Identität und Version bleiben am bestehenden `TourAntwort`.
