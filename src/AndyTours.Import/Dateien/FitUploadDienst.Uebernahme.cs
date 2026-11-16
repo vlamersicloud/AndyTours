@@ -11,7 +11,7 @@ public sealed partial class FitUploadDienst : IFitUploads
         FitUploadUebernahmeAnfrage anfrage,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(anfrage);
+        if (anfrage is null) throw new StammdatenException(StammdatenFehlerart.Ungueltig, "FIT-Übernahmeanfrage ungültig.");
         var receipt = await _speicher.Quittung(anfrage, cancellationToken).ConfigureAwait(false);
         if (receipt is not null) return receipt;
 
@@ -43,18 +43,22 @@ public sealed partial class FitUploadDienst : IFitUploads
                 catch (OperationCanceledException) { throw; }
                 catch (StammdatenException) { throw Conflict("FIT-Datei wurde seit der Prüfung geändert oder ist ungültig."); }
 
-                var length = new FileInfo(fit.TempPath).Length;
+                snapshots.Add(choice.UploadId, fit);
+                long length;
+                try { length = new FileInfo(fit.TempPath).Length; }
+                catch (OperationCanceledException) { throw; }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+                {
+                    throw Conflict("FIT-Datei konnte nicht geprüft werden.");
+                }
                 if (length != upload.Byteanzahl || !SameHash(fit.DateiHash, upload.InhaltHash))
                 {
-                    fit.Dispose();
                     throw Conflict("FIT-Datei wurde seit der Prüfung geändert.");
                 }
                 if (!SameHash(fit.Version, choice.DateiVersion))
                 {
-                    fit.Dispose();
                     throw Conflict("FIT-Datei- oder Zeitzonenprüfung ist veraltet.");
                 }
-                snapshots.Add(choice.UploadId, fit);
             }
 
             var preparations = new List<FitUploadVorbereitung>(snapshots.Count);

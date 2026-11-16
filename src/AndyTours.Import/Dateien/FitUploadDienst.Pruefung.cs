@@ -13,7 +13,7 @@ public sealed partial class FitUploadDienst
         FitUploadPruefanfrage anfrage,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(anfrage);
+        if (anfrage is null) throw new StammdatenException(StammdatenFehlerart.Ungueltig, "FIT-Prüfanfrage ungültig.");
         var snapshot = await _speicher.Pruefbestand(anfrage.UploadIds, cancellationToken).ConfigureAwait(false);
         var tours = snapshot.Bestand.Trainingseinheiten.ToList();
         var rows = new List<FitUploadPruefzeile>();
