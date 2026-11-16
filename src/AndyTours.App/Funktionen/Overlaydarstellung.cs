@@ -6,29 +6,14 @@ using AndyTours.Core.Modell;
 
 namespace AndyTours.App.Funktionen;
 
-/// <summary>
-/// Wie Overlays aussehen: Farbwerte und Anzeigenamen der <see cref="Overlayfarbe"/>n und die Overlay-Ebene der Karten.
-/// </summary>
-/// <remarks>
-/// Overlay-Linien sind 3 px breit und leicht durchscheinend. Damit unterscheiden sie sich von der eigenen Strecke
-/// (4 px, deckend), auch wenn die Farbe gleich ist (z. B. die violette dritte Etappe einer Mehrtagestour). Die Ebene liegt
-/// direkt über den Kartenausschnitten, also unter Strecke, Wegpunkten und Abbiegepunkten.
-/// </remarks>
+/// <summary>Wie Overlays aussehen: Palette und Overlay-Ebene auf Karten.</summary>
 public static class Overlaydarstellung
 {
-    /// <summary>Name der Overlay-Ebene einer Karte.</summary>
     private const string Ebenenname = "Overlays";
-
-    /// <summary>Deckkraft der Linien (0–255): leicht durchscheinend.</summary>
     private const int Deckkraft = 190;
-
-    /// <summary>Linienbreite in Pixeln.</summary>
     private const double Linienbreite = 3;
-
-    /// <summary>Rand um ein Overlay bei „ganze Strecke zeigen“, als Anteil seiner Breite bzw. Höhe.</summary>
     private const double Rand = 0.08;
 
-    /// <summary>Anzeigenamen und Farbwerte (Rot, Grün, Blau) in der Reihenfolge der Aufzählung.</summary>
     private static readonly Dictionary<Overlayfarbe, (string Name, byte R, byte G, byte B)> Farben = new()
     {
         [Overlayfarbe.Violett] = ("Violett", 0x9B, 0x30, 0xD9),
@@ -45,65 +30,41 @@ public static class Overlaydarstellung
         [Overlayfarbe.Schwarz] = ("Schwarz", 0x20, 0x20, 0x20),
     };
 
-    /// <summary>Der angezeigte Name einer Farbe, z. B. „Türkis“.</summary>
-    /// <param name="farbe">Die Farbe.</param>
-    /// <returns>Der Name.</returns>
     public static string Anzeigename(Overlayfarbe farbe) => Farben[farbe].Name;
 
-    /// <summary>Die Farbe als WPF-Farbe (für die Farbfelder in Verwaltung und Einstellungen).</summary>
-    /// <param name="farbe">Die Farbe.</param>
-    /// <returns>Die deckende WPF-Farbe.</returns>
     public static System.Windows.Media.Color Farbwert(Overlayfarbe farbe)
     {
         (_, byte r, byte g, byte b) = Farben[farbe];
         return System.Windows.Media.Color.FromRgb(r, g, b);
     }
 
-    /// <summary>Erzeugt die leere Overlay-Ebene einer Karte; gefüllt wird sie mit <see cref="Fuelle"/>.</summary>
-    /// <returns>Die Ebene.</returns>
     public static MemoryLayer ErzeugeEbene() => new(Ebenenname) { Style = null };
 
-    /// <summary>
-    /// Füllt die Overlay-Ebene einer Karte mit den eingeschalteten Overlays (<see cref="Overlaybestand"/>) und zeichnet
-    /// die Karte neu.
-    /// </summary>
-    /// <remarks>
-    /// Jeder Abschnitt wird eine eigene Linie; ein Abschnitt aus nur einem Punkt wird ein kleiner Punkt.
-    /// </remarks>
-    /// <param name="karte">Die Karte mit einer Ebene namens <see cref="Ebenenname"/>.</param>
-    public static void Fuelle(Map karte)
+    /// <summary>Legacy adapter preserving the local database-backed overlay source.</summary>
+    public static void Fuelle(Map karte) => Fuelle(karte, Overlaybestand.Eingeschaltete, Overlaybestand.Farbe);
+
+    /// <summary>Renders an explicit immutable overlay snapshot without consulting global/local overlay state.</summary>
+    public static void Fuelle(Map karte, IReadOnlyList<Overlay> overlays, Overlayfarbe gemeinsameFarbe)
     {
         var ebene = (MemoryLayer)karte.Layers.First(e => e.Name == Ebenenname);
-        ebene.Features = [.. Overlaybestand.Eingeschaltete.SelectMany(overlay =>
+        ebene.Features = [.. overlays.SelectMany(overlay =>
         {
-            (_, byte r, byte g, byte b) = Farben[overlay.Farbe ?? Overlaybestand.Farbe];
+            (_, byte r, byte g, byte b) = Farben[overlay.Farbe ?? gemeinsameFarbe];
             var farbe = Mapsui.Styles.Color.FromArgb(Deckkraft, r, g, b);
             return overlay.Abschnitte.Select(abschnitt => Linie(abschnitt, farbe));
         })];
-
-        // Refresh statt RefreshData: RefreshData lädt nur neu, gezeichnet würde erst bei der nächsten Mausaktion
         karte.Refresh();
     }
 
-    /// <summary>
-    /// Zeigt die ganze Strecke eines Overlays auf der Karte, mit etwas Rand.
-    /// </summary>
-    /// <param name="karte">Die Karte.</param>
-    /// <param name="overlay">Das Overlay.</param>
     public static void ZeigeGanz(Map karte, Overlay overlay)
     {
         (Geoposition suedWest, Geoposition nordOst) = UmschliesseOverlay.Ausfuehren(overlay);
         karte.Navigator.ZoomToBox(Kartenzeichnung.Rechteck(suedWest, nordOst, Rand), MBoxFit.Fit);
     }
 
-    /// <summary>Die Linie eines Abschnitts; ein einzelner Punkt wird ein kleiner Kreis.</summary>
     private static IFeature Linie(IReadOnlyList<Geoposition> abschnitt, Mapsui.Styles.Color farbe)
     {
-        if (abschnitt.Count > 1)
-        {
-            return Kartenzeichnung.Linie(abschnitt, new Pen(farbe, Linienbreite));
-        }
-
+        if (abschnitt.Count > 1) return Kartenzeichnung.Linie(abschnitt, new Pen(farbe, Linienbreite));
         return new PointFeature(Kartenzeichnung.InKartenkoordinaten(abschnitt[0]))
         {
             Styles = [new SymbolStyle { SymbolType = SymbolType.Ellipse, SymbolScale = 0.3, Fill = new Mapsui.Styles.Brush(farbe), Outline = null }],
