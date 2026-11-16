@@ -113,6 +113,21 @@ public partial class App
                 }
             };
 
+            fenster.WartungVerwaltenAngefordert += async () =>
+            {
+                ApiWartungsFenster? admin = null;
+                try
+                {
+                    admin = new ApiWartungsFenster(new ApiWartungsViewModel(uebergebeneSitzung.Wartung,
+                        uebergebeneSitzung.Stammdaten,
+                        text => MessageBox.Show((Window?)admin ?? fenster, text, "Wartungen bestätigen",
+                            MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes))
+                    { Owner = fenster };
+                    admin.ShowDialog();
+                }
+                finally { admin?.Dispose(); }
+            };
+
             fenster.ProfilBearbeitenAngefordert += async () =>
             {
                 try

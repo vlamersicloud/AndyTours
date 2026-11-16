@@ -20,6 +20,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     public event Func<Task>? KategorienVerwaltenAngefordert;
     public event Func<Task>? EquipmentsVerwaltenAngefordert;
     public event Func<Task>? ProfilBearbeitenAngefordert;
+    public event Func<Task>? WartungVerwaltenAngefordert;
 
     public ApiHauptfenster(ApiUebersichtViewModel viewModel, Uri backendAdresse)
     {
@@ -126,6 +127,19 @@ public partial class ApiHauptfenster : Window, IDisposable
         if (_geschlossen || !IsVisible) return;
         try { await _viewModel.AktualisierenAsync(CancellationToken.None); }
         catch (Exception) { _viewModel.StatusText = "Übersicht konnte nach der Profilbearbeitung nicht aktualisiert werden."; }
+    }
+
+    private async void WartungenVerwalten_Click(object sender, RoutedEventArgs e)
+    {
+        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        _verwaltungOffen = true;
+        _viewModel.Laedt = true;
+        try { if (WartungVerwaltenAngefordert is { } handler) await handler(); }
+        catch (Exception) { _viewModel.StatusText = "Wartungsverwaltung konnte nicht geöffnet werden."; }
+        finally { _viewModel.Laedt = false; _verwaltungOffen = false; }
+        if (_geschlossen || !IsVisible) return;
+        try { await _viewModel.AktualisierenAsync(CancellationToken.None); }
+        catch (Exception) { _viewModel.StatusText = "Übersicht konnte nach der Wartungsverwaltung nicht aktualisiert werden."; }
     }
 
     private void TourenDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
