@@ -45,7 +45,6 @@ public partial class ApiFitImportViewModel
         }
 
         if (!IsAlive(linked.Token)) return;
-        var errorIds = preview.Fehler.Select(x => x.UploadId).ToHashSet();
         foreach (var error in preview.Fehler)
         {
             var file = chunk.FirstOrDefault(x => x.UploadId == error.UploadId);
@@ -63,10 +62,8 @@ public partial class ApiFitImportViewModel
         }
 
         var equipment = preview.Equipments.Select(x => new Auswahleintrag(x.Id, x.Name)).ToArray();
-        var rowById = rows.ToDictionary(x => x.UploadId);
         var imports = rows.Select(row =>
         {
-            var source = chunk.Single(x => x.UploadId == row.UploadId);
             var recording = new Aufzeichnung
             {
                 Dateiname = row.Dateiname,
@@ -91,11 +88,12 @@ public partial class ApiFitImportViewModel
         var zoneText = string.IsNullOrWhiteSpace(preview.FallbackZeitzoneId) ? string.Empty :
             $"Zeitzone für FIT-Dateien ohne Zeitzonenangabe: {preview.FallbackZeitzoneId}.";
         string editorHint = string.Join(Environment.NewLine, new[] { zoneText, errorsText }.Where(x => !string.IsNullOrWhiteSpace(x)));
-        var editor = new GarminImportViewModel(imports, equipment, async selected =>
+        var requestId = Guid.NewGuid();
+        GarminImportViewModel? editor = null;
+        editor = new GarminImportViewModel(imports, equipment, async selected =>
         {
             if (!IsAlive(linked.Token)) return false;
             Aendert = true;
-            var requestId = Guid.NewGuid();
             try
             {
                 var selectedBySource = selected.ToDictionary(x => Guid.Parse(x.Quelldatei));
@@ -114,7 +112,7 @@ public partial class ApiFitImportViewModel
                     file.Abgeschlossen = true;
                     var outcome = result.Ergebnisse.FirstOrDefault(x => x.UploadId == response.UploadId);
                     file.Status = outcome?.Importiert == true ? "Importiert" :
-                        outcome?.Hinweiscode == "bereits_vorhanden" ? "Bereits vorhanden" : "Übersprungen";
+                        outcome?.Hinweiscode is "tour_bereits_vorhanden" or "bereits_importiert" ? "Bereits vorhanden" : "Übersprungen";
                 }
                 HatAenderungen = true;
                 Status = Dateien.Any(x => x.Uploaded is not null && !x.Abgeschlossen)
@@ -125,16 +123,20 @@ public partial class ApiFitImportViewModel
             catch (StammdatenException ex)
             {
                 if (!IsAlive(linked.Token)) return false;
-                editorHint = ex.Art == StammdatenFehlerart.Konflikt
+                var message = ex.Art == StammdatenFehlerart.Konflikt
                     ? "Der Upload-Bestand wurde geändert. Bitte schließen und erneut prüfen."
                     : "Die Auswahl ist ungültig. Bitte Eingaben prüfen.";
+                if (editor is not null) editor.Hinweis = message;
+                Status = message;
                 return false;
             }
             catch
             {
                 if (!IsAlive(linked.Token)) return false;
                 HatAenderungen = true;
-                editorHint = "Ergebnis unklar. Es wurde nichts automatisch wiederholt; dieselbe Auswahl kann manuell erneut bestätigt werden.";
+                var message = "Ergebnis unklar. Es wurde nichts automatisch wiederholt; dieselbe Auswahl kann manuell erneut bestätigt werden.";
+                if (editor is not null) editor.Hinweis = message;
+                Status = message;
                 return false;
             }
             finally
@@ -144,14 +146,24 @@ public partial class ApiFitImportViewModel
             }
         });
 
+        editor.ErklaerungOverride = "Angehakte FIT-Dateien werden übernommen. Nicht markierte Dateien bleiben als übersprungen gespeichert; Originaldateien bleiben erhalten.";
         editor.Zusatzhinweis = editorHint;
+        if (PruefungAngefordert is null)
+        {
+            Status = "Prüfungsfenster nicht verfügbar.";
+            editor.Dispose();
+            return;
+        }
         EditorOffen = true;
-        try { PruefungAngefordert?.Invoke(editor); }
+        try { PruefungAngefordert.Invoke(editor); }
         finally
         {
-            EditorOffen = false;
+            if (IsAlive(CancellationToken.None))
+            {
+                EditorOffen = false;
+                NotifyCommands();
+            }
             editor.Dispose();
-            NotifyCommands();
         }
     }
 }
