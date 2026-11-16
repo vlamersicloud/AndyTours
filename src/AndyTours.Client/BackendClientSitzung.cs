@@ -3,7 +3,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using AndyTours.Application.Auswertung;
 using AndyTours.Application.Garmin;
-using AndyTours.Application.Auswertung;
 using AndyTours.Application.Import;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Application.Touren;
