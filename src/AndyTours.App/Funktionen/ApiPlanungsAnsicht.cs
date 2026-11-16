@@ -26,11 +26,18 @@ public static class ApiPlanungsAnsichtSpeicher
         {
             string? path = Pfad;
             if (path is null || !File.Exists(path)) return new(null, null, null);
-            var info = new FileInfo(path);
-            if (info.Length > MaxBytes) return new(null, null, null);
             using var stream = File.OpenRead(path);
-            if (stream.Length > MaxBytes) return new(null, null, null);
-            var state = JsonSerializer.Deserialize<ApiPlanungsAnsicht>(stream, JsonOptions);
+            using var bounded = new MemoryStream();
+            var chunk = new byte[4096];
+            while (true)
+            {
+                int read = stream.Read(chunk, 0, chunk.Length);
+                if (read == 0) break;
+                if (bounded.Length + read > MaxBytes) return new(null, null, null);
+                bounded.Write(chunk, 0, read);
+            }
+            bounded.Position = 0;
+            var state = JsonSerializer.Deserialize<ApiPlanungsAnsicht>(bounded, JsonOptions);
             if (state is null) return new(null, null, null);
             Geoposition? sw = Valid(state.SuedWest) ? state.SuedWest : null;
             Geoposition? ne = Valid(state.NordOst) ? state.NordOst : null;
@@ -45,26 +52,25 @@ public static class ApiPlanungsAnsichtSpeicher
     public static void Speichern(Planungseinstellungen settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        string? path = Pfad;
-        if (path is null) return;
-        Geoposition? sw = Valid(settings.SuedWest) ? settings.SuedWest : null;
-        Geoposition? ne = Valid(settings.NordOst) ? settings.NordOst : null;
-        if (sw is null || ne is null || sw.Breite >= ne.Breite || sw.Laenge >= ne.Laenge) { sw = null; ne = null; }
-        string? folder = ValidFolder(settings.Ordner) ? Path.GetFullPath(settings.Ordner!) : null;
-        byte[] data = JsonSerializer.SerializeToUtf8Bytes(new ApiPlanungsAnsicht(sw, ne, folder), JsonOptions);
-        if (data.Length > MaxBytes) return;
         string? temp = null;
         try
         {
+            string? path = Pfad;
+            if (path is null) return;
+            Geoposition? sw = Valid(settings.SuedWest) ? settings.SuedWest : null;
+            Geoposition? ne = Valid(settings.NordOst) ? settings.NordOst : null;
+            if (sw is null || ne is null || sw.Breite >= ne.Breite || sw.Laenge >= ne.Laenge) { sw = null; ne = null; }
+            string? folder = ValidFolder(settings.Ordner) ? Path.GetFullPath(settings.Ordner!) : null;
+            byte[] data = JsonSerializer.SerializeToUtf8Bytes(new ApiPlanungsAnsicht(sw, ne, folder), JsonOptions);
+            if (data.Length > MaxBytes) return;
             string directory = Path.GetDirectoryName(path)!;
             Directory.CreateDirectory(directory);
             temp = Path.Combine(directory, ".api-planung-" + Guid.NewGuid().ToString("N") + ".tmp");
-            using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough))
-            { stream.Write(data); stream.Flush(true); }
+            using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough))
+            { output.Write(data); output.Flush(true); }
             if (File.Exists(path)) File.Replace(temp, path, null); else File.Move(temp, path);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
-        { }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException or NotSupportedException or System.Security.SecurityException) { }
         finally { if (temp is not null) try { File.Delete(temp); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
     }
 
