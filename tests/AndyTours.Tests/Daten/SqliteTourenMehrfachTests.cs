@@ -79,6 +79,10 @@ public sealed class SqliteTourenMehrfachTests : IDisposable
         Assert.Equal(first.Werte.FahrzeitSekunden, firstAfter.Werte.FahrzeitSekunden);
         Assert.Equal(first.Werte.AktivitaetId, firstAfter.Werte.AktivitaetId);
         Assert.Equal(first.Werte.EquipmentId, firstAfter.Werte.EquipmentId);
+        var expectedFirst = first.Werte with { KategorieIds = [_keepCategory, _setCategory] };
+        var expectedSecond = second.Werte with { KategorieIds = [_setCategory] };
+        Assert.Equal(System.Text.Json.JsonSerializer.Serialize(expectedFirst), System.Text.Json.JsonSerializer.Serialize(firstAfter.Werte));
+        Assert.Equal(System.Text.Json.JsonSerializer.Serialize(expectedSecond), System.Text.Json.JsonSerializer.Serialize(secondAfter.Werte));
         Assert.Equal(1, ScalarInt64("SELECT COUNT(*) FROM Anhang WHERE EinheitId = $id;", first.Id));
         Assert.Equal(1, ReceiptCount());
 
