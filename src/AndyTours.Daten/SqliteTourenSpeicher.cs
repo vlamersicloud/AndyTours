@@ -39,23 +39,30 @@ public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
         ct.ThrowIfCancellationRequested();
         var equipments = EquipmentsTabelle.Laden(verbindung);
         ct.ThrowIfCancellationRequested();
+        var bestand = new Datenbestand
+        {
+            Trainingseinheiten = trainings,
+            Aktivitaeten = aktivitaeten,
+            Kategorien = kategorien,
+            Equipments = equipments,
+        };
         var alle = trainings
             .Where(t => (!filter.Von.HasValue || t.Datum >= filter.Von.Value) &&
                         (!filter.Bis.HasValue || t.Datum <= filter.Bis.Value) &&
                         (!filter.AktivitaetId.HasValue || t.AktivitaetId == filter.AktivitaetId.Value) &&
                         (!filter.KategorieId.HasValue || t.KategorieIds.Contains(filter.KategorieId.Value)))
             .ToList();
+        if (filter.Tabellenfilter is not null)
+        {
+            alle = FiltereEinheiten.Ausfuehren(alle,
+                TourenTabellenfilterMapper.ToFilter(filter.Tabellenfilter), bestand);
+            ct.ThrowIfCancellationRequested();
+        }
 
         Dictionary<long, TourAnzeigeAntwort> anzeigen;
         try
         {
-            var displayRows = ErstelleEinheitszeilen.Ausfuehren(alle, new Datenbestand
-            {
-                Trainingseinheiten = trainings,
-                Aktivitaeten = aktivitaeten,
-                Kategorien = kategorien,
-                Equipments = equipments,
-            });
+            var displayRows = ErstelleEinheitszeilen.Ausfuehren(alle, bestand);
             anzeigen = new Dictionary<long, TourAnzeigeAntwort>(displayRows.Count);
             foreach (var row in displayRows)
             {

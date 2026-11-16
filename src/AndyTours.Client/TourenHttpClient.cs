@@ -28,6 +28,16 @@ public sealed class TourenHttpClient(HttpClient http) : ITourenSpeicher
         if (filter.Bis.HasValue) query += $"&bis={Uri.EscapeDataString(filter.Bis.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}";
         if (filter.AktivitaetId.HasValue) query += $"&aktivitaetId={filter.AktivitaetId.Value.ToString(CultureInfo.InvariantCulture)}";
         if (filter.KategorieId.HasValue) query += $"&kategorieId={filter.KategorieId.Value.ToString(CultureInfo.InvariantCulture)}";
+        if (filter.Tabellenfilter is { } table)
+        {
+            if (table.EquipmentName is not null) query += $"&equipmentName={Uri.EscapeDataString(table.EquipmentName)}";
+            if (table.Trainingsbereich is not null) query += $"&trainingsbereich={Uri.EscapeDataString(table.Trainingsbereich)}";
+            if (table.DistanzVon is not null) query += $"&distanzVon={Uri.EscapeDataString(table.DistanzVon)}";
+            if (table.DistanzBis is not null) query += $"&distanzBis={Uri.EscapeDataString(table.DistanzBis)}";
+            if (table.HoehenmeterVon is not null) query += $"&hoehenmeterVon={Uri.EscapeDataString(table.HoehenmeterVon)}";
+            if (table.HoehenmeterBis is not null) query += $"&hoehenmeterBis={Uri.EscapeDataString(table.HoehenmeterBis)}";
+            if (table.Suchbegriff is not null) query += $"&suchbegriff={Uri.EscapeDataString(table.Suchbegriff)}";
+        }
         query += $"&sortierung={((int)filter.Sortierung).ToString(CultureInfo.InvariantCulture)}&absteigend={filter.Absteigend.ToString().ToLowerInvariant()}";
         using var request = new HttpRequestMessage(HttpMethod.Get, Basis + query);
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);

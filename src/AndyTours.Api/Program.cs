@@ -155,14 +155,21 @@ app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v
 var touren = app.MapGroup("/api/v1/touren").WithTags("Touren");
 touren.MapGet("/", async (int? start, int? anzahl, DateOnly? von, DateOnly? bis,
         long? aktivitaetId, long? kategorieId, TourenSortierschluessel? sortierung, bool? absteigend,
+        string? equipmentName, string? trainingsbereich, string? distanzVon, string? distanzBis,
+        string? hoehenmeterVon, string? hoehenmeterBis, string? suchbegriff,
         ITourenSpeicher store, CancellationToken ct) =>
     Results.Ok(await store.ListeGefiltert(start ?? 0, anzahl ?? 50,
         new TourenListenfilter(von, bis, aktivitaetId, kategorieId)
         {
             Sortierung = sortierung ?? TourenSortierschluessel.Bestand,
-            Absteigend = absteigend ?? false
+            Absteigend = absteigend ?? false,
+            Tabellenfilter = equipmentName is null && trainingsbereich is null && distanzVon is null &&
+                distanzBis is null && hoehenmeterVon is null && hoehenmeterBis is null && suchbegriff is null
+                ? null
+                : new TourenTabellenfilter(equipmentName, trainingsbereich, distanzVon, distanzBis,
+                    hoehenmeterVon, hoehenmeterBis, suchbegriff)
         }, ct)))
-    .WithDescription("Optionale Datums-, Aktivitäts- und Kategorienfilter werden vor Sortierung, Gesamtanzahl und Paging angewendet. Sortierschlüssel und Richtung sind typisiert und optional; ohne Angabe gilt die bestehende Reihenfolge.")
+    .WithDescription("Optionale Datums-, Aktivitäts- und Kategorienfilter sowie Tabellenfilter werden auf die Tourenliste vor Projektion, Sortierung, Gesamtanzahl und Paging angewendet; Tabellenfilter ändern keine Statistik, Rekorde oder Jahresziele. Sortierschlüssel und Richtung sind typisiert und optional; ohne Angabe gilt die bestehende Reihenfolge.")
     .Produces<TourListeAntwort>().ProducesProblem(400);
 touren.MapGet("/{id:long}", async (long id, ITourenSpeicher store, HttpContext ctx, CancellationToken ct) =>
 {
