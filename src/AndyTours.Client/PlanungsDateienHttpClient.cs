@@ -11,7 +11,8 @@ public sealed class PlanungsDateienHttpClient(HttpClient http) : IPlanungsDateie
 {
     public async Task<PlanungsStand> Lesen(Stream stream, CancellationToken cancellationToken)
     {
-        if (stream is null || !stream.CanRead || stream.CanSeek && stream.Length > PlanungsDateiRegeln.MaxDateiBytes) throw Invalid();
+        if (stream is null || !stream.CanRead) throw Invalid();
+        if (stream.CanSeek && stream.Length - stream.Position > PlanungsDateiRegeln.MaxDateiBytes) throw new PlanungsDateiZuGrossException();
         cancellationToken.ThrowIfCancellationRequested();
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/planung/gpx/lesen")
         {

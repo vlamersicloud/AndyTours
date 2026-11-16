@@ -45,6 +45,7 @@ public sealed partial class PlanungsDateiDienst : IPlanungsDateien
         }
         catch (PlanungsDateiZuGrossException) { throw; }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException) { throw Invalid(); }
         catch (StammdatenException) { throw; }
         catch (Exception ex) when (ex is IOException or ObjectDisposedException or XmlException or InvalidOperationException or ArgumentException or FormatException or OverflowException or UnauthorizedAccessException)
         { throw Invalid(); }
