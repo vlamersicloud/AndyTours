@@ -10,13 +10,23 @@ namespace AndyTours.App.Funktionen;
 public static class ApiTourdetailAnzeige
 {
     public static async Task Oeffnen(Window owner, IReadOnlyList<long> ids, ITourdetailLeser reader,
-        ICourseExport export, CancellationToken cancellationToken)
+        ICourseExport export, CancellationToken cancellationToken, ApiOverlayKontext? overlayKontext = null)
     {
         try
         {
             var response = await reader.Laden(new TourdetailAnfrage(ids), cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (!owner.IsVisible) return;
+            if (overlayKontext is not null)
+            {
+                await overlayKontext.LadenAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!owner.IsVisible) return;
+                if (!string.IsNullOrWhiteSpace(overlayKontext.LastHinweis))
+                    MessageBox.Show(owner, "Einige Overlays konnten nicht angezeigt werden. Die Tourdetails bleiben verfügbar.", "Overlays",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                if (cancellationToken.IsCancellationRequested || !owner.IsVisible) return;
+            }
             if (response.Etappen is null || response.Etappen.Count == 0)
                 throw new InvalidOperationException("Empty tour detail response.");
 
@@ -63,7 +73,7 @@ public static class ApiTourdetailAnzeige
                     rows => detailWindow?.IsVisible == true
                         ? ApiCourseUebertragung.Zeige(detailWindow, rows, export, detailToken)
                         : Task.CompletedTask);
-                detailWindow = new TourdetailFenster(vm) { Owner = owner };
+                detailWindow = new TourdetailFenster(vm, overlayKontext) { Owner = owner };
                 detailWindow.Closed += (_, _) => ReleaseLifetime();
                 detailWindow.Show();
             }
