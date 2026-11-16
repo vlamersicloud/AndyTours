@@ -56,6 +56,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     {
         if (_geschlossen) return;
         _geschlossen = true;
+        _viewModel.BeendePuls();
         _lifetime.Cancel();
         _lifetime.Dispose();
         GC.SuppressFinalize(this);

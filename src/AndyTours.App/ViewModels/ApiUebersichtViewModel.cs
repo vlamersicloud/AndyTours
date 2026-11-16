@@ -125,6 +125,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
         GesamtTouren = 0;
         _start = 0;
         SeitenText = "Keine Daten geladen";
+        LeerePulsanzeige();
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
         VorherigeSeiteCommand.NotifyCanExecuteChanged();
     }
@@ -279,6 +280,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
         VorherigeSeiteCommand.NotifyCanExecuteChanged();
         BenachrichtigeTourCommands();
+        BenachrichtigePulsCommands();
     }
 
     private bool KannNaechsteSeite() => !Laedt && _start + 50 < GesamtTouren;
