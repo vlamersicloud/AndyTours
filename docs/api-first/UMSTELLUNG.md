@@ -39,7 +39,7 @@ Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutz
 | Bereich | Zu erhaltende Abläufe | Status |
 |---|---|---|
 | Start / Verbindung | lokal/zentral, Fehler- und Erreichbarkeitsanzeige | teilweise; kein Windows-Start-/Renderingtest |
-| Touren | Lesen, Filtern, Sortieren, CRUD, Kopieren, Mehrfachbearbeitung | teilweise: serverseitige Filter/Paging und API-CRUD mit Versionen; typisierte globale Sortierung vor Paging für 18 schreibgeschützte Anzeigespalten angebunden; vier atomare CAS-/Replay-Mehrfachaktionen samt WPF-Auswahl auf aktueller Seite, explizitem Aktionsdialog und sicherem Retry angebunden; Inline-Bearbeitung, Spaltenausblendung/-reihenfolge/-breite, weitere Legacy-Filter und Auswahl über alle Seiten/off-page offen; Tests kompiliert, nicht ausgeführt; Windows-Rendering und reale Mehrclient-Laufzeitprüfung offen |
+| Touren | Lesen, Filtern, Sortieren, CRUD, Kopieren, Mehrfachbearbeitung | teilweise: serverseitige Filter/Paging und API-CRUD mit Versionen; typisierte globale Sortierung vor Paging für 18 schreibgeschützte Anzeigespalten angebunden; vier atomare CAS-/Replay-Mehrfachaktionen samt WPF-Auswahl auf aktueller Seite, explizitem Aktionsdialog und sicherem Retry angebunden; Inline-Bearbeitung, Spaltenausblendung/-reihenfolge/-breite, weitere Legacy-Filter und Auswahl über alle Seiten/off-page offen; Tests kompiliert; siehe [Verifikation](VERIFIKATION.md) zum versehentlichen Testlauf und dessen begrenzter Ausgabe; Windows-Rendering und reale Mehrclient-Laufzeitprüfung offen |
 | Aktivitätsstatistik | Datums-/Aktivitäts-/Kategorienfilter, Kennzahlen, Saisonziele, Bestleistungen | teilweise: Filter, KPIs und Diagramm; Bestleistungen und Kalenderjahresziel-Referenz serverseitig und in der UI angebunden; Rekorde respektieren Zeitraum-, Aktivitäts- und Kategorienfilter (Jahresrekorde bei Teilauswahl ausdrücklich keine vollen Jahreswerte); Ziele beziehen sich auf das volle Kalenderjahr, sind nicht proratiert und unabhängig vom Kategorienfilter; kein Fahrzeitziel. Saisonzieleditor angebunden. Rekord-Tournavigation über exakte optionale TourId angebunden; Zielverlauf/-diagramm offen |
 | Aktivitäten | Stammdatenverwaltung | UI angebunden; sieben Abläufe vorhanden |
 | Kategorien | Stammdatenverwaltung und Zusammenführen | UI angebunden; sechs Abläufe vorhanden |
@@ -57,7 +57,7 @@ Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutz
 | Bestandsübernahme | SQLite- und Anhangpfade erhalten, expliziter Import | offen |
 | Altdatenwerkzeug | kompatibel halten oder explizit ersetzen | offen |
 
-Tests wurden bereitgestellt und kompiliert, aber nicht ausgeführt: sieben Touren-Store-, vier Statistik-, drei Idempotenz-, Aktivitäten-, Kategorien-, Filter- und XAML-Vertragstests. Diese Aufzählung ist keine Aussage über Gesamtparität; keine Gesamtzahl wird daraus abgeleitet. Tests sind durch den Auftraggeber auszuführen.
+Für mehrere Bereiche wurden Tests vorbereitet und kompiliert; das ist kein vollständiger Suite-Nachweis. Am 16.11.2026 wurde versehentlich ein vollständiger Testlauf gestartet; die Ausgabe ist abgeschnitten und zeigt unter anderem Fehler bei Handler-Eigentumsannahmen sowie zwei Analyzer-Warnungen. Die betroffenen Quellen wurden anschließend korrigiert und neu gebaut, aber nicht erneut ausgeführt. Es liegt daher kein vollständiges grünes Testergebnis vor. Details: [Verifikation](VERIFIKATION.md). Die Tests sind durch den Auftraggeber auszuführen.
 
 ## Direkte Frontend-Abhängigkeiten
 
@@ -88,9 +88,9 @@ Der Installer-Publish ist self-contained `win-x64`; Source-Checkouts benötigen 
 ## Verifikation und verbleibende Lücken
 
 - Testserver-Builds und Windows-`win-x64`-Cross-Publish waren für einen früheren Stand vor den aktuellen Garmin-Änderungen erfolgreich; das belegt weder deren aktuellen Cross-Publish noch Laufzeitverhalten. Für die aktuellen Garmin-Änderungen liegt Compile-Evidenz vor.
-- Tests wurden kompiliert, nicht ausgeführt. Neue XAML-StaticResource-Verweise müssen eine definierte, erreichbare lokale Ressource besitzen; der Build allein validiert keine Laufzeitauflösung. Dafür sind strukturelle XAML-Tests bereitzustellen. Windows-Rendering und visuelle Bedienung wurden nicht geprüft.
+- Zum versehentlichen Testlauf und zur begrenzten Ausgabe siehe [Verifikation](VERIFIKATION.md); daraus folgt kein vollständiges Suite-Ergebnis. Neue XAML-StaticResource-Verweise müssen eine definierte, erreichbare lokale Ressource besitzen; der Build allein validiert keine Laufzeitauflösung. Dafür sind strukturelle XAML-Tests bereitzustellen. Windows-Rendering und visuelle Bedienung wurden nicht geprüft.
 - Installer/ISCC sowie Windows-Start, Dialogverbindung und UI-Rendering wurden nicht geprüft.
-- Saisonziele- und Rekordprojektionstests wurden ergänzt/vorbereitet und kompiliert, aber nicht ausgeführt; dies ist kein Testergebnis.
+- Saisonziele- und Rekordprojektionstests wurden ergänzt/vorbereitet und kompiliert; die Verifikation des vollständigen Teststatus steht in [Verifikation](VERIFIKATION.md).
 - Jahreszielreferenzen sind volle Kalenderjahreswerte und werden nicht proportional auf den Filterzeitraum umgerechnet.
 - Statistikdiagramm-Achsen zeigen bei langen Zeiträumen höchstens ungefähr zwölf Beschriftungen. Ein Tracker mit Zeitraum, Wert und Einheit ist noch offen; das verfügbare Paket-XML bestätigt die Formatstring-Eigenschaft, aber nicht zuverlässig die Platzhalter für Rechteckbalken.
 - Keine vollständige Migration behaupten, bis alle offenen Paritätsbereiche umgesetzt und verifiziert sind.

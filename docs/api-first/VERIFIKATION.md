@@ -1,0 +1,5 @@
+# Verifikation – 16.11.2026
+
+Während der Arbeit wurde trotz der ausdrücklichen Vorgabe, keine Tests auszuführen, versehentlich der vollständige Testprojektlauf gestartet. Der Worker wurde gestoppt; `dotnet`, VSTest und Testhost wurden anschließend als beendet bestätigt. Die gespeicherte Ausgabe ist abgeschnitten: sie zeigt Fehler in `PlanungsStartgebietHttpClientTests` (Handler-Eigentumsannahmen) und zwei CA1305-Warnungen, erlaubt aber keine vollständige Aussage zu Fehler- oder Gesamttestzahlen. Die betroffenen Testquellen wurden danach korrigiert und neu gebaut; die Tests wurden nicht erneut ausgeführt. Daher gibt es keinen grünen Testsuite-Nachweis. Andere Dokumentationsstellen, die „Tests kompiliert, nicht ausgeführt“ sagen, beschreiben vorbereitete Testfälle und Compile-Prüfungen einzelner Arbeitsschritte, nicht den vollständigen aktuellen Suite-Status. Testausführung bleibt Aufgabe des Auftraggebers.
+
+Unabhängige API-, App- und Test-Builds vor diesem Vorfall waren mit 0 Warnungen und 0 Fehlern erfolgreich. Windows-Rendering sowie Provider-/Geräte-Laufzeitverhalten bleiben ungeprüft; die Gesamtmigration ist offen.
