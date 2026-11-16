@@ -64,6 +64,22 @@
                         <TextBlock Grid.Row="1" Text="{Binding ZukunftsHinweis}" Foreground="#875A12" TextWrapping="Wrap" Margin="0,12,0,0"/>
                     </Grid>
                 </TabItem>
+                <TabItem Header="Bestleistungen">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="16">
+                        <TextBlock Text="Jahresrekorde" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
+                        <ListView ItemsSource="{Binding Jahresrekorde}" MaxHeight="220" Margin="0,0,0,16"><ListView.View><GridView><GridViewColumn Header="Bezeichnung" DisplayMemberBinding="{Binding Bezeichnung}" Width="260"/><GridViewColumn Header="Wert" DisplayMemberBinding="{Binding Wert}" Width="180"/><GridViewColumn Header="Herkunft" DisplayMemberBinding="{Binding Herkunft}" Width="220"/></GridView></ListView.View></ListView>
+                        <TextBlock Text="Einzelrekorde" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
+                        <ListView ItemsSource="{Binding Einzelrekorde}" MaxHeight="260" Margin="0,0,0,8"><ListView.View><GridView><GridViewColumn Header="Bezeichnung" DisplayMemberBinding="{Binding Bezeichnung}" Width="260"/><GridViewColumn Header="Wert" DisplayMemberBinding="{Binding Wert}" Width="180"/><GridViewColumn Header="Herkunft" DisplayMemberBinding="{Binding Herkunft}" Width="260"/></GridView></ListView.View></ListView>
+                        <TextBlock Text="Rekordwerte verwenden ausschließlich den gewählten Zeitraum; Teilauswahlen eines Jahres sind keine vollständigen Jahresrekorde." TextWrapping="Wrap" Foreground="#637083" Margin="0,0,0,8" />
+                    </StackPanel></ScrollViewer>
+                </TabItem>
+                <TabItem Header="Jahresziele">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="16">
+                        <TextBlock Text="Jahresziele – Referenz für das ganze Kalenderjahr" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
+                        <ListView ItemsSource="{Binding Jahresziele}"><ListView.View><GridView><GridViewColumn Header="Jahr" DisplayMemberBinding="{Binding Jahr}" Width="120"/><GridViewColumn Header="Kilometer" DisplayMemberBinding="{Binding ZielKm}" Width="180"/><GridViewColumn Header="Höhenmeter" DisplayMemberBinding="{Binding ZielHm}" Width="180"/><GridViewColumn Header="Anzahl" DisplayMemberBinding="{Binding ZielAnzahl}" Width="160"/></GridView></ListView.View></ListView>
+                        <TextBlock Text="Volles Kalenderjahr, nicht auf den gewählten Zeitraum umgerechnet; Kategorien ändern das Aktivitätsziel nicht. Für Fahrzeit gibt es kein Ziel." TextWrapping="Wrap" Foreground="#637083" Margin="0,10,0,0" />
+                    </StackPanel></ScrollViewer>
+                </TabItem>
                 <TabItem Header="Touren">
                     <DockPanel Margin="12">
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
