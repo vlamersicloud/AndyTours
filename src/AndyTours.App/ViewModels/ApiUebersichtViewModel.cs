@@ -21,6 +21,9 @@ public partial class ApiUebersichtViewModel : ObservableObject
     private readonly ITourenSpeicher _touren;
     private readonly IStammdatenLeser _stammdatenLeser;
     private readonly ObservableCollection<AktivitaetsperiodenAntwort> _perioden = [];
+    public ObservableCollection<BestleistungszeileAntwort> Jahresrekorde { get; } = [];
+    public ObservableCollection<BestleistungszeileAntwort> Einzelrekorde { get; } = [];
+    public ObservableCollection<JahreszielAntwort> Jahresziele { get; } = [];
     private long _generation;
     private int _start;
     private bool _filterAenderungSuspendiert;
@@ -111,6 +114,9 @@ public partial class ApiUebersichtViewModel : ObservableObject
     private void LeereAnzeige()
     {
         _perioden.Clear();
+        Jahresrekorde.Clear();
+        Einzelrekorde.Clear();
+        Jahresziele.Clear();
         AusgewaehlteTour = null;
         Diagramm = new PlotModel { Background = OxyColors.White };
         DistanzKmText = HoehenmeterText = FahrzeitText = AnzahlText = "–";
@@ -157,6 +163,9 @@ public partial class ApiUebersichtViewModel : ObservableObject
             var page = await tourenTask;
             _perioden.Clear();
             foreach (var periode in result.Perioden) _perioden.Add(periode);
+            Jahresrekorde.Clear(); foreach (var row in result.Jahresrekorde) Jahresrekorde.Add(row);
+            Einzelrekorde.Clear(); foreach (var row in result.Einzelrekorde) Einzelrekorde.Add(row);
+            Jahresziele.Clear(); foreach (var row in result.Jahresziele) Jahresziele.Add(row);
             DistanzKmText = $"{result.DistanzKm.ToString("N1", Deutsch)} km";
             HoehenmeterText = $"{result.Hoehenmeter.ToString("N0", Deutsch)} hm";
             FahrzeitText = DauerText(result.FahrzeitSekunden);
