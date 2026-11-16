@@ -53,12 +53,41 @@ public sealed class GarminImportPruefungTests
         Assert.Empty(f.ReadTours());
     }
 
+    [Fact]
+    public async Task TimezoneRulesAreBoundToReviewAndRejectStalePreview()
+    {
+        using var f = new Fixture();
+        var (job, candidate, _, _) = await f.Prepare(new DateTime(2026, 4, 1, 8, 0, 0, DateTimeKind.Utc));
+        FitTestdatei.Schreibe(f.FitPath(job.JobId, candidate.KandidatId),
+            new FitTestdatei.Werte(new DateTime(2026, 4, 1, 8, 0, 0, DateTimeKind.Utc), OhneOrtszeit: true));
+
+        var utc = TimeZoneInfo.CreateCustomTimeZone("deterministic-test", TimeSpan.Zero, "test", "test");
+        var plusTwo = TimeZoneInfo.CreateCustomTimeZone("deterministic-test", TimeSpan.FromHours(2), "test", "test");
+        var reviewA = await f.NewFacade(utc).Laden(job.JobId);
+        var reviewBFacade = f.NewFacade(plusTwo);
+        var reviewB = await reviewBFacade.Laden(job.JobId);
+        var rowA = Assert.Single(reviewA.Zeilen);
+        var rowB = Assert.Single(reviewB.Zeilen);
+
+        Assert.Equal(new TimeOnly(8, 0), rowA.Startzeit);
+        Assert.Equal(new TimeOnly(10, 0), rowB.Startzeit);
+        Assert.Equal(reviewA.FallbackZeitzoneId, reviewB.FallbackZeitzoneId);
+        Assert.NotEqual(rowA.DateiVersion, rowB.DateiVersion);
+
+        var request = new GarminImportUebernahmeAnfrage(job.Version, Guid.NewGuid(),
+            [new GarminImportAuswahl(candidate.KandidatId, rowA.DateiVersion, true, f.EquipmentId)]);
+        var error = await Assert.ThrowsAsync<StammdatenException>(() => reviewBFacade.Uebernehmen(job.JobId, request));
+        Assert.Equal(StammdatenFehlerart.Konflikt, error.Art);
+        Assert.Empty(f.ReadTours());
+    }
+
     private sealed class Fixture : IDisposable
     {
         private readonly string _root = Path.Combine(Path.GetTempPath(), "GarminReview-" + Guid.NewGuid().ToString("N"));
         private string DbPath => Path.Combine(_root, "db.sqlite");
         public long EquipmentId { get; private set; }
         public Fixture() { Directory.CreateDirectory(_root); }
+        public GarminImportPruefung NewFacade(TimeZoneInfo zone) => new(new SqliteGarminImportJobs(DbPath), _root, zone);
         public string FitPath(Guid jobId, Guid candidateId) => Path.Combine(_root, "GarminImport", jobId.ToString("N"), candidateId.ToString("N") + ".fit");
         public string PermanentPath(string relative) => Path.Combine(_root, relative.Replace('/', Path.DirectorySeparatorChar));
         public string ZipPath(long id) => Path.Combine(_root, "GarminConnect", $"activity-{id}.zip");
@@ -83,7 +112,7 @@ public sealed class GarminImportPruefungTests
             Directory.CreateDirectory(Path.GetDirectoryName(ZipPath(candidate.GarminAktivitaetId))!);
             File.WriteAllBytes(ZipPath(candidate.GarminAktivitaetId), [1, 2, 3, 4]);
             FitTestdatei.Schreibe(FitPath(job.JobId, candidate.KandidatId), new FitTestdatei.Werte(startUtc, Sensoren: [(1, 123u)]));
-            var facade = new GarminImportPruefung(new SqliteGarminImportJobs(DbPath), _root);
+            var facade = NewFacade(TimeZoneInfo.Local);
             return (job, candidate, await facade.Laden(job.JobId), facade);
         }
         public void Dispose() { try { Directory.Delete(_root, true); } catch (IOException) { } }
