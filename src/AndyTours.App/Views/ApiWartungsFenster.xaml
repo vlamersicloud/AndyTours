@@ -1,0 +1,96 @@
+<Window x:Class="AndyTours.App.Views.ApiWartungsFenster"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Wartungen und Alarme" Width="1120" Height="720" MinWidth="850" MinHeight="480"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="#FFF4F6F8" Language="de-DE">
+    <Window.Resources>
+        <Style x:Key="ToolbarButton" TargetType="Button">
+            <Setter Property="Padding" Value="12,6"/><Setter Property="Margin" Value="3"/>
+            <Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#FFD4DCE5"/>
+        </Style>
+        <Style x:Key="Table" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False"/><Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="SelectionMode" Value="Extended"/><Setter Property="SelectionUnit" Value="FullRow"/>
+            <Setter Property="CanUserAddRows" Value="False"/><Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/><Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#FFDDE3EA"/>
+            <Setter Property="RowBackground" Value="White"/><Setter Property="AlternatingRowBackground" Value="#FFF7F9FB"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Laedt}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                <DataTrigger Binding="{Binding Aendert}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                <DataTrigger Binding="{Binding EditorOffen}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="FilterCombo" TargetType="ComboBox">
+            <Setter Property="MinWidth" Value="180"/><Setter Property="Margin" Value="6,0,12,0"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Laedt}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                <DataTrigger Binding="{Binding Aendert}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                <DataTrigger Binding="{Binding EditorOffen}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <DockPanel Margin="16">
+        <Border DockPanel.Dock="Top" Background="White" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Laden" Command="{Binding LadenCommand}" Style="{StaticResource ToolbarButton}"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Aktivität" VerticalAlignment="Center"/>
+                    <ComboBox Style="{StaticResource FilterCombo}" ItemsSource="{Binding AktivitaetsOptionen}" SelectedItem="{Binding AktivitaetAuswahl}" DisplayMemberPath="Name"/>
+                    <TextBlock Text="Equipment" VerticalAlignment="Center"/>
+                    <ComboBox Style="{StaticResource FilterCombo}" ItemsSource="{Binding EquipmentOptionen}" SelectedItem="{Binding EquipmentAuswahl}" DisplayMemberPath="Name"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+        <Border DockPanel.Dock="Bottom" Background="White" CornerRadius="8" Padding="10" Margin="0,12,0,0">
+            <DockPanel>
+                <ProgressBar DockPanel.Dock="Right" Width="120" Height="8" IsIndeterminate="True">
+                    <ProgressBar.Style><Style TargetType="ProgressBar"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Laedt}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger><DataTrigger Binding="{Binding Aendert}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></ProgressBar.Style>
+                </ProgressBar>
+                <TextBlock Text="{Binding Status}" Foreground="#FF334155" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            </DockPanel>
+        </Border>
+        <TabControl Background="Transparent" BorderThickness="0">
+            <TabItem Header="Wartungen">
+                <DockPanel Margin="0,8,0,0">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="Neue Wartung" Command="{Binding NeueWartungCommand}" Style="{StaticResource ToolbarButton}"/>
+                        <Button Content="Bearbeiten" Command="{Binding WartungBearbeitenCommand}" Style="{StaticResource ToolbarButton}"/>
+                        <Button Content="Löschen" Command="{Binding WartungenLoeschenCommand}" Style="{StaticResource ToolbarButton}"/>
+                    </StackPanel>
+                    <DataGrid x:Name="WartungenGrid" Style="{StaticResource Table}" ItemsSource="{Binding Wartungszeilen}" SelectionChanged="Wartungen_SelectionChanged" PreviewMouseDoubleClick="Wartungen_DoubleClick" PreviewKeyDown="Wartungen_KeyDown">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=d}" Width="105"/>
+                            <DataGridTextColumn Header="Rad" Binding="{Binding Rad}" Width="150"/>
+                            <DataGridTextColumn Header="Km-Stand" Binding="{Binding KmStand, StringFormat=N1}" Width="100"/>
+                            <DataGridTextColumn Header="Km seit letzter" Binding="{Binding KmSeitLetzter, StringFormat=N1}" Width="130"/>
+                            <DataGridTextColumn Header="Tage seit letzter" Binding="{Binding TageSeitLetzter}" Width="120"/>
+                            <DataGridTextColumn Header="Tätigkeit" Binding="{Binding Taetigkeit}" Width="180"/>
+                            <DataGridTextColumn Header="Kommentar" Binding="{Binding Kommentar}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Alarme">
+                <DockPanel Margin="0,8,0,0">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="Neuer Alarm" Command="{Binding NeuerAlarmCommand}" Style="{StaticResource ToolbarButton}"/>
+                        <Button Content="Bearbeiten" Command="{Binding AlarmBearbeitenCommand}" Style="{StaticResource ToolbarButton}"/>
+                        <Button Content="Löschen" Command="{Binding AlarmeLoeschenCommand}" Style="{StaticResource ToolbarButton}"/>
+                        <Button Content="Ein-/Ausschalten" Command="{Binding AlarmeUmschaltenCommand}" Style="{StaticResource ToolbarButton}"/>
+                    </StackPanel>
+                    <DataGrid x:Name="AlarmeGrid" Style="{StaticResource Table}" ItemsSource="{Binding Alarmzeilen}" SelectionChanged="Alarme_SelectionChanged" PreviewMouseDoubleClick="Alarme_DoubleClick" PreviewKeyDown="Alarme_KeyDown">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Rad" Binding="{Binding Rad}" Width="150"/>
+                            <DataGridTextColumn Header="Tätigkeit" Binding="{Binding Taetigkeit}" Width="*"/>
+                            <DataGridTextColumn Header="Intervall (km)" Binding="{Binding IntervallKm, StringFormat=N0}" Width="130"/>
+                            <DataGridTextColumn Header="Gefahren (km)" Binding="{Binding GefahrenKm, StringFormat=N1}" Width="130"/>
+                            <DataGridTextColumn Header="Verbleibend (km)" Binding="{Binding VerbleibendKm, StringFormat=N1}" Width="140"/>
+                            <DataGridTextColumn Header="Zustand" Binding="{Binding Zustand}" Width="140"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
