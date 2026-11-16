@@ -14,12 +14,13 @@ public sealed partial class ApiOverlaysViewModel
         if (_beendet || IstBeschaeftigt) return;
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _lebensdauerToken);
         CancellationToken ct = linked.Token;
+        var vorherigeAnzeige = _kontext.Anzeige;
         Laedt = true;
         try
         {
             await _kontext.LadenAsync(ct);
             ct.ThrowIfCancellationRequested();
-            if (!_beendet) Hinweis = _kontext.LastHinweis;
+            if (!_beendet) { if (!ReferenceEquals(vorherigeAnzeige, _kontext.Anzeige)) { _gpxWartetAufReload = false; OnPropertyChanged(nameof(GpxWartetAufReload)); } Hinweis = _kontext.LastHinweis; }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (Exception)
@@ -85,5 +86,7 @@ public sealed partial class ApiOverlaysViewModel
         VerschiebenCommand.NotifyCanExecuteChanged();
         GpxHinzufuegenCommand.NotifyCanExecuteChanged();
         ZeigeGanzCommand.NotifyCanExecuteChanged();
+        GpxImportierenCommand.NotifyCanExecuteChanged();
+        GpxAuswahlVerwerfenCommand.NotifyCanExecuteChanged();
     }
 }
