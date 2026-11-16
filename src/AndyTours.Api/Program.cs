@@ -42,6 +42,9 @@ builder.Services.AddSingleton<IImportUploadSpeicher>(_ => new SqliteImportUpload
 builder.Services.AddSingleton<IFitUploads>(sp => new AndyTours.Import.Dateien.FitUploadDienst(
     sp.GetRequiredService<IImportUploadSpeicher>(), dataDirectory, fitZone));
 builder.Services.AddSingleton<IAktivitaetsauswertung>(_ => new SqliteAktivitaetsauswertung(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<IPulsQuelldaten>(_ => new SqlitePulsQuelldaten(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<IPulsAuswertung>(sp => new AndyTours.Import.Auswertung.PulsAuswertungDienst(
+    sp.GetRequiredService<IPulsQuelldaten>(), dataDirectory));
 builder.Services.AddSingleton<IStammdatenLeser>(_ => new SqliteStammdatenLeser(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IAktivitaetenVerwaltung>(_ => new SqliteAktivitaetenVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IKategorienVerwaltung>(_ => new SqliteKategorienVerwaltung(Path.Combine(dataDirectory, "andytours.db")));
@@ -117,6 +120,7 @@ app.MapGarminEinstellungen();
 app.MapGarminImport();
 app.MapFitUploads();
 app.MapTourdetail();
+app.MapPuls();
 app.MapCourseExport();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
