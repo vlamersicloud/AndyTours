@@ -45,8 +45,8 @@ Ein Bereich gilt erst dann als migriert, wenn Vertrag, Anwendungsfall und benutz
 | Garmin Connect | Key-Verwaltung, Abruf, Duplikatschutz | offen; separates Secret-Management nicht migriert |
 | USB / FIT | Geräteadapter, Upload, Vorauswahl, Equipment-Zuordnung, Import | offen |
 | Equipment | Stammdaten, Rad-/Sensorzuordnung, Ausmusterung, Einsatz/Haltbarkeit | teilweise: Equipment-CRUD, Ausmustern, Standard und Entfernen gemerkter Kennungen im API-Modus; Einsatz/Haltbarkeit offen |
-| Wartung | Erfassen, Bearbeiten, Löschen, Alarme | offen |
-| Persönliche Daten | Fahrerprofil und zugehörige Werte | offen |
+| Wartung | Erfassen, Bearbeiten, Löschen, Alarme | nur Wartungsverträge und Application-Port vorhanden; Backend/API/UI offen, keine Parität |
+| Persönliche Daten | Fahrerprofil und zugehörige Werte | API-Lesen/Speichern mit CAS und UI angebunden; sieben Regressionstests bereitgestellt und kompiliert, nicht ausgeführt |
 | Planung / Courses / GPX | Routing, Kurse, Export und Geräteübertragung | offen |
 | Overlays | Ordner, Inhalte, Farben und Verwaltung | offen |
 | Einstellungen / Sicherung | Einstellungen, Backup und Wiederherstellung | offen |
@@ -85,6 +85,7 @@ Der Installer-Publish ist self-contained `win-x64`; Source-Checkouts benötigen 
 - Testserver-Builds und Windows-`win-x64`-Cross-Publish waren erfolgreich.
 - Tests wurden kompiliert, nicht ausgeführt. Neue XAML-StaticResource-Verweise müssen eine definierte, erreichbare lokale Ressource besitzen; der Build allein validiert keine Laufzeitauflösung. Dafür sind strukturelle XAML-Tests bereitzustellen. Windows-Rendering und visuelle Bedienung wurden nicht geprüft.
 - Installer/ISCC sowie Windows-Start, Dialogverbindung und UI-Rendering wurden nicht geprüft.
+- Statistikdiagramm-Achsen zeigen bei langen Zeiträumen höchstens ungefähr zwölf Beschriftungen. Ein Tracker mit Zeitraum, Wert und Einheit ist noch offen; das verfügbare Paket-XML bestätigt die Formatstring-Eigenschaft, aber nicht zuverlässig die Platzhalter für Rechteckbalken.
 - Keine vollständige Migration behaupten, bis alle offenen Paritätsbereiche umgesetzt und verifiziert sind.
 
 Keine EXE-Dateien einchecken.

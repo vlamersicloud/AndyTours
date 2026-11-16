@@ -312,7 +312,8 @@ public partial class ApiUebersichtViewModel : ObservableObject
     private void ZeichneDiagramm()
     {
         var model = new PlotModel { Background = OxyColors.White };
-        var zeitachse = new CategoryAxis { Position = AxisPosition.Bottom, Minimum = -0.5, Maximum = _perioden.Count - 0.5, IsPanEnabled = false, IsZoomEnabled = false, Angle = _perioden.Count > 16 ? -45 : 0, MajorStep = _perioden.Count > 16 ? 2 : 1 };
+        var zeitachse = new CategoryAxis { Position = AxisPosition.Bottom, Minimum = -0.5, Maximum = _perioden.Count - 0.5, IsPanEnabled = false, IsZoomEnabled = false, Angle = _perioden.Count > 12 ? -45 : 0,
+            MajorStep = Math.Max(1, (int)Math.Ceiling(_perioden.Count / 12d)) };
         var einheit = Kennzahl switch
         {
             ApiDiagrammkennzahl.Kilometer => "km",
