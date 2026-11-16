@@ -169,9 +169,10 @@ public partial class ApiWartungsViewModel : ObservableObject
         var snapshot = loaded.Value.Bestand; var meta = loaded.Value.Meta;
         Wartung? existing = id is long selected ? snapshot.Eintraege.FirstOrDefault(x => x.Id == selected && x.Art == Wartungsart.Wartung) is { } item ? ToCore(item) : null : null;
         if (id is not null && existing is null) { Status = "Die ausgewählte Wartung ist nicht mehr vorhanden. Bitte neu laden."; return; }
-        var basis = existing ?? new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = EquipmentAuswahl?.Id ?? _meta!.Equipments.FirstOrDefault(e => !e.Ausgemustert && (AktivitaetAuswahl?.Id is not long aid || e.AktivitaetId == aid))?.Id, Taetigkeit = "", Typ = WartungsTyp.Wartung, Aktiv = true };
+        var basis = existing ?? new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = EquipmentAuswahl?.Id, Taetigkeit = "", Typ = WartungsTyp.Wartung, Aktiv = true };
         var data = CoreData(meta, snapshot);
-        var vm = new WartungBearbeitenViewModel(basis, ErmittleWartungsraeder.Ausfuehren(data, AktivitaetAuswahl?.Id, existing?.EquipmentId), Taetigkeiten, id is null ? "Neue Wartung" : "Wartung bearbeiten", async value => await SaveMaintenance(value, snapshot.Version), DateOnly.FromDateTime(DateTime.Today), data);
+        WartungBearbeitenViewModel? vm = null;
+        vm = new WartungBearbeitenViewModel(basis, ErmittleWartungsraeder.Ausfuehren(data, AktivitaetAuswahl?.Id, existing?.EquipmentId), Taetigkeiten, id is null ? "Neue Wartung" : "Wartung bearbeiten", async value => { var ok = await SaveMaintenance(value, snapshot.Version); if (!ok) vm!.Hinweis = Status; return ok; }, DateOnly.FromDateTime(DateTime.Today), data);
         EditorOffen = true; NotifyCommands(); try { WartungEditorAngefordert?.Invoke(this, vm); } finally { EditorOffen = false; NotifyCommands(); }
         if (vm.IstGespeichert) await ReloadAfterSave();
     }
@@ -182,9 +183,10 @@ public partial class ApiWartungsViewModel : ObservableObject
         var snapshot = loaded.Value.Bestand; var meta = loaded.Value.Meta;
         Wartung? existing = id is long selected ? snapshot.Eintraege.FirstOrDefault(x => x.Id == selected && x.Art == Wartungsart.Alarm) is { } item ? ToCore(item) : null : null;
         if (id is not null && existing is null) { Status = "Der ausgewählte Alarm ist nicht mehr vorhanden. Bitte neu laden."; return; }
-        var basis = existing ?? new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = EquipmentAuswahl?.Id ?? _meta!.Equipments.FirstOrDefault(e => !e.Ausgemustert && (AktivitaetAuswahl?.Id is not long aid || e.AktivitaetId == aid))?.Id, Taetigkeit = "", Typ = WartungsTyp.Alarm, AlarmKm = 5000, Aktiv = true };
+        var basis = existing ?? new Wartung { Datum = DateOnly.FromDateTime(DateTime.Today), EquipmentId = EquipmentAuswahl?.Id, Taetigkeit = "", Typ = WartungsTyp.Alarm, AlarmKm = 5000, Aktiv = true };
         var data = CoreData(meta, snapshot);
-        var vm = new AlarmBearbeitenViewModel(basis, ErmittleWartungsraeder.Ausfuehren(data, AktivitaetAuswahl?.Id, existing?.EquipmentId), Taetigkeiten, id is null ? "Neuer Alarm" : "Alarm bearbeiten", async value => await SaveAlarm(value, snapshot.Version), data);
+        AlarmBearbeitenViewModel? vm = null;
+        vm = new AlarmBearbeitenViewModel(basis, ErmittleWartungsraeder.Ausfuehren(data, AktivitaetAuswahl?.Id, existing?.EquipmentId), Taetigkeiten, id is null ? "Neuer Alarm" : "Alarm bearbeiten", async value => { var ok = await SaveAlarm(value, snapshot.Version); if (!ok) vm!.Hinweis = Status; return ok; }, data);
         EditorOffen = true; NotifyCommands(); try { AlarmEditorAngefordert?.Invoke(this, vm); } finally { EditorOffen = false; NotifyCommands(); }
         if (vm.IstGespeichert) await ReloadAfterSave();
     }
