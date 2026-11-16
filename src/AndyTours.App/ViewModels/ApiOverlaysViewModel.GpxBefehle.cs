@@ -35,6 +35,11 @@ public sealed partial class ApiOverlaysViewModel
                 var outcome = await ImportiereGpxZeileAsync(row, ct);
                 if (outcome == GpxImportErgebnis.Bestaetigt) confirmed++;
                 else if (outcome == GpxImportErgebnis.Abgelehnt) rejected++;
+                else if (outcome == GpxImportErgebnis.BestaetigtOhneFrischenBestand)
+                {
+                    Hinweis = $"Import von „{row.Dateiname}“ bestätigt; bitte Bestand neu laden. Weitere Dateien wurden gestoppt.";
+                    return;
+                }
                 else
                 {
                     Hinweis = $"Importstatus unklar bei „{row.Dateiname}“. Weitere Dateien wurden gestoppt.";
