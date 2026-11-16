@@ -7,7 +7,7 @@ using AndyTours.Import.Garmin;
 namespace AndyTours.Import.Dateien;
 
 /// <summary>Server-internal bounded FIT snapshot, parsing and immutable placement service.</summary>
-public sealed class FitDateiDienst
+public sealed partial class FitDateiDienst
 {
     private const long MaxBytes = 128L * 1024 * 1024;
     private readonly string _root;
