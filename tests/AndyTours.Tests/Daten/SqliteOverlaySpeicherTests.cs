@@ -1,5 +1,4 @@
 using System.Buffers.Binary;
-using System.Security.Cryptography;
 using System.Globalization;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Core.Modell;
@@ -50,7 +49,8 @@ public sealed class SqliteOverlaySpeicherTests
         Assert.Equal(ApiFarbe.Gelb, first.GemeinsameFarbe);
         Assert.Equal(2, first.Ordner.Count);
         Assert.Equal(first.Ordner[1].Id, meta.OrdnerId);
-        Assert.DoesNotContain(first.Version + meta.Version, "secret-value", StringComparison.Ordinal);
+        var publicJson = System.Text.Json.JsonSerializer.Serialize(new { first, content = await service.Inhalt(id, meta.Version, CancellationToken.None) });
+        Assert.DoesNotContain("secret-value", publicJson, StringComparison.Ordinal);
 
         var content = await service.Inhalt(id, meta.Version, CancellationToken.None);
         Assert.Equal(meta.Version, content.Version);
@@ -66,6 +66,20 @@ public sealed class SqliteOverlaySpeicherTests
         Assert.Equal(meta.Version, Assert.Single(folderRenamed.Overlays).Version);
 
         using (var db = OeffneDatenbank.Ausfuehren(dbPath))
+        {
+            using var cmd = db.CreateCommand();
+            cmd.CommandText = "UPDATE Overlay SET Punkte=$points WHERE Id=$id;";
+            cmd.Parameters.AddWithValue("$points", OverlayPunkte.Verpacken(new IReadOnlyList<Geoposition>[] { new[] { new Geoposition(47.0, 10.0) } }));
+            cmd.Parameters.AddWithValue("$id", id);
+            cmd.ExecuteNonQuery();
+        }
+        var geometryChanged = await service.Laden(CancellationToken.None);
+        var geometryMeta = Assert.Single(geometryChanged.Overlays);
+        Assert.NotEqual(meta.Version, geometryMeta.Version);
+        var geometryConflict = await Assert.ThrowsAsync<StammdatenException>(() => service.Inhalt(id, meta.Version, CancellationToken.None));
+        Assert.Equal(StammdatenFehlerart.Konflikt, geometryConflict.Art);
+
+        using (var db = OeffneDatenbank.Ausfuehren(dbPath))
             OverlaysTabelle.Umbenennen(db, id, "Renamed Track");
         var renamed = await service.Laden(CancellationToken.None);
         var changedMeta = Assert.Single(renamed.Overlays);
@@ -78,6 +92,8 @@ public sealed class SqliteOverlaySpeicherTests
         var afterSetting = await service.Laden(CancellationToken.None);
         Assert.Equal(renamed.Version, afterSetting.Version);
         Assert.Equal(changedMeta.Version, Assert.Single(afterSetting.Overlays).Version);
+        var serialized = System.Text.Json.JsonSerializer.Serialize(new { afterSetting, changedMeta });
+        Assert.DoesNotContain("secret-changed", serialized, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -90,8 +106,10 @@ public sealed class SqliteOverlaySpeicherTests
             long id = OverlayordnerTabelle.Einfuegen(db, null, "Folder");
             long overlayId = OverlaysTabelle.Einfuegen(db, new Overlay(0, id, "Bad", null, false,
                 new IReadOnlyList<Geoposition>[] { new[] { new Geoposition(1, 2) } }));
-            await Assert.ThrowsAsync<StammdatenException>(() => Task.Run(() => new SqliteOverlaySpeicher("relative.db").Laden(CancellationToken.None)));
+            Assert.Throws<ArgumentException>(() => new SqliteOverlaySpeicher("relative.db"));
             var service = new SqliteOverlaySpeicher(dbPath);
+            var notFound = await Assert.ThrowsAsync<StammdatenException>(() => service.Inhalt(999999, new string('A', 64), CancellationToken.None));
+            Assert.Equal(StammdatenFehlerart.NichtGefunden, notFound.Art);
             var badId = await Assert.ThrowsAsync<StammdatenException>(() => service.Inhalt(0, new string('A', 64), CancellationToken.None));
             Assert.Equal(StammdatenFehlerart.Ungueltig, badId.Art);
             var badToken = await Assert.ThrowsAsync<StammdatenException>(() => service.Inhalt(overlayId, "bad", CancellationToken.None));
