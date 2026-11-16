@@ -46,6 +46,8 @@ public sealed record AktivitaetsauswertungAntwort(
     public IReadOnlyList<BestleistungszeileAntwort> Jahresrekorde { get; init; } = [];
     public IReadOnlyList<BestleistungszeileAntwort> Einzelrekorde { get; init; } = [];
     public IReadOnlyList<JahreszielAntwort> Jahresziele { get; init; } = [];
+    /// <summary>Optionale Saisonkennzahlen; nur für den exakt laufenden Jahreszeitraum befüllt.</summary>
+    public SaisonfortschrittAntwort? Saisonfortschritt { get; init; }
 };
 
 public sealed record BestleistungszeileAntwort(string Bezeichnung, string Wert, string Herkunft, bool IstLaufendesJahr, long? TourId);
