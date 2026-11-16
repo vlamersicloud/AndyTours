@@ -51,6 +51,11 @@ public partial class ApiRoutingKonfigurationViewModel : ObservableObject, IDispo
         OnPropertyChanged(nameof(StatusGeladen));
         LadenCommand.NotifyCanExecuteChanged();
         AbbrechenCommand.NotifyCanExecuteChanged();
+        DienstSpeichernCommand.NotifyCanExecuteChanged();
+        AdresseSpeichernCommand.NotifyCanExecuteChanged();
+        AdresseZuruecksetzenCommand.NotifyCanExecuteChanged();
+        OrsSchluesselSpeichernCommand.NotifyCanExecuteChanged();
+        OrsSchluesselEntfernenCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand(CanExecute = nameof(CanLoad))]
