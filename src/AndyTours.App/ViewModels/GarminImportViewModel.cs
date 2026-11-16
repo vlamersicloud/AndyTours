@@ -5,66 +5,73 @@ using AndyTours.Core.Modell;
 
 namespace AndyTours.App.ViewModels;
 
-/// <summary>
-/// ViewModel des Fensters „Garmin-Import“: die neuen Touren mit Häkchen und Equipment sowie der Befehl „Importieren“.
-/// </summary>
-/// <remarks>
-/// Das Fenster ändert nichts am Datenbestand. Nach „Importieren“ liefert <see cref="Ergebnis"/> die angehakten
-/// Zeilen; Ablegen, Speichern und Markieren übernimmt der Aufrufer (<c>HauptfensterViewModel.Import</c>).
-/// </remarks>
-public partial class GarminImportViewModel : ObservableObject
+/// <summary>ViewModel für die Auswahl von FIT-Touren und asynchroner Importbestätigung.</summary>
+public partial class GarminImportViewModel : ObservableObject, IDisposable
 {
-    /// <summary>Anzeige für „kein Equipment“.</summary>
     public const string Keines = "(keines)";
+    private readonly Func<IReadOnlyList<Importzeile>, Task<bool>>? _speichern;
+    private bool _disposed;
 
-    /// <summary>
-    /// Erzeugt das ViewModel.
-    /// </summary>
-    /// <param name="zeilen">Die neuen Touren, alle angehakt.</param>
-    /// <param name="equipments">Die wählbaren Equipments; „(keines)“ wird vorne ergänzt.</param>
     public GarminImportViewModel(IReadOnlyList<Importzeile> zeilen, IEnumerable<Auswahleintrag> equipments)
+        : this(zeilen, equipments, null) { }
+
+    public GarminImportViewModel(IReadOnlyList<Importzeile> zeilen, IEnumerable<Auswahleintrag> equipments,
+        Func<IReadOnlyList<Importzeile>, Task<bool>>? speichern)
     {
-        Zeilen = zeilen;
+        Zeilen = zeilen ?? throw new ArgumentNullException(nameof(zeilen));
         Equipments = [new Auswahleintrag(null, Keines), .. equipments];
         MehrereGeraete = zeilen.Select(z => z.Geraet).Distinct().Count() > 1;
-        foreach (Importzeile zeile in zeilen)
-        {
-            zeile.PropertyChanged += ZeileGeaendert;
-        }
+        _speichern = speichern;
+        foreach (var zeile in zeilen) zeile.PropertyChanged += ZeileGeaendert;
     }
 
-    /// <summary>Wird ausgelöst, sobald „Importieren“ gewählt wurde; das Fenster schließt sich daraufhin.</summary>
     public event EventHandler? Bestaetigt;
-
-    /// <summary>Die neuen Touren.</summary>
     public IReadOnlyList<Importzeile> Zeilen { get; }
-
-    /// <summary>Wählbare Equipments, beginnend mit „(keines)“.</summary>
     public IReadOnlyList<Auswahleintrag> Equipments { get; }
-
-    /// <summary><c>true</c>, wenn die Touren von mehreren Geräten stammen; dann ist die Spalte „Gerät“ sichtbar.</summary>
     public bool MehrereGeraete { get; }
-
-    /// <summary>Die angehakten Zeilen nach „Importieren“; leer bei Abbruch.</summary>
     public IReadOnlyList<Importzeile> Ergebnis { get; private set; } = [];
+    [ObservableProperty] private bool speichert;
+    [ObservableProperty] private string? hinweis;
+    public string ErklaerungText => _speichern is null ? string.Empty : "Nicht markierte Zeilen werden im Garmin-Auftrag übersprungen und nicht gelöscht; Originaldateien bleiben erhalten.";
+    public string BestaetigenText => _speichern is null ? "Importieren" : "Auswahl bestätigen";
 
-    /// <summary>Befehl „Importieren“: übernimmt die angehakten Touren und schließt das Fenster.</summary>
-    [RelayCommand(CanExecute = nameof(IstEineAngehakt))]
-    private void Importieren()
+    [RelayCommand(CanExecute = nameof(KannImportieren))]
+    private async Task ImportierenAsync()
     {
-        Ergebnis = Zeilen.Where(z => z.Importieren).ToList();
-        Bestaetigt?.Invoke(this, EventArgs.Empty);
+        if (Speichert || (_speichern is null && !Zeilen.Any(z => z.Importieren)) || Zeilen.Count == 0) return;
+        Speichert = true;
+        try
+        {
+            var all = Zeilen.ToArray();
+            Ergebnis = all.Where(z => z.Importieren).ToList();
+            if (_speichern is not null)
+            {
+                var success = await _speichern(all);
+                if (!success)
+                {
+                    if (string.IsNullOrWhiteSpace(Hinweis)) Hinweis = "Der Garmin-Auftrag konnte nicht bestätigt werden. Bitte aktualisieren und erneut prüfen.";
+                    return;
+                }
+            }
+            Bestaetigt?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            if (string.IsNullOrWhiteSpace(Hinweis)) Hinweis = "Der Garmin-Auftrag konnte nicht bestätigt werden. Bitte aktualisieren und erneut prüfen.";
+        }
+        finally { Speichert = false; }
     }
 
-    /// <summary>„Importieren“ ist nur wählbar, wenn mindestens eine Tour angehakt ist.</summary>
-    private bool IstEineAngehakt() => Zeilen.Any(z => z.Importieren);
-
-    /// <summary>Aktualisiert „Importieren“, wenn ein Häkchen gesetzt oder entfernt wird.</summary>
+    private bool KannImportieren() => !Speichert && Zeilen.Count > 0 && (_speichern is not null || Zeilen.Any(z => z.Importieren));
     private void ZeileGeaendert(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(Importzeile.Importieren))
-        {
-            ImportierenCommand.NotifyCanExecuteChanged();
-        }
+        if (e.PropertyName == nameof(Importzeile.Importieren)) ImportierenCommand.NotifyCanExecuteChanged();
+    }
+    partial void OnSpeichertChanged(bool value) => ImportierenCommand.NotifyCanExecuteChanged();
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        foreach (var zeile in Zeilen) zeile.PropertyChanged -= ZeileGeaendert;
     }
 }
