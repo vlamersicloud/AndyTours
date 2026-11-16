@@ -1,6 +1,6 @@
 # Touren: Mehrfachaktionen (Design)
 
-Status: nicht implementiert. Legacy-Vorbild: HauptfensterViewModel.Zuordnen und OrdneEinheitenZu. Drei endliche Aktionen: Kategorien setzen/entfernen (unberührte Kategorien jeder Tour erhalten), Aktivität ändern (bestehendes Equipment bleibt auch bei Inkompatibilität), Equipment setzen/entfernen (Kategorien bleiben; Auswahl „kein“ und nicht ausgemusterte Geräte passend zu mindestens einer ausgewählten Aktivität oder ohne Aktivität). Der Einzel-Equipment-Editor darf das bisherige ausgemusterte Equipment weiter anzeigen; Mehrfachauswahl tut das derzeit nicht.
+Status: Backend, Verträge, API-Endpunkte und Client implementiert. WPF fehlt; vorbereitete Tests sind kompiliert, aber nicht ausgeführt. Legacy-Vorbild: HauptfensterViewModel.Zuordnen und OrdneEinheitenZu. Drei endliche Aktionen: Kategorien setzen/entfernen (unberührte Kategorien jeder Tour erhalten), Aktivität ändern (bestehendes Equipment bleibt auch bei Inkompatibilität), Equipment setzen/entfernen (Kategorien bleiben; Auswahl „kein“ und nicht ausgemusterte Geräte passend zu mindestens einer ausgewählten Aktivität oder ohne Aktivität). Der Einzel-Equipment-Editor darf das bisherige ausgemusterte Equipment weiter anzeigen; Mehrfachauswahl tut das derzeit nicht.
 
 Löschung benötigt ausdrückliche Bestätigung. Quelldateien der Anhänge bleiben erhalten; DB-Anhangsmetadaten und Kategorienzuordnungen kaskadieren, Garmin-Zuordnungen werden in derselben Transaktion entfernt, FIT-Uploads verlieren ihre TourId per SET NULL.
 
