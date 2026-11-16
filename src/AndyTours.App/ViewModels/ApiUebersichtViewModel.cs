@@ -154,7 +154,8 @@ public partial class ApiUebersichtViewModel : ObservableObject
             var aktivitaetId = AktivitaetAuswahl?.Id;
             var kategorieId = KategorieAuswahl?.Id;
             var request = new AktivitaetsauswertungAnfrage(von, bis, Raster, aktivitaetId, kategorieId);
-            var filter = new TourenListenfilter(von, bis, aktivitaetId, kategorieId);
+            var filter = new TourenListenfilter(von, bis, aktivitaetId, kategorieId)
+            { Sortierung = TourenSortierung, Absteigend = TourenAbsteigend };
             var auswertungTask = _auswertung.Laden(request, ct);
             var tourenTask = _touren.ListeGefiltert(_start, 50, filter, ct);
             await Task.WhenAll(auswertungTask, tourenTask);
@@ -294,7 +295,8 @@ public partial class ApiUebersichtViewModel : ObservableObject
         try
         {
             var filter = new TourenListenfilter(DateOnly.FromDateTime(VonDatum.Value),
-                DateOnly.FromDateTime(BisDatum.Value), AktivitaetAuswahl?.Id, KategorieAuswahl?.Id);
+                DateOnly.FromDateTime(BisDatum.Value), AktivitaetAuswahl?.Id, KategorieAuswahl?.Id)
+            { Sortierung = TourenSortierung, Absteigend = TourenAbsteigend };
             var page = await _touren.ListeGefiltert(start, 50, filter, ct);
             if (generation != Interlocked.Read(ref _generation)) return;
             _start = start;
