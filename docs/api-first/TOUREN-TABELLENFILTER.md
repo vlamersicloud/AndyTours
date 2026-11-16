@@ -1,9 +1,9 @@
-# API-Tourentabellenfilter – Designnotiz
+# API-Tourentabellenfilter
 
-Legacy `FiltereEinheiten` filtert die aktuelle Jahres-/Aktivitätsauswahl unabhängig von der Werkzeugleisten-Summen: Kategorie (Name, bei Mehrfachnamen alle passenden IDs), Equipment (inkl. Ausgemustert-Zusatz), Trainingsbereich, inklusive km/hm-Bereiche und Freitext. 0 km gilt bei aktivem Distanzfilter als nicht erfasst; 0 hm ist gültig. Ungültige Zahlenbereiche werden nicht angewendet. Suche teilt an Leerzeichen und verlangt jedes Wort in Name oder Kommentar (OrdinalIgnoreCase); reine Leerzeichen filtern nicht.
+Die sieben optionalen Tabellenfilter (Equipmentname, Trainingsbereich, Distanz-/Höhenmetergrenzen und Suchbegriff) werden unverändert übertragen und durch dieselbe Core-Regel auf der Datums-/Aktivitätsauswahl angewendet – vor Anzeigeprojektion, Bestwerten, Sortierung und Paging. Ungültige Zahlenbereiche bleiben gemäß Core inaktiv. Lookup-Optionen stammen aus der vollständigen Datums-/Aktivitätsbasis vor Kategorie- und Tabellenfiltern; fehlende aktuelle Auswahlwerte bleiben enthalten.
 
-`ErmittleFilterwerte` bildet Optionen aus der ungefilterten Jahres-/Aktivitätsbasis, ergänzt eine nicht mehr vorhandene Auswahl und hält ausgemusterte Equipments am Ende. Die API-Werkzeugleistenstatistik bleibt auf Datums-/Aktivitäts-/Kategorienumfang, nicht auf tabelleneigene Filter verengt.
+Im Touren-Tab gibt es explizites Anwenden und Zurücksetzen. Vier Grenzfehleranzeigen folgen dem Core-Parser. Tabellenfilter leeren bzw. verändern nicht Kennzahlen, Rekorde, Ziele oder Pulsdaten. Bei Refresh, Paging und Sortierung werden Anfragewerte vor dem Laden aufgenommen; Seite und Optionen werden vor Zustandsübernahme geprüft. Tour-ID, Version und Rohwerte bleiben unverändert.
 
-Nächster Schritt: additive optionale Tabellenfilter und Lookup-Optionen prüfen, bestehende vier API-Filterparameter/Kategorie-ID-Semantik erhalten und dieselbe Core-Filterregel serverseitig anwenden, bevor Projektion, Bestwerte, Sortierung und Paging berechnet werden. UI muss Parserfehler anzeigen und Seitenantworten atomar validieren. Keine Anzeige-zu-ID-Ableitung; exakte Legacy-Parität für gleichnamige IDs und seitenübergreifende Auswahl bleibt offen.
+Optionen-/Übernahme-Vertragstests sind vorbereitet und kompiliert, nicht ausgeführt; der frühere versehentliche Testlauf und sein begrenzter Befund sind in VERIFIKATION.md dokumentiert. Windows-Rendering ist ungeprüft. Offen bleiben seitenübergreifende Auswahl, Inline-Bearbeitung, Spaltenausblendung/-reihenfolge/-breite und weitere Legacy-Filter.
 
-Quellen: `src/AndyTours.Core/Berechnungen/FiltereEinheiten.cs`, `LeseFilterbereich.cs`, `PasstZumSuchbegriff.cs`, `ErmittleFilterwerte.cs`, `src/AndyTours.App/ViewModels/HauptfensterViewModel.cs`.
+Quellen: src/AndyTours.Core/Berechnungen/FiltereEinheiten.cs, LeseFilterbereich.cs, ErmittleFilterwerte.cs; API_FIRST-Contracts, SQLite-Speicher und Touren-ViewModel.

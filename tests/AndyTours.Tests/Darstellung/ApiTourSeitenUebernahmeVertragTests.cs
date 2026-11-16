@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using System.Xml.Linq;
 
 namespace AndyTours.Tests.Darstellung;
 
@@ -20,6 +21,55 @@ public sealed class ApiTourSeitenUebernahmeVertragTests
         var last = source.IndexOf(end, first + start.Length, StringComparison.Ordinal);
         Assert.True(last > first, $"Missing end marker: {end}");
         return source[first..last];
+    }
+
+    [Fact]
+    public void Table_filter_invalidates_only_table_and_selection_state()
+    {
+        var vm = Read("AndyTours.ApiUebersichtViewModel.cs");
+        var method = Slice(vm, "private void TabellenfilterGeaendert", "private void FilterGeaendert");
+        Assert.Contains("Interlocked.Increment(ref _generation)", method, StringComparison.Ordinal);
+        Assert.Contains("Touren.Clear()", method, StringComparison.Ordinal);
+        Assert.Contains("SetzeTourenauswahl(0)", method, StringComparison.Ordinal);
+        Assert.Contains("_start = 0", method, StringComparison.Ordinal);
+        foreach (var untouched in new[] { "LeereAnzeige", "_perioden.Clear", "Jahresrekorde.Clear", "Einzelrekorde.Clear", "Jahresziele.Clear", "LeerePulsanzeige", "Diagramm =", "DistanzKmText =" })
+            Assert.DoesNotContain(untouched, method, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Tour_filter_bar_is_explicitly_applied_and_uses_per_bound_validation()
+    {
+        XNamespace p = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
+        var document = XDocument.Parse(Read("AndyTours.ApiHauptfenster.xaml"));
+        var tab = document.Descendants(p + "TabItem").Single(element => (string?)element.Attribute("Header") == "Touren");
+        var elements = tab.Descendants().ToArray();
+        Assert.Contains(elements, element => (string?)element.Attribute("Text") == "Nur Tourentabelle – Kennzahlen und Rekorde bleiben unverändert.");
+        Assert.Contains(elements, element => (string?)element.Attribute("IsEnabled") == "{Binding FilterControlsEnabled}");
+        Assert.Contains(elements, element => (string?)element.Attribute("Command") == "{Binding AktualisierenCommand}");
+        Assert.Contains(elements, element => (string?)element.Attribute("Command") == "{Binding Tabellenfilter.ResetZuruecksetzenCommand}");
+
+        var combos = elements.Where(element => element.Name == p + "ComboBox").ToArray();
+        Assert.Equal(2, combos.Length);
+        Assert.Contains(combos, element => (string?)element.Attribute("ItemsSource") == "{Binding Tabellenfilter.Equipments}" &&
+            (string?)element.Attribute("SelectedItem") == "{Binding Tabellenfilter.AusgewaehltesEquipment, Mode=TwoWay}" &&
+            (string?)element.Attribute("IsSynchronizedWithCurrentItem") == "False");
+        Assert.Contains(combos, element => (string?)element.Attribute("ItemsSource") == "{Binding Tabellenfilter.Trainingsbereiche}" &&
+            (string?)element.Attribute("SelectedItem") == "{Binding Tabellenfilter.AusgewaehlterBereich, Mode=TwoWay}" &&
+            (string?)element.Attribute("IsSynchronizedWithCurrentItem") == "False");
+
+        foreach (var field in new[] { "DistanzVon", "DistanzBis", "HoehenmeterVon", "HoehenmeterBis", "Suchbegriff" })
+            Assert.Contains(elements, element => element.Name == p + "TextBox" &&
+                ((string?)element.Attribute("Text"))?.Contains($"Tabellenfilter.{field}", StringComparison.Ordinal) == true &&
+                ((string?)element.Attribute("Text"))?.Contains("UpdateSourceTrigger=PropertyChanged", StringComparison.Ordinal) == true);
+        foreach (var flag in new[] { "DistanzVonFehlerhaft", "DistanzBisFehlerhaft", "HoehenmeterVonFehlerhaft", "HoehenmeterBisFehlerhaft" })
+            Assert.Contains(elements, element => element.Name == p + "TextBox" &&
+                (string?)element.Attribute("Tag") == $"{{Binding Tabellenfilter.{flag}}}" &&
+                (string?)element.Attribute("Style") == "{StaticResource FilterRangeError}");
+
+        var style = document.Descendants(p + "Style").Single(element => (string?)element.Attribute(x + "Key") == "FilterRangeError");
+        Assert.Contains(style.Descendants(p + "Setter"), setter => (string?)setter.Attribute("Property") == "BorderBrush" &&
+            (string?)setter.Attribute("Value") == "Red");
     }
 
     [Fact]

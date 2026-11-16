@@ -34,6 +34,7 @@ public partial class ApiTourTabellenfilterViewModel : ObservableObject
         get => _ausgewaehltesEquipment;
         set
         {
+            if (value is null && _aenderungenUnterdrueckt) return;
             ArgumentNullException.ThrowIfNull(value);
             if (ReferenceEquals(_ausgewaehltesEquipment, value)) return;
             _ausgewaehltesEquipment = value;
@@ -46,6 +47,7 @@ public partial class ApiTourTabellenfilterViewModel : ObservableObject
         get => _ausgewaehlterBereich;
         set
         {
+            if (value is null && _aenderungenUnterdrueckt) return;
             ArgumentNullException.ThrowIfNull(value);
             if (ReferenceEquals(_ausgewaehlterBereich, value)) return;
             _ausgewaehlterBereich = value;

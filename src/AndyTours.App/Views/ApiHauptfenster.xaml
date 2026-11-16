@@ -15,6 +15,14 @@
             <Setter Property="TextAlignment" Value="Right"/>
             <Setter Property="Padding" Value="4,0"/>
         </Style>
+        <Style x:Key="FilterRangeError" TargetType="TextBox">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="TourBestDistance" TargetType="TextBlock" BasedOn="{StaticResource TourNumber}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Anzeige.IstBestDistanz}" Value="True"><Setter Property="Foreground" Value="Red"/></DataTrigger>
@@ -175,6 +183,21 @@
                 </TabItem>
                 <TabItem Header="Touren">
                     <DockPanel Margin="12">
+                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8" IsEnabled="{Binding FilterControlsEnabled}">
+                            <TextBlock Text="Nur Tourentabelle – Kennzahlen und Rekorde bleiben unverändert." Foreground="#637083" Margin="0,0,0,6"/>
+                            <WrapPanel>
+                                <StackPanel Width="165" Margin="0,0,8,6"><TextBlock Text="Equipment"/><ComboBox ItemsSource="{Binding Tabellenfilter.Equipments}" DisplayMemberPath="Name" SelectedItem="{Binding Tabellenfilter.AusgewaehltesEquipment, Mode=TwoWay}" IsSynchronizedWithCurrentItem="False"/></StackPanel>
+                                <StackPanel Width="165" Margin="0,0,8,6"><TextBlock Text="Trainingsbereich"/><ComboBox ItemsSource="{Binding Tabellenfilter.Trainingsbereiche}" DisplayMemberPath="Name" SelectedItem="{Binding Tabellenfilter.AusgewaehlterBereich, Mode=TwoWay}" IsSynchronizedWithCurrentItem="False"/></StackPanel>
+                                <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="km von"/><TextBox Text="{Binding Tabellenfilter.DistanzVon, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.DistanzVonFehlerhaft}"/></StackPanel>
+                                <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="km bis"/><TextBox Text="{Binding Tabellenfilter.DistanzBis, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.DistanzBisFehlerhaft}"/></StackPanel>
+                                <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="hm von"/><TextBox Text="{Binding Tabellenfilter.HoehenmeterVon, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.HoehenmeterVonFehlerhaft}"/></StackPanel>
+                                <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="hm bis"/><TextBox Text="{Binding Tabellenfilter.HoehenmeterBis, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.HoehenmeterBisFehlerhaft}"/></StackPanel>
+                                <StackPanel Width="180" Margin="0,0,8,6"><TextBlock Text="Suche"/><TextBox Text="{Binding Tabellenfilter.Suchbegriff, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                                <Button Content="Filter zurücksetzen" Command="{Binding Tabellenfilter.ResetZuruecksetzenCommand}" Margin="0,0,8,6" VerticalAlignment="Bottom"/>
+                                <Button Content="Anwenden" Command="{Binding AktualisierenCommand}" Margin="0,0,8,6" VerticalAlignment="Bottom"/>
+                            </WrapPanel>
+                            <TextBlock Text="Ungültige Zahlenbereiche sind nach Core-Regel inaktiv." Foreground="#875A12"/>
+                        </StackPanel>
                         <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10"><TextBlock Text="Ausgewählte Zeilen (diese Seite):" VerticalAlignment="Center"/><TextBlock Text="{Binding AuswahlAnzahl, Mode=OneWay}" VerticalAlignment="Center" Margin="4,0,12,0"/>
                             <Button Content="Neue Tour" Command="{Binding NeueTourCommand}" Padding="12,6" Margin="0,0,8,0"/>
                             <Button Content="Bearbeiten" Command="{Binding TourBearbeitenCommand}" Padding="12,6" Margin="0,0,8,0"/>

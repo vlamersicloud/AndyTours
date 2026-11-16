@@ -97,6 +97,33 @@ public sealed class ApiTourTabellenfilterViewModelTests
     }
 
     [Fact]
+    public void Applying_plan_ignores_combo_null_during_items_reset_and_keeps_new_owned_selections()
+    {
+        var vm = new ApiTourTabellenfilterViewModel { Suchbegriff = "retain" };
+        var changes = 0;
+        vm.Geaendert += () => changes++;
+        vm.Equipments.CollectionChanged += (_, args) =>
+        {
+            if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+                vm.AusgewaehltesEquipment = null!;
+        };
+        vm.Trainingsbereiche.CollectionChanged += (_, args) =>
+        {
+            if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+                vm.AusgewaehlterBereich = null!;
+        };
+        var plan = ApiTabellenfilterOptionenPlan.Erstellen(
+            new TourenTabellenfilterOptionenAntwort(["Bike"], ["GA1"]), "Bike", "GA1");
+
+        vm.Uebernehmen(plan);
+
+        Assert.Equal(0, changes);
+        Assert.Equal("retain", vm.Suchbegriff);
+        Assert.Same(vm.Equipments.Single(option => option.Wert == "Bike"), vm.AusgewaehltesEquipment);
+        Assert.Same(vm.Trainingsbereiche.Single(option => option.Wert == "GA1"), vm.AusgewaehlterBereich);
+    }
+
+    [Fact]
     public void Applying_plan_suppresses_change_event_preserves_text_and_replaces_equal_references()
     {
         var vm = new ApiTourTabellenfilterViewModel { Suchbegriff = "keep" };
