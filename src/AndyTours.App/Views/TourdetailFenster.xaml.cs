@@ -73,8 +73,11 @@ public partial class TourdetailFenster : Window
     /// Erzeugt das Fenster und verbindet es mit dem ViewModel.
     /// </summary>
     /// <param name="viewModel">ViewModel mit Kopfzeile und Verlauf der Tour bzw. der Etappen.</param>
-    public TourdetailFenster(TourdetailViewModel viewModel)
+    public TourdetailFenster(TourdetailViewModel viewModel) : this(viewModel, null) { }
+
+    public TourdetailFenster(TourdetailViewModel viewModel, ApiOverlayKontext? overlayKontext)
     {
+        _apiOverlayKontext = overlayKontext;
         InitializeComponent();
         Oberflaechenskalierung.Anmelden(this);
         // Das Kartenbild bleibt in jeder Stufe so groß wie bei 100 %; nur die Bedienelemente um die Karte wachsen mit
@@ -89,13 +92,29 @@ public partial class TourdetailFenster : Window
             _streckenkarte.GanzeStreckeAngefordert += (_, _) => ZeigeGanzeStrecke();
             _streckenkarte.StreckeGeaendert += (_, _) => ZeichneStrecke();
             Kartenabruf.Fehlgeschlagen += LadefehlerGemeldet;
-            Overlaybestand.Geaendert += OverlaysGeaendert;
-            Overlaybestand.GanzesOverlayAngefordert += GanzesOverlayAngefordert;
+            if (_apiOverlayKontext is not null)
+            {
+                _apiOverlayKontext.Geaendert += ApiOverlaysGeaendert;
+                _apiOverlayKontext.GanzesOverlayAngefordert += ApiGanzesOverlayAngefordert;
+            }
+            else if (DataContext is not TourdetailViewModel { IstApiModus: true })
+            {
+                Overlaybestand.Geaendert += OverlaysGeaendert;
+                Overlaybestand.GanzesOverlayAngefordert += GanzesOverlayAngefordert;
+            }
             Closed += (_, _) =>
             {
                 Kartenabruf.Fehlgeschlagen -= LadefehlerGemeldet;
-                Overlaybestand.Geaendert -= OverlaysGeaendert;
-                Overlaybestand.GanzesOverlayAngefordert -= GanzesOverlayAngefordert;
+                if (_apiOverlayKontext is not null)
+                {
+                    _apiOverlayKontext.Geaendert -= ApiOverlaysGeaendert;
+                    _apiOverlayKontext.GanzesOverlayAngefordert -= ApiGanzesOverlayAngefordert;
+                }
+                else if (DataContext is not TourdetailViewModel { IstApiModus: true })
+                {
+                    Overlaybestand.Geaendert -= OverlaysGeaendert;
+                    Overlaybestand.GanzesOverlayAngefordert -= GanzesOverlayAngefordert;
+                }
                 Karte.Map.Dispose();
             };
         }
@@ -109,7 +128,8 @@ public partial class TourdetailFenster : Window
     {
         if (DataContext is TourdetailViewModel { IstApiModus: true })
         {
-            MessageBox.Show(this, "Die Overlay-Verwaltung ist im API-Modus noch nicht angebunden und bleibt ein offener Migrationspunkt.", "Overlays", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (_apiOverlayKontext?.VerwaltungOeffnen is { } open) open();
+            else MessageBox.Show(this, "Die Overlay-Verwaltung ist noch nicht bereit.", "Overlays", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
         if (global::System.Windows.Application.Current.MainWindow?.DataContext is HauptfensterViewModel hauptfenster)
@@ -129,7 +149,7 @@ public partial class TourdetailFenster : Window
         Dispatcher.BeginInvoke(_streckenkarte.MeldeLadefehler);
 
     /// <summary>Die eingeschalteten Overlays oder ihre Farben haben sich geändert: Overlay-Ebene neu füllen.</summary>
-    private void OverlaysGeaendert(object? sender, EventArgs e) => Overlaydarstellung.Fuelle(Karte.Map);
+    private void OverlaysGeaendert(object? sender, EventArgs e) => FuelleOverlays(Karte.Map);
 
     /// <summary>Doppelklick auf ein Overlay in der Verwaltung: dessen ganze Strecke zeigen.</summary>
     private void GanzesOverlayAngefordert(object? sender, Overlay overlay) => Overlaydarstellung.ZeigeGanz(Karte.Map, overlay);
@@ -150,7 +170,7 @@ public partial class TourdetailFenster : Window
         FuelleEbenen(karte);
 
         Karte.Map = karte;
-        Overlaydarstellung.Fuelle(karte);
+        FuelleOverlays(karte);
 
         // Mapsui merkt sich den Aufruf, bis die Karte ihre Größe kennt (die Karteikarte ist anfangs nicht sichtbar)
         ZeigeGanzeStrecke();
