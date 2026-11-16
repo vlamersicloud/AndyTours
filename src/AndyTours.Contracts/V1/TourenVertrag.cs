@@ -62,4 +62,22 @@ public sealed record TourAendernAnfrage(string Version, TourWerte Werte);
 /// <param name="Bis">Einschließendes Enddatum.</param>
 /// <param name="AktivitaetId">Optionale Aktivitätskennung.</param>
 /// <param name="KategorieId">Optionale Kategorienkennung.</param>
-public sealed record TourenListenfilter(DateOnly? Von, DateOnly? Bis, long? AktivitaetId, long? KategorieId);
+public sealed record TourenListenfilter(DateOnly? Von, DateOnly? Bis, long? AktivitaetId, long? KategorieId)
+{
+    /// <summary>Endliche Sortierauswahl; Bestand erhält die bisherige serverseitige Reihenfolge.</summary>
+    public TourenSortierschluessel Sortierung { get; init; } = TourenSortierschluessel.Bestand;
+    /// <summary>Sortierrichtung für die gewählte Spalte.</summary>
+    public bool Absteigend { get; init; }
+}
+
+/// <summary>Öffentliche, endliche Sortierschlüssel der Tourenliste.</summary>
+public enum TourenSortierschluessel
+{
+    Bestand = 0,
+    Datum,
+    Startzeit,
+    Name,
+    DistanzKm,
+    Hoehenmeter,
+    Fahrzeit
+}
