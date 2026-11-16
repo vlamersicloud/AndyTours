@@ -15,7 +15,6 @@ public partial class ApiEquipmentsViewModel : ObservableObject
     private readonly IStammdatenLeser _stammdaten;
     private readonly Func<string, bool> _bestaetigen;
     private string? _version;
-    private Equipment? _basis;
 
     [ObservableProperty] private EquipmentAntwort? _auswahl;
     [ObservableProperty] private string _statusText = "Equipment laden.";
@@ -89,19 +88,33 @@ public partial class ApiEquipmentsViewModel : ObservableObject
             var metadata = ApiFormularMapper.AlsStammdaten(metadataResponse);
             SetzeSnapshot(family, selected?.Id);
             var found = selected is null ? null : Eintraege.FirstOrDefault(e => e.Id == selected.Id);
-            _basis = found is null ? new Equipment() : ToEquipment(found);
-            var input = EquipmentEingaben.AlsEingaben(_basis);
+            if (selected is not null && found is null)
+            {
+                StatusText = "Das ausgewählte Equipment ist nicht mehr vorhanden. Bitte neu auswählen.";
+                return;
+            }
+            var basis = found is null ? new Equipment() : ToEquipment(found);
+            var input = EquipmentEingaben.AlsEingaben(basis);
             if (found is null && input.AktivitaetId is null)
                 input = input with { AktivitaetId = metadata.Aktivitaeten.FirstOrDefault(a => a.IstHaupt)?.Id };
-            var vm = new EquipmentBearbeitenViewModel(input,
+            metadata.Equipments = family.Eintraege.Select(ToEquipment).ToList();
+            EquipmentBearbeitenViewModel? editor = null;
+            editor = new EquipmentBearbeitenViewModel(input,
                 metadata.Aktivitaeten.Select(a => new Auswahleintrag(a.Id, a.Name)), metadata.Kategorien.Select(k => k.Name),
                 found is null ? "Neues Equipment" : "Equipment bearbeiten",
-                values => EquipmentEingaben.AlsEquipment(values, _basis, metadata).Hinweis,
-                values => SpeichernAsync(values, _basis, metadata, family.Version, ct));
-            vm.Gespeichert += (_, _) => { EditorOffen = false; StatusText = "Equipment gespeichert."; };
+                values => EquipmentEingaben.AlsEquipment(values, basis, metadata).Hinweis,
+                async values =>
+                {
+                    var saved = await SpeichernAsync(values, basis, metadata, family.Version, ct);
+                    if (!saved) editor!.Hinweis = StatusText;
+                    return saved;
+                });
+            editor.Gespeichert += (_, _) => StatusText = "Equipment gespeichert.";
             EditorOffen = true;
             StatusText = "Editor geöffnet.";
-            EditorAngefordert?.Invoke(this, new EquipmentEditorEventArgs(vm));
+            Laedt = false;
+            try { EditorAngefordert?.Invoke(this, new EquipmentEditorEventArgs(editor)); }
+            finally { EditorOffen = false; }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { StatusText = "Editoröffnung abgebrochen."; }
         catch (Exception) { StatusText = "Aktuelle Stammdaten konnten nicht geladen werden. Bitte Verbindung prüfen."; }
