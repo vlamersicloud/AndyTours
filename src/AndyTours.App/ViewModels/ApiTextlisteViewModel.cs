@@ -39,7 +39,11 @@ public partial class ApiTextlisteViewModel : ObservableObject, IDisposable
     /// <summary>Servergeladene Einträge in aktueller Reihenfolge.</summary>
     public ObservableCollection<string> Eintraege { get; }
 
-    partial void OnAuswahlChanged(string? value) => NotifyCommands();
+    partial void OnAuswahlChanged(string? value)
+    {
+        NameText = value ?? string.Empty;
+        NotifyCommands();
+    }
     partial void OnNameTextChanged(string value) => NotifyCommands();
     partial void OnLaedtChanged(bool value) => NotifyCommands();
     partial void OnAendertChanged(bool value) => NotifyCommands();
@@ -74,12 +78,22 @@ public partial class ApiTextlisteViewModel : ObservableObject, IDisposable
     private bool CanLoad() => !_schliessend && !Laedt && !Aendert;
 
     [RelayCommand(CanExecute = nameof(CanAdd))]
-    private Task AnlegenAsync() => Mutate(async () => await _verwaltung.Anlegen(_art, new(_version, BereinigterName())));
+    private Task AnlegenAsync()
+    {
+        var name = BereinigterName();
+        return Mutate(async () => await _verwaltung.Anlegen(_art, new(_version, name)), name);
+    }
     private bool CanAdd() => CanIdle() && TryName(out var name) && !Eintraege.Any(x => EqualsName(x, name));
 
     [RelayCommand(CanExecute = nameof(CanRename))]
-    private Task UmbenennenAsync() => Mutate(async () => await _verwaltung.Umbenennen(_art, new(_version, Auswahl!, BereinigterName())));
+    private Task UmbenennenAsync()
+    {
+        var oldName = Auswahl!;
+        var newName = BereinigterName();
+        return Mutate(async () => await _verwaltung.Umbenennen(_art, new(_version, oldName, newName)), newName);
+    }
     private bool CanRename() => CanIdle() && Auswahl is not null && TryName(out var name) &&
+        !string.Equals(Auswahl, name, StringComparison.Ordinal) &&
         (!Eintraege.Any(x => EqualsName(x, name)) || EqualsName(Auswahl, name));
 
     [RelayCommand(CanExecute = nameof(CanDelete))]
@@ -104,6 +118,7 @@ public partial class ApiTextlisteViewModel : ObservableObject, IDisposable
         if (from < 0) return;
         var reordered = Eintraege.ToList();
         var to = from + offset;
+        if (to < 0 || to >= reordered.Count) return;
         (reordered[from], reordered[to]) = (reordered[to], reordered[from]);
         var selected = Auswahl;
         await Mutate(async () => await _verwaltung.SetzeReihenfolge(_art, new(_version, reordered)), selected);
@@ -139,10 +154,11 @@ public partial class ApiTextlisteViewModel : ObservableObject, IDisposable
     {
         _version = response.Version;
         _geladen = true;
+        Auswahl = null;
         Eintraege.Clear();
         foreach (var item in response.Eintraege) Eintraege.Add(item);
         Auswahl = reselection is null ? null : Eintraege.FirstOrDefault(x => EqualsName(x, reselection));
-        NameText = string.Empty;
+        NameText = Auswahl ?? string.Empty;
         NotifyCommands();
     }
 
