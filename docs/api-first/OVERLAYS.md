@@ -1,0 +1,7 @@
+# Overlay-Migration – Entwurf
+
+**Nur Design; keine Implementierung oder Paritätsbehauptung.** Bestehende Abläufe erhalten: Ordner/Overlays anlegen, umbenennen, verschieben und löschen; lokale GPX-Dateien wählen; Sichtbarkeit inklusive dreistufiger Ordnerzustände, eigene/gemeinsame Farben, Mehrfachauswahl und Zoom auf die ganze Strecke. Namensprüfung bleibt geschwisterbezogen; Verschieben verhindert Zyklen, Ordnerlöschung berücksichtigt kaskadierende Inhalte. Keine stille Feature-Auslassung.
+
+Importiert werden begrenzte GPX-Dateiinhalte, nicht Clientpfade: Parser und Validierung laufen serverseitig. Idempotente stabile Import-Receipts und CAS-Versionen schützen Wiederholungen und konkurrierende Änderungen; Metadaten-/Baumversion und Punktdaten-Leseversion getrennt halten. Keine beliebigen SQL-Aufträge oder Dateipfade über HTTP. Kartenstatus ist sitzungs-/fenstergebunden, nicht statisch datasetweit; dadurch kein Overlay-Leak zwischen lokalen und zentralen Sitzungen.
+
+Slices: versionierte Contracts/Fehlergrenzen → atomarer Store mit Namens-, Zyklus- und Cascade-Regeln → begrenzter GPX-Import/API → typisierter Client → WPF-Verwaltung und Kartenadapter. Baumaufklappung, Auswahl, Doppelklick-Zoom und lokalen Dateiauswahldialog wiederverwenden; Änderungen anderer Clients durch Reload sichtbar machen. Abbruch, Größenlimits, Zugriffsschutz, CAS-Konflikt, Import-Idempotenz und Rollback als Tests vorbereiten. Tests und Windows-/Kartenlaufzeit bleiben zu verifizieren.
