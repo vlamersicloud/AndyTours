@@ -41,6 +41,7 @@ builder.Services.AddSingleton<ITourdetailLeser>(sp => new AndyTours.Import.Datei
 builder.Services.AddSingleton<ICourseExportServerdaten>(_ => new SqliteCourseExportServerdaten(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<ICourseExport>(sp => new AndyTours.Import.Export.CourseExportDienst(sp.GetRequiredService<ICourseExportServerdaten>()));
 builder.Services.AddSingleton<IPlanungsRouting>(sp => new AndyTours.Import.Routing.PlanungsRoutingDienst(sp.GetRequiredService<ICourseExportServerdaten>()));
+builder.Services.AddSingleton<IPlanungsProfil>(_ => new SqlitePlanungsProfil(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IImportUploadSpeicher>(_ => new SqliteImportUploadSpeicher(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IFitUploads>(sp => new AndyTours.Import.Dateien.FitUploadDienst(
     sp.GetRequiredService<IImportUploadSpeicher>(), dataDirectory, fitZone));
@@ -135,6 +136,7 @@ app.MapOverlayAenderungen();
 app.MapOverlayGpx();
 app.MapCourseExport();
 app.MapPlanungsRouting();
+app.MapPlanungsProfil();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
 var touren = app.MapGroup("/api/v1/touren").WithTags("Touren");
