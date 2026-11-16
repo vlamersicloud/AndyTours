@@ -72,6 +72,8 @@ public sealed record TourenListenfilter(DateOnly? Von, DateOnly? Bis, long? Akti
     public TourenSortierschluessel Sortierung { get; init; } = TourenSortierschluessel.Bestand;
     /// <summary>Sortierrichtung für die gewählte Spalte.</summary>
     public bool Absteigend { get; init; }
+    /// <summary>Optionale, ausschließlich tabellenspezifische Textfilter; beeinflussen keine Statistiken oder Rekorde.</summary>
+    public TourenTabellenfilter? Tabellenfilter { get; init; }
 }
 
 /// <summary>Öffentliche, endliche Sortierschlüssel der Tourenliste.</summary>
