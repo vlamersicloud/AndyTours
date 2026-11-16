@@ -69,6 +69,7 @@ public sealed class TourenSortierungHttpClientTests
             new(null, null, null, null) { Sortierung = (TourenSortierschluessel)99 }));
         using var cts = new CancellationTokenSource(); cts.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.ListeGefiltert(0, 5, new(null, null, null, null), cts.Token));
+        await Assert.ThrowsAsync<UngueltigeTourException>(() => client.ListeGefiltert(0, 5, null!));
         Assert.Equal(0, handler.Sends);
     }
 

@@ -18,8 +18,9 @@ public sealed class TourenHttpClient(HttpClient http) : ITourenSpeicher
     /// <inheritdoc />
     public async Task<TourListeAntwort> ListeGefiltert(int start, int anzahl, TourenListenfilter filter, CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(filter);
         ct.ThrowIfCancellationRequested();
+        if (filter is null)
+            throw new UngueltigeTourException("Tourenfilter fehlt.");
         if (!Enum.IsDefined(filter.Sortierung))
             throw new UngueltigeTourException("Tourensortierung ist ungültig.");
         var query = $"?start={start.ToString(CultureInfo.InvariantCulture)}&anzahl={anzahl.ToString(CultureInfo.InvariantCulture)}";

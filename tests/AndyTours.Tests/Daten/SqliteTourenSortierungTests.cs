@@ -12,6 +12,8 @@ public sealed class SqliteTourenSortierungTests : IDisposable
     private readonly string _db;
     private readonly SqliteTourenSpeicher _store;
     private readonly long _activity;
+    private readonly long _otherActivity;
+    private readonly long _category;
 
     public SqliteTourenSortierungTests()
     {
@@ -21,6 +23,8 @@ public sealed class SqliteTourenSortierungTests : IDisposable
         using var c = OeffneDatenbank.Ausfuehren(_db);
         using var tx = c.BeginTransaction();
         _activity = AktivitaetenTabelle.Einfuegen(c, tx, new Aktivitaet { Name = "Rad", IstHaupt = true });
+        _otherActivity = AktivitaetenTabelle.Einfuegen(c, tx, new Aktivitaet { Name = "Laufen" });
+        _category = KategorienTabelle.Einfuegen(c, tx, new Kategorie { Name = "Filter" });
         tx.Commit();
     }
 
@@ -86,7 +90,36 @@ public sealed class SqliteTourenSortierungTests : IDisposable
         var legacy = await _store.ListeGefiltert(0, 20, new(null, null, null, null) { Absteigend = true });
         Assert.Equal(rows.OrderBy(x => x.Date).ThenBy(x => x.Time).ThenBy(x => x.Id).Select(x => x.Id), legacy.Eintraege.Select(x => x.Id));
         var desc = await _store.ListeGefiltert(0, 20, new(null, null, null, null) { Sortierung = TourenSortierschluessel.Datum, Absteigend = true });
-        Assert.Equal(rows.OrderByDescending(x => x.Date).ThenByDescending(x => x.Time).ThenBy(x => x.Id).Select(x => x.Id), desc.Eintraege.Select(x => x.Id));
+        Assert.Equal(new[] { rows[4].Id, rows[2].Id, rows[3].Id, rows[1].Id, rows[0].Id, rows[5].Id }, desc.Eintraege.Select(x => x.Id));
+    }
+
+    [Fact]
+    public async Task Filters_exclude_extreme_rows_before_descending_sort_count_and_paging()
+    {
+        var date = new DateOnly(2026, 4, 10);
+        var first = await Create(_activity, [_category], date, "match20", 20);
+        var second = await Create(_activity, [_category], date, "match10", 10);
+        await Create(_otherActivity, [_category], date, "other-activity", 1000);
+        await Create(_activity, [], date, "missing-category", 2000);
+        await Create(_activity, [_category], date.AddDays(-1), "out-of-date", 3000);
+        var filter = new TourenListenfilter(date, date, _activity, _category)
+        { Sortierung = TourenSortierschluessel.DistanzKm, Absteigend = true };
+        var page0 = await _store.ListeGefiltert(0, 1, filter);
+        var page1 = await _store.ListeGefiltert(1, 1, filter);
+        var page2 = await _store.ListeGefiltert(2, 1, filter);
+        Assert.Equal(2, page0.Gesamt);
+        Assert.Equal(2, page1.Gesamt);
+        Assert.Equal(2, page2.Gesamt);
+        Assert.Equal(first, Assert.Single(page0.Eintraege).Id);
+        Assert.Equal(second, Assert.Single(page1.Eintraege).Id);
+        Assert.Empty(page2.Eintraege);
+    }
+
+    private async Task<long> Create(long activity, long[] categories, DateOnly date, string name, double distance)
+    {
+        var values = TourenMapper.ToAntwort(new Trainingseinheit
+        { AktivitaetId = activity, Datum = date, Name = name, DistanzKm = distance }).Werte with { KategorieIds = categories };
+        return (await _store.Anlegen(values)).Id;
     }
 
     [Fact]
