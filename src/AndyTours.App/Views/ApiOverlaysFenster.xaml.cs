@@ -4,6 +4,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
 using AndyTours.App.ViewModels;
+using AndyTours.App.Funktionen;
+using AndyTours.Core.Modell;
 
 namespace AndyTours.App.Views;
 
@@ -16,7 +18,9 @@ public partial class ApiOverlaysFenster : Window
     {
         _vm = vm ?? throw new ArgumentNullException(nameof(vm));
         InitializeComponent();
+        Oberflaechenskalierung.Anmelden(this);
         DataContext = vm;
+        vm.VerschiebezielWaehlen = WaehleVerschiebeziel;
         vm.GpxDateienAngefordert += GpxDateienAngefordert;
         vm.NameBearbeiten += NameBearbeiten;
         vm.Schliessen += Schliessen;
@@ -24,7 +28,16 @@ public partial class ApiOverlaysFenster : Window
 
     private async void FensterGeladen(object sender, RoutedEventArgs e)
     {
-        if (!_vm.LadenCommand.IsRunning) await _vm.LadenCommand.ExecuteAsync(null);
+        if (_vm.LadenCommand.IsRunning) return;
+        try { await _vm.LadenCommand.ExecuteAsync(null); }
+        catch (Exception) { if (IsLoaded) _vm.Hinweis = "Overlay-Bestand konnte nicht geladen werden. Bitte Verbindung prüfen."; }
+    }
+
+    private Auswahleintrag? WaehleVerschiebeziel(string name, IReadOnlyList<Auswahleintrag> choices, Auswahleintrag? current)
+    {
+        var vm = new EintragWaehlenViewModel("Verschieben nach", $"Neuer Ordner für „{name}“:", choices, current);
+        var dialog = new EintragWaehlenFenster(vm) { Owner = this };
+        return dialog.ShowDialog() == true ? vm.Ergebnis : null;
     }
 
     private void GpxDateienAngefordert(object? sender, EventArgs e)
@@ -75,15 +88,18 @@ public partial class ApiOverlaysFenster : Window
     private void BaumDoppelklick(object sender, MouseButtonEventArgs e)
     {
         if (e.OriginalSource is not DependencyObject source) return;
-        var item = ItemsControl.ContainerFromElement((ItemsControl)sender, source) as TreeViewItem;
-        if (item?.DataContext is ApiOverlayknoten { IstOverlay: true } node)
+        if (Tabellenbedienung.SucheVorfahr<CheckBox>(e.OriginalSource) is null &&
+            Tabellenbedienung.SucheVorfahr<TreeViewItem>(e.OriginalSource)?.DataContext is ApiOverlayknoten { IstOverlay: true } node)
+        {
             _vm.ZeigeGanzCommand.Execute(node);
+            e.Handled = true;
+        }
     }
 
     private void BaumRechtsklick(object sender, MouseButtonEventArgs e)
     {
         if (e.OriginalSource is not DependencyObject source) return;
-        var item = ItemsControl.ContainerFromElement((ItemsControl)sender, source) as TreeViewItem;
-        if (item?.DataContext is ApiOverlayknoten node) node.IstAusgewaehlt = true;
+        var item = Tabellenbedienung.SucheVorfahr<TreeViewItem>(source);
+        if (item?.DataContext is ApiOverlayknoten node) { item.IsSelected = true; item.Focus(); }
     }
 }
