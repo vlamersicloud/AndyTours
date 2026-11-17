@@ -6,4 +6,7 @@ Vollarchive liefern derzeit unbekannte Manifestversion, Dateianzahl und Nutzdate
 
 Das ist keine SQLite-Prüfung, Extraktion, aktive Datenbankänderung, Vorab-Sicherung oder Restore-Freigabe. Für tatsächliche Wiederherstellung braucht es zunächst isoliertes Staging samt ZIP-/Manifest-/Hash- und SQLite-Prüfung sowie einen nachweisbaren Offline-/Prozessguard oder ein getestetes Generation-/Reconnect-Konzept für Handles, Worker und Clientcaches. Danach erst: Vorab-Sicherung, ausdrückliche Bestätigung, atomarer Austausch mit Rollback/Crash-Recovery. Keine Produktionslimits wurden gesetzt; neun serverseitige Archiv-/Kataloggrenzen bleiben deploymentseitig zu konfigurieren. Retention/Löschung ist ungeklärt und bleibt getrennt.
 
+## Interne Bereitstellung
+Die interne, serverseitige Staging-Grundlage für gelistete Vollarchive ist dokumentiert: [Isolierte Vollarchiv-Prüfdatenbank](WIEDERHERSTELLUNGS-PRUEFBEREITSTELLUNG.md). Sie verändert weder Metadatenendpoint noch Vorschau-Flags und führt keine SQLite-Prüfung aus.
+
 API-, App- und Testprojekte wurden vollständig und ohne inkrementelle Schritte kompiliert (Remote-SDK 10.0.402, 0 Warnungen/Fehler). Die vorbereiteten Fixtures wurden nicht ausgeführt. Kein HTTP-, Laufzeit-, Backup- oder Restore-Nachweis; Windows-Darstellung ungeprüft.

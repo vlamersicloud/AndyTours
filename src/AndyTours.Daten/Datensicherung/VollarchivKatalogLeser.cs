@@ -6,6 +6,8 @@ using AndyTours.Application.Sicherung;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 
+internal sealed record VerifizierteSicherungsquelle(string AbsoluterPfad, SicherungAntwort Metadaten);
+
 /// <summary>
 /// Read-only verifier for creator-named full archives. It does not extract files or prove restore validity.
 /// The caller must deploy the backup folder without external writers; filesystem TOCTOU races are not excluded.
@@ -16,11 +18,18 @@ public static class VollarchivKatalogLeser
     private const string Endung = ".zip";
     private static readonly string[] KeineWeiterenAusschluesse = [];
 
-    /// <summary>
-    /// Lists fully verified full archives directly in an existing or missing backup folder.
-    /// Limits are required only when at least one exact creator-named archive is found.
-    /// </summary>
     public static async Task<IReadOnlyList<SicherungAntwort>> Liste(
+        string fixedAbsoluteOrdner,
+        VollarchivKatalogGrenzen? limits,
+        CancellationToken cancellationToken)
+    {
+        var sources = await ListeQuellen(fixedAbsoluteOrdner, limits, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        return Array.AsReadOnly(sources.Select(source => source.Metadaten).ToArray());
+    }
+
+    /// <summary>Returns verified metadata with private full paths for internal catalog use only.</summary>
+    internal static async Task<IReadOnlyList<VerifizierteSicherungsquelle>> ListeQuellen(
         string fixedAbsoluteOrdner,
         VollarchivKatalogGrenzen? limits,
         CancellationToken cancellationToken)
@@ -39,17 +48,17 @@ public static class VollarchivKatalogLeser
             catch (DirectoryNotFoundException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return Array.Empty<SicherungAntwort>();
+                return Array.Empty<VerifizierteSicherungsquelle>();
             }
             catch (FileNotFoundException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return Array.Empty<SicherungAntwort>();
+                return Array.Empty<VerifizierteSicherungsquelle>();
             }
             if ((folderAttributes & FileAttributes.Directory) == 0 || HasReparseAncestor(folder))
                 throw Unavailable();
 
-            var results = new List<SicherungAntwort>();
+            var results = new List<VerifizierteSicherungsquelle>();
             var ids = new HashSet<Guid>();
             var seen = 0;
             long remainingPayloadBytes = 0;
@@ -131,8 +140,9 @@ public static class VollarchivKatalogLeser
                     throw Unavailable();
 
                 remainingPayloadBytes -= archivePayloadBytes;
-                results.Add(new SicherungAntwort(id, Sicherungsart.Vollarchiv,
-                    manifest.ErstelltUtc, length, Convert.ToHexString(digest)));
+                var metadata = new SicherungAntwort(id, Sicherungsart.Vollarchiv,
+                    manifest.ErstelltUtc, length, Convert.ToHexString(digest));
+                results.Add(new VerifizierteSicherungsquelle(fullPath, metadata));
             }
 
             cancellationToken.ThrowIfCancellationRequested();

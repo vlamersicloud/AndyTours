@@ -8,12 +8,13 @@ using AndyTours.Contracts.V1;
 using AndyTours.Daten.Datensicherung;
 
 /// <summary>Read-only metadata reader for strict legacy SQLite backups and verified full archives.</summary>
-public sealed class DateisystemSicherungskatalog : ISicherungskatalog, IDisposable
+public sealed partial class DateisystemSicherungskatalog : ISicherungskatalog, IDisposable
 {
     private readonly string _ordner;
     private readonly VollarchivKatalogGrenzen? _vollarchivGrenzen;
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private readonly Dictionary<string, (string Hash, Guid Id)> _ids = new(StringComparer.Ordinal);
+    private Dictionary<string, (string Hash, Guid Id)> _ids = new(StringComparer.Ordinal);
+    private Dictionary<Guid, VerifizierteSicherungsquelle> _quellen = [];
     private bool _disposed;
 
     public DateisystemSicherungskatalog(
@@ -37,25 +38,32 @@ public sealed class DateisystemSicherungskatalog : ISicherungskatalog, IDisposab
             catch (DirectoryNotFoundException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                _ids.Clear();
+                _ids = new(StringComparer.Ordinal);
+                _quellen = [];
                 return new SicherungListeAntwort(Array.Empty<SicherungAntwort>());
             }
             catch (FileNotFoundException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                _ids.Clear();
+                _ids = new(StringComparer.Ordinal);
+                _quellen = [];
                 return new SicherungListeAntwort(Array.Empty<SicherungAntwort>());
             }
             if ((directoryAttributes & FileAttributes.Directory) == 0)
                 throw Invalid("Sicherungskatalog konnte nicht gelesen werden.");
             RejectReparsePoint(_ordner);
 
-            var fullEntries = await VollarchivKatalogLeser.Liste(
+            var fullSources = await VollarchivKatalogLeser.ListeQuellen(
                 _ordner, _vollarchivGrenzen, cancellationToken).ConfigureAwait(false);
+            var fullEntries = fullSources.Select(source => source.Metadaten).ToArray();
             var usedIds = new HashSet<Guid>(fullEntries.Select(entry => entry.Id));
             var listed = ErmittleSicherungen.Ausfuehren(_ordner);
             var entries = new List<SicherungAntwort>(listed.Count);
             var refreshed = new Dictionary<string, (string Hash, Guid Id)>(StringComparer.Ordinal);
+            var refreshedSources = new Dictionary<Guid, VerifizierteSicherungsquelle>();
+            foreach (var source in fullSources)
+                refreshedSources.Add(source.Metadaten.Id, source);
+
             foreach (var item in listed)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -89,10 +97,12 @@ public sealed class DateisystemSicherungskatalog : ISicherungskatalog, IDisposab
                 usedIds.Add(id);
                 refreshed[key] = (hash, id);
                 var timestamp = Path.GetFileNameWithoutExtension(path)[Sicherungsdatei.Praefix.Length..];
-                entries.Add(new SicherungAntwort(id, Sicherungsart.LegacySqlite, null, length, hash)
+                var metadata = new SicherungAntwort(id, Sicherungsart.LegacySqlite, null, length, hash)
                 {
                     LegacyZeitstempel = timestamp
-                });
+                };
+                entries.Add(metadata);
+                refreshedSources.Add(id, new VerifizierteSicherungsquelle(path, metadata));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -100,8 +110,8 @@ public sealed class DateisystemSicherungskatalog : ISicherungskatalog, IDisposab
                 .OrderByDescending(entry => entry.ErstelltUtc)
                 .ThenBy(entry => entry.Id));
             cancellationToken.ThrowIfCancellationRequested();
-            _ids.Clear();
-            foreach (var pair in refreshed) _ids.Add(pair.Key, pair.Value);
+            _ids = refreshed;
+            _quellen = refreshedSources;
             return new SicherungListeAntwort(new ReadOnlyCollection<SicherungAntwort>(entries));
         }
         catch (OperationCanceledException) { throw; }
@@ -144,5 +154,6 @@ public sealed class DateisystemSicherungskatalog : ISicherungskatalog, IDisposab
         _disposed = true;
         _gate.Dispose();
         _ids.Clear();
+        _quellen.Clear();
     }
 }
