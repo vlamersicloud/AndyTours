@@ -50,6 +50,18 @@ builder.Services.AddSingleton<IPlanungsStartQuelldaten>(_ => new SqlitePlanungsS
 builder.Services.AddSingleton<IPlanungsStartgebiet>(sp => new AndyTours.Import.Planung.PlanungsStartgebietDienst(sp.GetRequiredService<IPlanungsStartQuelldaten>(), dataDirectory));
 builder.Services.AddSingleton<IRoutingKonfiguration>(_ => new SqliteRoutingKonfiguration(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<ISicherungskonfiguration>(_ => new SqliteSicherungskonfiguration(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<ISicherungskatalog>(_ =>
+{
+    var databasePath = Path.Combine(dataDirectory, "andytours.db");
+    using var db = AndyTours.Daten.OeffneDatenbank.Ausfuehren(databasePath);
+    using var tx = db.BeginTransaction(deferred: true);
+    var settings = AndyTours.Daten.SicherungEinstellung.Laden(db);
+    var folder = AndyTours.Daten.Datensicherung.ErmittleSicherungsordner.Ausfuehren(dataDirectory, settings);
+    tx.Commit();
+    if (!Path.IsPathFullyQualified(folder))
+        throw new InvalidOperationException("Sicherungsordnerkonfiguration ungültig.");
+    return new DateisystemSicherungskatalog(folder);
+});
 builder.Services.AddSingleton<IImportUploadSpeicher>(_ => new SqliteImportUploadSpeicher(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IFitUploads>(sp => new AndyTours.Import.Dateien.FitUploadDienst(
     sp.GetRequiredService<IImportUploadSpeicher>(), dataDirectory, fitZone));
@@ -153,6 +165,7 @@ app.MapPlanungsStartgebiet();
 app.MapEquipmentEinsatz();
 app.MapRoutingKonfiguration();
 app.MapSicherungskonfiguration();
+app.MapSicherungskatalog();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
 var touren = app.MapGroup("/api/v1/touren").WithTags("Touren");

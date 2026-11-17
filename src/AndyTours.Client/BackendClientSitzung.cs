@@ -63,6 +63,7 @@ public sealed class BackendClientSitzung : IDisposable
         PlanungsRouting = new PlanungsRoutingHttpClient(_importHttpClient);
         RoutingKonfiguration = new RoutingKonfigurationHttpClient(_importHttpClient);
         Sicherungskonfiguration = new SicherungskonfigurationHttpClient(_httpClient);
+        Sicherungskatalog = new SicherungskatalogHttpClient(_httpClient);
         PlanungsProfil = new PlanungsProfilHttpClient(_importHttpClient);
         PlanungsDateien = new PlanungsDateienHttpClient(_importHttpClient);
         PlanungsCourseExport = new PlanungsCourseExportHttpClient(_importHttpClient);
@@ -96,6 +97,7 @@ public sealed class BackendClientSitzung : IDisposable
     public IPlanungsRouting PlanungsRouting { get; }
     public IRoutingKonfiguration RoutingKonfiguration { get; }
     public ISicherungskonfiguration Sicherungskonfiguration { get; }
+    public ISicherungskatalog Sicherungskatalog { get; }
     public IPlanungsProfil PlanungsProfil { get; }
     public IPlanungsDateien PlanungsDateien { get; }
     public IPlanungsCourseExport PlanungsCourseExport { get; }
