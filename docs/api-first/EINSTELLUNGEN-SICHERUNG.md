@@ -4,6 +4,8 @@
 
 Der Schnitt ändert weder Zähler noch Ordner oder andere Einstellungswerte. Er startet keine Sicherung und bietet keine Wiederherstellung.
 
-**Noch offen:** Sicherungsauflistung und sicherer Download über opake IDs; vollständiges versioniertes Archiv aus Datenbank, FIT-Dateien und Anhängen; Legacy-SQLite-only-Sicherungen klar als eingeschränkt kennzeichnen. Wiederherstellung braucht Vorschau/Bestätigung, vorherige Sicherung, datasetweite Schreibsperre und Client-/Cacheinvalidierung. Keine beliebigen Pfade oder unkoordinierte Ersetzung einer aktiven Datenbank.
+**Weiterer Sicherungsstand:** Vollarchiv-Erstellung und gemischter GET-Katalog für Legacy- und geprüfte Vollarchive sind implementiert; zusätzliche serverseitige Limits sind erforderlich. Die Metadatenvorschau per opaker ID und erwartetem Gesamthash ist im API-Client/Extras-Modal angebunden. Details: [Vollarchiv-Katalog](VOLLARCHIV-KATALOG.md), [Erstellungs-UI](SICHERUNGSARCHIV-UI.md) und [Wiederherstellungsvorschau](WIEDERHERSTELLUNGSVORSCHAU.md).
+
+**Noch offen:** Download, Retention/Löschpolicy, Starttrigger und tatsächliches Anwenden einer Wiederherstellung. Vorschau ist keine SQLite-Prüfung oder Restore-Freigabe; ein nachweisbarer Betriebs-Guard, Stagingprüfung, Vorab-Sicherung, Bestätigung sowie Rollback/Crash-Recovery fehlen. Keine Produktionslimits wurden gesetzt; keine Runtime- oder Windows-Verifikation.
 
 Kompilierung ist kein Testnachweis: neue Tests wurden nicht ausgeführt; Windows-Darstellung und Laufzeit sind nicht verifiziert. Frühere Testincident-Details stehen in VERIFIKATION.md. Die Gesamtrestmigration bleibt offen.

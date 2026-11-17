@@ -55,6 +55,9 @@
     <EmbeddedResource Include="..\..\src\AndyTours.Client\BackendClientSitzung.cs" LogicalName="AndyTours.BackendClientSitzung.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.Api\Program.cs" LogicalName="AndyTours.Sicherung.Erstellung.Program.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.Api\SicherungsarchivErstellungEndpunkte.cs" LogicalName="AndyTours.Sicherung.Erstellung.Endpunkte.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiWiederherstellungsvorschauFenster.xaml" LogicalName="AndyTours.ApiWiederherstellungsvorschauFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiWiederherstellungsvorschauFenster.xaml.cs" LogicalName="AndyTours.ApiWiederherstellungsvorschauFenster.xaml.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Api\WiederherstellungsvorschauEndpunkte.cs" LogicalName="AndyTours.Wiederherstellungsvorschau.Endpunkte.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -67,6 +70,7 @@
     <Compile Include="..\..\src\AndyTours.Api\SicherungsarchivBereitstellung.cs" Link="Infrastructure\SicherungsarchivBereitstellung.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiSicherungseinstellungenViewModel.cs" Link="Presentation\ApiSicherungseinstellungenViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiSicherungsarchivViewModel.cs" Link="Presentation\ApiSicherungsarchivViewModel.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiWiederherstellungsvorschauViewModel.cs" Link="Presentation\ApiWiederherstellungsvorschauViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiFormularMapper.cs" Link="Presentation\ApiFormularMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourdetailMapper.cs" Link="Presentation\ApiTourdetailMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenMehrfachViewModel*.cs" Link="Presentation\%(Filename)%(Extension)" />

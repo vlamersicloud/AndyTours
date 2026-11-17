@@ -65,6 +65,7 @@ public sealed class BackendClientSitzung : IDisposable
         Sicherungskonfiguration = new SicherungskonfigurationHttpClient(_httpClient);
         Sicherungskatalog = new SicherungskatalogHttpClient(_importHttpClient);
         SicherungsarchivErstellung = new SicherungsarchivErstellungHttpClient(_importHttpClient);
+        Wiederherstellungsvorschau = new WiederherstellungsvorschauHttpClient(_importHttpClient);
         PlanungsProfil = new PlanungsProfilHttpClient(_importHttpClient);
         PlanungsDateien = new PlanungsDateienHttpClient(_importHttpClient);
         PlanungsCourseExport = new PlanungsCourseExportHttpClient(_importHttpClient);
@@ -100,6 +101,7 @@ public sealed class BackendClientSitzung : IDisposable
     public ISicherungskonfiguration Sicherungskonfiguration { get; }
     public ISicherungskatalog Sicherungskatalog { get; }
     public ISicherungsarchivErstellung SicherungsarchivErstellung { get; }
+    public IWiederherstellungsvorschau Wiederherstellungsvorschau { get; }
     public IPlanungsProfil PlanungsProfil { get; }
     public IPlanungsDateien PlanungsDateien { get; }
     public IPlanungsCourseExport PlanungsCourseExport { get; }

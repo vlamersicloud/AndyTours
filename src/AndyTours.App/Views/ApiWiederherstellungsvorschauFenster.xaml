@@ -1,0 +1,69 @@
+<Window x:Class="AndyTours.App.Views.ApiWiederherstellungsvorschauFenster"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Wiederherstellungsvorschau" Width="900" Height="720"
+        MinWidth="680" MinHeight="520" ResizeMode="CanResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/><RowDefinition Height="2*"/>
+            <RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Nur Metadatenvorschau – keine Wiederherstellung freigegeben."
+                       FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+            <TextBlock Text="Die Vorschau prüft keine SQLite-Datenbank, extrahiert keine Dateien und wendet nichts an. Unbekannte Angaben bleiben ausdrücklich ungeprüft."
+                       TextWrapping="Wrap" Margin="0,5,0,8"/>
+            <TextBlock Text="{Binding Status, Mode=OneWay}" TextWrapping="Wrap"/>
+        </StackPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Eintraege, Mode=OneWay}"
+                  SelectedItem="{Binding Auswahl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                  SelectionMode="Single" HeadersVisibility="Column" CanUserSortColumns="True"
+                  EnableRowVirtualization="True" MinHeight="120">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Art" Binding="{Binding Art}" Width="90"/>
+                <DataGridTextColumn Header="Erstellt (UTC)" Binding="{Binding ErstelltUtc, TargetNullValue=Unbekannt}" Width="150"/>
+                <DataGridTextColumn Header="Legacy-Zeitstempel (Zeitzone unbekannt)" Binding="{Binding LegacyZeitstempel, TargetNullValue=Unbekannt}" Width="2*"/>
+                <DataGridTextColumn Header="Bytes" Binding="{Binding Byteanzahl}" Width="100"/>
+                <DataGridTextColumn Header="Sicherungs-ID" Binding="{Binding Id}" Width="2*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Row="2" Margin="0,10,0,8">
+            <TextBlock Text="SHA-256 der ausgewählten Datei" FontWeight="SemiBold"/>
+            <TextBox Text="{Binding Auswahl.InhaltHash, Mode=OneWay, TargetNullValue=Keine Auswahl, FallbackValue=Keine Auswahl}"
+                     IsReadOnly="True" TextWrapping="Wrap" IsReadOnlyCaretVisible="True"/>
+        </StackPanel>
+        <GroupBox Grid.Row="3" Header="Vorschau – Metadaten, keine Freigabe" Margin="0,0,0,10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="10">
+                    <TextBlock Text="Manifestformat" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Vorschau.ManifestFormatversion, Mode=OneWay, TargetNullValue=Unbekannt / ungeprüft, FallbackValue=Unbekannt / ungeprüft}" TextWrapping="Wrap" Margin="0,2,0,6"/>
+                    <TextBlock Text="Dateianzahl (Datenbank und Nutzdaten)" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Vorschau.Dateianzahl, Mode=OneWay, TargetNullValue=Unbekannt / ungeprüft, FallbackValue=Unbekannt / ungeprüft}" Margin="0,2,0,6"/>
+                    <TextBlock Text="Entpackte Nutzdatenbytes" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Vorschau.NutzdatenBytes, Mode=OneWay, TargetNullValue=Unbekannt / ungeprüft, FallbackValue=Unbekannt / ungeprüft}" Margin="0,2,0,6"/>
+                    <TextBlock Text="Datenbankprüfung" FontWeight="SemiBold"/>
+                    <TextBlock Text="Nicht ausgeführt" Margin="0,2,0,6"/>
+                    <TextBlock Text="Anwendungsfreigabe" FontWeight="SemiBold"/>
+                    <TextBlock Text="Nein" Margin="0,2,0,6"/>
+                    <ItemsControl ItemsSource="{Binding Vorschau.Hinweise, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2"/></DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </GroupBox>
+        <DockPanel Grid.Row="4" LastChildFill="False">
+            <ProgressBar DockPanel.Dock="Left" IsIndeterminate="True" Width="120" Height="5" VerticalAlignment="Center" Margin="0,0,12,0">
+                <ProgressBar.Style><Style TargetType="ProgressBar"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IstBeschaeftigt}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></ProgressBar.Style>
+            </ProgressBar>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Katalog laden" Command="{Binding LadenCommand}" Padding="10,6" Margin="0,0,8,0"/>
+                <Button Content="Vorschau anfordern" Command="{Binding VorschauCommand}" Padding="10,6" Margin="0,0,8,0"/>
+                <Button Content="Schließen" IsCancel="True" Padding="10,6"/>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

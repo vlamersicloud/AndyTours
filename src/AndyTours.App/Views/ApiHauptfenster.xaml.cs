@@ -24,6 +24,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     public event Func<Task>? GarminEinstellungenAngefordert;
     public event Func<Task>? SicherungseinstellungenAngefordert;
     public event Func<Task>? SicherungsarchivAngefordert;
+    public event Func<Task>? WiederherstellungsvorschauAngefordert;
     public event Func<Task>? GarminImportAngefordert;
     public event Func<Task>? FitDateienImportierenAngefordert;
     public event Func<Task>? SaisonzieleVerwaltenAngefordert;
@@ -248,6 +249,24 @@ public partial class ApiHauptfenster : Window, IDisposable
                 _viewModel.Laedt = false;
             _verwaltungOffen = false;
             _sicherungsarchivOffen = false;
+        }
+    }
+
+    private async void Wiederherstellungsvorschau_Click(object sender, RoutedEventArgs e)
+    {
+        if (_geschlossen || _lifetime.IsCancellationRequested || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        _verwaltungOffen = true;
+        _viewModel.Laedt = true;
+        try { if (WiederherstellungsvorschauAngefordert is { } handler) await handler(); }
+        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
+        catch (Exception)
+        {
+            if (!_geschlossen) _viewModel.StatusText = "Die Wiederherstellungsvorschau konnte nicht geöffnet werden.";
+        }
+        finally
+        {
+            if (!_geschlossen) _viewModel.Laedt = false;
+            _verwaltungOffen = false;
         }
     }
 

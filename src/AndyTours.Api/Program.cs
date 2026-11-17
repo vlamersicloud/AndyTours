@@ -84,6 +84,8 @@ builder.Services.AddSingleton<ISicherungskatalog>(_ =>
         throw new SicherungskatalogNichtVerfuegbarException();
     }
 });
+builder.Services.AddSingleton<IWiederherstellungsvorschau>(sp =>
+    new KatalogWiederherstellungsvorschau(sp.GetRequiredService<ISicherungskatalog>()));
 builder.Services.AddSingleton<IImportUploadSpeicher>(_ => new SqliteImportUploadSpeicher(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IFitUploads>(sp => new AndyTours.Import.Dateien.FitUploadDienst(
     sp.GetRequiredService<IImportUploadSpeicher>(), dataDirectory, fitZone));
@@ -190,6 +192,7 @@ app.MapRoutingKonfiguration();
 app.MapSicherungskonfiguration();
 app.MapSicherungskatalog();
 app.MapSicherungsarchivErstellung();
+app.MapWiederherstellungsvorschau();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
 var touren = app.MapGroup("/api/v1/touren").WithTags("Touren");

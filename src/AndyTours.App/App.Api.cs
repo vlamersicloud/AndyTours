@@ -276,6 +276,35 @@ public partial class App
                 return Task.CompletedTask;
             };
 
+            fenster.WiederherstellungsvorschauAngefordert += () =>
+            {
+                ApiWiederherstellungsvorschauViewModel? vm = null;
+                ApiWiederherstellungsvorschauFenster? dialog = null;
+                try
+                {
+                    vm = new ApiWiederherstellungsvorschauViewModel(
+                        uebergebeneSitzung.Sicherungskatalog,
+                        uebergebeneSitzung.Wiederherstellungsvorschau,
+                        fenster.LebenszeitToken);
+                    dialog = new ApiWiederherstellungsvorschauFenster(vm) { Owner = fenster };
+                    dialog.ShowDialog();
+                }
+                finally
+                {
+                    if (dialog?.IsVisible == true)
+                    {
+                        dialog.Dispose();
+                        try { dialog.Close(); } catch { }
+                    }
+                    else
+                    {
+                        dialog?.Dispose();
+                        if (dialog is null) vm?.Dispose();
+                    }
+                }
+                return Task.CompletedTask;
+            };
+
             fenster.SicherungsarchivAngefordert += () =>
             {
                 var lokalerPfad = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
