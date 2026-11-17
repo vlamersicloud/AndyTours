@@ -1,9 +1,6 @@
-# Vollarchiv-Erstellungs-API: Designplan
+# Vollarchiv-Erstellungs-API: Implementierungsstand
 
-- Authentifizierten `POST /api/v1/sicherungen/` ergänzen. Request enthält nur nichtleere Vorgangs-GUID; keine Pfade/Limits. Derselbe Schlüssel liefert dieselbe validierte unveränderliche Ausgabe.
-- Endpoint mit `ExklusiverDatenbestand` markieren: Middleware übernimmt den einzigen äußeren exklusiven In-Process-Lease. Creator/Port erwirbt keinen Nested Lease; externe Prozesse werden dadurch nicht koordiniert.
-- Creator mit festem `Backend:Datenordner`, readonly ermitteltem Backupordner, `TimeProvider` und expliziten `SicherungsarchivGrenzen` registrieren; vorhandene Ordner-/Counter-Policy nicht ändern.
-- `SicherungsarchivKonfiguration.TryLesen` prüft sieben Pflichtwerte unter `Backend:Sicherung`, ohne Defaults. Der lazy `SicherungsarchivBereitstellung`-Baustein liest sie und die Backupordnereinstellung erst beim Aufruf; SQLite wird read-only/unpooled und ohne Migration geöffnet. Er ändert keine Einstellungen/Zähler, erstellt keine Ordner und verursacht keine Startup-I/O. Nicht verfügbare Konfiguration/Pfade liefern `null`.
-- API-/DI-/POST-Wiring ist noch nicht vorhanden. Später soll fehlende/ungültige Konfiguration nur die neue Funktion mit festem 503-Problem deaktivieren, nicht Startup/Health oder andere Services. Limits müssen explizit vom Deployment gesetzt werden.
-- Antwort enthält nur opaque Metadaten und Retry-Status. Legacy-Katalog listet neue Vollarchive weiterhin nicht; separater Katalogbedarf. Kein Download, Restore, Löschen oder Retention.
-- Keine Produktionskonfiguration geändert. Prepared Tests sind nicht ausgeführt. Deployment muss externe Writer/TOCTOU ausschließen.
+- Der API-Quellstand bindet einen authentifizierten `POST /api/v1/sicherungen/` mit `ExklusiverDatenbestand`-Metadatum und lazy Provider-DI ein. Endpoint prüft nichtleere Vorgangs-GUID, liefert feste 503-Antwort bei nicht verfügbarer Featurekonfiguration und leitet dieselbe GUID für idempotente Wiederholung weiter. Creator erwirbt keinen eigenen Lease.
+- Erforderliche serverseitige Schlüssel: `Backend:Sicherung:MaxEintraege`, `MaxDateiBytes`, `MaxGesamtBytes`, `MaxPfadzeichen`, `MaxArchivBytes`, `MaxManifestBytes`, `MaxZentralverzeichnisBytes`. Alle positiv, ohne Defaults oder Clientsteuerung; Reader prüft Größenkonsistenz und Repräsentationsgrenzen.
+- Es wurden keine Produktionskonfigurationswerte festgelegt/geändert. Kein Endpoint-/Deploymentaufruf und keine Tests ausgeführt; Quelltext-/Ressourcenfakten sind kein Laufzeitnachweis. Fehlende/ungültige Limits deaktivieren nur die neue Funktion mit 503.
+- Vorhandener Sicherungskatalog listet weiterhin nur Legacy-Sicherungen; Vollarchiv-Katalogaufnahme, Client/UI, Retention und Restore bleiben offen. Externe Writer/Filesystem-TOCTOU müssen durch Deployment ausgeschlossen werden.

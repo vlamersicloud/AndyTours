@@ -54,6 +54,7 @@ builder.Services.AddSingleton<IPlanungsStartQuelldaten>(_ => new SqlitePlanungsS
 builder.Services.AddSingleton<IPlanungsStartgebiet>(sp => new AndyTours.Import.Planung.PlanungsStartgebietDienst(sp.GetRequiredService<IPlanungsStartQuelldaten>(), dataDirectory));
 builder.Services.AddSingleton<IRoutingKonfiguration>(_ => new SqliteRoutingKonfiguration(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<ISicherungskonfiguration>(_ => new SqliteSicherungskonfiguration(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton(_ => new SicherungsarchivBereitstellung(builder.Configuration, dataDirectory, TimeProvider.System));
 builder.Services.AddSingleton<ISicherungskatalog>(_ =>
 {
     var databasePath = Path.Combine(dataDirectory, "andytours.db");
@@ -171,6 +172,7 @@ app.MapEquipmentEinsatz();
 app.MapRoutingKonfiguration();
 app.MapSicherungskonfiguration();
 app.MapSicherungskatalog();
+app.MapSicherungsarchivErstellung();
 app.MapGet("/api/v1/health", () => Results.Ok(new VerbindungAntwort("bereit", "v1")))
     .WithName("BackendStatus").WithTags("System").Produces<VerbindungAntwort>();
 var touren = app.MapGroup("/api/v1/touren").WithTags("Touren");

@@ -50,6 +50,8 @@
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiSicherungseinstellungenFenster.xaml.cs" LogicalName="AndyTours.ApiSicherungseinstellungenFenster.xaml.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.xaml.cs" LogicalName="AndyTours.ApiHauptfenster.xaml.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\App.Api.cs" LogicalName="AndyTours.App.Api.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Api\Program.cs" LogicalName="AndyTours.Sicherung.Erstellung.Program.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Api\SicherungsarchivErstellungEndpunkte.cs" LogicalName="AndyTours.Sicherung.Erstellung.Endpunkte.cs" />
   </ItemGroup>
 
   <ItemGroup>
