@@ -1,0 +1,7 @@
+# Manuelle seitenübergreifende Tourenauswahl
+
+Die API-Übersicht hält manuell ausgewählte Touren über Seitenwechsel und reine Sortier-/Listenaktualisierungen hinweg. Das Auswahlmodell speichert einen Snapshot aus Tour-ID, der beim Auswählen gelesenen Version und kopierten Tourdaten; spätere Listenantworten ersetzen eine bereits eingefrorene Version nicht. Die Oberfläche zeigt die Gesamtzahl und bietet „Auswahl aufheben“. Ctrl+A bleibt auf die sichtbare Seite begrenzt; es gibt keine Auswahl aller Filtertreffer.
+
+Eine Änderung des angewandten Datums-, Aktivitäts-, Kategorien- oder Tabellenfilters leert die Auswahl nach erfolgreichem Listencommit mit Hinweis. Fehlgeschlagene oder abgebrochene Ladevorgänge sollen sie bewahren. Mehrfachaktionen verwenden den Gesamt-Snapshot und behalten ihre bestehenden Bestätigungs-, CAS- und Idempotenzabläufe. Nur ausdrücklich bestätigte Outcomes entfernen die betreffenden IDs. Bei Versionskonflikten ist eine erneute Auswahl erforderlich.
+
+Quellfixtures sind vorbereitet; sie wurden nicht ausgeführt. API, Windows-App und Testprojekt wurden auf dem autorisierten Testserver mit SDK 10.0.402 vollständig neu gebaut (`--no-incremental --no-restore`): jeweils 0 Warnungen und 0 Fehler. Windows-Bedienung, Paging-/Sortierungs-/Filterwechsel, Konfliktbehandlung und Laufzeitverhalten bleiben unabgenommen; Quellassertions und Kompilierung ersetzen keine Laufzeitprüfung.

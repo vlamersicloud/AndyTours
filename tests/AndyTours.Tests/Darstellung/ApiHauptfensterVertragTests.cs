@@ -27,7 +27,9 @@ public sealed class ApiHauptfensterVertragTests
             Assert.Equal("{Binding HatTourenauswahl}",(string?)button.Attribute("IsEnabled"));
         }
         Assert.Contains(buttons,x=>(string?)x.Attribute("Content")=="Auswahl löschen…");
-        Assert.Contains(d.Descendants(Presentation+"TextBlock"),x=>((string?)x.Attribute("Text"))?.Contains("diese Seite",StringComparison.Ordinal)==true && ((string?)x.Attribute("Text"))?.Contains("AuswahlAnzahl",StringComparison.Ordinal)==true);
+        Assert.Contains(d.Descendants(Presentation+"TextBlock"),x=>((string?)x.Attribute("Text"))?.Contains("alle Seiten",StringComparison.Ordinal)==true);
+        Assert.Contains(d.Descendants(Presentation+"TextBlock"),x=>(string?)x.Attribute("Text")=="{Binding AuswahlAnzahl, Mode=OneWay}");
+        Assert.Contains(buttons,x=>(string?)x.Attribute("Click")=="AuswahlAufheben_Click" && (string?)x.Attribute("Content")=="Auswahl aufheben");
         var grid=Assert.Single(d.Descendants(Presentation+"DataGrid"),x=>(string?)x.Attribute(Xaml+"Name")=="TourenDataGrid");
         Assert.Equal("Extended",(string?)grid.Attribute("SelectionMode")); Assert.Equal("{Binding AusgewaehlteTour, Mode=TwoWay}",(string?)grid.Attribute("SelectedItem"));
         Assert.Equal("TourenDataGrid_MouseDoubleClick",(string?)grid.Attribute("MouseDoubleClick")); Assert.Equal("TourenDataGrid_SelectionChanged",(string?)grid.Attribute("SelectionChanged"));

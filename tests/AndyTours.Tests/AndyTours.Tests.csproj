@@ -42,6 +42,10 @@
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiGarminImportFenster.xaml.cs" LogicalName="AndyTours.ApiGarminImportFenster.xaml.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.xaml"
                       LogicalName="AndyTours.ApiHauptfenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.Mehrfach.cs" LogicalName="AndyTours.ApiHauptfenster.Mehrfach.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.ManuelleAuswahl.cs" LogicalName="AndyTours.ApiHauptfenster.ManuelleAuswahl.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.Auswahl.cs" LogicalName="AndyTours.ApiHauptfenster.Auswahl.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiUebersichtViewModel.Touren.cs" LogicalName="AndyTours.ApiUebersichtViewModel.Touren.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.Spaltenlayout.cs" LogicalName="AndyTours.ApiHauptfenster.Spaltenlayout.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.Client\EinheitentabellenlayoutHttpClient.cs" LogicalName="AndyTours.EinheitentabellenlayoutHttpClient.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.Sortierung.cs"
@@ -90,6 +94,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenauswahl.cs" Link="Presentation\ApiTourenauswahl.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiSaisonAnzeige.cs" Link="ViewModels\ApiSaisonAnzeige.cs" />
     <Compile Include="..\..\src\AndyTours.Api\Datenbestandskoordination.cs" Link="Infrastructure\Datenbestandskoordination.cs" />
     <Compile Include="..\..\src\AndyTours.Api\DatenbestandsMiddleware.cs" Link="Infrastructure\DatenbestandsMiddleware.cs" />

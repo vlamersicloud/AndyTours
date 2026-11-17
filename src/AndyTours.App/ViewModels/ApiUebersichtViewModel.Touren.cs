@@ -75,21 +75,21 @@ public partial class ApiUebersichtViewModel
     [RelayCommand(CanExecute = nameof(KannMitAuswahl))]
     private async Task TourBearbeitenAsync(CancellationToken ct)
     {
-        if (Laedt || AusgewaehlteTour is null) return;
+        if (!KannMitAuswahl()) return;
         await BearbeiteAuswahlAsync(kopieren: false, ct);
     }
 
     [RelayCommand(CanExecute = nameof(KannMitAuswahl))]
     private async Task TourKopierenAsync(CancellationToken ct)
     {
-        if (Laedt || AusgewaehlteTour is null) return;
+        if (!KannMitAuswahl()) return;
         await BearbeiteAuswahlAsync(kopieren: true, ct);
     }
 
     private async Task BearbeiteAuswahlAsync(bool kopieren, CancellationToken ct)
     {
         var auswahl = AusgewaehlteTour;
-        if (auswahl is null || Laedt) return;
+        if (!KannMitAuswahl() || auswahl is null) return;
         var gespeichert = false;
         Laedt = true;
         try
@@ -214,7 +214,12 @@ public partial class ApiUebersichtViewModel
     }
 
     private bool KannNeueTour() => !Laedt;
-    private bool KannMitAuswahl() => !Laedt && !EditorOffen && AuswahlAnzahl == 1 && AusgewaehlteTour is not null;
+    private bool KannMitAuswahl()
+    {
+        var snapshot = ErfasseTourenauswahl();
+        return !Laedt && !EditorOffen && AuswahlAnzahl == 1 && snapshot.Count == 1 &&
+            AusgewaehlteTour is not null && snapshot[0].Id == AusgewaehlteTour.Id;
+    }
 
     partial void OnAusgewaehlteTourChanged(TourAntwort? value) => BenachrichtigeTourCommands();
 

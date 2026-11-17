@@ -30,7 +30,8 @@ public sealed class ApiTourSeitenUebernahmeVertragTests
         var method = Slice(vm, "private void TabellenfilterGeaendert", "private void FilterGeaendert");
         Assert.Contains("Interlocked.Increment(ref _generation)", method, StringComparison.Ordinal);
         Assert.Contains("Touren.Clear()", method, StringComparison.Ordinal);
-        Assert.Contains("SetzeTourenauswahl(0)", method, StringComparison.Ordinal);
+        Assert.DoesNotContain("SetzeTourenauswahl(0)", method, StringComparison.Ordinal);
+        Assert.DoesNotContain("HebeTourenauswahlAuf()", method, StringComparison.Ordinal);
         Assert.Contains("_start = 0", method, StringComparison.Ordinal);
         foreach (var untouched in new[] { "LeereAnzeige", "_perioden.Clear", "Jahresrekorde.Clear", "Einzelrekorde.Clear", "Jahresziele.Clear", "LeerePulsanzeige", "Diagramm =", "DistanzKmText =" })
             Assert.DoesNotContain(untouched, method, StringComparison.Ordinal);

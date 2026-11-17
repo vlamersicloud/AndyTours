@@ -30,6 +30,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
     private int _start;
     private bool _filterAenderungSuspendiert;
     private bool _lookupsGeladen;
+    private string? _angewandteAuswahlQuery;
 
     [ObservableProperty] private DateTime? _vonDatum = new DateTime(DateTime.Today.Year, 1, 1);
     [ObservableProperty] private DateTime? _bisDatum = DateTime.Today;
@@ -109,7 +110,6 @@ public partial class ApiUebersichtViewModel : ObservableObject
         Interlocked.Increment(ref _generation);
         Touren.Clear();
         AusgewaehlteTour = null;
-        SetzeTourenauswahl(0);
         GesamtTouren = 0;
         _start = 0;
         SeitenText = "Keine Daten geladen";
@@ -195,6 +195,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
             var saisonTexte = ApiSaisonAnzeige.Erstellen(result.Saisonfortschritt, von, bis);
 
             if (plan.AuswahlGeaendert) LeereAnzeige();
+            var selectionFilterChanged = false;
             UebernehmeFilterOptionen(plan);
             Tabellenfilter.Uebernehmen(tabellenfilterPlan);
             _start = 0;
@@ -211,14 +212,15 @@ public partial class ApiUebersichtViewModel : ObservableObject
             ZukunftsHinweis = result.ZukuenftigeAktivitaeten > 0
                 ? $"{result.ZukuenftigeAktivitaeten} zukünftige Aktivität(en) im Datenbestand."
                 : string.Empty;
+            selectionFilterChanged = UebernehmeAuswahlQuery(filter);
             SetzeSeite(page);
             TabellensummeText = tabellensummeText;
             _saisonTexte = saisonTexte;
             AktualisiereSaisonText();
             ZeichneDiagramm();
-            StatusText = plan.Hinweis ?? (page.Gesamt == 0
-                ? "Keine Touren im gewählten Zeitraum und Filter."
-                : string.Empty);
+            StatusText = selectionFilterChanged
+                ? "Filter geändert – die manuelle Tourenauswahl wurde aufgehoben."
+                : plan.Hinweis ?? (page.Gesamt == 0 ? "Keine Touren im gewählten Zeitraum und Filter." : string.Empty);
             Interlocked.Increment(ref _aktualisierungsstand);
             OnPropertyChanged(nameof(Aktualisierungsstand));
         }
@@ -293,6 +295,8 @@ public partial class ApiUebersichtViewModel : ObservableObject
         AktualisierenCommand.NotifyCanExecuteChanged();
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
         VorherigeSeiteCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(HatTourenauswahl));
+        OnPropertyChanged(nameof(AuswahlAnzahl));
         BenachrichtigeTourCommands();
         BenachrichtigePulsCommands();
     }
@@ -320,9 +324,12 @@ public partial class ApiUebersichtViewModel : ObservableObject
             var tabellensummeText = ApiTourTabellensummeAnzeige.Erstellen(page);
             Tabellenfilter.Uebernehmen(tablePlan);
             _start = start;
+            var selectionFilterChanged = UebernehmeAuswahlQuery(filter);
             SetzeSeite(page);
             TabellensummeText = tabellensummeText;
-            StatusText = string.Empty;
+            StatusText = selectionFilterChanged
+                ? "Filter geändert – die manuelle Tourenauswahl wurde aufgehoben."
+                : string.Empty;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -336,6 +343,18 @@ public partial class ApiUebersichtViewModel : ObservableObject
         catch (Exception) { if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested) StatusText = "Tourenseite konnte nicht geladen werden."; }
         finally { Laedt = false; }
     }
+
+    private bool UebernehmeAuswahlQuery(TourenListenfilter filter)
+    {
+        var key = FormatiereAuswahlQuery(filter);
+        var changed = _angewandteAuswahlQuery is not null && _angewandteAuswahlQuery != key;
+        if (changed) HebeTourenauswahlAuf();
+        _angewandteAuswahlQuery = key;
+        return changed;
+    }
+
+    private static string FormatiereAuswahlQuery(TourenListenfilter filter) =>
+        System.Text.Json.JsonSerializer.Serialize(new { filter.Von, filter.Bis, filter.AktivitaetId, filter.KategorieId, filter.Tabellenfilter });
 
     private void SetzeSeite(TourListeAntwort page)
     {

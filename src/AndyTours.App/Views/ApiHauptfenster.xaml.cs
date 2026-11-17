@@ -40,6 +40,7 @@ public partial class ApiHauptfenster : Window, IDisposable
         InitializeComponent();
         AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this, groesseUmrechnen: false);
         DataContext = viewModel;
+        InitialisiereManuelleAuswahl();
         BackendAdresseText.Text = backendAdresse.GetLeftPart(UriPartial.Authority);
         Loaded += FensterGeladen;
         Loaded += SpaltenlayoutLoaded;
@@ -66,6 +67,7 @@ public partial class ApiHauptfenster : Window, IDisposable
         if (_geschlossen) return;
         _geschlossen = true;
         SpaltenlayoutDispose();
+        DisposeManuelleAuswahl();
         _viewModel.BeendePuls();
         _lifetime.Cancel();
         _lifetime.Dispose();

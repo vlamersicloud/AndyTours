@@ -17,24 +17,17 @@ public partial class ApiHauptfenster
     private async void EquipmentMehrfach_Click(object sender, RoutedEventArgs e) => await FuehreMehrfachAus(TourenEquipmentAngefordert);
     private async void LoeschenMehrfach_Click(object sender, RoutedEventArgs e) => await FuehreMehrfachAus(TourenLoeschenAngefordert);
 
-    private async Task FuehreMehrfachAus(
-        Func<IReadOnlyList<TourAntwort>, CancellationToken, Task<ApiTourenMehrfachStatus?>>? callback)
+    private async Task FuehreMehrfachAus(Func<IReadOnlyList<TourAntwort>, CancellationToken, Task<ApiTourenMehrfachStatus?>>? callback)
     {
-        if (_geschlossen || !IsVisible || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen)
-            return;
+        if (_geschlossen || !IsVisible || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         var token = _lifetime.Token;
-        if (callback is null)
-        {
-            _viewModel.StatusText = "Die Mehrfachaktion ist noch nicht verfügbar.";
-            return;
-        }
-
+        if (callback is null) { _viewModel.StatusText = "Die Mehrfachaktion ist noch nicht verfügbar."; return; }
         _verwaltungOffen = true;
         var wasLaedt = false;
         try
         {
             if (!Lebt(token)) return;
-            var selected = TourenDataGrid.SelectedItems.OfType<TourAntwort>().Select(Abbild).ToArray();
+            var selected = _viewModel.ErfasseTourenauswahl().Select(Abbild).ToArray();
             if (selected.Length == 0)
             {
                 if (Lebt(token)) _viewModel.StatusText = "Bitte zuerst Touren auswählen.";
@@ -54,47 +47,33 @@ public partial class ApiHauptfenster
             if (!Lebt(token)) return;
             _viewModel.Laedt = false;
             wasLaedt = false;
+            if (outcome == ApiTourenMehrfachStatus.Bestaetigt)
+                _viewModel.EntferneBestaetigteTouren(selected.Select(t => t.Id));
 
             var before = _viewModel.Aktualisierungsstand;
-            try
-            {
-                await _viewModel.AktualisierenAsync(token);
-            }
+            try { await _viewModel.AktualisierenAsync(token); }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { }
             catch (Exception) { }
             if (!Lebt(token)) return;
-
             var fresh = _viewModel.Aktualisierungsstand > before;
             var hint = _viewModel.StatusText;
-            _viewModel.StatusText = ApiTourenMehrfachRueckmeldung.Text(
-                outcome ?? ApiTourenMehrfachStatus.Bereit, fresh, hint);
+            _viewModel.StatusText = ApiTourenMehrfachRueckmeldung.Text(outcome ?? ApiTourenMehrfachStatus.Bereit, fresh, hint);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }
         catch (Exception)
         {
-            if (Lebt(token))
-                _viewModel.StatusText = "Mehrfachaktion konnte nicht bestätigt werden. Bitte Liste laden und Ergebnis prüfen.";
+            if (Lebt(token)) _viewModel.StatusText = "Mehrfachaktion konnte nicht bestätigt werden. Bitte Liste laden und Ergebnis prüfen.";
         }
         finally
         {
-            if (Lebt(token) && _viewModel.Laedt != wasLaedt)
-                _viewModel.Laedt = wasLaedt;
+            if (Lebt(token) && _viewModel.Laedt != wasLaedt) _viewModel.Laedt = wasLaedt;
             _verwaltungOffen = false;
         }
     }
 
     private bool Lebt(CancellationToken token) => !_geschlossen && IsVisible && !token.IsCancellationRequested;
-
-    private static TourAntwort Abbild(TourAntwort tour) => tour with
-    {
-        Werte = tour.Werte is null ? null! : tour.Werte with
-        {
-            KategorieIds = tour.Werte.KategorieIds?.ToArray()!
-        }
-    };
-
-    private static bool VersionGueltig(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
+    private static TourAntwort Abbild(TourAntwort tour) => tour with { Werte = tour.Werte with { KategorieIds = (long[])tour.Werte.KategorieIds.Clone() } };
+    private static bool VersionGueltig(string? value) => value is { Length: 64 } && value.All(Uri.IsHexDigit);
 
     private async void TourenDataGrid_PreviewKeyDownMehrfach(object sender, KeyEventArgs e)
     {

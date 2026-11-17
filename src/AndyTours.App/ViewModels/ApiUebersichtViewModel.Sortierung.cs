@@ -45,9 +45,12 @@ public partial class ApiUebersichtViewModel
             OnPropertyChanged(nameof(TourenAbsteigend));
             Tabellenfilter.Uebernehmen(tablePlan);
             _start = 0;
+            var selectionFilterChanged = UebernehmeAuswahlQuery(filter);
             SetzeSeite(page);
             TabellensummeText = tabellensummeText;
-            StatusText = page.Gesamt == 0 ? "Keine Touren im gewählten Zeitraum und Filter." : string.Empty;
+            StatusText = selectionFilterChanged
+                ? "Filter geändert – die manuelle Tourenauswahl wurde aufgehoben."
+                : page.Gesamt == 0 ? "Keine Touren im gewählten Zeitraum und Filter." : string.Empty;
             return true;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
