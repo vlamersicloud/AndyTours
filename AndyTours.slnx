@@ -11,6 +11,7 @@
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/AndyTours.Altdatenuebernahme/AndyTours.Altdatenuebernahme.csproj" />
+    <Project Path="tools/AndyTours.SqlitePruefer/AndyTours.SqlitePruefer.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AndyTours.Tests/AndyTours.Tests.csproj" />
