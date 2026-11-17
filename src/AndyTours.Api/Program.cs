@@ -9,6 +9,7 @@ using AndyTours.Application.Koordination;
 using AndyTours.Application.Export;
 using AndyTours.Application.Planung;
 using AndyTours.Application.Sicherung;
+using AndyTours.Application.Tabellenlayout;
 using AndyTours.Application.Garmin;
 using AndyTours.Application.Overlays;
 using AndyTours.Application.Import;
@@ -56,6 +57,7 @@ builder.Services.AddSingleton<IPlanungsStartQuelldaten>(_ => new SqlitePlanungsS
 builder.Services.AddSingleton<IPlanungsStartgebiet>(sp => new AndyTours.Import.Planung.PlanungsStartgebietDienst(sp.GetRequiredService<IPlanungsStartQuelldaten>(), dataDirectory));
 builder.Services.AddSingleton<IRoutingKonfiguration>(_ => new SqliteRoutingKonfiguration(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<ISicherungskonfiguration>(_ => new SqliteSicherungskonfiguration(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<IEinheitentabellenlayout>(_ => new SqliteEinheitentabellenlayout(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton(_ => new SicherungsarchivBereitstellung(builder.Configuration, dataDirectory, TimeProvider.System));
 builder.Services.AddSingleton<ISicherungskatalog>(_ =>
 {
@@ -190,6 +192,7 @@ app.MapPlanungsStartgebiet();
 app.MapEquipmentEinsatz();
 app.MapRoutingKonfiguration();
 app.MapSicherungskonfiguration();
+app.MapEinheitentabellenlayout();
 app.MapSicherungskatalog();
 app.MapSicherungsarchivErstellung();
 app.MapWiederherstellungsvorschau();

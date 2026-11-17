@@ -32,14 +32,18 @@ public partial class ApiHauptfenster : Window, IDisposable
     public event Func<AndyTours.Contracts.V1.Textlistenart, Task>? TextlisteVerwaltenAngefordert;
     public event Func<CancellationToken, Task<string?>>? FaelligeAlarmeLadenAngefordert;
 
-    public ApiHauptfenster(ApiUebersichtViewModel viewModel, Uri backendAdresse)
+    public ApiHauptfenster(ApiUebersichtViewModel viewModel, Uri backendAdresse, AndyTours.Application.Tabellenlayout.IEinheitentabellenlayout layout)
     {
         _viewModel = viewModel;
+        _spaltenlayout = layout ?? throw new ArgumentNullException(nameof(layout));
+        _spaltenTimer.Tick += SpaltenlayoutTimerTick;
         InitializeComponent();
         AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this, groesseUmrechnen: false);
         DataContext = viewModel;
         BackendAdresseText.Text = backendAdresse.GetLeftPart(UriPartial.Authority);
         Loaded += FensterGeladen;
+        Loaded += SpaltenlayoutLoaded;
+        Closed += SpaltenlayoutClosed;
         Closed += FensterGeschlossen;
     }
 
@@ -61,6 +65,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     {
         if (_geschlossen) return;
         _geschlossen = true;
+        SpaltenlayoutDispose();
         _viewModel.BeendePuls();
         _lifetime.Cancel();
         _lifetime.Dispose();

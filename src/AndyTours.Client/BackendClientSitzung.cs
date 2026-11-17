@@ -9,6 +9,7 @@ using AndyTours.Application.Overlays;
 using AndyTours.Application.Planung;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Application.Sicherung;
+using AndyTours.Application.Tabellenlayout;
 using AndyTours.Application.Touren;
 using AndyTours.Application.Verbindungen;
 
@@ -63,6 +64,7 @@ public sealed class BackendClientSitzung : IDisposable
         PlanungsRouting = new PlanungsRoutingHttpClient(_importHttpClient);
         RoutingKonfiguration = new RoutingKonfigurationHttpClient(_importHttpClient);
         Sicherungskonfiguration = new SicherungskonfigurationHttpClient(_httpClient);
+        Einheitentabellenlayout = new EinheitentabellenlayoutHttpClient(_httpClient);
         Sicherungskatalog = new SicherungskatalogHttpClient(_importHttpClient);
         SicherungsarchivErstellung = new SicherungsarchivErstellungHttpClient(_importHttpClient);
         Wiederherstellungsvorschau = new WiederherstellungsvorschauHttpClient(_importHttpClient);
@@ -99,6 +101,7 @@ public sealed class BackendClientSitzung : IDisposable
     public IPlanungsRouting PlanungsRouting { get; }
     public IRoutingKonfiguration RoutingKonfiguration { get; }
     public ISicherungskonfiguration Sicherungskonfiguration { get; }
+    public IEinheitentabellenlayout Einheitentabellenlayout { get; }
     public ISicherungskatalog Sicherungskatalog { get; }
     public ISicherungsarchivErstellung SicherungsarchivErstellung { get; }
     public IWiederherstellungsvorschau Wiederherstellungsvorschau { get; }

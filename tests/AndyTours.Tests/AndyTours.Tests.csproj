@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -42,6 +42,8 @@
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiGarminImportFenster.xaml.cs" LogicalName="AndyTours.ApiGarminImportFenster.xaml.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.xaml"
                       LogicalName="AndyTours.ApiHauptfenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.Spaltenlayout.cs" LogicalName="AndyTours.ApiHauptfenster.Spaltenlayout.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Client\EinheitentabellenlayoutHttpClient.cs" LogicalName="AndyTours.EinheitentabellenlayoutHttpClient.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.Sortierung.cs"
                       LogicalName="AndyTours.ApiHauptfenster.Sortierung.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiUebersichtViewModel.Sortierung.cs"
