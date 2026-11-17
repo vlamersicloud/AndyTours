@@ -2,19 +2,19 @@ namespace AndyTours.Contracts.V1;
 
 /// <summary>
 /// Identifies the represented backup contents. LegacySqlite contains only the database;
-/// Vollarchiv is reserved for a future validated archive with manifest.
+/// Vollarchiv denotes metadata from a validated archive, not proof of SQLite or restore validity.
 /// </summary>
 public enum Sicherungsart
 {
     /// <summary>Database-only SQLite backup; does not include FIT files or attachments.</summary>
     LegacySqlite = 0,
 
-    /// <summary>Reserved for a future validated full archive.</summary>
+    /// <summary>Validated full-archive metadata; not proof of SQLite validity or restoreability.</summary>
     Vollarchiv = 1
 }
 
 /// <summary>
-/// Catalog metadata addressed by an opaque server-generated identifier, never by a filename or path.
+/// Catalog metadata addressed by an opaque backup identifier, never by a filename or path.
 /// Listing a catalog entry does not authorize restore or deletion.
 /// </summary>
 /// <param name="Id">Non-empty opaque backup identifier, not a storage path.</param>

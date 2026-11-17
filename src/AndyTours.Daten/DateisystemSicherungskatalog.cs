@@ -7,19 +7,23 @@ using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 using AndyTours.Daten.Datensicherung;
 
-/// <summary>Read-only metadata reader for strict legacy SQLite backup files.</summary>
+/// <summary>Read-only metadata reader for strict legacy SQLite backups and verified full archives.</summary>
 public sealed class DateisystemSicherungskatalog : ISicherungskatalog, IDisposable
 {
     private readonly string _ordner;
+    private readonly VollarchivKatalogGrenzen? _vollarchivGrenzen;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly Dictionary<string, (string Hash, Guid Id)> _ids = new(StringComparer.Ordinal);
     private bool _disposed;
 
-    public DateisystemSicherungskatalog(string sicherungsordner)
+    public DateisystemSicherungskatalog(
+        string sicherungsordner,
+        VollarchivKatalogGrenzen? vollarchivGrenzen = null)
     {
         if (string.IsNullOrWhiteSpace(sicherungsordner) || !Path.IsPathFullyQualified(sicherungsordner))
             throw new ArgumentException("Sicherungsordner ungültig.", nameof(sicherungsordner));
         _ordner = Path.TrimEndingDirectorySeparator(Path.GetFullPath(sicherungsordner));
+        _vollarchivGrenzen = vollarchivGrenzen;
     }
 
     public async Task<SicherungListeAntwort> Liste(CancellationToken cancellationToken)
@@ -45,6 +49,10 @@ public sealed class DateisystemSicherungskatalog : ISicherungskatalog, IDisposab
             if ((directoryAttributes & FileAttributes.Directory) == 0)
                 throw Invalid("Sicherungskatalog konnte nicht gelesen werden.");
             RejectReparsePoint(_ordner);
+
+            var fullEntries = await VollarchivKatalogLeser.Liste(
+                _ordner, _vollarchivGrenzen, cancellationToken).ConfigureAwait(false);
+            var usedIds = new HashSet<Guid>(fullEntries.Select(entry => entry.Id));
             var listed = ErmittleSicherungen.Ausfuehren(_ordner);
             var entries = new List<SicherungAntwort>(listed.Count);
             var refreshed = new Dictionary<string, (string Hash, Guid Id)>(StringComparer.Ordinal);
@@ -73,8 +81,12 @@ public sealed class DateisystemSicherungskatalog : ISicherungskatalog, IDisposab
                 after.Refresh();
                 if (!after.Exists || after.Length != length || after.LastWriteTimeUtc != write) throw Changed();
                 var key = path;
-                var id = _ids.TryGetValue(key, out var prior) && string.Equals(prior.Hash, hash, StringComparison.Ordinal)
-                    ? prior.Id : Guid.NewGuid();
+                var id = _ids.TryGetValue(key, out var prior) &&
+                         string.Equals(prior.Hash, hash, StringComparison.Ordinal) &&
+                         prior.Id != Guid.Empty && !usedIds.Contains(prior.Id)
+                    ? prior.Id
+                    : CreateUniqueId(usedIds);
+                usedIds.Add(id);
                 refreshed[key] = (hash, id);
                 var timestamp = Path.GetFileNameWithoutExtension(path)[Sicherungsdatei.Praefix.Length..];
                 entries.Add(new SicherungAntwort(id, Sicherungsart.LegacySqlite, null, length, hash)
@@ -82,6 +94,11 @@ public sealed class DateisystemSicherungskatalog : ISicherungskatalog, IDisposab
                     LegacyZeitstempel = timestamp
                 });
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            entries.AddRange(fullEntries
+                .OrderByDescending(entry => entry.ErstelltUtc)
+                .ThenBy(entry => entry.Id));
             cancellationToken.ThrowIfCancellationRequested();
             _ids.Clear();
             foreach (var pair in refreshed) _ids.Add(pair.Key, pair.Value);
@@ -94,6 +111,14 @@ public sealed class DateisystemSicherungskatalog : ISicherungskatalog, IDisposab
             throw Invalid("Sicherungskatalog konnte nicht gelesen werden.");
         }
         finally { _gate.Release(); }
+    }
+
+    private static Guid CreateUniqueId(HashSet<Guid> usedIds)
+    {
+        Guid id;
+        do { id = Guid.NewGuid(); }
+        while (id == Guid.Empty || !usedIds.Add(id));
+        return id;
     }
 
     private static void RejectReparsePoint(string path)

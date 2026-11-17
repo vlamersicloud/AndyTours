@@ -15,6 +15,8 @@ public sealed class SicherungskatalogHttpClient(HttpClient http) : ISicherungska
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.BadRequest)
             throw new HttpRequestException("Sicherungskataloganfrage ungültig.", null, response.StatusCode);
+        if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+            throw new HttpRequestException("Vollarchiv-Katalog ist derzeit nicht verfügbar.", null, response.StatusCode);
         if (!response.IsSuccessStatusCode)
             throw new HttpRequestException("Sicherungskatalog konnte nicht geladen werden.", null, response.StatusCode);
 

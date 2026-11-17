@@ -62,6 +62,8 @@
     <Compile Include="..\..\src\AndyTours.Api\Datenbestandskoordination.cs" Link="Infrastructure\Datenbestandskoordination.cs" />
     <Compile Include="..\..\src\AndyTours.Api\DatenbestandsMiddleware.cs" Link="Infrastructure\DatenbestandsMiddleware.cs" />
     <Compile Include="..\..\src\AndyTours.Api\SicherungsarchivKonfiguration.cs" Link="Infrastructure\SicherungsarchivKonfiguration.cs" />
+    <Compile Include="..\..\src\AndyTours.Api\VollarchivKatalogKonfiguration.cs" Link="Infrastructure\VollarchivKatalogKonfiguration.cs" />
+    <Compile Include="..\..\src\AndyTours.Api\ProblemExceptionHandler.cs" Link="Infrastructure\ProblemExceptionHandler.cs" />
     <Compile Include="..\..\src\AndyTours.Api\SicherungsarchivBereitstellung.cs" Link="Infrastructure\SicherungsarchivBereitstellung.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiSicherungseinstellungenViewModel.cs" Link="Presentation\ApiSicherungseinstellungenViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiSicherungsarchivViewModel.cs" Link="Presentation\ApiSicherungsarchivViewModel.cs" />

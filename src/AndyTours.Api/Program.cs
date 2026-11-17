@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Security;
 using System.Security.Cryptography;
 using System.Text;
 using AndyTours.Api;
@@ -16,6 +17,7 @@ using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 using AndyTours.Daten;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 if (string.IsNullOrWhiteSpace(builder.Configuration["urls"]) &&
@@ -57,15 +59,30 @@ builder.Services.AddSingleton<ISicherungskonfiguration>(_ => new SqliteSicherung
 builder.Services.AddSingleton(_ => new SicherungsarchivBereitstellung(builder.Configuration, dataDirectory, TimeProvider.System));
 builder.Services.AddSingleton<ISicherungskatalog>(_ =>
 {
-    var databasePath = Path.Combine(dataDirectory, "andytours.db");
-    using var db = AndyTours.Daten.OeffneDatenbank.Ausfuehren(databasePath);
-    using var tx = db.BeginTransaction(deferred: true);
-    var settings = AndyTours.Daten.SicherungEinstellung.Laden(db);
-    var folder = AndyTours.Daten.Datensicherung.ErmittleSicherungsordner.Ausfuehren(dataDirectory, settings);
-    tx.Commit();
-    if (!Path.IsPathFullyQualified(folder))
-        throw new InvalidOperationException("Sicherungsordnerkonfiguration ungültig.");
-    return new DateisystemSicherungskatalog(folder);
+    try
+    {
+        var databasePath = Path.Combine(dataDirectory, "andytours.db");
+        var connectionString = AndyTours.Daten.Datensicherung.Sicherungsdatei.Verbindungstext(
+            databasePath, SqliteOpenMode.ReadOnly);
+        using var db = new SqliteConnection(connectionString);
+        db.Open();
+        using var tx = db.BeginTransaction(deferred: true);
+        var settings = AndyTours.Daten.SicherungEinstellung.Laden(db);
+        var folder = AndyTours.Daten.Datensicherung.ErmittleSicherungsordner.Ausfuehren(dataDirectory, settings);
+        tx.Commit();
+        if (!Path.IsPathFullyQualified(folder))
+            throw new SicherungskatalogNichtVerfuegbarException();
+
+        VollarchivKatalogKonfiguration.TryLesen(builder.Configuration, out var fullLimits);
+        return new DateisystemSicherungskatalog(folder, fullLimits);
+    }
+    catch (SicherungskatalogNichtVerfuegbarException) { throw; }
+    catch (Exception ex) when (ex is SqliteException or IOException or UnauthorizedAccessException or
+                                    ArgumentException or InvalidOperationException or SecurityException or
+                                    NotSupportedException)
+    {
+        throw new SicherungskatalogNichtVerfuegbarException();
+    }
 });
 builder.Services.AddSingleton<IImportUploadSpeicher>(_ => new SqliteImportUploadSpeicher(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IFitUploads>(sp => new AndyTours.Import.Dateien.FitUploadDienst(

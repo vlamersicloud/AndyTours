@@ -36,6 +36,54 @@ public sealed class SicherungskatalogHttpClientTests
         Assert.False(handler.Disposed);
     }
 
+    [Fact]
+    public async Task MixedResponseValidatesBothKindsAndReturnsReadOnlyUniqueEntries()
+    {
+        var legacyId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+        var fullId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+        var legacy = new SicherungAntwort(legacyId, Sicherungsart.LegacySqlite, null, 4, Hash)
+        {
+            LegacyZeitstempel = "2024-02-29_12-34-56"
+        };
+        var full = new SicherungAntwort(fullId, Sicherungsart.Vollarchiv,
+            new DateTimeOffset(2026, 11, 17, 12, 0, 0, TimeSpan.Zero), 8, Hash);
+        var handler = new FakeHandler(_ => Task.FromResult(Ok(new SicherungListeAntwort([legacy, full]))));
+        using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
+
+        var result = await new SicherungskatalogHttpClient(http).Liste(CancellationToken.None);
+
+        Assert.Equal(2, result.Eintraege.Count);
+        Assert.Equal(legacy, result.Eintraege[0]);
+        Assert.Equal(full, result.Eintraege[1]);
+        Assert.Equal(2, result.Eintraege.Select(entry => entry.Id).Distinct().Count());
+        Assert.True(Assert.IsAssignableFrom<IList<SicherungAntwort>>(result.Eintraege).IsReadOnly);
+        Assert.Equal(1, handler.Sends);
+        Assert.True(Assert.Single(handler.Contents).Disposed);
+        Assert.False(handler.Disposed);
+    }
+
+    [Fact]
+    public async Task RejectsDuplicateIdAcrossLegacyAndFullArchiveKinds()
+    {
+        var id = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+        var legacy = new SicherungAntwort(id, Sicherungsart.LegacySqlite, null, 4, Hash)
+        {
+            LegacyZeitstempel = "2024-02-29_12-34-56"
+        };
+        var full = new SicherungAntwort(id, Sicherungsart.Vollarchiv,
+            new DateTimeOffset(2026, 11, 17, 12, 0, 0, TimeSpan.Zero), 8, Hash);
+        var handler = new FakeHandler(_ => Task.FromResult(Ok(new SicherungListeAntwort([legacy, full]))));
+        using var http = new HttpClient(handler) { BaseAddress = new Uri("https://unit.test/") };
+
+        var error = await Assert.ThrowsAsync<HttpRequestException>(
+            () => new SicherungskatalogHttpClient(http).Liste(CancellationToken.None));
+
+        Assert.Equal("Sicherungskatalogantwort ungültig.", error.Message);
+        Assert.Equal(1, handler.Sends);
+        Assert.True(Assert.Single(handler.Contents).Disposed);
+        Assert.False(handler.Disposed);
+    }
+
     [Theory]
     [InlineData("null")]
     [InlineData("{")]
@@ -57,7 +105,8 @@ public sealed class SicherungskatalogHttpClientTests
     [Fact]
     public async Task Maps_error_status_without_reading_or_echoing_body()
     {
-        foreach (var status in new[] { HttpStatusCode.BadRequest, HttpStatusCode.InternalServerError })
+        foreach (var status in new[]
+                 { HttpStatusCode.BadRequest, HttpStatusCode.ServiceUnavailable, HttpStatusCode.InternalServerError })
         {
             var content = new UnreadableContent("PRIVATE-ERROR-BODY");
             var handler = new FakeHandler(_ => Task.FromResult(new HttpResponseMessage(status) { Content = content }));
@@ -65,6 +114,9 @@ public sealed class SicherungskatalogHttpClientTests
             var error = await Assert.ThrowsAsync<HttpRequestException>(() => new SicherungskatalogHttpClient(http).Liste(default));
             Assert.Equal(status, error.StatusCode);
             Assert.DoesNotContain("PRIVATE-ERROR-BODY", error.Message, StringComparison.Ordinal);
+            if (status == HttpStatusCode.ServiceUnavailable)
+                Assert.Equal("Vollarchiv-Katalog ist derzeit nicht verfügbar.", error.Message);
+            Assert.Equal(1, handler.Sends);
             Assert.False(content.Read);
             Assert.True(content.Disposed);
             Assert.False(handler.Disposed);

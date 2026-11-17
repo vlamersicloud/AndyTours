@@ -10,9 +10,10 @@ public static class SicherungskatalogEndpunkte
         var group = app.MapGroup("/api/v1/sicherungen").WithTags("Sicherungen");
         group.MapGet("/", async (ISicherungskatalog catalog, CancellationToken cancellationToken) =>
                 Results.Ok(await catalog.Liste(cancellationToken)))
-            .WithDescription("Listet Metadaten vorhandener Legacy-SQLite-Sicherungen. Der Endpunkt gibt keine Dateipfade aus und ermöglicht weder Download noch Löschen oder Wiederherstellen.")
+            .WithDescription("Listet Metadaten vorhandener Legacy-SQLite-Sicherungen und vollständig validierter Vollarchive. Der Endpunkt gibt keine Dateipfade aus und ermöglicht weder Download noch Löschen oder Wiederherstellen.")
             .Produces<SicherungListeAntwort>()
-            .ProducesProblem(400);
+            .ProducesProblem(400)
+            .ProducesProblem(503);
         return app;
     }
 }

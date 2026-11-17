@@ -3,6 +3,7 @@ using AndyTours.Application.Stammdaten;
 using AndyTours.Application.Import;
 using AndyTours.Application.Overlays;
 using AndyTours.Application.Planung;
+using AndyTours.Application.Sicherung;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
@@ -19,6 +20,19 @@ public sealed class ProblemExceptionHandler : IExceptionHandler
         {
             await Results.Problem(statusCode: 413, title: "Anfrage überschreitet die zulässige Größe.",
                 extensions: new Dictionary<string, object?> { ["traceId"] = httpContext.TraceIdentifier, ["code"] = exception is OverlayGpxZuGrossException ? "overlay_gpx.zu_gross" : "fit_upload.zu_gross" })
+                .ExecuteAsync(httpContext);
+            return true;
+        }
+
+        if (exception is SicherungskatalogNichtVerfuegbarException)
+        {
+            await Results.Problem(statusCode: 503,
+                title: "Vollarchiv-Katalog ist derzeit nicht verfügbar.",
+                extensions: new Dictionary<string, object?>
+                {
+                    ["traceId"] = httpContext.TraceIdentifier,
+                    ["code"] = "sicherungskatalog.nicht_verfuegbar"
+                })
                 .ExecuteAsync(httpContext);
             return true;
         }
