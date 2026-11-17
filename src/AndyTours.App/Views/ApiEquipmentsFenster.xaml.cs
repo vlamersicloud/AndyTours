@@ -19,7 +19,9 @@ public partial class ApiEquipmentsFenster : Window, IDisposable
     private bool _closed;
     public ApiEquipmentsFenster(ApiEquipmentsViewModel viewModel)
     {
-        InitializeComponent(); _viewModel = viewModel; DataContext = viewModel;
+        InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
+        _viewModel = viewModel; DataContext = viewModel;
         Loaded += OnLoaded; Closed += OnClosed;
         _viewModel.EditorAngefordert += OnEditorAngefordert;
     }

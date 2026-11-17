@@ -15,8 +15,8 @@ public partial class ApiTourenMehrfachFenster : Window, IDisposable
     {
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
-        DataContext = _viewModel;
         Oberflaechenskalierung.Anmelden(this);
+        DataContext = _viewModel;
         Loaded += FensterGeladen;
         Closing += FensterWirdGeschlossen;
         Closed += FensterGeschlossen;

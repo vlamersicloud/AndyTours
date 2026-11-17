@@ -10,6 +10,7 @@ public partial class ApiGarminEinstellungenFenster : Window, IDisposable
     {
         _viewModel=viewModel;
         InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
         DataContext=viewModel;
         Loaded+=LoadedWindow;
         Closing+=ClosingWindow;

@@ -2,11 +2,12 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:AndyTours.App.Views"
-        Title="Equipment verwalten · AndyTours" Width="900" Height="650" MinWidth="740" MinHeight="480"
-        Language="de-DE" Background="#F4F6F8" WindowStartupLocation="CenterOwner">
+        Title="Equipment verwalten · AndyTours" Width="900" Height="650" MinWidth="600" MinHeight="420"
+        Language="de-DE" Background="{StaticResource ApiFlaeche}" WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <local:EquipmentAktivitaetConverter x:Key="EquipmentAktivitaetConverter"/>
     </Window.Resources>
+    <!-- Aufbau: feste Überschrift und Statusleiste; Tabelle bleibt im begrenzten Grid virtualisiert. -->
     <Grid Margin="20">
         <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <Grid Grid.Row="0">
@@ -23,19 +24,18 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <DockPanel Grid.Row="0" Margin="0,0,0,14">
                 <Button DockPanel.Dock="Right" Content="Neu laden" Command="{Binding LadenCommand}" Padding="12,6"/>
                 <StackPanel>
-                    <TextBlock Text="Equipment verwalten" FontSize="24" FontWeight="Bold" Foreground="#18324F"/>
+                    <TextBlock Text="Equipment verwalten" Style="{StaticResource ApiDialogTitel}"/>
                     <TextBlock Text="Änderungen verwenden die geladene Familienversion; bei Konflikten bitte neu laden."
                                Foreground="#637083" Margin="0,4,0,0" TextWrapping="Wrap"/>
                 </StackPanel>
             </DockPanel>
-            <DataGrid Grid.Row="1" Margin="0,0,0,14"
+            <DataGrid Grid.Row="1" Style="{StaticResource ApiTabelle}" Margin="0,0,0,14"
                       ItemsSource="{Binding Eintraege}" SelectedItem="{Binding Auswahl, Mode=TwoWay}" MouseDoubleClick="Grid_MouseDoubleClick" PreviewKeyDown="Grid_PreviewKeyDown"
-                      AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False"
+                      AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" EnableRowVirtualization="True" EnableColumnVirtualization="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True"
                       SelectionMode="Single" SelectionUnit="FullRow" HeadersVisibility="Column"
                       GridLinesVisibility="Horizontal" Background="White">
                 <DataGrid.Columns>
@@ -50,18 +50,26 @@
                     <DataGridTextColumn Header="Anfang km" Binding="{Binding AnfangsdistanzKm, StringFormat={}{0:N1}}" Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
-            <WrapPanel Grid.Row="2" HorizontalAlignment="Left" Margin="0,0,0,12">
-                <Button Content="Neu" Command="{Binding NeuCommand}" Padding="14,7" Margin="0,0,8,0"/>
-                <Button Content="Bearbeiten" Command="{Binding BearbeitenCommand}" Padding="14,7" Margin="0,0,8,0"/>
-                <Button Content="Löschen" Command="{Binding LoeschenCommand}" Padding="14,7"/>
-            </WrapPanel>
-            <DockPanel Grid.Row="3"/>
+
+
         </Grid>
-        <StackPanel Grid.Row="1" Margin="0,10,0,0">
-            <ProgressBar Height="3" IsIndeterminate="{Binding Laedt}"/>
-            <TextBlock Text="{Binding StatusText}" Foreground="#46566A" Margin="0,6,0,0"
-                       TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
-            <Button Content="Schließen" IsCancel="True" HorizontalAlignment="Right" Padding="14,7" Margin="0,8,0,0"/>
-        </StackPanel>
+        <Border Grid.Row="1" Style="{StaticResource ApiKartenrahmen}" Margin="0,10,0,0" Padding="10">
+            <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <StackPanel Grid.Row="0">
+                    <ProgressBar Height="3" IsIndeterminate="{Binding Laedt}"/>
+                    <TextBlock Text="{Binding StatusText}" Style="{StaticResource ApiStatus}" Margin="0,6,0,0"
+                               TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+                </StackPanel>
+                <WrapPanel Grid.Row="1" HorizontalAlignment="Right">
+                    <WrapPanel.Style>
+                        <Style TargetType="WrapPanel"><Style.Triggers><DataTrigger Binding="{Binding Laedt}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style>
+                    </WrapPanel.Style>
+                    <Button Content="Neu" Command="{Binding NeuCommand}" Style="{StaticResource ApiAktion}"/>
+                    <Button Content="Bearbeiten" Command="{Binding BearbeitenCommand}" Style="{StaticResource ApiAktion}"/>
+                    <Button Content="Löschen" Command="{Binding LoeschenCommand}" Style="{StaticResource ApiDestruktiveAktion}"/>
+                </WrapPanel>
+                <WrapPanel Grid.Row="2" HorizontalAlignment="Right"><Button Content="Schließen" IsCancel="True" Style="{StaticResource ApiAktion}" Margin="0"/></WrapPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

@@ -15,6 +15,7 @@ public partial class ApiKategorienFenster : Window, IDisposable
     public ApiKategorienFenster(ApiKategorienViewModel viewModel)
     {
         InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
         _viewModel = viewModel;
         DataContext = viewModel;
         Loaded += FensterGeladen;

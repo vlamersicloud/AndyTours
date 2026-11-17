@@ -16,6 +16,7 @@ public partial class ApiWartungsFenster : Window, IDisposable
     public ApiWartungsFenster(ApiWartungsViewModel viewModel)
     {
         InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
         _viewModel = viewModel;
         DataContext = viewModel;
         _viewModel.WartungEditorAngefordert += WartungEditorAngefordert;

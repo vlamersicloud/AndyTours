@@ -14,6 +14,7 @@ public partial class ApiTextlisteFenster : Window, IDisposable
     public ApiTextlisteFenster(ApiTextlisteViewModel viewModel)
     {
         InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
         _viewModel = viewModel;
         DataContext = viewModel;
         Title = viewModel.Art switch

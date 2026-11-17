@@ -7,19 +7,16 @@ public sealed class ApiRoutingKonfigurationFensterVertragTests
 {
     private static readonly XNamespace P = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
     private static readonly XNamespace X = "http://schemas.microsoft.com/winfx/2006/xaml";
-    private static XDocument Load()
-    {
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AndyTours.ApiRoutingKonfigurationFenster.xaml");
-        Assert.NotNull(stream);
-        return XDocument.Load(stream!);
-    }
+    private static readonly string[] Commands =
+    [
+        "LadenCommand", "AbbrechenCommand", "DienstSpeichernCommand", "AdresseSpeichernCommand",
+        "AdresseZuruecksetzenCommand", "OrsSchluesselSpeichernCommand", "OrsSchluesselEntfernenCommand"
+    ];
 
     [Fact]
     public void Root_menu_contains_one_routing_settings_action_under_file()
     {
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AndyTours.ApiHauptfenster.xaml");
-        Assert.NotNull(stream);
-        var root = XDocument.Load(stream!);
+        var root = Load("AndyTours.ApiHauptfenster.xaml");
         var item = Assert.Single(root.Descendants(P + "MenuItem"), node => (string?)node.Attribute("Click") == "RoutingKonfiguration_Click");
         Assert.Equal("Routing-Einstellungen…", (string?)item.Attribute("Header"));
         Assert.Equal("Datei", (string?)item.Parent?.Attribute("Header"));
@@ -28,14 +25,9 @@ public sealed class ApiRoutingKonfigurationFensterVertragTests
     [Fact]
     public void Routing_settings_window_exposes_explicit_operations_and_safe_password_input()
     {
-        var document = Load();
-        var buttons = document.Descendants(P + "Button").ToArray();
-        foreach (var command in new[]
-        {
-            "LadenCommand", "AbbrechenCommand", "DienstSpeichernCommand", "AdresseSpeichernCommand",
-            "AdresseZuruecksetzenCommand", "OrsSchluesselSpeichernCommand", "OrsSchluesselEntfernenCommand"
-        })
-            Assert.Contains(buttons, button => (string?)button.Attribute("Command") == "{Binding " + command + "}");
+        var document = Load("AndyTours.ApiRoutingKonfigurationFenster.xaml");
+        foreach (var command in Commands)
+            Assert.Contains(document.Descendants(P + "Button"), button => (string?)button.Attribute("Command") == "{Binding " + command + "}");
 
         Assert.Contains(document.Descendants(P + "TextBox"), node => (string?)node.Attribute("Text") == "{Binding GespeicherteAdresse, Mode=OneWay}");
         Assert.Contains(document.Descendants(P + "TextBlock"), node => (string?)node.Attribute("Text") == "{Binding AdresseStatus}");
@@ -51,13 +43,26 @@ public sealed class ApiRoutingKonfigurationFensterVertragTests
         Assert.NotNull(document.Root.Attribute("Height"));
         Assert.Contains(document.Descendants(P + "ScrollViewer"), _ => true);
 
-        var keys = document.Descendants(P + "Window.Resources").Elements().Select(node => (string?)node.Attribute(X + "Key"))
-            .OfType<string>().ToHashSet(StringComparer.Ordinal);
+        var localKeys = document.Descendants(P + "Window.Resources").Elements()
+            .Select(node => (string?)node.Attribute(X + "Key")).OfType<string>().ToHashSet(StringComparer.Ordinal);
+        var sharedKeys = Keys(Load("AndyTours.App.xaml"));
+        sharedKeys.UnionWith(Keys(Load("AndyTours.ApiOberflaeche.xaml")));
         var references = document.Descendants().Attributes().Select(attribute => attribute.Value)
             .Where(value => value.Contains("{StaticResource ", StringComparison.Ordinal))
             .SelectMany(value => value.Split("{StaticResource ", StringSplitOptions.None).Skip(1))
             .Select(value => value.Split('}')[0]).ToHashSet(StringComparer.Ordinal);
-        Assert.All(references, key => Assert.Contains(key, keys));
-        Assert.All(keys, key => Assert.Contains(key, references));
+        Assert.All(references, key => Assert.True(localKeys.Contains(key) || sharedKeys.Contains(key),
+            $"Unresolved resource key: {key}"));
+        Assert.All(localKeys, key => Assert.Contains(key, references));
     }
+
+    private static XDocument Load(string name)
+    {
+        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
+        Assert.NotNull(stream);
+        return XDocument.Load(stream!);
+    }
+
+    private static HashSet<string> Keys(XDocument document) =>
+        document.Root!.DescendantsAndSelf().Attributes(X + "Key").Select(attribute => attribute.Value).ToHashSet(StringComparer.Ordinal);
 }

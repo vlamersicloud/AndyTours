@@ -1,46 +1,82 @@
 <Window x:Class="AndyTours.App.Views.ApiOverlaysFenster"
- xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
- xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:AndyTours.App.ViewModels"
- Title="Overlays" Width="680" Height="720" MinWidth="400" MinHeight="420"
- WindowStartupLocation="CenterOwner" Loaded="FensterGeladen" Closing="FensterSchliesst" Closed="FensterGeschlossen">
- <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
- <DockPanel Margin="10">
-  <StackPanel DockPanel.Dock="Top">
-   <WrapPanel>
-    <Button Content="Laden" Command="{Binding LadenCommand}" Margin="2"/>
-    <Button Content="Ordner anlegen" Command="{Binding OrdnerAnlegenCommand}" Margin="2"/>
-    <Button Content="Verschieben…" Command="{Binding VerschiebenCommand}" Margin="2"/>
-    <Button Content="Löschen" Command="{Binding LoeschenCommand}" Margin="2"/>
-    <Button Content="GPX-Dateien wählen…" Command="{Binding GpxHinzufuegenCommand}" Margin="2"/>
-    <Button Content="Importieren" Command="{Binding GpxImportierenCommand}" Margin="2"/>
-    <Button Content="Auswahl verwerfen" Command="{Binding GpxAuswahlVerwerfenCommand}" Margin="2"/>
-   </WrapPanel>
-   <TextBlock Text="{Binding Hinweis}" TextWrapping="Wrap" Margin="2,8"/>
-   <DataGrid ItemsSource="{Binding Importdateien}" Height="120" IsReadOnly="True"
-             EnableRowVirtualization="True" EnableColumnVirtualization="True"
-             AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-             HeadersVisibility="Column" ScrollViewer.CanContentScroll="True">
-    <DataGrid.Columns>
-     <DataGridTextColumn Header="Datei" Binding="{Binding Dateiname, Mode=OneWay}" Width="2*"/>
-     <DataGridTextColumn Header="Status" Binding="{Binding Status, Mode=OneWay}" Width="3*"/>
-    </DataGrid.Columns>
-   </DataGrid>
-  </StackPanel>
-  <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
-   <DockPanel><Button DockPanel.Dock="Right" Content="Übernehmen" Command="{Binding NameUebernehmenCommand}"/>
-    <TextBox x:Name="NamensFeld" Text="{Binding Bearbeitungsname, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding KannAuswahlAendern}" />
-   </DockPanel>
-   <WrapPanel Margin="0,5"><TextBlock Text="Farbe:" VerticalAlignment="Center"/>
-    <ComboBox ItemsSource="{Binding Farbauswahl}" SelectedItem="{Binding GewaehlteFarbe}" IsEnabled="{Binding KannOverlayAendern}" DisplayMemberPath="Name" Width="180" Margin="4,0"/>
-    <TextBlock Text="Gemeinsam:" VerticalAlignment="Center"/>
-    <ComboBox ItemsSource="{Binding GemeinsameFarbauswahl}" SelectedItem="{Binding GewaehlteGemeinsameFarbe}" DisplayMemberPath="Name" Width="180" Margin="4,0" IsEnabled="{Binding KannAendern}"/>
-   </WrapPanel>
-  </StackPanel>
-  <TreeView ItemsSource="{Binding Wurzeln}" Height="260" VerticalAlignment="Stretch" IsEnabled="{Binding IstBereit}" MouseDoubleClick="BaumDoppelklick" PreviewMouseRightButtonDown="BaumRechtsklick">
-   <TreeView.ItemContainerStyle><Style TargetType="TreeViewItem"><Setter Property="IsSelected" Value="{Binding IstAusgewaehlt, Mode=TwoWay}"/><Setter Property="IsExpanded" Value="{Binding IstAufgeklappt, Mode=TwoWay}"/></Style></TreeView.ItemContainerStyle>
-   <TreeView.Resources><HierarchicalDataTemplate DataType="{x:Type local:ApiOverlayknoten}" ItemsSource="{Binding Kinder}"><StackPanel Orientation="Horizontal"><CheckBox IsThreeState="True" IsChecked="{Binding IstEingeschaltet, Mode=TwoWay}"/><TextBlock Text="{Binding Name}" Margin="5,0"/><TextBlock Text="{Binding Farbe}" Foreground="{Binding Farbe}" Margin="4,0"/></StackPanel></HierarchicalDataTemplate>
-   </TreeView.Resources>
-  </TreeView>
- </DockPanel>
- </ScrollViewer>
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:AndyTours.App.ViewModels"
+        Title="Overlays" Width="900" Height="720" MinWidth="560" MinHeight="460" ResizeMode="CanResize"
+        WindowStartupLocation="CenterOwner" Background="{StaticResource ApiFlaeche}"
+        Loaded="FensterGeladen" Closing="FensterSchliesst" Closed="FensterGeschlossen">
+    <!-- Aufbau: Werkzeugleiste klappt bei Bedarf auf; Baum/Importliste bleiben begrenzt, Bearbeitung und Footer fest erreichbar. -->
+    <Grid Margin="18">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="Karten-Overlays" Style="{StaticResource ApiDialogTitel}"/>
+            <ScrollViewer MaxHeight="60" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <TextBlock Text="{Binding Hinweis}" Style="{StaticResource ApiErklaerung}" TextWrapping="Wrap"/>
+            </ScrollViewer>
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <Expander Grid.Row="0" Header="Overlay-Aktionen" IsExpanded="False" Margin="0,0,0,10">
+                <Border Style="{StaticResource ApiKartenrahmen}" Padding="8">
+                    <WrapPanel>
+                        <Button Content="Laden" Command="{Binding LadenCommand}" Style="{StaticResource ApiAktion}"/>
+                        <Button Content="Ordner anlegen" Command="{Binding OrdnerAnlegenCommand}" Style="{StaticResource ApiAktion}"/>
+                        <Button Content="Verschieben…" Command="{Binding VerschiebenCommand}" Style="{StaticResource ApiAktion}"/>
+                        <Button Content="Löschen" Command="{Binding LoeschenCommand}" Style="{StaticResource ApiDestruktiveAktion}"/>
+                        <Button Content="GPX-Dateien wählen…" Command="{Binding GpxHinzufuegenCommand}" Style="{StaticResource ApiAktion}"/>
+                        <Button Content="Importieren" Command="{Binding GpxImportierenCommand}" Style="{StaticResource ApiPrimaeraktion}"/>
+                        <Button Content="Auswahl verwerfen" Command="{Binding GpxAuswahlVerwerfenCommand}" Style="{StaticResource ApiAktion}"/>
+                    </WrapPanel>
+                </Border>
+            </Expander>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="3*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
+                <Border Style="{StaticResource ApiKartenrahmen}" Padding="8" Margin="0,0,8,0">
+                    <TreeView ItemsSource="{Binding Wurzeln}" VerticalAlignment="Stretch" IsEnabled="{Binding IstBereit}"
+                              MouseDoubleClick="BaumDoppelklick" PreviewMouseRightButtonDown="BaumRechtsklick"
+                              Background="White" BorderBrush="{StaticResource ApiKante}">
+                        <TreeView.ItemContainerStyle><Style TargetType="TreeViewItem"><Setter Property="IsSelected" Value="{Binding IstAusgewaehlt, Mode=TwoWay}"/><Setter Property="IsExpanded" Value="{Binding IstAufgeklappt, Mode=TwoWay}"/></Style></TreeView.ItemContainerStyle>
+                        <TreeView.Resources>
+                            <HierarchicalDataTemplate DataType="{x:Type local:ApiOverlayknoten}" ItemsSource="{Binding Kinder}">
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox IsThreeState="True" IsChecked="{Binding IstEingeschaltet, Mode=TwoWay}"/>
+                                    <TextBlock Text="{Binding Name}" Margin="5,0"/>
+                                    <TextBlock Text="{Binding Farbe}" Foreground="{Binding Farbe}" Margin="4,0"/>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.Resources>
+                    </TreeView>
+                </Border>
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Importwarteschlange" Style="{StaticResource ApiAbschnittstitel}"/>
+                    <DataGrid ItemsSource="{Binding Importdateien}" Height="120" IsReadOnly="True"
+                              EnableRowVirtualization="True" EnableColumnVirtualization="True"
+                              AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                              HeadersVisibility="Column" ScrollViewer.CanContentScroll="True"
+                              Style="{StaticResource ApiTabelle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Datei" Binding="{Binding Dateiname, Mode=OneWay}" Width="2*"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status, Mode=OneWay}" Width="3*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Grid>
+        </Grid>
+        <Border Grid.Row="2" Style="{StaticResource ApiKartenrahmen}" Margin="0,12,0,0">
+            <Grid>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <TextBox x:Name="NamensFeld" Text="{Binding Bearbeitungsname, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding KannAuswahlAendern}" Margin="0,0,8,8"/>
+                    <Button Grid.Column="1" Content="Übernehmen" Command="{Binding NameUebernehmenCommand}" Style="{StaticResource ApiAktion}"/>
+                </Grid>
+                <WrapPanel Grid.Row="1">
+                    <TextBlock Text="Farbe:" VerticalAlignment="Center" Margin="0,0,4,8"/>
+                    <ComboBox ItemsSource="{Binding Farbauswahl}" SelectedItem="{Binding GewaehlteFarbe}" IsEnabled="{Binding KannOverlayAendern}" DisplayMemberPath="Name" Width="170" Margin="0,0,12,8"/>
+                    <TextBlock Text="Gemeinsam:" VerticalAlignment="Center" Margin="0,0,4,8"/>
+                    <ComboBox ItemsSource="{Binding GemeinsameFarbauswahl}" SelectedItem="{Binding GewaehlteGemeinsameFarbe}" DisplayMemberPath="Name" Width="170" Margin="0,0,12,8" IsEnabled="{Binding KannAendern}"/>
+                    <Button Content="Schließen" IsCancel="True" Style="{StaticResource ApiAktion}" Margin="0,0,0,8"/>
+                </WrapPanel>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

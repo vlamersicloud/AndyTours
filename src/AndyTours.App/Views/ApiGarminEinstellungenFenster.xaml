@@ -1,34 +1,58 @@
 <Window x:Class="AndyTours.App.Views.ApiGarminEinstellungenFenster"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Garmin-Einstellungen" Width="560" SizeToContent="Height" ResizeMode="NoResize"
-        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE">
+        Title="Garmin-Einstellungen" Width="620" Height="620" MinWidth="460" MinHeight="380" ResizeMode="CanResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE" Background="{StaticResource ApiFlaeche}">
+    <!-- Aufbau: sensible Schlüssel- und Automatikfelder rollen; Laden, Status und Schließen bleiben fest. -->
     <Window.Resources><BooleanToVisibilityConverter x:Key="VisibleWhenTrue" /></Window.Resources>
     <Grid Margin="20">
-        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-        <StackPanel Grid.Row="0">
-            <TextBlock Text="Garmin Personal API-Schlüssel" FontSize="18" FontWeight="SemiBold" />
-            <TextBlock Text="Schlüsselstatus: wird ausschließlich als vorhanden/nicht vorhanden angezeigt." TextWrapping="Wrap" Margin="0,6,0,0" />
-            <TextBlock Margin="0,5,0,8">
-                <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Kein Schlüssel hinterlegt"/><Style.Triggers><DataTrigger Binding="{Binding HasKey}" Value="True"><Setter Property="Text" Value="Schlüssel hinterlegt"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
-            </TextBlock>
-            <PasswordBox x:Name="SchluesselFeld" PasswordChanged="SchluesselFeld_PasswordChanged" IsEnabled="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <Button Content="Schlüssel speichern" Command="{Binding SchluesselSpeichernCommand}" Padding="10,5" Margin="0,0,8,0" />
-                <Button Content="Schlüssel entfernen" Command="{Binding SchluesselEntfernenCommand}" Padding="10,5" />
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="Garmin-Einstellungen" Style="{StaticResource ApiDialogTitel}"/>
+            <TextBlock Text="Schlüsselstatus wird ausschließlich als vorhanden oder nicht vorhanden angezeigt." Style="{StaticResource ApiErklaerung}"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <Border Style="{StaticResource ApiKartenrahmen}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Garmin Personal API-Schlüssel" Style="{StaticResource ApiAbschnittstitel}"/>
+                        <TextBlock Margin="0,5,0,8">
+                            <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Kein Schlüssel hinterlegt"/><Style.Triggers><DataTrigger Binding="{Binding HasKey}" Value="True"><Setter Property="Text" Value="Schlüssel hinterlegt"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+                        </TextBlock>
+                        <PasswordBox x:Name="SchluesselFeld" PasswordChanged="SchluesselFeld_PasswordChanged"
+                                     IsEnabled="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType=Window}}"/>
+
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource ApiKartenrahmen}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Automatischer Abruf" Style="{StaticResource ApiAbschnittstitel}"/>
+                        <CheckBox IsChecked="{Binding AutoDraft, Mode=TwoWay}">
+                            <TextBlock Text="Alle Garmin-Pakete automatisch laden" TextWrapping="Wrap"/>
+                        </CheckBox>
+
+                    </StackPanel>
+                </Border>
+                <Border Background="#FFFFF7E8" BorderBrush="{StaticResource ApiKante}" BorderThickness="1" CornerRadius="4" Padding="12">
+                    <TextBlock Text="Automatischer Abruf verwendet 20-Aktivitäten-Pakete. Der Schlüssel liegt unverschlüsselt in der SQLite-Datenbank des Backends und in deren Sicherungen. Im zentralen Modus wird er auf dem SERVER gespeichert, nicht auf dem Windows-Client."
+                               TextWrapping="Wrap" Foreground="#FF8A3B12"/>
+                </Border>
             </StackPanel>
-        </StackPanel>
-        <StackPanel Grid.Row="1" Margin="0,18,0,0">
-            <CheckBox Content="Alle Garmin-Pakete automatisch laden" IsChecked="{Binding AutoDraft, Mode=TwoWay}" />
-            <Button Content="Automatik speichern" Command="{Binding AutomatikSpeichernCommand}" HorizontalAlignment="Left" Padding="10,5" Margin="0,8,0,0" />
-        </StackPanel>
-        <TextBlock Grid.Row="2" Text="Automatischer Abruf verwendet 20-Aktivitäten-Pakete. Der Schlüssel liegt unverschlüsselt in der SQLite-Datenbank des Backends und in deren Sicherungen. Im zentralen Modus wird er auf dem SERVER gespeichert, nicht auf dem Windows-Client." TextWrapping="Wrap" Margin="0,18,0,0" Foreground="#8A3B12" />
-        <TextBlock Grid.Row="3" Text="{Binding Status}" TextWrapping="Wrap" Margin="0,12,0,0" />
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <ProgressBar Width="90" Height="4" IsIndeterminate="{Binding Laedt}" Visibility="{Binding Laedt, Converter={StaticResource VisibleWhenTrue}}" VerticalAlignment="Center" Margin="0,0,12,0" />
-            <Button Content="Neu laden" Command="{Binding LadenCommand}" Padding="10,5" Margin="0,0,8,0" />
-            <Button Content="Schließen" IsCancel="True" Padding="10,5" />
-        </StackPanel>
+        </ScrollViewer>
+        <Grid Grid.Row="2" Margin="0,12,0,0">
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <Grid Grid.Row="0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Status}" Style="{StaticResource ApiStatus}" TextWrapping="Wrap" Margin="0,0,10,8"/>
+                <ProgressBar Grid.Column="1" Width="90" Height="5" IsIndeterminate="{Binding Laedt}" Visibility="{Binding Laedt, Converter={StaticResource VisibleWhenTrue}}" VerticalAlignment="Center"/>
+            </Grid>
+            <WrapPanel Grid.Row="1" HorizontalAlignment="Right">
+                <Button Content="Schlüssel speichern" Command="{Binding SchluesselSpeichernCommand}" Style="{StaticResource ApiPrimaeraktion}"/>
+                <Button Content="Schlüssel entfernen" Command="{Binding SchluesselEntfernenCommand}" Style="{StaticResource ApiDestruktiveAktion}"/>
+                <Button Content="Automatik speichern" Command="{Binding AutomatikSpeichernCommand}" Style="{StaticResource ApiAktion}"/>
+                <Button Content="Neu laden" Command="{Binding LadenCommand}" Style="{StaticResource ApiAktion}"/>
+                <Button Content="Schließen" IsCancel="True" Style="{StaticResource ApiAktion}" Margin="0"/>
+            </WrapPanel>
+        </Grid>
         <Grid.Style><Style TargetType="Grid"><Style.Triggers><DataTrigger Binding="{Binding Laedt}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger><DataTrigger Binding="{Binding Aendert}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger></Style.Triggers></Style></Grid.Style>
     </Grid>
 </Window>

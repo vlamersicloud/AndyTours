@@ -1,20 +1,25 @@
 <Window x:Class="AndyTours.App.Views.ApiRoutingKonfigurationFenster"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Routingkonfiguration" Width="620" Height="680" MinWidth="460" MinHeight="420"
+        Title="Routingkonfiguration" Width="620" Height="680"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE"
+        Background="{StaticResource ApiFlaeche}" MinWidth="480" MinHeight="420" ResizeMode="CanResize"
         UseLayoutRounding="True" SnapsToDevicePixels="True">
     <Window.Resources><BooleanToVisibilityConverter x:Key="VisibleWhenTrue" /></Window.Resources>
+    <!-- Aufbau: Routingfelder und Erklärungen rollen; Laden/Abbrechen/Schließen bleiben im festen Footer. -->
     <Grid Margin="18">
         <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel>
-                <TextBlock Text="Routinganbieter" FontSize="18" FontWeight="SemiBold"/>
+                <TextBlock Text="Routing-Konfiguration" Style="{StaticResource ApiDialogTitel}"/>
+                <TextBlock Text="Anbieter, Adresse und Zugangsschlüssel werden nur nach ausdrücklichem Speichern geändert."
+                           Style="{StaticResource ApiErklaerung}" Margin="0,0,0,12"/>
+                <TextBlock Text="Routinganbieter" Style="{StaticResource ApiAbschnittstitel}"/>
                 <TextBlock Text="{Binding DienstStatus}" TextWrapping="Wrap" Margin="0,4,0,4"/>
                 <ComboBox Margin="0,8,0,4" ItemsSource="{Binding DienstOptionen}" SelectedItem="{Binding Dienst, Mode=TwoWay}"
                           IsEnabled="{Binding KannBearbeiten}"/>
-                <Button Content="Anbieter ausdrücklich speichern" Command="{Binding DienstSpeichernCommand}"
-                        HorizontalAlignment="Left" Padding="10,5" Margin="0,4,0,16"/>
+                <Button Content="Anbieter ausdrücklich speichern" Command="{Binding DienstSpeichernCommand}" Style="{StaticResource ApiPrimaeraktion}" HorizontalAlignment="Left" Margin="0,4,0,16"/>
+
 
                 <TextBlock Text="Gespeicherte BRouter-Adresse" FontWeight="SemiBold"/>
                 <TextBlock Text="{Binding AdresseStatus}" TextWrapping="Wrap" Margin="0,4"/>
@@ -24,17 +29,19 @@
                 <TextBox Text="{Binding AdresseEntwurf, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding KannBearbeiten}"
                          Margin="0,6,0,4"/>
                 <WrapPanel Margin="0,4,0,16">
-                    <Button Content="Adresse speichern" Command="{Binding AdresseSpeichernCommand}" Padding="10,5" Margin="0,0,8,0"/>
-                    <Button Content="Adresse zurücksetzen" Command="{Binding AdresseZuruecksetzenCommand}" Padding="10,5"/>
+                    <Button Content="Adresse speichern" Command="{Binding AdresseSpeichernCommand}" Style="{StaticResource ApiPrimaeraktion}"/>
+                    <Button Content="Adresse zurücksetzen" Command="{Binding AdresseZuruecksetzenCommand}" Style="{StaticResource ApiAktion}"/>
                 </WrapPanel>
+
 
                 <TextBlock Text="{Binding OrsSchluesselStatus}" TextWrapping="Wrap" FontWeight="SemiBold"/>
                 <PasswordBox x:Name="OrsSchluesselFeld" MaxLength="4096" PasswordChanged="OrsSchluesselFeld_PasswordChanged"
                              IsEnabled="{Binding KannBearbeiten}" Margin="0,6,0,4"/>
                 <WrapPanel Margin="0,4,0,16">
-                    <Button Content="ORS-Schlüssel speichern" Command="{Binding OrsSchluesselSpeichernCommand}" Padding="10,5" Margin="0,0,8,0"/>
-                    <Button Content="Gespeicherten Schlüssel entfernen" Command="{Binding OrsSchluesselEntfernenCommand}" Padding="10,5"/>
+                    <Button Content="ORS-Schlüssel speichern" Command="{Binding OrsSchluesselSpeichernCommand}" Style="{StaticResource ApiPrimaeraktion}"/>
+                    <Button Content="Gespeicherten Schlüssel entfernen" Command="{Binding OrsSchluesselEntfernenCommand}" Style="{StaticResource ApiDestruktiveAktion}"/>
                 </WrapPanel>
+
                 <TextBlock Text="{Binding Hinweis}" TextWrapping="Wrap" Margin="0,8,0,4"/>
                 <TextBlock Text="Speicherstatus unklar; Einstellungen bitte ausdrücklich neu laden."
                            TextWrapping="Wrap" Foreground="#8A3B12" Visibility="{Binding HatUnklarenSpeicherstatus, Converter={StaticResource VisibleWhenTrue}}"/>
@@ -43,9 +50,9 @@
         <WrapPanel Grid.Row="1" HorizontalAlignment="Right" Margin="0,12,0,0">
             <ProgressBar Width="90" Height="4" IsIndeterminate="{Binding Busy}" Visibility="{Binding Busy, Converter={StaticResource VisibleWhenTrue}}"
                          VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <Button Content="Laden" Command="{Binding LadenCommand}" Padding="10,5" Margin="0,0,8,0"/>
-            <Button Content="Abbrechen" Command="{Binding AbbrechenCommand}" Padding="10,5" Margin="0,0,8,0"/>
-            <Button Content="Schließen" IsCancel="True" Padding="10,5"/>
+            <Button Content="Laden" Command="{Binding LadenCommand}" Style="{StaticResource ApiAktion}"/>
+            <Button Content="Abbrechen" Command="{Binding AbbrechenCommand}" Style="{StaticResource ApiAktion}"/>
+            <Button Content="Schließen" IsCancel="True" Style="{StaticResource ApiAktion}" Margin="0"/>
         </WrapPanel>
     </Grid>
 </Window>

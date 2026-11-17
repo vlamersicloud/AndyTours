@@ -15,6 +15,7 @@ public partial class ApiAktivitaetenFenster : Window, IDisposable
     public ApiAktivitaetenFenster(ApiAktivitaetenViewModel viewModel)
     {
         InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
         _viewModel = viewModel;
         DataContext = viewModel;
         Loaded += FensterGeladen;
