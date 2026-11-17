@@ -1,0 +1,9 @@
+# Vollarchiv-Erstellungs-API: Designplan
+
+- Einen authentifizierten `POST /api/v1/sicherungen/` ergänzen. Request enthält ausschließlich nichtleere Vorgangs-GUID; keine Pfade oder Limits. Wiederholung derselben GUID liefert dieselbe validierte unveränderliche Ausgabe.
+- Endpoint mit `ExklusiverDatenbestand` markieren: `DatenbestandsMiddleware` übernimmt genau den äußeren exklusiven In-Process-Lease. Creator/Port darf keinen verschachtelten Lease erwerben. Dies schützt nicht gegen externe Prozesse.
+- Creator mit fest konfiguriertem `Backend:Datenordner`, dem readonly ermittelten bestehenden Legacy-Backupordner, `TimeProvider` und expliziten serverseitigen `SicherungsarchivGrenzen` registrieren. Bestehende Ordner-/Counter-Policy nicht verändern.
+- Der reine Reader `SicherungsarchivKonfiguration.TryLesen` ist vorhanden: sieben Pflichtwerte unter `Backend:Sicherung` (`MaxEintraege`, `MaxDateiBytes`, `MaxGesamtBytes`, `MaxPfadzeichen`, `MaxArchivBytes`, `MaxManifestBytes`, `MaxZentralverzeichnisBytes`); positiv/invariant, ohne Defaults. Er verwirft `MaxEintraege >= int.MaxValue`, Manifest über `Array.MaxLength`, Dateilimit über Gesamtlimit sowie Manifest-/Zentralverzeichnislimit über Archivlimit.
+- Limits haben keine Geschäftsvorgabewerte; Deployment muss sie explizit setzen. API-/DI-/Factory-Wiring und POST sind noch nicht implementiert. Bei fehlender/ungültiger Konfiguration soll nur die neue Funktion mit festem 503-Problem deaktiviert werden, nicht Startup/Health oder andere Services.
+- Erfolgsantwort enthält nur opaque Sicherungsmetadaten und `BereitsVorhanden`, niemals Serverpfade. Bestehender Katalog listet weiterhin nur Legacy-Backups; Vollarchiv-Katalogaufnahme braucht separate Arbeit. Kein Download, Restore, Löschen oder Retention durch diesen Endpoint.
+- Keine Produktionskonfiguration geändert. Prepared Config-Fakten sind kompiliert, nicht ausgeführt. Deployment muss externe Writer/TOCTOU ausschließen.
