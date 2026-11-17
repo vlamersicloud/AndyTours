@@ -1,0 +1,70 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Nur API-spezifische Schlüssel; keine globalen ControlTemplates. -->
+    <SolidColorBrush x:Key="ApiFlaeche" Color="#FFF0F2F5"/>
+    <SolidColorBrush x:Key="ApiKarte" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="ApiKante" Color="#FFC2C9D1"/>
+    <SolidColorBrush x:Key="ApiTextSekundaer" Color="#FF46566A"/>
+    <SolidColorBrush x:Key="ApiAkzent" Color="#FF246DB2"/>
+    <Style x:Key="ApiDialogTitel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="0,0,0,5"/>
+    </Style>
+    <Style x:Key="ApiAbschnittstitel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
+    </Style>
+    <Style x:Key="ApiErklaerung" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ApiTextSekundaer}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style x:Key="ApiStatus" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ApiTextSekundaer}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="MinHeight" Value="20"/>
+        <Setter Property="AutomationProperties.LiveSetting" Value="Polite"/>
+    </Style>
+    <Style x:Key="ApiKartenrahmen" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ApiKarte}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ApiKante}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Padding" Value="14"/>
+    </Style>
+    <Style x:Key="ApiAktion" TargetType="Button">
+        <Setter Property="Padding" Value="12,7"/>
+        <Setter Property="Margin" Value="0,0,8,0"/>
+        <Setter Property="MinHeight" Value="34"/>
+    </Style>
+    <Style x:Key="ApiPrimaeraktion" TargetType="Button" BasedOn="{StaticResource ApiAktion}">
+        <Setter Property="Background" Value="{StaticResource ApiAkzent}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style x:Key="ApiFilterZuruecksetzen" TargetType="Button" BasedOn="{StaticResource ApiAktion}">
+        <Setter Property="Background" Value="#FFE8F1FB"/>
+        <Setter Property="BorderBrush" Value="#FF8F98A3"/>
+    </Style>
+    <Style x:Key="ApiDestruktiveAktion" TargetType="Button" BasedOn="{StaticResource ApiAktion}">
+        <Setter Property="Foreground" Value="#FF9F1D1D"/>
+        <Setter Property="BorderBrush" Value="#FFB42318"/>
+    </Style>
+    <!-- Vererbt den globalen App-Zellstil dynamisch, damit Fokus- und Fachfarben erhalten bleiben. -->
+    <Style x:Key="ApiTabelle" TargetType="DataGrid">
+        <Setter Property="CellStyle" Value="{DynamicResource {x:Type DataGridCell}}"/>
+        <Setter Property="Background" Value="{StaticResource ApiKarte}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ApiKante}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="#FFE1E5EA"/>
+    </Style>
+    <Style x:Key="ApiHashFeld" TargetType="TextBox">
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="IsReadOnlyCaretVisible" Value="True"/>
+        <Setter Property="MinHeight" Value="42"/>
+    </Style>
+</ResourceDictionary>

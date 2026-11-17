@@ -1,19 +1,22 @@
 using System.Reflection;
 using System.Xml.Linq;
-using Xunit;
 
 namespace AndyTours.Tests.Darstellung;
 
+/// <summary>Hält UI-Verträge für Aktionen und Layout des Importdialogs fest.</summary>
 public sealed class ApiGarminImportFensterVertragTests
 {
     private static readonly XNamespace P = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
     private static readonly XNamespace X = "http://schemas.microsoft.com/winfx/2006/xaml";
+    private static readonly string[] ExpectedCommands = ["StartenCommand", "LadenAktuellenCommand", "FortsetzenCommand", "AbbrechenCommand", "VorigeSeiteCommand", "NaechsteSeiteCommand", "PruefenCommand"];
+
     private static XDocument Load(string name)
     {
         using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
         Assert.NotNull(stream);
         return XDocument.Load(stream!);
     }
+
     [Fact]
     public void DefinesResourcesAndReviewCommand()
     {
@@ -21,10 +24,15 @@ public sealed class ApiGarminImportFensterVertragTests
         var keys = d.Root!.Element(P + "Window.Resources")!.Elements().Select(e => (string?)e.Attribute(X + "Key")).ToHashSet(StringComparer.Ordinal);
         Assert.Contains("VisibleWhenTrue", keys); Assert.Contains("CandidateStatusConverter", keys); Assert.Contains("DurationConverter", keys);
         var commands = d.Descendants(P + "Button").Select(b => (string?)b.Attribute("Command")).ToArray();
-        foreach (var name in new[] { "StartenCommand", "LadenAktuellenCommand", "FortsetzenCommand", "AbbrechenCommand", "VorigeSeiteCommand", "NaechsteSeiteCommand", "PruefenCommand" }) Assert.Contains("{Binding " + name + "}", commands);
-        Assert.Single(d.Descendants(P + "WrapPanel"));
+        foreach (var name in ExpectedCommands) Assert.Contains("{Binding " + name + "}", commands);
+        var footer = Assert.Single(d.Descendants(P + "WrapPanel"), panel =>
+            panel.Ancestors(P + "ScrollViewer").Any() == false &&
+            panel.Descendants(P + "Button").Any(button => (string?)button.Attribute("Command") == "{Binding StartenCommand}") &&
+            panel.Descendants(P + "Button").Any(button => (string?)button.Attribute("Command") == "{Binding AbbrechenCommand}"));
+        Assert.Equal("Right", (string?)footer.Attribute("HorizontalAlignment"));
         Assert.Contains(d.Descendants(P + "TextBlock"), e => ((string?)e.Attribute("Text"))?.Contains("FIT-Dateien", StringComparison.Ordinal) == true);
     }
+
     [Fact]
     public void ReviewDialogLocksAndShowsHintsWhileSaving()
     {

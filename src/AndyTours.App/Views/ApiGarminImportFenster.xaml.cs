@@ -26,7 +26,9 @@ public partial class ApiGarminImportFenster : Window, IDisposable
     public ApiGarminImportFenster(ApiGarminImportViewModel viewModel)
     {
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-        InitializeComponent(); DataContext = viewModel;
+        InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
+        DataContext = viewModel;
         Loaded += LoadedWindow; Closing += ClosingWindow; Closed += ClosedWindow;
         _viewModel.PruefungAngefordert += OpenReview;
     }

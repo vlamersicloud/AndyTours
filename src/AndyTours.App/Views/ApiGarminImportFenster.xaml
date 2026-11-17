@@ -2,21 +2,73 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:AndyTours.App.Views"
-        Title="Garmin-Importstatus" Width="1000" Height="620" MinWidth="700" MinHeight="460"
-        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE">
+        Title="Garmin-Importstatus" Width="1000" Height="620" MinWidth="700" MinHeight="460" ResizeMode="CanResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE" Background="{StaticResource ApiFlaeche}">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="VisibleWhenTrue" />
         <local:GarminKandidatStatusConverter x:Key="CandidateStatusConverter"/>
         <local:DauerConverter x:Key="DurationConverter"/>
     </Window.Resources>
-    <Grid Margin="18">
-        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-        <StackPanel Grid.Row="0"><TextBlock Text="Garmin-Download" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="Der Auftrag wird serverseitig verarbeitet und läuft auch nach dem Schließen dieses Fensters weiter." TextWrapping="Wrap" Margin="0,6,0,0"/></StackPanel>
-        <Border Grid.Row="1" Padding="12" Margin="0,14,0,10" Background="#F3F6F8" CornerRadius="4"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel Grid.Column="0"><TextBlock Text="{Binding StatusText}" FontSize="16" FontWeight="SemiBold"/><TextBlock Text="{Binding Auftrag.JobId, StringFormat=Auftrags-ID: {0}}" Margin="0,4,0,0"/><TextBlock Text="{Binding Auftrag.Paketnummer, StringFormat=Paket: {0}}" Margin="0,2,0,0"/><TextBlock Text="{Binding WarnungenText}" TextWrapping="Wrap" Margin="0,5,0,0"/></StackPanel><StackPanel Grid.Column="1" HorizontalAlignment="Right"><TextBlock Text="{Binding Auftrag.Bearbeitet, StringFormat=Bearbeitet: {0}}"/><TextBlock Text="{Binding Auftrag.Bereit, StringFormat=Prüfbereit: {0}}" Margin="0,3,0,0"/><TextBlock Text="{Binding Auftrag.Importiert, StringFormat=Importiert: {0}}" Margin="0,3,0,0"/><TextBlock Text="{Binding Gesamt, StringFormat=Kandidaten gesamt: {0}}" Margin="0,3,0,0"/></StackPanel></Grid></Border>
-        <TextBlock Grid.Row="2" Text="FIT-Dateien können geprüft und ausgewählte Touren atomar übernommen werden. Übersprungene Kandidaten und Originaldateien bleiben erhalten." TextWrapping="Wrap" Margin="0,0,0,8"/>
-        <DataGrid Grid.Row="3" ItemsSource="{Binding Kandidaten}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" EnableRowVirtualization="True" ScrollViewer.VerticalScrollBarVisibility="Auto" HeadersVisibility="Column"><DataGrid.Columns><DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=d}" Width="110"/><DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/><DataGridTextColumn Header="Distanz (km)" Binding="{Binding DistanzKm, StringFormat=F1}" Width="120"/><DataGridTextColumn Header="Fahrzeit" Binding="{Binding FahrzeitSekunden, Converter={StaticResource DurationConverter}}" Width="120"/><DataGridTextColumn Header="Status" Binding="{Binding Status, Converter={StaticResource CandidateStatusConverter}}" Width="140"/></DataGrid.Columns></DataGrid>
-        <TextBlock Grid.Row="4" Text="{Binding Status}" TextWrapping="Wrap" Margin="0,8,0,0"/>
-        <Grid Grid.Row="5" Margin="0,10,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ProgressBar Grid.Column="0" Width="90" Height="4" IsIndeterminate="{Binding Laedt}" Visibility="{Binding Laedt, Converter={StaticResource VisibleWhenTrue}}" VerticalAlignment="Center" Margin="0,0,12,0"/><WrapPanel Grid.Column="1" HorizontalAlignment="Right"><Button Content="Starten" Command="{Binding StartenCommand}" Padding="10,5" Margin="0,0,6,6"/><Button Content="Aktualisieren" Command="{Binding LadenAktuellenCommand}" Padding="10,5" Margin="0,0,6,6"/><Button Content="Fortsetzen" Command="{Binding FortsetzenCommand}" Padding="10,5" Margin="0,0,6,6"/><Button Content="Abbrechen" Command="{Binding AbbrechenCommand}" Padding="10,5" Margin="0,0,6,6"/><Button Content="Vorige" Command="{Binding VorigeSeiteCommand}" Padding="10,5" Margin="0,0,6,6"/><Button Content="Nächste" Command="{Binding NaechsteSeiteCommand}" Padding="10,5" Margin="0,0,6,6"/><Button Content="FIT prüfen / übernehmen…" Command="{Binding PruefenCommand}" Padding="10,5" Margin="0,0,0,6"/></WrapPanel></Grid>
+    <!-- Aufbau: Auftragsübersicht und Kandidaten rollen; Aktionen bleiben rechts im festen, umbrechenden Footer. -->
+    <Grid Margin="20">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="Garmin-Download" Style="{StaticResource ApiDialogTitel}"/>
+            <TextBlock Text="Der Auftrag wird serverseitig verarbeitet und läuft auch nach dem Schließen dieses Fensters weiter." Style="{StaticResource ApiErklaerung}"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <Border Style="{StaticResource ApiKartenrahmen}" Margin="0,0,0,10">
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="{Binding StatusText}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding Auftrag.JobId, StringFormat=Auftrags-ID: {0}}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding Auftrag.Paketnummer, StringFormat=Paket: {0}}" Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding WarnungenText}" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding Auftrag.Bearbeitet, StringFormat=Bearbeitet: {0}}"/>
+                            <TextBlock Text="{Binding Auftrag.Bereit, StringFormat=Prüfbereit: {0}}" Margin="0,3,0,0"/>
+                            <TextBlock Text="{Binding Auftrag.Importiert, StringFormat=Importiert: {0}}" Margin="0,3,0,0"/>
+                            <TextBlock Text="{Binding Gesamt, StringFormat=Kandidaten gesamt: {0}}" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <TextBlock Text="FIT-Dateien können geprüft und ausgewählte Touren atomar übernommen werden. Übersprungene Kandidaten und Originaldateien bleiben erhalten."
+                           Style="{StaticResource ApiErklaerung}" Margin="0,0,0,10"/>
+                <Grid MinHeight="180">
+                    <DataGrid Style="{StaticResource ApiTabelle}" ItemsSource="{Binding Kandidaten}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                              EnableRowVirtualization="True" ScrollViewer.VerticalScrollBarVisibility="Auto" HeadersVisibility="Column" MaxHeight="420">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Datum" Binding="{Binding Datum, StringFormat=d}" Width="110"/>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="Distanz (km)" Binding="{Binding DistanzKm, StringFormat=F1}" Width="120"/>
+                            <DataGridTextColumn Header="Fahrzeit" Binding="{Binding FahrzeitSekunden, Converter={StaticResource DurationConverter}}" Width="120"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status, Converter={StaticResource CandidateStatusConverter}}" Width="140"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Background="White" Padding="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers>
+                            <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding Kandidaten.Count}" Value="0"/><Condition Binding="{Binding Laedt}" Value="False"/></MultiDataTrigger.Conditions><Setter Property="Visibility" Value="Visible"/></MultiDataTrigger>
+                        </Style.Triggers></Style></Border.Style>
+                        <TextBlock Text="Keine Kandidaten angezeigt." Style="{StaticResource ApiErklaerung}"/>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+        <TextBlock Grid.Row="2" Text="{Binding Status}" Style="{StaticResource ApiStatus}" Margin="0,9,0,0"/>
+        <Grid Grid.Row="3" Margin="0,10,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <ProgressBar Grid.Column="0" Width="90" Height="4" IsIndeterminate="{Binding Laedt}" Visibility="{Binding Laedt, Converter={StaticResource VisibleWhenTrue}}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+            <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
+                <Button Content="Starten" Command="{Binding StartenCommand}" Style="{StaticResource ApiAktion}"/>
+                <Button Content="Aktualisieren" Command="{Binding LadenAktuellenCommand}" Style="{StaticResource ApiAktion}"/>
+                <Button Content="Fortsetzen" Command="{Binding FortsetzenCommand}" Style="{StaticResource ApiAktion}"/>
+                <Button Content="Abbrechen" Command="{Binding AbbrechenCommand}" Style="{StaticResource ApiAktion}"/>
+                <Button Content="Vorige" Command="{Binding VorigeSeiteCommand}" Style="{StaticResource ApiAktion}"/>
+                <Button Content="Nächste" Command="{Binding NaechsteSeiteCommand}" Style="{StaticResource ApiAktion}"/>
+                <Button Content="FIT prüfen / übernehmen…" Command="{Binding PruefenCommand}" Style="{StaticResource ApiPrimaeraktion}" Margin="0"/>
+            </WrapPanel>
+        </Grid>
         <Grid.Style><Style TargetType="Grid"><Style.Triggers><DataTrigger Binding="{Binding Aendert}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></Grid.Style>
     </Grid>
 </Window>

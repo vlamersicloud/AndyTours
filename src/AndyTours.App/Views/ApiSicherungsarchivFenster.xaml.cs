@@ -13,6 +13,7 @@ public partial class ApiSicherungsarchivFenster : Window, IDisposable
     {
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
         DataContext = _viewModel;
         Closing += ClosingWindow;
         Closed += ClosedWindow;

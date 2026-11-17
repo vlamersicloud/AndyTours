@@ -7,6 +7,7 @@ public sealed class ApiSicherungsarchivUiVertragTests
 {
     private static readonly XNamespace Wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
     private static readonly string DialogXaml = ReadResource("AndyTours.ApiSicherungsarchivFenster.xaml");
+    private static readonly string Styles = ReadResource("AndyTours.ApiOberflaeche.xaml");
     private static readonly string DialogCode = ReadResource("AndyTours.ApiSicherungsarchivFenster.xaml.cs");
     private static readonly string MainXaml = ReadResource("AndyTours.ApiHauptfenster.xaml");
     private static readonly string MainCode = ReadResource("AndyTours.ApiHauptfenster.xaml.cs");
@@ -18,7 +19,7 @@ public sealed class ApiSicherungsarchivUiVertragTests
     {
         var document = XDocument.Parse(DialogXaml);
         Assert.NotNull(document.Root);
-        Assert.NotNull(document.Root!.Element(Wpf + "ScrollViewer"));
+        Assert.NotEmpty(document.Descendants(Wpf + "ScrollViewer"));
         Assert.Single(document.Descendants(Wpf + "Button"),
             button => (string?)button.Attribute("Command") == "{Binding ErstellenCommand}");
         Assert.Contains("Vollarchiv auf dem Server", DialogXaml, StringComparison.Ordinal);
@@ -33,9 +34,11 @@ public sealed class ApiSicherungsarchivUiVertragTests
             Assert.Contains(binding, DialogXaml, StringComparison.Ordinal);
         }
 
-        Assert.DoesNotContain("TextBox", DialogXaml, StringComparison.Ordinal);
+        var hashField = Assert.Single(document.Descendants(Wpf + "TextBox"));
+        Assert.Equal("{StaticResource ApiHashFeld}", (string?)hashField.Attribute("Style"));
+        Assert.Contains("Setter Property=\"IsReadOnly\" Value=\"True\"", Styles, StringComparison.Ordinal);
+        Assert.Contains("Setter Property=\"TextWrapping\" Value=\"Wrap\"", Styles, StringComparison.Ordinal);
         Assert.DoesNotContain("Loaded=", DialogXaml, StringComparison.Ordinal);
-        Assert.DoesNotContain("IsReadOnly", DialogXaml, StringComparison.Ordinal);
         Assert.Contains("Binding Status, Mode=OneWay", DialogXaml, StringComparison.Ordinal);
         Assert.Contains("Binding VorgangsId, Mode=OneWay", DialogXaml, StringComparison.Ordinal);
     }

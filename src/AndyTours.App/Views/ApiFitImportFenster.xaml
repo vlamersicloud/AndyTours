@@ -2,33 +2,53 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="FIT-Datei-Import" Width="1000" Height="650" MinWidth="700" MinHeight="400"
-        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE"
-        Closing="FensterClosing" Closed="FensterClosed">
-    <Grid Margin="18">
-        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-        <StackPanel Grid.Row="0">
-            <TextBlock Text="FIT-Dateien hochladen und prüfen" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap"/>
-            <TextBlock Text="Ausgewählte Dateien bleiben in der Warteschlange. Upload-Originale werden beim Übernehmen nicht verändert." Margin="0,6,0,0" TextWrapping="Wrap"/>
+        ResizeMode="CanResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE"
+        Closing="FensterClosing" Closed="FensterClosed" Background="{StaticResource ApiFlaeche}">
+    <!-- Aufbau: Rollbarer Upload-Inhalt; Warteschlangenaktionen, Status und Schließen bleiben im festen Footer. -->
+    <Grid Margin="20">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="FIT-Dateien hochladen und prüfen" Style="{StaticResource ApiDialogTitel}"/>
+            <TextBlock Text="Ausgewählte Dateien bleiben in der Warteschlange. Upload-Originale werden beim Übernehmen nicht verändert." Style="{StaticResource ApiErklaerung}"/>
         </StackPanel>
-        <WrapPanel Grid.Row="1" Margin="0,14,0,10">
-            <Button Content="Gespeicherte Uploads laden" Command="{Binding LadenCommand}" Padding="10,5" Margin="0,0,8,6"/>
-            <Button Content="Dateien auswählen…" Click="DateienAuswaehlen" Padding="10,5" Margin="0,0,8,6">
-                <Button.Style><Style TargetType="Button"><Setter Property="IsEnabled" Value="True"/><Style.Triggers><DataTrigger Binding="{Binding Laedt}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger><DataTrigger Binding="{Binding Aendert}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger><DataTrigger Binding="{Binding EditorOffen}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></Button.Style>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <Grid MinHeight="160">
+                    <DataGrid Style="{StaticResource ApiTabelle}" ItemsSource="{Binding Dateien}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                              EnableRowVirtualization="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto" HeadersVisibility="Column" MaxHeight="420">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Datei" Binding="{Binding Dateiname, Mode=OneWay}" Width="2*"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status, Mode=OneWay}" Width="*"/>
+                            <DataGridCheckBoxColumn Header="Hochgeladen" Binding="{Binding Hochgeladen, Mode=OneWay}" Width="Auto"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Background="White" Padding="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers>
+                            <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding Dateien.Count}" Value="0"/><Condition Binding="{Binding Laedt}" Value="False"/></MultiDataTrigger.Conditions><Setter Property="Visibility" Value="Visible"/></MultiDataTrigger>
+                        </Style.Triggers></Style></Border.Style>
+                        <TextBlock Text="Keine Upload-Dateien angezeigt." Style="{StaticResource ApiErklaerung}"/>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+        <WrapPanel Grid.Row="2" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="Geräte-Dateien laden" Command="{Binding GeraeteLesenCommand}" Style="{StaticResource ApiAktion}"/>
+            <Button Content="Gespeicherte Uploads laden" Command="{Binding LadenCommand}" Style="{StaticResource ApiAktion}"/>
+            <Button Content="Dateien auswählen…" Click="DateienAuswaehlen">
+                <Button.Style><Style TargetType="Button" BasedOn="{StaticResource ApiAktion}"><Setter Property="IsEnabled" Value="True"/><Style.Triggers>
+                    <DataTrigger Binding="{Binding Laedt}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                    <DataTrigger Binding="{Binding Aendert}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                    <DataTrigger Binding="{Binding EditorOffen}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                </Style.Triggers></Style></Button.Style>
             </Button>
-            <Button Content="Hochladen" Command="{Binding HochladenCommand}" Padding="10,5" Margin="0,0,8,6"/>
-            <Button Content="FIT prüfen / übernehmen…" Command="{Binding PruefenCommand}" Padding="10,5" Margin="0,0,8,6"/>
+            <Button Content="Hochladen" Command="{Binding HochladenCommand}" Style="{StaticResource ApiAktion}"/>
+            <Button Content="FIT prüfen / übernehmen…" Command="{Binding PruefenCommand}" Style="{StaticResource ApiPrimaeraktion}"/>
         </WrapPanel>
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Dateien}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" EnableRowVirtualization="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.VerticalScrollBarVisibility="Auto" HeadersVisibility="Column">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Datei" Binding="{Binding Dateiname, Mode=OneWay}" Width="2*"/>
-                <DataGridTextColumn Header="Status" Binding="{Binding Status, Mode=OneWay}" Width="*"/>
-                <DataGridCheckBoxColumn Header="Hochgeladen" Binding="{Binding Hochgeladen, Mode=OneWay}" Width="Auto"/>
-            </DataGrid.Columns>
-        </DataGrid>
-        <TextBlock Grid.Row="3" Text="{Binding Status}" TextWrapping="Wrap" Margin="0,10,0,0"/>
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
-            <ProgressBar Width="120" Height="5" IsIndeterminate="{Binding Laedt}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-            <Button Content="Schließen" IsCancel="True" MinWidth="100" Padding="10,5"/>
-        </StackPanel>
+        <TextBlock Grid.Row="3" Text="{Binding Status}" Style="{StaticResource ApiStatus}" Margin="0,8,0,0"/>
+        <Grid Grid.Row="4" Margin="0,10,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <ProgressBar Grid.Column="0" Width="120" Height="5" IsIndeterminate="{Binding Laedt}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+            <WrapPanel Grid.Column="1" HorizontalAlignment="Right"><Button Content="Schließen" IsCancel="True" MinWidth="100" Padding="12,7" Margin="0"/></WrapPanel>
+        </Grid>
     </Grid>
 </Window>

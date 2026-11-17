@@ -13,6 +13,7 @@ public partial class ApiSicherungseinstellungenFenster : Window, IDisposable
     {
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
         DataContext = _viewModel;
         Loaded += LoadedWindow;
         Closing += ClosingWindow;

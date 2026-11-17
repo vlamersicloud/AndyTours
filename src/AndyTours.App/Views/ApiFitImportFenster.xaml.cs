@@ -17,6 +17,7 @@ public partial class ApiFitImportFenster : Window, IDisposable
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _geraeteBeimStartLesen = geraeteBeimStartLesen;
         InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
         DataContext = _viewModel;
         _viewModel.PruefungAngefordert += PruefungAngefordert;
         Loaded += FensterGeladen;

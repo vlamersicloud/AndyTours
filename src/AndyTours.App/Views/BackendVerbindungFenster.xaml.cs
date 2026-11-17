@@ -22,6 +22,7 @@ public partial class BackendVerbindungFenster : Window, IDisposable
     public BackendVerbindungFenster(string backendProgrammPfad)
     {
         InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this);
         _backendProgrammPfad = Path.GetFullPath(backendProgrammPfad);
         DatenordnerText.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AndyTours");
         Closing += FensterWirdGeschlossen;

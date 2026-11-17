@@ -36,6 +36,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     {
         _viewModel = viewModel;
         InitializeComponent();
+        AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this, groesseUmrechnen: false);
         DataContext = viewModel;
         BackendAdresseText.Text = backendAdresse.GetLeftPart(UriPartial.Authority);
         Loaded += FensterGeladen;

@@ -1,54 +1,49 @@
 <Window x:Class="AndyTours.App.Views.ApiSicherungseinstellungenFenster"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Sicherungseinstellungen" Width="560" SizeToContent="Height" ResizeMode="CanResize"
-        MinWidth="420" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE">
-    <ScrollViewer VerticalScrollBarVisibility="Auto"><Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0">
-            <TextBlock Text="Sicherungsrichtlinie" FontSize="18" FontWeight="SemiBold"/>
+        Title="Sicherungseinstellungen" Width="560" Height="560" MinWidth="420" MinHeight="360" ResizeMode="CanResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE" Background="{StaticResource ApiFlaeche}">
+    <!-- Aufbau: Eingaben rollen; Status und validierungsgesteuerte Aktionen bleiben fest sichtbar. -->
+    <Grid Margin="20">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="Sicherungsrichtlinie" Style="{StaticResource ApiDialogTitel}"/>
             <TextBlock Text="Das Intervall zählt Programmstarts des Backends, nicht Clientverbindungen. Der konfigurierte Serverordner bleibt unverändert. Diese Einstellungen führen keine Sicherung oder Wiederherstellung aus."
-                       TextWrapping="Wrap" Margin="0,6,0,12"/>
-            <TextBlock Text="Intervall (Backendstarts, 1–99)"/>
-            <TextBox x:Name="IntervallFeld" Text="{Binding IntervallEntwurf, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}"
-                     Margin="0,3,0,10" MinWidth="180"/>
-            <TextBlock Text="Höchstzahl aufzubewahrender Sicherungen (1–99)"/>
-            <TextBox x:Name="HoechstzahlFeld" Text="{Binding HoechstzahlEntwurf, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}"
-                     Margin="0,3,0,10" MinWidth="180"/>
-            <TextBlock Text="Backendstarts seit letzter Sicherung"/>
-            <TextBlock Text="{Binding StartsSeitSicherung, Mode=OneWay}" Margin="0,3,0,6"/>
-            <TextBlock Text="Bitte für beide Werte eine ganze Zahl von 1 bis 99 eingeben."
-                       Foreground="#8A3B12" TextWrapping="Wrap">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Visibility" Value="Collapsed"/>
-                        <Style.Triggers>
+                       Style="{StaticResource ApiErklaerung}"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Border Style="{StaticResource ApiKartenrahmen}">
+                <StackPanel>
+                    <TextBlock Text="Intervall (Backendstarts, 1–99)" FontWeight="SemiBold"/>
+                    <TextBox x:Name="IntervallFeld" Text="{Binding IntervallEntwurf, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}"
+                             Margin="0,4,0,12" MinWidth="180"/>
+                    <TextBlock Text="Höchstzahl aufzubewahrender Sicherungen (1–99)" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBox x:Name="HoechstzahlFeld" Text="{Binding HoechstzahlEntwurf, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}"
+                             Margin="0,4,0,12" MinWidth="180"/>
+                    <TextBlock Text="Backendstarts seit letzter Sicherung" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding StartsSeitSicherung, Mode=OneWay}" Margin="0,4,0,6"/>
+                    <TextBlock Text="Bitte für beide Werte eine ganze Zahl von 1 bis 99 eingeben." Foreground="#8A3B12" TextWrapping="Wrap">
+                        <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers>
                             <DataTrigger Binding="{Binding EingabenGueltig}" Value="False"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
-        </StackPanel>
-        <TextBlock Grid.Row="1" Text="{Binding Status, Mode=OneWay}" TextWrapping="Wrap" Margin="0,10,0,0"/>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="Speichern" Command="{Binding SpeichernCommand}" Padding="10,5" Margin="0,0,8,0">
-                <Button.Style><Style TargetType="Button"><Setter Property="IsEnabled" Value="True"/><Style.Triggers>
-                    <DataTrigger Binding="{Binding (Validation.HasError), ElementName=IntervallFeld}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
-                    <DataTrigger Binding="{Binding (Validation.HasError), ElementName=HoechstzahlFeld}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
-                </Style.Triggers></Style></Button.Style>
-            </Button>
-            <Button Content="Neu laden" Command="{Binding LadenCommand}" Padding="10,5" Margin="0,0,8,0"/>
-            <Button Content="Schließen" IsCancel="True" Padding="10,5"/>
-        </StackPanel>
-        <Grid.Style>
-            <Style TargetType="Grid">
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding Bedienbar}" Value="False"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
-                </Style.Triggers>
-            </Style>
-        </Grid.Style>
-    </Grid></ScrollViewer>
+                        </Style.Triggers></Style></TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+        <Grid Grid.Row="2" Margin="0,12,0,0">
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Text="{Binding Status, Mode=OneWay}" Style="{StaticResource ApiStatus}" Margin="0,0,0,10"/>
+            <WrapPanel Grid.Row="1" HorizontalAlignment="Right">
+                <Button Content="Speichern" Command="{Binding SpeichernCommand}">
+                    <Button.Style><Style TargetType="Button" BasedOn="{StaticResource ApiPrimaeraktion}"><Setter Property="IsEnabled" Value="True"/><Style.Triggers>
+                        <DataTrigger Binding="{Binding (Validation.HasError), ElementName=IntervallFeld}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                        <DataTrigger Binding="{Binding (Validation.HasError), ElementName=HoechstzahlFeld}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                    </Style.Triggers></Style></Button.Style>
+                </Button>
+                <Button Content="Neu laden" Command="{Binding LadenCommand}" Style="{StaticResource ApiAktion}"/>
+                <Button Content="Schließen" IsCancel="True" Padding="12,7"/>
+            </WrapPanel>
+        </Grid>
+        <Grid.Style><Style TargetType="Grid"><Style.Triggers><DataTrigger Binding="{Binding Bedienbar}" Value="False"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></Grid.Style>
+    </Grid>
 </Window>

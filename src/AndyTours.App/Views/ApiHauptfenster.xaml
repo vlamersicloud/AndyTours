@@ -4,7 +4,7 @@
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:local="clr-namespace:AndyTours.App.Views"
         Title="AndyTours · API-Übersicht" Width="1200" Height="820" MinWidth="900" MinHeight="620"
-        Language="de-DE" Background="#F4F6F8" WindowStartupLocation="CenterScreen">
+        Language="de-DE" Background="{StaticResource ApiFlaeche}" WindowStartupLocation="CenterScreen">
     <Window.InputBindings>
         <KeyBinding Key="R" Modifiers="Control" Command="{Binding AktualisierenCommand}" />
     </Window.InputBindings>
@@ -60,75 +60,83 @@
             </Style.Triggers>
         </Style>
     </Window.Resources>
-    <Grid Margin="24">
+    <!-- Aufbau: Titel und Menü getrennt; Filter kompakt, Diagramm scrollt intern, Tourentabelle bleibt virtualisiert. -->
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <DockPanel Grid.Row="0" Margin="0,0,0,16">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock x:Name="BackendAdresseText" VerticalAlignment="Center" Foreground="#637083" Margin="0,0,14,0"/>
-                <Menu VerticalAlignment="Center" Background="Transparent">
-                    <MenuItem Header="Datei" Padding="10,6">
-                        <MenuItem Header="Tour planen…" Click="TourPlanen_Click"/>
-                        <MenuItem Header="Routing-Einstellungen…" Click="RoutingKonfiguration_Click"/>
-                        <MenuItem Header="Overlays…" Click="OverlaysOeffnen_Click"/>
-                        <MenuItem Header="FIT-Dateien importieren…" Click="FitDateienImportieren_Click"/>
-                        <MenuItem Header="Vom Garmin-Gerät importieren…" Click="GarminGeraetImportieren_Click"/>
-                    </MenuItem>
-                    <MenuItem Header="Extras" Padding="10,6">
-                        <MenuItem Header="Equipment-Einsatz…" Click="EquipmentEinsatz_Click"/>
-                        <MenuItem Header="Sicherungseinstellungen…" Click="Sicherungseinstellungen_Click"/>
-                        <MenuItem Header="Vollarchiv erstellen / fortsetzen…" Click="Sicherungsarchiv_Click"/>
-                        <MenuItem Header="Wiederherstellungsvorschau…" Click="Wiederherstellungsvorschau_Click"/>
-                    </MenuItem>
-                    <MenuItem Header="Stammdaten" Padding="10,6">
-                        <MenuItem Header="Aktivitäten…" Click="AktivitaetenVerwalten_Click"/>
-                        <MenuItem Header="Kategorien…" Click="KategorienVerwalten_Click"/>
-                        <MenuItem Header="Equipment…" Click="EquipmentsVerwalten_Click"/>
-                        <MenuItem Header="Wartungen und Alarme…" Click="WartungenVerwalten_Click"/>
-                        <MenuItem Header="Trainingsbereiche…" Click="TrainingsbereicheVerwalten_Click"/>
-                        <MenuItem Header="Tätigkeiten…" Click="TaetigkeitenVerwalten_Click"/>
-                        <MenuItem Header="Saisonziele…" Click="SaisonzieleVerwalten_Click"/>
-                        <MenuItem Header="Persönliche Daten…" Click="ProfilBearbeiten_Click"/>
-                    </MenuItem>
-                    <MenuItem Header="Garmin Connect" Padding="10,6">
-                        <MenuItem Header="Downloadaufträge…" Click="GarminImport_Click"/>
-                        <MenuItem Header="Garmin Connect – Einstellungen…" Click="GarminEinstellungen_Click"/>
-                    </MenuItem>
-                </Menu>
-            </StackPanel>
-            <TextBlock Text="AndyTours" FontSize="26" FontWeight="Bold" Foreground="#18324F"/>
+        <DockPanel Grid.Row="0" Margin="0,0,0,8" LastChildFill="False">
+            <TextBlock x:Name="BackendAdresseText" DockPanel.Dock="Right" VerticalAlignment="Center" Foreground="#637083" TextTrimming="CharacterEllipsis" MaxWidth="420"/>
+            <TextBlock Text="AndyTours" FontSize="24" FontWeight="SemiBold" Foreground="#26384D" VerticalAlignment="Center"/>
         </DockPanel>
-        <Border Grid.Row="1" Background="#E8F1FB" CornerRadius="8" Padding="12" Margin="0,0,0,16">
+        <Border Grid.Row="1" BorderBrush="#C2C9D1" BorderThickness="0,0,0,1" Padding="0,0,0,4" Margin="0,0,0,8">
+            <Menu VerticalAlignment="Center" Background="Transparent">
+                <MenuItem Header="Datei" Padding="10,6">
+                    <MenuItem Header="Tour planen…" Click="TourPlanen_Click"/>
+                    <MenuItem Header="Routing-Einstellungen…" Click="RoutingKonfiguration_Click"/>
+                    <MenuItem Header="Overlays…" Click="OverlaysOeffnen_Click"/>
+                    <MenuItem Header="FIT-Dateien importieren…" Click="FitDateienImportieren_Click"/>
+                    <MenuItem Header="Vom Garmin-Gerät importieren…" Click="GarminGeraetImportieren_Click"/>
+                </MenuItem>
+                <MenuItem Header="Extras" Padding="10,6">
+                    <MenuItem Header="Equipment-Einsatz…" Click="EquipmentEinsatz_Click"/>
+                    <MenuItem Header="Sicherungseinstellungen…" Click="Sicherungseinstellungen_Click"/>
+                    <MenuItem Header="Vollarchiv erstellen / fortsetzen…" Click="Sicherungsarchiv_Click"/>
+                    <MenuItem Header="Wiederherstellungsvorschau…" Click="Wiederherstellungsvorschau_Click"/>
+                </MenuItem>
+                <MenuItem Header="Stammdaten" Padding="10,6">
+                    <MenuItem Header="Aktivitäten…" Click="AktivitaetenVerwalten_Click"/>
+                    <MenuItem Header="Kategorien…" Click="KategorienVerwalten_Click"/>
+                    <MenuItem Header="Equipment…" Click="EquipmentsVerwalten_Click"/>
+                    <MenuItem Header="Wartungen und Alarme…" Click="WartungenVerwalten_Click"/>
+                    <MenuItem Header="Trainingsbereiche…" Click="TrainingsbereicheVerwalten_Click"/>
+                    <MenuItem Header="Tätigkeiten…" Click="TaetigkeitenVerwalten_Click"/>
+                    <MenuItem Header="Saisonziele…" Click="SaisonzieleVerwalten_Click"/>
+                    <MenuItem Header="Persönliche Daten…" Click="ProfilBearbeiten_Click"/>
+                </MenuItem>
+                <MenuItem Header="Garmin Connect" Padding="10,6">
+                    <MenuItem Header="Downloadaufträge…" Click="GarminImport_Click"/>
+                    <MenuItem Header="Garmin Connect – Einstellungen…" Click="GarminEinstellungen_Click"/>
+                </MenuItem>
+            </Menu>
+        </Border>
+        <Border Grid.Row="2" Background="White" BorderBrush="#C2C9D1" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,0,0,12">
             <TextBlock Text="API_FIRST – Migrationsansicht; weitere Funktionen werden übernommen"
                        Foreground="#245B91" FontWeight="SemiBold" TextWrapping="Wrap"/>
         </Border>
-        <WrapPanel Grid.Row="2" Margin="0,0,0,16" IsEnabled="{Binding FilterControlsEnabled}">
-            <StackPanel Width="160" Margin="0,0,12,8"><TextBlock Text="Von" Foreground="#637083"/><DatePicker SelectedDate="{Binding VonDatum, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/></StackPanel>
-            <StackPanel Width="160" Margin="0,0,12,8"><TextBlock Text="Bis" Foreground="#637083"/><DatePicker SelectedDate="{Binding BisDatum, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/></StackPanel>
-            <StackPanel Width="155" Margin="0,0,12,8"><TextBlock Text="Gruppierung" Foreground="#637083"/><ComboBox ItemsSource="{Binding RasterOptionen}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Raster}" Margin="0,5,0,0"/></StackPanel>
-            <StackPanel Width="155" Margin="0,0,12,8"><TextBlock Text="Kennzahl" Foreground="#637083"/><ComboBox ItemsSource="{Binding KennzahlOptionen}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Kennzahl}" Margin="0,5,0,0"/></StackPanel>
-            <StackPanel Width="170" Margin="0,0,12,8"><TextBlock Text="Aktivität" Foreground="#637083"/><ComboBox ItemsSource="{Binding AktivitaetsOptionen}" DisplayMemberPath="Name" SelectedItem="{Binding AktivitaetAuswahl, Mode=TwoWay}" Margin="0,5,0,0"/></StackPanel>
-            <StackPanel Width="170" Margin="0,0,12,8"><TextBlock Text="Kategorie" Foreground="#637083"/><ComboBox ItemsSource="{Binding KategorieOptionen}" DisplayMemberPath="Name" SelectedItem="{Binding KategorieAuswahl, Mode=TwoWay}" Margin="0,5,0,0"/></StackPanel>
-            <Button Content="Aktualisieren" Command="{Binding AktualisierenCommand}" Padding="18,8" VerticalAlignment="Bottom" Margin="0,0,0,8" Background="#246DB2" Foreground="White" FontWeight="SemiBold"/>
-        </WrapPanel>
-        <Grid Grid.Row="3">
+        <!-- Filter sind einklappbar; der begrenzte Innenbereich bleibt erreichbar, ohne die Kennzahlen zu verdrängen. -->
+        <Border Grid.Row="3" Style="{StaticResource ApiKartenrahmen}" Padding="8" Margin="0,0,0,10">
+            <Expander Header="Filter" IsExpanded="False" IsEnabled="{Binding FilterControlsEnabled}">
+                <ScrollViewer MaxHeight="136" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <WrapPanel Margin="8,4,8,0">
+                        <StackPanel Width="160" Margin="0,0,12,8"><TextBlock Text="Von" Foreground="#637083"/><DatePicker SelectedDate="{Binding VonDatum, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/></StackPanel>
+                        <StackPanel Width="160" Margin="0,0,12,8"><TextBlock Text="Bis" Foreground="#637083"/><DatePicker SelectedDate="{Binding BisDatum, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0"/></StackPanel>
+                        <StackPanel Width="155" Margin="0,0,12,8"><TextBlock Text="Gruppierung" Foreground="#637083"/><ComboBox ItemsSource="{Binding RasterOptionen}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Raster}" Margin="0,5,0,0"/></StackPanel>
+                        <StackPanel Width="155" Margin="0,0,12,8"><TextBlock Text="Kennzahl" Foreground="#637083"/><ComboBox ItemsSource="{Binding KennzahlOptionen}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Kennzahl}" Margin="0,5,0,0"/></StackPanel>
+                        <StackPanel Width="170" Margin="0,0,12,8"><TextBlock Text="Aktivität" Foreground="#637083"/><ComboBox ItemsSource="{Binding AktivitaetsOptionen}" DisplayMemberPath="Name" SelectedItem="{Binding AktivitaetAuswahl, Mode=TwoWay}" Margin="0,5,0,0"/></StackPanel>
+                        <StackPanel Width="170" Margin="0,0,12,8"><TextBlock Text="Kategorie" Foreground="#637083"/><ComboBox ItemsSource="{Binding KategorieOptionen}" DisplayMemberPath="Name" SelectedItem="{Binding KategorieAuswahl, Mode=TwoWay}" Margin="0,5,0,0"/></StackPanel>
+                        <Button Content="Aktualisieren" Command="{Binding AktualisierenCommand}" Style="{StaticResource ApiPrimaeraktion}" VerticalAlignment="Bottom" Margin="0,0,0,8"/>
+                    </WrapPanel>
+                </ScrollViewer>
+            </Expander>
+        </Border>
+        <Grid Grid.Row="4">
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-            <UniformGrid Columns="4" Margin="0,0,0,16">
-                <Border Background="White" CornerRadius="8" Padding="16" Margin="0,0,12,0"><StackPanel><TextBlock Text="Distanz" Foreground="#637083"/><TextBlock Text="{Binding DistanzKmText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
-                <Border Background="White" CornerRadius="8" Padding="16" Margin="0,0,12,0"><StackPanel><TextBlock Text="Höhenmeter" Foreground="#637083"/><TextBlock Text="{Binding HoehenmeterText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
-                <Border Background="White" CornerRadius="8" Padding="16" Margin="0,0,12,0"><StackPanel><TextBlock Text="Fahrzeit" Foreground="#637083"/><TextBlock Text="{Binding FahrzeitText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
-                <Border Background="White" CornerRadius="8" Padding="16"><StackPanel><TextBlock Text="Touren" Foreground="#637083"/><TextBlock Text="{Binding AnzahlText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
+            <UniformGrid Columns="4" Margin="0,0,0,12">
+                <Border Style="{StaticResource ApiKartenrahmen}" Padding="14" Margin="0,0,12,0"><StackPanel><TextBlock Text="Distanz" Foreground="#637083"/><TextBlock Text="{Binding DistanzKmText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
+                <Border Style="{StaticResource ApiKartenrahmen}" Padding="14" Margin="0,0,12,0"><StackPanel><TextBlock Text="Höhenmeter" Foreground="#637083"/><TextBlock Text="{Binding HoehenmeterText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
+                <Border Style="{StaticResource ApiKartenrahmen}" Padding="14" Margin="0,0,12,0"><StackPanel><TextBlock Text="Fahrzeit" Foreground="#637083"/><TextBlock Text="{Binding FahrzeitText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
+                <Border Style="{StaticResource ApiKartenrahmen}" Padding="14"><StackPanel><TextBlock Text="Touren" Foreground="#637083"/><TextBlock Text="{Binding AnzahlText}" FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
             </UniformGrid>
-            <TabControl Grid.Row="1" Background="White">
+            <TabControl Grid.Row="1" Background="#F0F2F5" Padding="8">
                 <TabItem Header="Übersicht">
-                    <Grid Margin="16">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><Grid Margin="16">
                         <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                        <oxy:PlotView Model="{Binding Diagramm}" MinHeight="250"/>
+                        <Border Background="White" BorderBrush="#C2C9D1" BorderThickness="1" CornerRadius="4" Padding="8"><oxy:PlotView Model="{Binding Diagramm}" MinHeight="190"/></Border>
                         <TextBlock Grid.Row="1" Text="{Binding SaisonText, Mode=OneWay}" TextWrapping="Wrap" Margin="0,12,0,0"/>
                         <TextBlock Grid.Row="2" Text="{Binding ZukunftsHinweis}" Foreground="#875A12" TextWrapping="Wrap" Margin="0,12,0,0"/>
-                    </Grid>
+                    </Grid></ScrollViewer>
                 </TabItem>
                 <TabItem Header="Bestleistungen">
                     <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="16">
@@ -170,7 +178,7 @@
                             <Button Content="Pulsanalyse laden" Command="{Binding PulsdatenLadenCommand}" Padding="10,5" Margin="0,0,8,8"/>
                         </WrapPanel>
                         <oxy:PlotView Grid.Row="3" Model="{Binding PulsDiagramm}" MinHeight="180" Margin="0,0,0,8"/>
-                        <DataGrid Grid.Row="4" ItemsSource="{Binding Pulszeilen, Mode=OneWay}" IsReadOnly="True"
+                        <DataGrid Grid.Row="4" Style="{StaticResource ApiTabelle}" ItemsSource="{Binding Pulszeilen, Mode=OneWay}" IsReadOnly="True"
                                   AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
                                   EnableRowVirtualization="True" EnableColumnVirtualization="True" MinHeight="140" HeadersVisibility="Column">
                             <DataGrid.Columns>
@@ -187,35 +195,46 @@
                 </TabItem>
                 <TabItem Header="Touren">
                     <DockPanel Margin="12">
-                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8" IsEnabled="{Binding FilterControlsEnabled}">
-                            <TextBlock Text="Nur Tourentabelle – Kennzahlen und Rekorde bleiben unverändert." Foreground="#637083" Margin="0,0,0,6"/>
-                            <WrapPanel>
-                                <StackPanel Width="165" Margin="0,0,8,6"><TextBlock Text="Equipment"/><ComboBox ItemsSource="{Binding Tabellenfilter.Equipments}" DisplayMemberPath="Name" SelectedItem="{Binding Tabellenfilter.AusgewaehltesEquipment, Mode=TwoWay}" IsSynchronizedWithCurrentItem="False"/></StackPanel>
-                                <StackPanel Width="165" Margin="0,0,8,6"><TextBlock Text="Trainingsbereich"/><ComboBox ItemsSource="{Binding Tabellenfilter.Trainingsbereiche}" DisplayMemberPath="Name" SelectedItem="{Binding Tabellenfilter.AusgewaehlterBereich, Mode=TwoWay}" IsSynchronizedWithCurrentItem="False"/></StackPanel>
-                                <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="km von"/><TextBox Text="{Binding Tabellenfilter.DistanzVon, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.DistanzVonFehlerhaft}"/></StackPanel>
-                                <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="km bis"/><TextBox Text="{Binding Tabellenfilter.DistanzBis, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.DistanzBisFehlerhaft}"/></StackPanel>
-                                <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="hm von"/><TextBox Text="{Binding Tabellenfilter.HoehenmeterVon, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.HoehenmeterVonFehlerhaft}"/></StackPanel>
-                                <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="hm bis"/><TextBox Text="{Binding Tabellenfilter.HoehenmeterBis, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.HoehenmeterBisFehlerhaft}"/></StackPanel>
-                                <StackPanel Width="180" Margin="0,0,8,6"><TextBlock Text="Suche"/><TextBox Text="{Binding Tabellenfilter.Suchbegriff, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
-                                <Button Content="Filter zurücksetzen" Command="{Binding Tabellenfilter.ResetZuruecksetzenCommand}" Margin="0,0,8,6" VerticalAlignment="Bottom"/>
-                                <Button Content="Anwenden" Command="{Binding AktualisierenCommand}" Margin="0,0,8,6" VerticalAlignment="Bottom"/>
-                            </WrapPanel>
-                            <TextBlock Text="Ungültige Zahlenbereiche sind nach Core-Regel inaktiv." Foreground="#875A12"/>
-                        </StackPanel>
-                        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10"><TextBlock Text="Ausgewählte Zeilen (diese Seite):" VerticalAlignment="Center"/><TextBlock Text="{Binding AuswahlAnzahl, Mode=OneWay}" VerticalAlignment="Center" Margin="4,0,12,0"/>
-                            <Button Content="Neue Tour" Command="{Binding NeueTourCommand}" Padding="12,6" Margin="0,0,8,0"/>
-                            <Button Content="Bearbeiten" Command="{Binding TourBearbeitenCommand}" Padding="12,6" Margin="0,0,8,0"/>
-                            <Button Content="Kopieren" Command="{Binding TourKopierenCommand}" Padding="12,6" Margin="0,0,8,0"/>
-                            <Button Content="Kategorien ändern…" Click="KategorienMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Padding="12,6"/><Button Content="Aktivität ändern…" Click="AktivitaetMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Padding="12,6"/><Button Content="Equipment ändern…" Click="EquipmentMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Padding="12,6"/><Button Content="Auswahl löschen…" Click="LoeschenMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Padding="12,6"/>
-                            <Button Content="Tourdetails…" Click="TourdetailOeffnen_Click" ToolTip="Mehrere ausgewählte Touren werden als Etappen geöffnet." Padding="12,6" Margin="8,0,0,0"/>
-                        </WrapPanel>
+                        <!-- Filter und Aktionen bleiben außerhalb der Datentabelle einklappbar und begrenzt scrollbar. -->
+                        <Expander DockPanel.Dock="Top" Header="Filter und Aktionen" IsExpanded="False" Margin="0,0,0,8">
+                            <ScrollViewer MaxHeight="224" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel Margin="4">
+                                    <StackPanel IsEnabled="{Binding FilterControlsEnabled}">
+                                        <TextBlock Text="Nur Tourentabelle – Kennzahlen und Rekorde bleiben unverändert." Foreground="#637083" Margin="0,0,0,6"/>
+                                        <WrapPanel>
+                                            <StackPanel Width="165" Margin="0,0,8,6"><TextBlock Text="Equipment"/><ComboBox ItemsSource="{Binding Tabellenfilter.Equipments}" DisplayMemberPath="Name" SelectedItem="{Binding Tabellenfilter.AusgewaehltesEquipment, Mode=TwoWay}" IsSynchronizedWithCurrentItem="False"/></StackPanel>
+                                            <StackPanel Width="165" Margin="0,0,8,6"><TextBlock Text="Trainingsbereich"/><ComboBox ItemsSource="{Binding Tabellenfilter.Trainingsbereiche}" DisplayMemberPath="Name" SelectedItem="{Binding Tabellenfilter.AusgewaehlterBereich, Mode=TwoWay}" IsSynchronizedWithCurrentItem="False"/></StackPanel>
+                                            <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="km von"/><TextBox Text="{Binding Tabellenfilter.DistanzVon, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.DistanzVonFehlerhaft}"/></StackPanel>
+                                            <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="km bis"/><TextBox Text="{Binding Tabellenfilter.DistanzBis, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.DistanzBisFehlerhaft}"/></StackPanel>
+                                            <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="hm von"/><TextBox Text="{Binding Tabellenfilter.HoehenmeterVon, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.HoehenmeterVonFehlerhaft}"/></StackPanel>
+                                            <StackPanel Width="90" Margin="0,0,8,6"><TextBlock Text="hm bis"/><TextBox Text="{Binding Tabellenfilter.HoehenmeterBis, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterRangeError}" Tag="{Binding Tabellenfilter.HoehenmeterBisFehlerhaft}"/></StackPanel>
+                                            <StackPanel Width="180" Margin="0,0,8,6"><TextBlock Text="Suche"/><TextBox Text="{Binding Tabellenfilter.Suchbegriff, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                                            <Button Content="Filter zurücksetzen" Command="{Binding Tabellenfilter.ResetZuruecksetzenCommand}" Style="{StaticResource ApiFilterZuruecksetzen}" Margin="0,0,8,6" VerticalAlignment="Bottom"/>
+                                            <Button Content="Anwenden" Command="{Binding AktualisierenCommand}" Margin="0,0,8,6" VerticalAlignment="Bottom"/>
+                                        </WrapPanel>
+                                        <TextBlock Text="Ungültige Zahlenbereiche sind nach Core-Regel inaktiv." Foreground="#875A12" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,10,0,6"><TextBlock Text="Ausgewählte Zeilen (diese Seite):"/><TextBlock Text="{Binding AuswahlAnzahl, Mode=OneWay}" Margin="4,0,0,0"/></StackPanel>
+                                    <WrapPanel>
+                                        <Button Content="Neue Tour" Command="{Binding NeueTourCommand}" Style="{StaticResource ApiAktion}"/>
+                                        <Button Content="Bearbeiten" Command="{Binding TourBearbeitenCommand}" Style="{StaticResource ApiAktion}"/>
+                                        <Button Content="Kopieren" Command="{Binding TourKopierenCommand}" Style="{StaticResource ApiAktion}"/>
+                                        <Button Content="Kategorien ändern…" Click="KategorienMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Style="{StaticResource ApiAktion}"/>
+                                        <Button Content="Aktivität ändern…" Click="AktivitaetMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Style="{StaticResource ApiAktion}"/>
+                                        <Button Content="Equipment ändern…" Click="EquipmentMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Style="{StaticResource ApiAktion}"/>
+                                        <Button Content="Auswahl löschen…" Click="LoeschenMehrfach_Click" IsEnabled="{Binding HatTourenauswahl}" Style="{StaticResource ApiDestruktiveAktion}"/>
+                                        <Button Content="Tourdetails…" Click="TourdetailOeffnen_Click" ToolTip="Mehrere ausgewählte Touren werden als Etappen geöffnet." Style="{StaticResource ApiAktion}"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Expander>
                         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
                             <Button Content="← Vorherige" Command="{Binding VorherigeSeiteCommand}" Padding="12,6" Margin="0,0,10,0"/>
                             <TextBlock Text="{Binding SeitenText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <Button Content="Nächste →" Command="{Binding NaechsteSeiteCommand}" Padding="12,6"/>
                         </StackPanel>
                         <TextBlock DockPanel.Dock="Bottom" Text="{Binding TabellensummeText, Mode=OneWay}" TextWrapping="Wrap" Margin="0,8,0,0" FontWeight="SemiBold"/>
-                        <DataGrid x:Name="TourenDataGrid" ItemsSource="{Binding Touren}"
+                        <Grid><DataGrid x:Name="TourenDataGrid" Style="{StaticResource ApiTabelle}" ItemsSource="{Binding Touren}"
                                   SelectedItem="{Binding AusgewaehlteTour, Mode=TwoWay}"
                                   MouseDoubleClick="TourenDataGrid_MouseDoubleClick"
                                   SelectionChanged="TourenDataGrid_SelectionChanged"
@@ -248,13 +267,20 @@
                                 <DataGridTextColumn Header="Kommentar" SortMemberPath="Anzeige.Kommentar" Binding="{Binding Anzeige.Kommentar, Mode=OneWay}" Width="180"/>
                             </DataGrid.Columns>
                         </DataGrid>
+                            <Border Background="White" Padding="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers>
+                                    <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding Touren.Count}" Value="0"/><Condition Binding="{Binding Laedt}" Value="False"/></MultiDataTrigger.Conditions><Setter Property="Visibility" Value="Visible"/></MultiDataTrigger>
+                                </Style.Triggers></Style></Border.Style>
+                                <TextBlock Text="Keine Touren angezeigt." Style="{StaticResource ApiErklaerung}"/>
+                            </Border>
+                        </Grid>
                     </DockPanel>
                 </TabItem>
             </TabControl>
         </Grid>
-        <StackPanel Grid.Row="4" Margin="0,12,0,0">
+        <StackPanel Grid.Row="5" Margin="0,12,0,0">
             <ProgressBar Height="3" IsIndeterminate="{Binding Laedt}" Visibility="{Binding Laedt, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <TextBlock Text="{Binding StatusText}" Foreground="#46566A" Margin="0,6,0,0" AutomationProperties.LiveSetting="Polite"/>
+            <TextBlock Text="{Binding StatusText}" Foreground="#46566A" Margin="0,6,0,0" Padding="8" Background="White" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
         </StackPanel>
     </Grid>
 </Window>

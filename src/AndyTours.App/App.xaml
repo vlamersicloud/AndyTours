@@ -21,6 +21,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- Vektorzeichnung des Programmicons (ProgrammiconGross/-Klein), z. B. für „Über AndyTours“ -->
                 <ResourceDictionary Source="Ressourcen/Programmicon.xaml" />
+                <ResourceDictionary Source="Ressourcen/ApiOberflaeche.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Beschriftungen (Label) vor Eingabefeldern: Das Fluent-Label hat kaum Innenabstand, sodass

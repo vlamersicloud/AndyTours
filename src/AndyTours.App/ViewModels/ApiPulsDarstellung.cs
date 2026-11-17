@@ -15,15 +15,17 @@ public static class ApiPulsDarstellung
     private static readonly CultureInfo Deutsch = CultureInfo.GetCultureInfo("de-DE");
     private static readonly OxyColor[] Farben =
     [
-        OxyColors.Gray, OxyColors.SteelBlue, OxyColors.ForestGreen,
-        OxyColors.Goldenrod, OxyColors.OrangeRed, OxyColors.Purple,
-        OxyColors.Teal, OxyColors.SlateBlue, OxyColors.OliveDrab, OxyColors.Sienna
+        OxyColor.FromRgb(107, 114, 128), OxyColor.FromRgb(36, 109, 178),
+        OxyColor.FromRgb(46, 125, 91), OxyColor.FromRgb(196, 148, 28),
+        OxyColor.FromRgb(196, 80, 61), OxyColor.FromRgb(118, 86, 165),
+        OxyColor.FromRgb(25, 140, 140), OxyColor.FromRgb(96, 125, 139),
+        OxyColor.FromRgb(138, 143, 58), OxyColor.FromRgb(142, 90, 69)
     ];
 
     public static ApiPulsAnzeige Erstellen(PulsAuswertungAntwort antwort)
     {
         ArgumentNullException.ThrowIfNull(antwort);
-        var model = new PlotModel { Culture = Deutsch, PlotAreaBorderColor = OxyColors.LightGray };
+        var model = new PlotModel { Culture = Deutsch, Background = OxyColors.White, PlotAreaBorderColor = OxyColor.FromRgb(194, 201, 209) };
         var cellsByKey = antwort.Zellen.ToDictionary(
             cell => (cell.Periode, cell.Bereich));
 
@@ -34,7 +36,10 @@ public static class ApiPulsDarstellung
             Maximum = antwort.Perioden.Count - .5,
             Angle = antwort.Perioden.Count > 16 ? -45 : 0,
             IsZoomEnabled = false,
-            IsPanEnabled = false
+            IsPanEnabled = false,
+            TextColor = OxyColor.FromRgb(70, 86, 106),
+            AxislineColor = OxyColor.FromRgb(143, 152, 163),
+            MajorGridlineStyle = LineStyle.None
         };
         int stride = Math.Max(1, (int)Math.Ceiling(antwort.Perioden.Count / 12d));
         for (int i = 0; i < antwort.Perioden.Count; i++)
@@ -48,7 +53,11 @@ public static class ApiPulsDarstellung
             Minimum = 0,
             IsZoomEnabled = false,
             IsPanEnabled = false,
-            MajorGridlineStyle = LineStyle.Dot
+            MajorGridlineStyle = LineStyle.Solid,
+            MajorGridlineColor = OxyColor.FromRgb(232, 236, 240),
+            MajorGridlineThickness = 1,
+            TextColor = OxyColor.FromRgb(70, 86, 106),
+            AxislineColor = OxyColor.FromRgb(143, 152, 163)
         });
         model.Legends.Add(new Legend
         {

@@ -27,6 +27,13 @@
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\TourenplanungFenster.xaml" LogicalName="AndyTours.TourenplanungFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiRoutingKonfigurationFenster.xaml" LogicalName="AndyTours.ApiRoutingKonfigurationFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiTourenMehrfachFenster.xaml" LogicalName="AndyTours.ApiTourenMehrfachFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\App.xaml" LogicalName="AndyTours.App.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Ressourcen\ApiOberflaeche.xaml" LogicalName="AndyTours.ApiOberflaeche.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiPulsDarstellung.cs" LogicalName="AndyTours.ApiPulsDarstellung.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\BackendVerbindungFenster.xaml" LogicalName="AndyTours.BackendVerbindungFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\BackendVerbindungFenster.xaml.cs" LogicalName="AndyTours.BackendVerbindungFenster.xaml.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiFitImportFenster.xaml.cs" LogicalName="AndyTours.ApiFitImportFenster.xaml.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiGarminImportFenster.xaml.cs" LogicalName="AndyTours.ApiGarminImportFenster.xaml.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.xaml"
                       LogicalName="AndyTours.ApiHauptfenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.Sortierung.cs"
