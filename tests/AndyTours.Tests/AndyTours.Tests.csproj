@@ -49,6 +49,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiSaisonAnzeige.cs" Link="ViewModels\ApiSaisonAnzeige.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiSicherungseinstellungenViewModel.cs" Link="Presentation\ApiSicherungseinstellungenViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiFormularMapper.cs" Link="Presentation\ApiFormularMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourdetailMapper.cs" Link="Presentation\ApiTourdetailMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenMehrfachViewModel*.cs" Link="Presentation\%(Filename)%(Extension)" />
