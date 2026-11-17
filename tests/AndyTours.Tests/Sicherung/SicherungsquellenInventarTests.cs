@@ -10,6 +10,7 @@ public sealed class SicherungsquellenInventarTests : IDisposable
     private readonly string _root = Path.Combine(Path.GetTempPath(), "andy-source-inventory-tests", Guid.NewGuid().ToString("N"));
     private string Root => Path.Combine(_root, "data");
     private string Backup => Path.Combine(Root, "backup-custom");
+    private static readonly string[] ExpectedPaths = ["a.fit", "orphan.bin"];
     private static SicherungsmanifestGrenzen Limits => new(3, 10, 14, 200);
 
     public SicherungsquellenInventarTests()
@@ -35,7 +36,7 @@ public sealed class SicherungsquellenInventarTests : IDisposable
     {
         var before = Snapshot(Root);
         var files = SicherungsquellenInventar.Ermittle(Root, Backup, ["a.fit", "a.fit"], 10, Limits);
-        Assert.Equal(new[] { "a.fit", "orphan.bin" }, files.Select(x => x.RelativerPfad));
+        Assert.Equal(ExpectedPaths, files.Select(x => x.RelativerPfad));
         Assert.Equal(14L, files.Sum(x => x.Byteanzahl) + 10);
         Assert.Equal(before, Snapshot(Root));
     }
