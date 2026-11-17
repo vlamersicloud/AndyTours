@@ -1,0 +1,9 @@
+# Vollarchiv-Writer: Phasenplan und Implementierungsstand
+
+1. **Quellinventar (Prototyp vorhanden):** `SicherungsquellenInventar` ist read-only und nimmt absolute serverseitige Root-/Backupordner sowie Anhang-Referenzpfade vom Caller entgegen; DB-Abfrage und Writer fehlen. Es prüft Eintrags-/Einzel-/Gesamt-/Pfadgrenzen mit Manifestregeln und einem DB-Platzhalter, inventarisiert auch Orphans, schließt Standard- und tatsächlich innenliegende Backupordner, SQLite-Sidecars und bekannte Stagingnamen aus. Fehlende/ausgeschlossene/abweichende Referenzen sowie Reparse-Einträge/-Ancestors schlagen fehl. Es schreibt keine Quelldaten. Prepared-Tests sind kompiliert, aber nicht ausgeführt.
+
+2. **Kohärenz (nur Entwurf):** Künftiger äußerer exklusiver Dataset-Lease, readonly SQLite-`data_version` vor/nach Inventar und GUID-eigener SQLite-Online-Backup-Snapshot in Staging. Keine Transaktion für die Versionsbeobachtung. Lease/Versionvergleich beweisen weder externe Prozessfreiheit noch atomare DB-Datei-Kopplung; Caller muss den In-Process-Lease halten, TOCTOU/externe Writer bleiben Deployment-Risiko. DB-Referenzabfrage ist noch nicht implementiert.
+
+3. **Paketierung/Publikation (nur Entwurf):** Streamende ZIP-Erstellung mit Hash/Länge, striktem camelCase-v1-Manifest, anschließender ZIP-Vorprüfung/Read-only-Inspektion und GUID-Ziel ohne Überschreiben. Noch kein Archiv-Writer, API, Publikation, Restore oder Retention-Löschen.
+
+Keine Clientpfade; Grenzen/Root/Zeiten müssen aus geprüfter Serverkonfiguration stammen. Vollarchive enthalten sensible Rohdaten. Vor Implementierung der verbleibenden Phasen: Review der kleinsten Typ-/Funktionsgrenzen.

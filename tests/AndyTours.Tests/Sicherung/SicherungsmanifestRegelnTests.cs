@@ -71,6 +71,7 @@ public sealed class SicherungsmanifestRegelnTests
     [InlineData("manifest.json")]
     [InlineData("andytours.db-wal")]
     [InlineData("andytours.db-shm")]
+    [InlineData("andytours.db-journal")]
     [InlineData(".upload-abcd/file.fit")]
     [InlineData("folder/data.tmp")]
     [InlineData("Sicherungen/old.db")]

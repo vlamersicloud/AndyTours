@@ -126,7 +126,8 @@ public static class SicherungsmanifestRegeln
     {
         if (path.Equals("manifest.json", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("andytours.db-wal", StringComparison.OrdinalIgnoreCase) ||
-            path.Equals("andytours.db-shm", StringComparison.OrdinalIgnoreCase))
+            path.Equals("andytours.db-shm", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("andytours.db-journal", StringComparison.OrdinalIgnoreCase))
             return true;
         return path.Split('/').Any(segment =>
             segment.StartsWith(".upload-", StringComparison.OrdinalIgnoreCase) ||
