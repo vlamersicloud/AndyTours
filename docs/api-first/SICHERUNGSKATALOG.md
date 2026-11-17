@@ -1,0 +1,9 @@
+# Katalogleser – begrenzter read-only Entwurf
+
+`ErmittleSicherungen` enumeriert strikt benannte Legacy-DB-Dateien im konfigurierten Sicherungsordner. Ein Leser sollte denselben geprüften Namensraum verwenden, ausschließlich lesen und bei fehlendem Ordner eine leere Liste liefern. Dateiname darf nie als API-Pfad offengelegt werden. Für Legacy-Einträge den exakten Zeitstempel aus dem Namen als lokale/zeitzonenlose Zeichenfolge erhalten; keinen UTC-Zeitpunkt erfinden. Größe und SHA-256 der gesamten Datei während des Lesens ermitteln. Hash ist Integritätsmetadatum, kein Nachweis von Schema- oder Restoregültigkeit.
+
+Der Konstruktor akzeptiert nur einen absoluten, serverseitig festgelegten Ordner. Vor Enumeration und Öffnen Symlink-/Reparse-Point-Komponenten des Ordners und der Dateien ablehnen; Traversal bleibt auf direkte katalogisierte Dateien beschränkt. Cancellation beachten. Erwartete Datei-/Zugriffsfehler als feste sichere Fehler melden, niemals Pfad oder rohe Systemdetails zurückgeben. Keine JSON-Registry und keine Schreiboperation.
+
+Für private Legacy-Dateien kann ein zufälliger opaker GUID-Schlüssel je Dateipfad+Inhaltshash innerhalb einer Singleton-Laufzeit stabil bleiben; unterschiedliche Dateien erhalten unterschiedliche IDs, auch bei gleichem Inhalt. Nach Prozessneustart sind IDs ausdrücklich nicht dauerhaft; nach Entfernen einer Datei darf die Zuordnung nicht fortbestehen. Das genügt nur für Anzeige, nicht Download/Restore. Ein solcher Dienst ist read-only und erteilt keinerlei Download-, Lösch- oder Wiederherstellungsrecht.
+
+Vor Umsetzung separat prüfen: Plattformverhalten bei Symlinks, Ordnerzugriff und Fehlermapping. Keine unbewiesenen Größen-/Anzahlgrenzen hinzufügen.
