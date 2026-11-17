@@ -266,6 +266,15 @@ public partial class App
                 return Task.CompletedTask;
             };
 
+            fenster.SicherungseinstellungenAngefordert += () =>
+            {
+                var vm = new ApiSicherungseinstellungenViewModel(uebergebeneSitzung.Sicherungskonfiguration);
+                var dialog = new ApiSicherungseinstellungenFenster(vm) { Owner = fenster };
+                try { dialog.ShowDialog(); }
+                finally { dialog.Dispose(); }
+                return Task.CompletedTask;
+            };
+
             fenster.ProfilBearbeitenAngefordert += async () =>
             {
                 try

@@ -21,6 +21,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     public event Func<Task>? EquipmentsVerwaltenAngefordert;
     public event Func<Task>? ProfilBearbeitenAngefordert;
     public event Func<Task>? GarminEinstellungenAngefordert;
+    public event Func<Task>? SicherungseinstellungenAngefordert;
     public event Func<Task>? GarminImportAngefordert;
     public event Func<Task>? FitDateienImportierenAngefordert;
     public event Func<Task>? SaisonzieleVerwaltenAngefordert;
@@ -208,6 +209,16 @@ public partial class ApiHauptfenster : Window, IDisposable
         if (_geschlossen || !IsVisible) return;
         try { await _viewModel.AktualisierenAsync(CancellationToken.None); }
         catch (Exception) { _viewModel.StatusText = "Übersicht konnte nach den Garmin-Einstellungen nicht aktualisiert werden."; }
+    }
+
+    private async void Sicherungseinstellungen_Click(object sender, RoutedEventArgs e)
+    {
+        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        _verwaltungOffen = true;
+        _viewModel.Laedt = true;
+        try { if (SicherungseinstellungenAngefordert is { } handler) await handler(); }
+        catch (Exception) { _viewModel.StatusText = "Sicherungseinstellungen konnten nicht geöffnet werden."; }
+        finally { _viewModel.Laedt = false; _verwaltungOffen = false; }
     }
 
     private async void GarminImport_Click(object sender, RoutedEventArgs e)

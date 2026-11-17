@@ -45,6 +45,10 @@
                       LogicalName="AndyTours.ApiEquipmentsFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiOverlaysFenster.xaml"
                       LogicalName="AndyTours.ApiOverlaysFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiSicherungseinstellungenFenster.xaml" LogicalName="AndyTours.ApiSicherungseinstellungenFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiSicherungseinstellungenFenster.xaml.cs" LogicalName="AndyTours.ApiSicherungseinstellungenFenster.xaml.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.xaml.cs" LogicalName="AndyTours.ApiHauptfenster.xaml.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\App.Api.cs" LogicalName="AndyTours.App.Api.cs" />
   </ItemGroup>
 
   <ItemGroup>
