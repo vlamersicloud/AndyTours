@@ -1,0 +1,7 @@
+# Read-only ZIP-Archivinspektor: Stand und Grenzen
+
+Der vorbereitete Inspektor verbindet bounded ZIP-Vorprüfung vor `ZipArchive` mit strikter Manifest- und Payloadprüfung. Caller liefern explizite positive Archiv-, Manifest-, Central-Directory- und Payloadgrenzen; das Manifestlimit ist technisch auf `Array.MaxLength` beschränkt. Die ZIP-Vorprüfung begrenzt Central-Directory-Bytes und Eintragszahl vor dem Framework-Parser.
+
+Akzeptiert wird nur der enge ZIP-v1-Umfang: keine Kommentare, SFX, Multidisk oder unbekannten Erweiterungen; keine allgemeine ZIP-Kompatibilitätszusage. Es wird genau ein root `manifest.json` erwartet. JSON ist case-sensitives camelCase, erforderliche Konstruktorparameter gelten, unbekannte und doppelte Properties werden abgelehnt. Der reine Manifestvalidator prüft Struktur/Pfade. ZIP-Einträge müssen exakt passen; Case-Fold-Duplikate, Extra-/Fehleinträge, Verzeichnisse, Links und nicht-reguläre Attribute werden verworfen. Deklarierte und tatsächlich gelesene Payloadlängen sowie SHA-256 werden cancellable geprüft.
+
+Der seekable Stream bleibt caller-owned und offen; Caller müssen ihn während Vorprüfung und Parsing unverändert halten. Der Inspektor extrahiert/schreibt keine Dateien und prüft weder SQLite-Gültigkeit noch kohärenten Snapshot oder Restore-Sicherheit. Der Writer/Restore ist nicht implementiert. Prepared-Tests sind noch nicht als ausgeführt bestätigt.
