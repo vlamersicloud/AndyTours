@@ -1,0 +1,7 @@
+# ZIP-Vorprüfung: Stand und Grenzen
+
+Eine begrenzte strukturelle ZIP-v1-Vorprüfung ist als `SicherungsZipVorpruefung` vorbereitet. Sie erwartet einen lesbaren seekable caller-owned Stream sowie explizite positive Grenzen für Archivbytes, Central-Directory-Bytes und Eintragszahl. Sie prüft EOCD/ZIP64-Lage und -Felder, checked Offsets/Längen, den Central-Directory-Bereich und unterstützte Flags/Kompression, bevor ein späterer ZIP-Parser zum Einsatz käme. Der Stream bleibt offen; der Caller muss parallele Änderung zwischen Vorprüfung und späterem Parsen verhindern.
+
+Der unterstützte Umfang ist absichtlich eng: keine Kommentare, SFX, Multidisk, unbekannten Erweiterungen oder allgemeine ZIP-Kompatibilität. Die vorbereiteten Tests decken gültige In-Memory-ZIP-/ZIP64-Strukturen, fehlerhafte Header/Felder, Grenzen, Cancellation und Stream-Eigentum ab; sie wurden nicht ausgeführt.
+
+Das ist keine vollständige ZIP-Validierung und prüft weder Namen gegen Manifest, Payloadlängen/-hashes, SQLite-Gültigkeit, konsistenten Snapshot noch Restore-Sicherheit. Es extrahiert oder schreibt keine Dateien und gibt keine Dateipfade aus. Vor jeglichem Writer/Restore bleiben unabhängiger Review, Tests und sichere Archiv-/Payloadverifikation erforderlich.
