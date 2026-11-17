@@ -15,6 +15,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     private bool _geladen;
     private bool _geschlossen;
     private bool _verwaltungOffen;
+    private bool _sicherungsarchivOffen;
 
     public event Func<Task>? AktivitaetenVerwaltenAngefordert;
     public event Func<Task>? KategorienVerwaltenAngefordert;
@@ -22,6 +23,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     public event Func<Task>? ProfilBearbeitenAngefordert;
     public event Func<Task>? GarminEinstellungenAngefordert;
     public event Func<Task>? SicherungseinstellungenAngefordert;
+    public event Func<Task>? SicherungsarchivAngefordert;
     public event Func<Task>? GarminImportAngefordert;
     public event Func<Task>? FitDateienImportierenAngefordert;
     public event Func<Task>? SaisonzieleVerwaltenAngefordert;
@@ -219,6 +221,34 @@ public partial class ApiHauptfenster : Window, IDisposable
         try { if (SicherungseinstellungenAngefordert is { } handler) await handler(); }
         catch (Exception) { _viewModel.StatusText = "Sicherungseinstellungen konnten nicht geöffnet werden."; }
         finally { _viewModel.Laedt = false; _verwaltungOffen = false; }
+    }
+
+    private async void Sicherungsarchiv_Click(object sender, RoutedEventArgs e)
+    {
+        if (_geschlossen || _lifetime.IsCancellationRequested || _verwaltungOffen ||
+            _sicherungsarchivOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+
+        _sicherungsarchivOffen = true;
+        _verwaltungOffen = true;
+        _viewModel.Laedt = true;
+        try
+        {
+            if (SicherungsarchivAngefordert is { } handler)
+                await handler();
+        }
+        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
+        catch (Exception)
+        {
+            if (!_geschlossen)
+                _viewModel.StatusText = "Das Vollarchiv konnte nicht geöffnet werden.";
+        }
+        finally
+        {
+            if (!_geschlossen)
+                _viewModel.Laedt = false;
+            _verwaltungOffen = false;
+            _sicherungsarchivOffen = false;
+        }
     }
 
     private async void GarminImport_Click(object sender, RoutedEventArgs e)

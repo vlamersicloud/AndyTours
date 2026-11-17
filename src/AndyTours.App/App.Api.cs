@@ -4,6 +4,7 @@ using AndyTours.App.Funktionen;
 using AndyTours.App.ViewModels;
 using AndyTours.App.Views;
 using AndyTours.Client;
+using AndyTours.Client.Sicherung;
 
 namespace AndyTours.App;
 
@@ -272,6 +273,40 @@ public partial class App
                 var dialog = new ApiSicherungseinstellungenFenster(vm) { Owner = fenster };
                 try { dialog.ShowDialog(); }
                 finally { dialog.Dispose(); }
+                return Task.CompletedTask;
+            };
+
+            fenster.SicherungsarchivAngefordert += () =>
+            {
+                var lokalerPfad = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                if (string.IsNullOrWhiteSpace(lokalerPfad) || !Path.IsPathFullyQualified(lokalerPfad))
+                    throw new InvalidOperationException("Das lokale Sicherungsjournal ist nicht verfügbar.");
+
+                var journalOrdner = Path.Combine(Path.GetFullPath(lokalerPfad), "AndyTours", "Sicherungsjournal");
+                var journal = new DateisystemSicherungsjournal(journalOrdner, uebergebeneSitzung.BasisAdresse);
+                ApiSicherungsarchivViewModel? vm = null;
+                ApiSicherungsarchivFenster? dialog = null;
+                try
+                {
+                    vm = new ApiSicherungsarchivViewModel(
+                        uebergebeneSitzung.SicherungsarchivErstellung, journal, fenster.LebenszeitToken);
+                    dialog = new ApiSicherungsarchivFenster(vm) { Owner = fenster };
+                    dialog.ShowDialog();
+                }
+                finally
+                {
+                    if (dialog?.IsVisible == true)
+                    {
+                        dialog.Dispose();
+                        try { dialog.Close(); } catch { }
+                    }
+                    else
+                    {
+                        dialog?.Dispose();
+                        if (dialog is null) vm?.Dispose();
+                    }
+                }
+
                 return Task.CompletedTask;
             };
 

@@ -64,7 +64,7 @@ public sealed class BackendClientSitzung : IDisposable
         RoutingKonfiguration = new RoutingKonfigurationHttpClient(_importHttpClient);
         Sicherungskonfiguration = new SicherungskonfigurationHttpClient(_httpClient);
         Sicherungskatalog = new SicherungskatalogHttpClient(_httpClient);
-        SicherungsarchivErstellung = new SicherungsarchivErstellungHttpClient(_httpClient);
+        SicherungsarchivErstellung = new SicherungsarchivErstellungHttpClient(_importHttpClient);
         PlanungsProfil = new PlanungsProfilHttpClient(_importHttpClient);
         PlanungsDateien = new PlanungsDateienHttpClient(_importHttpClient);
         PlanungsCourseExport = new PlanungsCourseExportHttpClient(_importHttpClient);

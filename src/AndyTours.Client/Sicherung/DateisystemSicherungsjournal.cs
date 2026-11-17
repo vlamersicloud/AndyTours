@@ -24,7 +24,7 @@ public sealed class DateisystemSicherungsjournal : ISicherungsjournal
     public Task<ISicherungsjournalSperre> Oeffnen(CancellationToken cancellationToken) =>
         Task.Run<ISicherungsjournalSperre>(() => OpenCore(cancellationToken), cancellationToken);
 
-    private ISicherungsjournalSperre OpenCore(CancellationToken ct)
+    private JournalLease OpenCore(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         FileStream? lockHandle = null;
@@ -194,7 +194,7 @@ public sealed class DateisystemSicherungsjournal : ISicherungsjournal
     private static IOException Invalid() => new(Fehlertext);
     private static IOException Busy() => new("Sicherungsjournal wird bereits verwendet.");
 
-    private static void SafeDispose(IDisposable? value)
+    private static void SafeDispose(FileStream? value)
     {
         try { value?.Dispose(); }
         catch (IOException) { }
