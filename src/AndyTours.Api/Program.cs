@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using AndyTours.Api;
 using AndyTours.Application.Auswertung;
+using AndyTours.Application.Koordination;
 using AndyTours.Application.Export;
 using AndyTours.Application.Planung;
 using AndyTours.Application.Sicherung;
@@ -33,6 +34,9 @@ if (string.IsNullOrWhiteSpace(accessToken) || Encoding.UTF8.GetByteCount(accessT
 Directory.CreateDirectory(dataDirectory);
 var expectedTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(accessToken));
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.RespectRequiredConstructorParameters = true);
+builder.Services.AddSingleton<IDatenbestandskoordination>(_ => new Datenbestandskoordination(
+    builder.Configuration.GetValue<int>("Backend:MaxGleichzeitigeZugriffe", 64),
+    builder.Configuration.GetValue<int>("Backend:WarteschlangenPermits", 256)));
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ProblemExceptionHandler>();
 builder.Services.AddOpenApi("v1");
@@ -138,6 +142,7 @@ app.Use(async (httpContext, next) =>
     }
     await next();
 });
+app.UseMiddleware<DatenbestandsMiddleware>();
 app.MapOpenApi("/openapi/{documentName}.json");
 app.MapAktivitaeten();
 app.MapKategorien();
