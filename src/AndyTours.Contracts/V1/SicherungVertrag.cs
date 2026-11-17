@@ -1,0 +1,33 @@
+namespace AndyTours.Contracts.V1;
+
+/// <summary>
+/// Identifies the represented backup contents. LegacySqlite contains only the database;
+/// Vollarchiv is reserved for a future validated archive with manifest.
+/// </summary>
+public enum Sicherungsart
+{
+    /// <summary>Database-only SQLite backup; does not include FIT files or attachments.</summary>
+    LegacySqlite = 0,
+
+    /// <summary>Reserved for a future validated full archive.</summary>
+    Vollarchiv = 1
+}
+
+/// <summary>
+/// Catalog metadata addressed by an opaque server-generated identifier, never by a filename or path.
+/// Listing a catalog entry does not authorize restore or deletion.
+/// </summary>
+/// <param name="Id">Non-empty opaque backup identifier, not a storage path.</param>
+/// <param name="Art">Declared content type; the hash alone does not prove schema or restore validity.</param>
+/// <param name="ErstelltUtc">Creation timestamp in UTC.</param>
+/// <param name="Byteanzahl">Complete file size in bytes; non-negative.</param>
+/// <param name="InhaltHash">SHA-256 of the complete represented file.</param>
+public sealed record SicherungAntwort(
+    Guid Id,
+    Sicherungsart Art,
+    DateTimeOffset ErstelltUtc,
+    long Byteanzahl,
+    string InhaltHash);
+
+/// <summary>Catalog entries, without paths, download data, or restore/delete authority.</summary>
+public sealed record SicherungListeAntwort(IReadOnlyList<SicherungAntwort> Eintraege);
