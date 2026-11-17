@@ -19,7 +19,8 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Language="de-DE">
+        Language="de-DE"
+        Background="{StaticResource ApiFlaeche}">
 
     <Window.Resources>
         <!-- Beschriftung links neben einem Feld -->
@@ -61,18 +62,18 @@
          die Schaltflächen bleiben unten immer sichtbar -->
     <DockPanel>
         <!-- Schaltflächen -->
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="16,16,16,16">
-            <Button Content="OK" MinWidth="90" Padding="8,3" IsDefault="True" Command="{Binding SpeichernCommand}" />
+        <WrapPanel DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="16,12">
+            <Button Content="OK" MinWidth="90" IsDefault="True" Style="{StaticResource ApiPrimaeraktion}" Command="{Binding SpeichernCommand}" />
             <Button Content="Abbrechen" MinWidth="90" Padding="8,3" Margin="8,0,0,0" IsCancel="True">
                 <Button.Style>
-                    <Style TargetType="Button">
+                    <Style TargetType="Button" BasedOn="{StaticResource ApiAktion}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Speichert}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Button.Style>
             </Button>
-        </StackPanel>
+        </WrapPanel>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <ScrollViewer.Style>
@@ -82,7 +83,11 @@
                     </Style.Triggers>
                 </Style>
             </ScrollViewer.Style>
-            <StackPanel Margin="16,16,16,0">
+            <StackPanel Margin="16">
+                <TextBlock Text="{Binding Titel}" Style="{StaticResource ApiDialogTitel}" />
+                <Border Style="{StaticResource ApiKartenrahmen}">
+                <StackPanel>
+                <TextBlock Text="Alarmdaten" Style="{StaticResource ApiAbschnittstitel}" />
                 <!-- 1. Rad, Tätigkeit, Intervall -->
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -111,6 +116,11 @@
                              Text="{Binding Intervall, UpdateSourceTrigger=PropertyChanged}" Tag="{Binding [Intervall]}" Style="{StaticResource Eingabe}" />
                 </Grid>
 
+                </StackPanel>
+                </Border>
+                <Border Style="{StaticResource ApiKartenrahmen}" Margin="0,12,0,0">
+                <StackPanel>
+                <TextBlock Text="Status" Style="{StaticResource ApiAbschnittstitel}" />
                 <!-- 2. Ein/Aus -->
                 <CheckBox Content="Alarm _eingeschaltet" IsChecked="{Binding Eingeschaltet}" Margin="0,10,0,0" />
 
@@ -136,6 +146,8 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
+                </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </DockPanel>

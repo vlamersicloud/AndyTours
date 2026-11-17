@@ -20,6 +20,7 @@
         Height="800"
         MinWidth="700"
         MinHeight="450"
+        Background="{StaticResource ApiFlaeche}"
         WindowStartupLocation="CenterOwner">
 
     <Window.Resources>
@@ -29,7 +30,8 @@
     <DockPanel Margin="8">
 
         <!-- 1. Leiste -->
-        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+        <Border DockPanel.Dock="Top" Style="{StaticResource ApiKartenrahmen}" Margin="0,0,0,8">
+        <DockPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="Strecke wird ermittelt …" Foreground="Gray" Margin="0,0,16,0"
                            Visibility="{Binding ErmitteltGerade, Converter={StaticResource SichtbarWennWahr}}" />
@@ -53,14 +55,17 @@
                 <Button Content="O_verlays…" Padding="8,3" Margin="16,0,0,0" Click="OverlaysOeffnen_Click" />
             </WrapPanel>
         </DockPanel>
+        </Border>
 
         <!-- 2. Bedienhinweis und Hinweis -->
-        <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
+        <Border DockPanel.Dock="Bottom" Style="{StaticResource ApiKartenrahmen}" Margin="0,6,0,0">
+        <StackPanel>
             <TextBlock Foreground="Gray" TextWrapping="Wrap"
                        Text="Klick in die Karte: Wegpunkt anhängen · Wegpunkt ziehen: verschieben · Linie ziehen: Zwischenpunkt einfügen · Rechtsklick auf einen Wegpunkt: entfernen · Karte ziehen: verschieben" />
             <TextBlock Text="{Binding Hinweis}" Foreground="Firebrick" TextWrapping="Wrap" />
             <TextBlock Text="{Binding ApiProfilHinweis}" Foreground="Firebrick" TextWrapping="Wrap" />
         </StackPanel>
+        </Border>
 
         <!-- 3. Karte -->
         <Grid>

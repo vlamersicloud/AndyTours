@@ -39,7 +39,8 @@
         MinWidth="520"
         MinHeight="340"
         WindowStartupLocation="CenterOwner"
-        Language="de-DE">
+        Language="de-DE"
+        Background="{StaticResource ApiFlaeche}">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="SichtbarWennWahr" />
@@ -66,8 +67,9 @@
     <DockPanel Margin="12">
 
         <!-- 1. Kopfzeile -->
-        <TextBlock DockPanel.Dock="Top" Text="{Binding Kopfzeile}" FontSize="14" FontWeight="SemiBold"
-                   TextWrapping="Wrap" Margin="0,0,0,8" />
+        <Border DockPanel.Dock="Top" Style="{StaticResource ApiKartenrahmen}" Margin="0,0,0,8">
+        <TextBlock Text="{Binding Kopfzeile}" Style="{StaticResource ApiDialogTitel}" />
+        </Border>
         <TextBlock DockPanel.Dock="Top" Text="{Binding HinweisOhneAufzeichnung}" Style="{StaticResource Etappenhinweis}"
                    Visibility="{Binding HatHinweisOhneAufzeichnung, Converter={StaticResource SichtbarWennWahr}}" />
 
@@ -137,7 +139,7 @@
 
                     <!-- 3d. Leiste „Track bearbeiten“ (nur eine Einheit mit GPS-Daten): Regler für Start und Ziel mit
                          ihrer Stelle in km, Umkehren, Glätten, Zurücksetzen und die Länge der bearbeiteten Strecke -->
-                    <WrapPanel DockPanel.Dock="Bottom" Margin="0,8,0,0"
+                    <WrapPanel DockPanel.Dock="Bottom" Margin="0,8,0,0" Background="{StaticResource ApiKarte}"
                                Visibility="{Binding KannBearbeiten, Converter={StaticResource SichtbarWennWahr}}">
                         <TextBlock Text="Track bearbeiten:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0" />
                         <Label Content="_Start" Target="{Binding ElementName=StartRegler}" VerticalAlignment="Center" Padding="0,0,4,0" />

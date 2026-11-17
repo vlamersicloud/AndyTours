@@ -22,7 +22,8 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Language="de-DE">
+        Language="de-DE"
+        Background="{StaticResource ApiFlaeche}">
 
     <Window.Resources>
         <!-- Beschriftung links neben einem Feld; 12 px Abstand, damit sie neben den hellen Fluent-Feldern
@@ -94,13 +95,16 @@
         </TextBlock>
 
         <!-- Schaltflächen -->
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="16,16,16,16">
-            <Button Content="_Speichern" MinWidth="90" Padding="8,3" IsDefault="True" Command="{Binding SpeichernCommand}" />
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource ApiKarte}" Padding="16" BorderBrush="{StaticResource ApiKante}" BorderThickness="0,1,0,0">
+        <WrapPanel HorizontalAlignment="Right">
+            <Button Content="_Speichern" MinWidth="90" IsDefault="True" Style="{StaticResource ApiPrimaeraktion}" Command="{Binding SpeichernCommand}" />
             <Button Content="Abbrechen" MinWidth="90" Padding="8,3" Margin="8,0,0,0" IsCancel="True" />
-        </StackPanel>
+        </WrapPanel>
+        </Border>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="16,16,16,0">
+            <StackPanel Margin="16">
+                <TextBlock Text="{Binding Titel}" Style="{StaticResource ApiDialogTitel}" />
                 <Grid x:Name="Felder">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -109,7 +113,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- 1. Allgemein -->
-                    <GroupBox Grid.Column="0" Header="Allgemein" Padding="8" Width="360">
+                    <GroupBox Grid.Column="0" Header="Allgemein" Padding="8" Width="360" Background="{StaticResource ApiKarte}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -172,7 +176,7 @@
                     </GroupBox>
 
                     <!-- 2. Werte -->
-                    <GroupBox Grid.Column="2" Header="Werte" Padding="8">
+                    <GroupBox Grid.Column="2" Header="Werte" Padding="8" Background="{StaticResource ApiKarte}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -244,7 +248,7 @@
                 </Grid>
 
                 <!-- 3. Kommentar -->
-                <TextBlock Text="Kommentar:" Margin="0,12,0,4" />
+                <TextBlock Text="Kommentar:" Style="{StaticResource ApiAbschnittstitel}" Margin="0,12,0,4" />
                 <TextBox Text="{Binding Kommentar, UpdateSourceTrigger=PropertyChanged}" Height="80"
                          Width="{Binding ActualWidth, ElementName=Felder}" HorizontalAlignment="Left"
                          AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />

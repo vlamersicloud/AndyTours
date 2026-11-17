@@ -20,20 +20,22 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Language="de-DE">
+        Language="de-DE"
+        Background="{StaticResource ApiFlaeche}">
     <Window.Resources><BooleanToVisibilityConverter x:Key="SichtbarWennWahr" /></Window.Resources>
 
     <!-- Reicht die Höhe des Bildschirms nicht (große Oberfläche), rollt der Inhalt;
          die Schaltflächen bleiben unten immer sichtbar -->
     <DockPanel>
         <!-- 4. Schaltflächen -->
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="16,12,16,16">
-            <Button Content="_OK" IsDefault="True" MinWidth="90" Padding="8,3" Margin="0,0,8,0" Command="{Binding OkCommand}" />
+        <WrapPanel DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="16,12">
+            <Button Content="_OK" IsDefault="True" MinWidth="90" Style="{StaticResource ApiPrimaeraktion}" Margin="0,0,8,0" Command="{Binding OkCommand}" />
             <Button Content="Abbrechen" IsCancel="True" MinWidth="90" Padding="8,3"><Button.Style><Style TargetType="Button"><Style.Triggers><DataTrigger Binding="{Binding Speichert}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger></Style.Triggers></Style></Button.Style></Button>
-        </StackPanel>
+        </WrapPanel>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="16,16,16,0">
+            <StackPanel Margin="16">
+                <TextBlock Text="Saisonziele" Style="{StaticResource ApiDialogTitel}" />
                 <!-- 1. Jahresauswahl -->
                 <StackPanel Orientation="Horizontal">
                     <Label Content="_Jahr:" Target="{Binding ElementName=JahrFeld}" VerticalAlignment="Center" />
@@ -43,6 +45,7 @@
                 </StackPanel>
 
                 <!-- 2. Ziele je Aktivität -->
+                <Border Style="{StaticResource ApiKartenrahmen}" Margin="0,10,0,0">
                 <DataGrid x:Name="Tabelle" ItemsSource="{Binding Zeilen}" Margin="0,10,0,0" MaxHeight="360"
                           AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
                           CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False"
@@ -84,6 +87,7 @@
                         </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
+                </Border>
 
                 <!-- 3. Hinweis -->
                 <TextBlock Text="{Binding Hinweis}" Foreground="Firebrick" TextWrapping="Wrap" Margin="0,8,0,0" />

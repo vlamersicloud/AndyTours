@@ -22,6 +22,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\EinheitBearbeitenFenster.xaml" LogicalName="AndyTours.EinheitBearbeitenFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\EquipmentBearbeitenFenster.xaml" LogicalName="AndyTours.EquipmentBearbeitenFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\WartungBearbeitenFenster.xaml" LogicalName="AndyTours.WartungBearbeitenFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\AlarmBearbeitenFenster.xaml" LogicalName="AndyTours.AlarmBearbeitenFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\PersoenlicheDatenFenster.xaml" LogicalName="AndyTours.PersoenlicheDatenFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\TourdetailFenster.xaml" LogicalName="AndyTours.TourdetailFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\CourseUebertragenFenster.xaml"
                       LogicalName="AndyTours.CourseUebertragenFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\TourenplanungFenster.xaml" LogicalName="AndyTours.TourenplanungFenster.xaml" />
