@@ -70,7 +70,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
     public long Aktualisierungsstand => _aktualisierungsstand;
     public ObservableCollection<ApiFilterOption> AktivitaetsOptionen { get; }
     public ObservableCollection<ApiFilterOption> KategorieOptionen { get; }
-    public bool FilterControlsEnabled => !Laedt;
+    public bool FilterControlsEnabled => !Laedt && !InlineGesperrt;
 
     public IReadOnlyList<KeyValuePair<Auswertungsraster, string>> RasterOptionen { get; } =
     [
@@ -107,6 +107,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
 
     private void TabellenfilterGeaendert()
     {
+        if (MerkeInlineFilterAenderung(nurTabelle: true)) return;
         Interlocked.Increment(ref _generation);
         Touren.Clear();
         AusgewaehlteTour = null;
@@ -121,6 +122,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
 
     private void FilterGeaendert()
     {
+        if (MerkeInlineFilterAenderung(nurTabelle: false)) return;
         Interlocked.Increment(ref _generation);
         LeereAnzeige();
         StatusText = "Filter geändert – bitte aktualisieren.";
@@ -151,7 +153,9 @@ public partial class ApiUebersichtViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(KannAktualisieren))]
     public async Task AktualisierenAsync(CancellationToken ct = default)
     {
-        if (Laedt) return;
+        if (_inlineBeendet || Laedt || InlineGesperrt) return;
+        VerwirfInlineEntwurf();
+        _inlineLookups = null;
         var generation = Interlocked.Increment(ref _generation);
         var vonSnapshot = VonDatum;
         var bisSnapshot = BisDatum;
@@ -243,7 +247,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
             if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested)
                 StatusText = "Backenddaten konnten nicht geladen werden.";
         }
-        finally { Laedt = false; }
+        finally { if (!_inlineBeendet) Laedt = false; }
     }
 
     private async Task<ApiFilterOptionenPlan?> LadeFilterOptionenAsync(long generation,
@@ -288,7 +292,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
         await LadeSeiteAsync(Math.Max(0, _start - 50), ct);
     }
 
-    private bool KannAktualisieren() => !Laedt;
+    private bool KannAktualisieren() => !Laedt && !InlineGesperrt;
     partial void OnLaedtChanged(bool value)
     {
         OnPropertyChanged(nameof(FilterControlsEnabled));
@@ -301,12 +305,12 @@ public partial class ApiUebersichtViewModel : ObservableObject
         BenachrichtigePulsCommands();
     }
 
-    private bool KannNaechsteSeite() => !Laedt && _start + 50 < GesamtTouren;
-    private bool KannVorherigeSeite() => !Laedt && _start > 0;
+    private bool KannNaechsteSeite() => !Laedt && !InlineGesperrt && _start + 50 < GesamtTouren;
+    private bool KannVorherigeSeite() => !Laedt && !InlineGesperrt && _start > 0;
 
     private async Task LadeSeiteAsync(int start, CancellationToken ct)
     {
-        if (Laedt || VonDatum is null || BisDatum is null || VonDatum > BisDatum) return;
+        if (_inlineBeendet || Laedt || InlineGesperrt || VonDatum is null || BisDatum is null || VonDatum > BisDatum) return;
         var tabellenfilterSnapshot = Tabellenfilter.ErstelleAnfrage();
         var filter = new TourenListenfilter(DateOnly.FromDateTime(VonDatum.Value),
             DateOnly.FromDateTime(BisDatum.Value), AktivitaetAuswahl?.Id, KategorieAuswahl?.Id)
@@ -341,7 +345,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
                 StatusText = "Tourenseite ist unvollständig oder ungültig. Bitte Backend-Version und Verbindung prüfen.";
         }
         catch (Exception) { if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested) StatusText = "Tourenseite konnte nicht geladen werden."; }
-        finally { Laedt = false; }
+        finally { if (!_inlineBeendet) Laedt = false; }
     }
 
     private bool UebernehmeAuswahlQuery(TourenListenfilter filter)
@@ -358,6 +362,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
 
     private void SetzeSeite(TourListeAntwort page)
     {
+        InlineNeuLadenNoetig = false;
         Touren.Clear();
         foreach (var tour in page.Eintraege) Touren.Add(tour);
         GesamtTouren = page.Gesamt;

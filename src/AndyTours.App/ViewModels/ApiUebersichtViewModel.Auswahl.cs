@@ -6,7 +6,7 @@ public partial class ApiUebersichtViewModel
     private int _auswahlAnzahl;
 
     public int AuswahlAnzahl => _auswahlAnzahl;
-    public bool HatTourenauswahl => !Laedt && !EditorOffen && _auswahlAnzahl > 0;
+    public bool HatTourenauswahl => !Laedt && !InlineGesperrt && !EditorOffen && _auswahlAnzahl > 0;
     public IReadOnlyList<AndyTours.Contracts.V1.TourAntwort> TourenAuswahlSnapshot => _manuelleAuswahl.Snapshot;
 
     public void SetzeTourenauswahl(int anzahl)
@@ -22,12 +22,14 @@ public partial class ApiUebersichtViewModel
 
     public void SetzeManuelleTourenauswahl(IEnumerable<long> sichtbareAusgewaehlteIds)
     {
+        if (InlineGesperrt) return;
         _manuelleAuswahl.SetzeSichtbare(Touren, sichtbareAusgewaehlteIds);
         SetzeTourenauswahl(_manuelleAuswahl.Count);
     }
 
     public bool SetzeManuelleTourenauswahl(long tourId, bool ausgewaehlt)
     {
+        if (InlineGesperrt) return false;
         var row = Touren.FirstOrDefault(x => x.Id == tourId);
         if (row is null) return false;
         var changed = _manuelleAuswahl.Setze(row, ausgewaehlt);
@@ -37,6 +39,7 @@ public partial class ApiUebersichtViewModel
 
     public void HebeTourenauswahlAuf()
     {
+        if (InlineGesperrt) return;
         _manuelleAuswahl.Clear();
         SetzeTourenauswahl(0);
     }

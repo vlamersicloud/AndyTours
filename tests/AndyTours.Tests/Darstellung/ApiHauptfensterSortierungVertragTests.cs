@@ -40,18 +40,29 @@ public sealed class ApiHauptfensterSortierungVertragTests
         var grid = Assert.Single(document.Descendants(P + "DataGrid"), x => (string?)x.Attribute(X + "Name") == "TourenDataGrid");
         Assert.Equal("TourenDataGrid_Sorting", (string?)grid.Attribute("Sorting"));
         Assert.Equal("True", (string?)grid.Attribute("CanUserSortColumns"));
-        var columns = grid.Element(P + "DataGrid.Columns")!.Elements(P + "DataGridTextColumn").ToArray();
+        var columns = grid.Element(P + "DataGrid.Columns")!.Elements().ToArray();
         Assert.Equal(SortPfade,
             columns.Select(x => (string?)x.Attribute("SortMemberPath")));
         Assert.Equal("Descending", (string?)columns[0].Attribute("SortDirection"));
         Assert.All(columns.Skip(1), x => Assert.Null(x.Attribute("SortDirection")));
-        Assert.Equal("True", (string?)grid.Attribute("IsReadOnly"));
+        Assert.Equal("False", (string?)grid.Attribute("IsReadOnly"));
+        Assert.Equal(12, columns.Count(c => c.Name.LocalName == "Zelltextspalte"));
+        Assert.Equal(3, columns.Count(c => c.Name == P + "DataGridTemplateColumn"));
+        Assert.Equal(3, columns.Count(c => (string?)c.Attribute("IsReadOnly") == "True"));
         Assert.Equal("True", (string?)grid.Attribute("EnableRowVirtualization"));
         Assert.Equal("True", (string?)grid.Attribute("EnableColumnVirtualization"));
         Assert.Equal("Auto", (string?)grid.Attribute("HorizontalScrollBarVisibility"));
         Assert.All(columns, column =>
         {
-            var binding = (string?)column.Attribute("Binding");
+            var binding = column.Name == P + "DataGridTemplateColumn"
+                ? (string?)Assert.Single(column.Element(P + "DataGridTemplateColumn.CellTemplate")!.Descendants(P + "TextBlock")).Attribute("Text")
+                : (string?)column.Attribute("Binding");
+            if (column.Name == P + "DataGridTemplateColumn")
+            {
+                var combo = Assert.Single(column.Element(P + "DataGridTemplateColumn.CellEditingTemplate")!.Descendants(P + "ComboBox"));
+                Assert.Equal("False", (string?)combo.Attribute("IsEditable"));
+                Assert.Null(combo.Attribute("SelectedItem"));
+            }
             Assert.NotNull(binding);
             Assert.Equal(1, binding!.Split("Mode=OneWay", StringSplitOptions.None).Length - 1);
         });

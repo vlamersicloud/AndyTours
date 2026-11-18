@@ -18,7 +18,7 @@ public partial class ApiUebersichtViewModel
     [RelayCommand(CanExecute = nameof(KannNeueTour))]
     private async Task NeueTourAsync(CancellationToken ct)
     {
-        if (Laedt) return;
+        if (Laedt || InlineGesperrt) return;
         var gespeichert = false;
         Laedt = true;
         try
@@ -172,11 +172,11 @@ public partial class ApiUebersichtViewModel
     private async Task TourLoeschenAsync(CancellationToken ct)
     {
         var auswahl = AusgewaehlteTour;
-        if (Laedt || auswahl is null) return;
+        if (Laedt || InlineGesperrt || auswahl is null) return;
         var bestaetigung = MessageBox.Show(
             $"Tour „{auswahl.Werte.Name}“ wirklich löschen?", "Tour löschen",
             MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
-        if (bestaetigung != MessageBoxResult.Yes || Laedt) return;
+        if (bestaetigung != MessageBoxResult.Yes || Laedt || InlineGesperrt) return;
 
         var geloescht = false;
         Laedt = true;
@@ -213,11 +213,11 @@ public partial class ApiUebersichtViewModel
         }
     }
 
-    private bool KannNeueTour() => !Laedt;
+    private bool KannNeueTour() => !Laedt && !InlineGesperrt;
     private bool KannMitAuswahl()
     {
         var snapshot = ErfasseTourenauswahl();
-        return !Laedt && !EditorOffen && AuswahlAnzahl == 1 && snapshot.Count == 1 &&
+        return !Laedt && !InlineGesperrt && !EditorOffen && AuswahlAnzahl == 1 && snapshot.Count == 1 &&
             AusgewaehlteTour is not null && snapshot[0].Id == AusgewaehlteTour.Id;
     }
 

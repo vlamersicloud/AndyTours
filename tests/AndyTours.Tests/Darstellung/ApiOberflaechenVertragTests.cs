@@ -93,7 +93,11 @@ public sealed class ApiOberflaechenVertragTests
         Assert.Equal("TourenDataGrid_SelectionChanged", (string?)tours.Attribute("SelectionChanged"));
         Assert.Equal("TourenDataGrid_Sorting", (string?)tours.Attribute("Sorting"));
         Assert.Equal("TourenDataGrid_PreviewKeyDownMehrfach", (string?)tours.Attribute("PreviewKeyDown"));
-        var headers = tours.Descendants(Wpf + "DataGridTextColumn").Select(column => (string?)column.Attribute("Header")).ToArray();
+        var columns = tours.Element(Wpf + "DataGrid.Columns")!.Elements().ToArray();
+        var headers = columns.Select(column => (string?)column.Attribute("Header")).ToArray();
+        Assert.Equal(12, columns.Count(c => c.Name.LocalName == "Zelltextspalte"));
+        Assert.Equal(3, columns.Count(c => c.Name == Wpf + "DataGridTemplateColumn"));
+        Assert.Equal(3, columns.Count(c => c.Name == Wpf + "DataGridTextColumn" && (string?)c.Attribute("IsReadOnly") == "True"));
         Assert.Equal(ExpectedTourHeaders, headers);
         Assert.Contains("TourBestDistance", Main, StringComparison.Ordinal);
         Assert.Contains("TourBestHeight", Main, StringComparison.Ordinal);

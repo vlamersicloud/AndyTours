@@ -12,7 +12,7 @@ public partial class ApiUebersichtViewModel
 
     public async Task<bool> SortiereTourenAsync(TourenSortierschluessel schluessel, bool absteigend, CancellationToken ct = default)
     {
-        if (Laedt || EditorOffen || VonDatum is null || BisDatum is null || VonDatum > BisDatum ||
+        if (_inlineBeendet || Laedt || InlineGesperrt || EditorOffen || VonDatum is null || BisDatum is null || VonDatum > BisDatum ||
             !Enum.IsDefined(schluessel) || schluessel == TourenSortierschluessel.Bestand)
         {
             StatusText = "Sortierung kann derzeit nicht geändert werden. Filter und Eingaben prüfen.";
@@ -68,7 +68,7 @@ public partial class ApiUebersichtViewModel
             if (generation == Interlocked.Read(ref _generation) && !ct.IsCancellationRequested) StatusText = "Sortierte Tourenseite konnte nicht geladen werden; bisherige Sortierung bleibt aktiv.";
             return false;
         }
-        finally { Laedt = false; }
+        finally { if (!_inlineBeendet) Laedt = false; }
     }
 
     private static void ValidiereSortierantwort(TourListeAntwort? page) =>

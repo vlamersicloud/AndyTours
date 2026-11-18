@@ -23,7 +23,7 @@ public partial class ApiHauptfenster
 
     private void VerarbeiteManuelleTourenauswahl(object sender, SelectionChangedEventArgs e)
     {
-        if (_auswahlDisposed || _geschlossen || _auswahlAnwenden || _viewModel.Laedt || sender is not DataGrid grid) return;
+        if (_auswahlDisposed || _geschlossen || _viewModel.InlineGesperrt || _auswahlAnwenden || _viewModel.Laedt || sender is not DataGrid grid) return;
         try
         {
             var ids = grid.SelectedItems.OfType<TourAntwort>().Select(t => t.Id).ToArray();
@@ -50,7 +50,7 @@ public partial class ApiHauptfenster
 
     private void StelleSichtbareAuswahlWiederHer()
     {
-        if (_auswahlDisposed || _geschlossen || !_auswahlInitialisiert || _viewModel.Laedt ||
+        if (_auswahlDisposed || _geschlossen || _viewModel.InlineGesperrt || !_auswahlInitialisiert || _viewModel.Laedt ||
             !Dispatcher.CheckAccess() || TourenDataGrid is null) return;
         _auswahlAnwenden = true;
         try
@@ -65,7 +65,7 @@ public partial class ApiHauptfenster
 
     private void AuswahlAufheben_Click(object sender, System.Windows.RoutedEventArgs e)
     {
-        if (_auswahlDisposed || _geschlossen) return;
+        if (_auswahlDisposed || _geschlossen || _viewModel.InlineGesperrt) return;
         _viewModel.HebeTourenauswahlAuf();
         StelleSichtbareAuswahlWiederHer();
     }

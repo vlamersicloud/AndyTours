@@ -41,6 +41,8 @@ public partial class ApiHauptfenster : Window, IDisposable
         AndyTours.App.Funktionen.Oberflaechenskalierung.Anmelden(this, groesseUmrechnen: false);
         DataContext = viewModel;
         InitialisiereManuelleAuswahl();
+        PreviewKeyDown += InlinePreviewKeyDown;
+        PreviewMouseDown += InlinePreviewMouseDown;
         BackendAdresseText.Text = backendAdresse.GetLeftPart(UriPartial.Authority);
         Loaded += FensterGeladen;
         Loaded += SpaltenlayoutLoaded;
@@ -60,12 +62,14 @@ public partial class ApiHauptfenster : Window, IDisposable
             return;
         }
         base.OnClosing(e);
+        if (!e.Cancel) DisposeInline();
     }
 
     public void Dispose()
     {
         if (_geschlossen) return;
         _geschlossen = true;
+        DisposeInline();
         SpaltenlayoutDispose();
         DisposeManuelleAuswahl();
         _viewModel.BeendePuls();
@@ -101,7 +105,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void AktivitaetenVerwalten_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         try
         {
@@ -120,7 +124,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void KategorienVerwalten_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         try
         {
@@ -140,7 +144,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void EquipmentsVerwalten_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         _viewModel.Laedt = true;
         try { if (EquipmentsVerwaltenAngefordert is { } handler) await handler(); }
@@ -154,7 +158,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void ProfilBearbeiten_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         _viewModel.Laedt = true;
         try { if (ProfilBearbeitenAngefordert is { } handler) await handler(); }
@@ -167,7 +171,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void WartungenVerwalten_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         _viewModel.Laedt = true;
         try { if (WartungVerwaltenAngefordert is { } handler) await handler(); }
@@ -186,7 +190,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async Task TextlisteVerwalten_Click(AndyTours.Contracts.V1.Textlistenart art)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         _viewModel.Laedt = true;
         try { if (TextlisteVerwaltenAngefordert is { } handler) await handler(art); }
@@ -199,7 +203,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void SaisonzieleVerwalten_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true; _viewModel.Laedt = true;
         try { if (SaisonzieleVerwaltenAngefordert is { } handler) await handler(); }
         catch (Exception) { _viewModel.StatusText = "Saisonziele konnten nicht geöffnet werden."; }
@@ -211,7 +215,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void GarminEinstellungen_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         _viewModel.Laedt = true;
         try { if (GarminEinstellungenAngefordert is { } handler) await handler(); }
@@ -224,7 +228,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void Sicherungseinstellungen_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         _viewModel.Laedt = true;
         try { if (SicherungseinstellungenAngefordert is { } handler) await handler(); }
@@ -234,7 +238,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void Sicherungsarchiv_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _lifetime.IsCancellationRequested || _verwaltungOffen ||
+        if (_geschlossen || _viewModel.InlineGesperrt || _lifetime.IsCancellationRequested || _verwaltungOffen ||
             _sicherungsarchivOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
 
         _sicherungsarchivOffen = true;
@@ -262,7 +266,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void Wiederherstellungsvorschau_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _lifetime.IsCancellationRequested || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _lifetime.IsCancellationRequested || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         _viewModel.Laedt = true;
         try { if (WiederherstellungsvorschauAngefordert is { } handler) await handler(); }
@@ -280,7 +284,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void GarminImport_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         _viewModel.Laedt = true;
         try { if (GarminImportAngefordert is { } handler) await handler(); }
@@ -293,7 +297,7 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private async void FitDateienImportieren_Click(object sender, RoutedEventArgs e)
     {
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         _verwaltungOffen = true;
         try { if (FitDateienImportierenAngefordert is { } handler) await handler(); }
         catch (Exception) { _viewModel.StatusText = "FIT-Datei-Import konnte nicht geöffnet werden."; }
@@ -305,7 +309,8 @@ public partial class ApiHauptfenster : Window, IDisposable
 
     private void TourenDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (e.ChangedButton != MouseButton.Left || sender is not DataGrid grid || e.OriginalSource is not DependencyObject ursprung) return;
+        if (e.Timestamp == _inlineDialogMouseTimestamp) { e.Handled = true; return; }
+        if (_viewModel.InlineGesperrt || e.ChangedButton != MouseButton.Left || sender is not DataGrid grid || e.OriginalSource is not DependencyObject ursprung) return;
         if (ItemsControl.ContainerFromElement(grid, ursprung) is not DataGridRow { Item: Contracts.V1.TourAntwort tour } row)
             return;
 
@@ -320,6 +325,8 @@ public partial class ApiHauptfenster : Window, IDisposable
         if (_geschlossen) return;
         _geschlossen = true;
         _lifetime.Cancel();
+        DisposeInline();
+        DisposeManuelleAuswahl();
         _viewModel.AktualisierenCommand.Cancel();
         _viewModel.NaechsteSeiteCommand.Cancel();
         _viewModel.VorherigeSeiteCommand.Cancel();

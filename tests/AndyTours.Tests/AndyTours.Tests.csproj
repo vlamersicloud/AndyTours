@@ -95,6 +95,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiHauptfenster.Inline.cs" LogicalName="AndyTours.ApiHauptfenster.Inline.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiUebersichtViewModel.Inline.cs" LogicalName="AndyTours.ApiUebersichtViewModel.Inline.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourInlineEntwurf.cs" Link="Presentation\ApiTourInlineEntwurf.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourInlineSpeicher.cs" Link="Presentation\ApiTourInlineSpeicher.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenauswahl.cs" Link="Presentation\ApiTourenauswahl.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiSaisonAnzeige.cs" Link="ViewModels\ApiSaisonAnzeige.cs" />
     <Compile Include="..\..\src\AndyTours.Api\Datenbestandskoordination.cs" Link="Infrastructure\Datenbestandskoordination.cs" />

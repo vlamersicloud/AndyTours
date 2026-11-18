@@ -9,7 +9,7 @@ public partial class ApiHauptfenster
     private async void TourenDataGrid_Sorting(object sender, DataGridSortingEventArgs e)
     {
         e.Handled = true;
-        if (_geschlossen || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen || _lifetime.IsCancellationRequested)
+        if (_geschlossen || _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen || _lifetime.IsCancellationRequested)
             return;
 
         var sortierung = e.Column.SortMemberPath switch

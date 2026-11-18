@@ -19,7 +19,8 @@ public partial class ApiHauptfenster
 
     private async Task FuehreMehrfachAus(Func<IReadOnlyList<TourAntwort>, CancellationToken, Task<ApiTourenMehrfachStatus?>>? callback)
     {
-        if (_geschlossen || !IsVisible || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
+        if (_geschlossen || _inlineDisposed || !IsVisible || _inlineBusy || _inlineDraft is not null ||
+            _viewModel.InlineGesperrt || _verwaltungOffen || _viewModel.Laedt || _viewModel.EditorOffen) return;
         var token = _lifetime.Token;
         if (callback is null) { _viewModel.StatusText = "Die Mehrfachaktion ist noch nicht verfügbar."; return; }
         _verwaltungOffen = true;
@@ -71,12 +72,14 @@ public partial class ApiHauptfenster
         }
     }
 
-    private bool Lebt(CancellationToken token) => !_geschlossen && IsVisible && !token.IsCancellationRequested;
+    private bool Lebt(CancellationToken token) => !_geschlossen && !_inlineDisposed && IsVisible && !token.IsCancellationRequested;
     private static TourAntwort Abbild(TourAntwort tour) => tour with { Werte = tour.Werte with { KategorieIds = (long[])tour.Werte.KategorieIds.Clone() } };
     private static bool VersionGueltig(string? value) => value is { Length: 64 } && value.All(Uri.IsHexDigit);
 
     private async void TourenDataGrid_PreviewKeyDownMehrfach(object sender, KeyEventArgs e)
     {
+        // Delete belongs to the active editor; never turn it into a tour action.
+        if (_geschlossen || _inlineDisposed || _inlineBusy || _inlineDraft is not null || _viewModel.InlineGesperrt) return;
         if (e.Key != Key.Delete || Keyboard.Modifiers != ModifierKeys.None) return;
         e.Handled = true;
         await FuehreMehrfachAus(TourenLoeschenAngefordert);

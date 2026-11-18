@@ -35,9 +35,20 @@ public sealed class ApiHauptfensterVertragTests
         Assert.Equal("TourenDataGrid_MouseDoubleClick",(string?)grid.Attribute("MouseDoubleClick")); Assert.Equal("TourenDataGrid_SelectionChanged",(string?)grid.Attribute("SelectionChanged"));
         Assert.Equal("TourenDataGrid_PreviewKeyDownMehrfach",(string?)grid.Attribute("PreviewKeyDown"));
         var tourdetails=Assert.Single(buttons,x=>(string?)x.Attribute("Content")=="Tourdetails…"); Assert.Equal("TourdetailOeffnen_Click",(string?)tourdetails.Attribute("Click"));
-        var keys=grid.Element(Presentation+"DataGrid.InputBindings")!.Elements(Presentation+"KeyBinding").ToDictionary(x=>(string)x.Attribute("Key")!);
-        Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["F2"].Attribute("Command")!); Assert.Equal("{Binding TourBearbeitenCommand}",(string)keys["Enter"].Attribute("Command")!);
-        Assert.DoesNotContain("Delete",keys.Keys);
+        var keys=grid.Descendants(Presentation+"KeyBinding").Select(x=>(string?)x.Attribute("Key")).ToArray();
+        Assert.DoesNotContain("F2",keys); Assert.DoesNotContain("Enter",keys); Assert.DoesNotContain("Delete",keys);
+        Assert.Equal("InlineBeginningEdit",(string?)grid.Attribute("BeginningEdit"));
+        Assert.Equal("InlinePreparingCellForEdit",(string?)grid.Attribute("PreparingCellForEdit"));
+        Assert.Equal("InlineCellEditEnding",(string?)grid.Attribute("CellEditEnding"));
+        using var inlineStream=Assembly.GetExecutingAssembly().GetManifestResourceStream("AndyTours.ApiHauptfenster.Inline.cs");
+        Assert.NotNull(inlineStream);
+        using var inlineReader=new StreamReader(inlineStream!);
+        var inline=inlineReader.ReadToEnd();
+        Assert.Contains("e.Key is Key.Enter or Key.Tab",inline);
+        Assert.Contains("TourenDataGrid.CommitEdit(DataGridEditingUnit.Cell, true)",inline);
+        Assert.Contains("_viewModel.TourBearbeitenCommand.Execute(null)",inline);
+        Assert.Contains("BeendeNativeInlineBearbeitung();",inline);
+        Assert.Contains("e.EditingEventArgs is not TextCompositionEventArgs",inline);
     }
     [Fact] public void PulsbereicheTabUndMesswerttabelleSindGebundenUndSchreibgeschuetzt()
     {
