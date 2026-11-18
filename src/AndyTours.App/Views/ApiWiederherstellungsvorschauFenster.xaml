@@ -50,8 +50,12 @@
                         <TextBlock Text="{Binding Vorschau.Dateianzahl, Mode=OneWay, TargetNullValue=Unbekannt / ungeprüft, FallbackValue=Unbekannt / ungeprüft}" TextWrapping="Wrap" Margin="0,2,0,7"/>
                         <TextBlock Text="Entpackte Nutzdatenbytes" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding Vorschau.NutzdatenBytes, Mode=OneWay, TargetNullValue=Unbekannt / ungeprüft, FallbackValue=Unbekannt / ungeprüft}" TextWrapping="Wrap" Margin="0,2,0,7"/>
-                        <TextBlock Text="Datenbankprüfung" FontWeight="SemiBold"/>
+                        <TextBlock Text="Datenbankprüfung (Metadaten)" FontWeight="SemiBold"/>
                         <TextBlock Text="Nicht ausgeführt" Margin="0,2,0,7"/>
+                        <TextBlock Text="SQLite-Basisprüfung (separat, nicht freigebend)" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding SqliteStatus, Mode=OneWay}" TextWrapping="Wrap" Margin="0,2,0,7"/>
+                        <TextBlock Text="Prüfergebnis" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding SqliteErgebnis.Status, Mode=OneWay, TargetNullValue=Kein Ergebnis}" Margin="0,2,0,7"/>
                         <TextBlock Text="Anwendungsfreigabe" FontWeight="SemiBold"/>
                         <TextBlock Text="Nein" Margin="0,2,0,7"/>
                         <ItemsControl ItemsSource="{Binding Vorschau.Hinweise, Mode=OneWay}">
@@ -68,6 +72,7 @@
             <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
                 <Button Content="Katalog laden" Command="{Binding LadenCommand}" Style="{StaticResource ApiAktion}"/>
                 <Button Content="Vorschau anfordern" Command="{Binding VorschauCommand}" Style="{StaticResource ApiPrimaeraktion}"/>
+                <Button Content="SQLite-Basis prüfen" Command="{Binding SqlitePruefenCommand}" Style="{StaticResource ApiAktion}"/>
                 <Button Content="Schließen" IsCancel="True" Padding="12,7" Margin="0"/>
             </WrapPanel>
         </Grid>

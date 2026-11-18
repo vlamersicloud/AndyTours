@@ -44,10 +44,17 @@ if ($LASTEXITCODE -ne 0) { throw 'Die App konnte nicht veröffentlicht werden.' 
 
 # --- 3. Lokales Backend veröffentlichen ---
 Write-Host 'Lokales Backend wird veröffentlicht …'
+$BackendAusgabe = Join-Path $AppAusgabe 'backend'
 dotnet publish (Join-Path $Projektordner 'src\AndyTours.Api\AndyTours.Api.csproj') `
     --configuration Release --runtime win-x64 --self-contained true `
-    --output (Join-Path $AppAusgabe 'backend') -p:DebugType=none
+    --output $BackendAusgabe -p:DebugType=none
 if ($LASTEXITCODE -ne 0) { throw 'Das Backend konnte nicht veröffentlicht werden.' }
+
+# Der vertrauenswürdige Checker wird mit dem Backendpaket ausgeliefert; er wird hier nicht gestartet.
+dotnet publish (Join-Path $Projektordner 'tools\AndyTours.SqlitePruefer\AndyTours.SqlitePruefer.csproj') `
+    --configuration Release --runtime win-x64 --self-contained true `
+    --output (Join-Path $BackendAusgabe 'sqlite-checker') -p:DebugType=none
+if ($LASTEXITCODE -ne 0) { throw 'Der SQLite-Prüfer konnte nicht veröffentlicht werden.' }
 
 # --- 4. Inno-Setup-Compiler suchen und aufrufen ---
 $Kandidaten = @(

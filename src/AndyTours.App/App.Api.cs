@@ -285,7 +285,7 @@ public partial class App
                     vm = new ApiWiederherstellungsvorschauViewModel(
                         uebergebeneSitzung.Sicherungskatalog,
                         uebergebeneSitzung.Wiederherstellungsvorschau,
-                        fenster.LebenszeitToken);
+                        uebergebeneSitzung.SqliteBasispruefung, fenster.LebenszeitToken);
                     dialog = new ApiWiederherstellungsvorschauFenster(vm) { Owner = fenster };
                     dialog.ShowDialog();
                 }
