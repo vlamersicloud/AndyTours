@@ -88,6 +88,11 @@
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiSicherungsarchivFenster.xaml.cs" LogicalName="AndyTours.ApiSicherungsarchivFenster.xaml.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.Client\BackendClientSitzung.cs" LogicalName="AndyTours.BackendClientSitzung.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.Api\Program.cs" LogicalName="AndyTours.Sicherung.Erstellung.Program.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Api\BackendStartsicherungsHostedService.cs" LogicalName="AndyTours.BackendStartsicherungsHostedService.cs" />
+    <Compile Include="..\..\src\AndyTours.Api\BackendStartsicherungsHostedService.cs" Link="Infrastructure\BackendStartsicherungsHostedService.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Daten\Datensicherung\SqliteBackendStartsicherungsZaehler.cs" LogicalName="AndyTours.SqliteBackendStartsicherungsZaehler.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Application\Sicherung\BackendStartsicherungsKoordinator.cs" LogicalName="AndyTours.BackendStartsicherungsKoordinator.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Application\Sicherung\WiederherstellungsvorschauRegeln.cs" LogicalName="AndyTours.WiederherstellungsvorschauRegeln.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.Api\SicherungsarchivErstellungEndpunkte.cs" LogicalName="AndyTours.Sicherung.Erstellung.Endpunkte.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiWiederherstellungsvorschauFenster.xaml" LogicalName="AndyTours.ApiWiederherstellungsvorschauFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiWiederherstellungsvorschauFenster.xaml.cs" LogicalName="AndyTours.ApiWiederherstellungsvorschauFenster.xaml.cs" />

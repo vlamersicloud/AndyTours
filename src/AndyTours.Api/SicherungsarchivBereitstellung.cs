@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 /// Lazily resolves fixed server-side full-archive creation dependencies. Call only after the request's
 /// outer exclusive dataset lease is held; no external-writer or filesystem-TOCTOU protection is provided.
 /// </summary>
-public sealed class SicherungsarchivBereitstellung
+public sealed class SicherungsarchivBereitstellung : IBackendStartsicherungsArchiv
 {
     private readonly IConfiguration _configuration;
     private readonly string _datenordner;
@@ -81,6 +81,9 @@ public sealed class SicherungsarchivBereitstellung
             return null;
         }
     }
+
+    ISicherungsarchivErstellung? IBackendStartsicherungsArchiv.Ermittle(CancellationToken cancellationToken) =>
+        Ermittle(cancellationToken);
 
     private static bool HasReparseAncestor(string path)
     {

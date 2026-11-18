@@ -17,6 +17,7 @@ using AndyTours.Application.Touren;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 using AndyTours.Daten;
+using AndyTours.Daten.Datensicherung;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 
@@ -60,6 +61,12 @@ builder.Services.AddSingleton<IRoutingKonfiguration>(_ => new SqliteRoutingKonfi
 builder.Services.AddSingleton<ISicherungskonfiguration>(_ => new SqliteSicherungskonfiguration(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton<IEinheitentabellenlayout>(_ => new SqliteEinheitentabellenlayout(Path.Combine(dataDirectory, "andytours.db")));
 builder.Services.AddSingleton(_ => new SicherungsarchivBereitstellung(builder.Configuration, dataDirectory, TimeProvider.System));
+builder.Services.AddSingleton<IBackendStartsicherungsZaehler>(_ =>
+    new SqliteBackendStartsicherungsZaehler(Path.Combine(dataDirectory, "andytours.db")));
+builder.Services.AddSingleton<IBackendStartsicherungsArchiv>(sp =>
+    sp.GetRequiredService<SicherungsarchivBereitstellung>());
+builder.Services.AddSingleton<BackendStartsicherungsKoordinator>();
+builder.Services.AddHostedService<BackendStartsicherungsHostedService>();
 builder.Services.AddSingleton<ISicherungskatalog>(_ =>
 {
     try
