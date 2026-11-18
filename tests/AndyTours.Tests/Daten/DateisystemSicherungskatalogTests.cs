@@ -68,6 +68,33 @@ public sealed class DateisystemSicherungskatalogTests : IDisposable
     }
 
     [Fact]
+    public async Task Opens_only_selected_id_and_hash_on_readonly_source_and_preserves_source()
+    {
+        Directory.CreateDirectory(BackupDir);
+        var bytes = new byte[] { 2, 4, 6, 8 };
+        var path = Path.Combine(BackupDir, "andytours_2024-02-29_12-34-56.db");
+        await File.WriteAllBytesAsync(path, bytes);
+        var before = Snapshot(BackupDir);
+        using var reader = new DateisystemSicherungskatalog(BackupDir);
+        var entry = Assert.Single((await reader.Liste(default)).Eintraege);
+
+        await using (var source = await reader.Oeffnen(
+            new SicherungsdownloadAnfrage(entry.Id, entry.InhaltHash), 100, CancellationToken.None))
+        {
+            Assert.Equal(entry.Id, source.Metadaten.Id);
+            using var received = new MemoryStream();
+            await source.Inhalt.CopyToAsync(received);
+            Assert.Equal(bytes, received.ToArray());
+        }
+
+        Assert.Equal(before, Snapshot(BackupDir));
+        await Assert.ThrowsAsync<StammdatenException>(() => reader.Oeffnen(
+            new SicherungsdownloadAnfrage(Guid.NewGuid(), entry.InhaltHash), 100, CancellationToken.None));
+        await Assert.ThrowsAsync<StammdatenException>(() => reader.Oeffnen(
+            new SicherungsdownloadAnfrage(entry.Id, new string('A', 64)), 100, CancellationToken.None));
+    }
+
+    [Fact]
     public async Task Cancellation_and_disposal_do_not_write_catalog_files()
     {
         Directory.CreateDirectory(BackupDir);

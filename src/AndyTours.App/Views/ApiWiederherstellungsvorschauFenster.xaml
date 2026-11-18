@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Wiederherstellungsvorschau" Width="900" Height="720" MinWidth="680" MinHeight="520" ResizeMode="CanResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Language="de-DE" Background="{StaticResource ApiFlaeche}">
-    <!-- Aufbau: Katalog und Metadaten rollen; ausschließlich Lade-, Vorschau- und Schließaktionen im Footer. -->
+    <!-- Aufbau: Katalog und Metadaten rollen; Footer enthält Laden, Vorschau, Prüfung, expliziten Download und Schließen. -->
     <Grid Margin="20">
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Margin="0,0,0,12">
@@ -37,6 +37,7 @@
                 </Grid>
                 <Border Style="{StaticResource ApiKartenrahmen}" Margin="0,12,0,0">
                     <StackPanel>
+                        <TextBlock Text="{Binding DownloadStatus, Mode=OneWay}" Style="{StaticResource ApiStatus}" TextWrapping="Wrap"/>
                         <TextBlock Text="SHA-256 der ausgewählten Datei" Style="{StaticResource ApiAbschnittstitel}"/>
                         <TextBox Text="{Binding Auswahl.InhaltHash, Mode=OneWay, TargetNullValue=Keine Auswahl, FallbackValue=Keine Auswahl}" Style="{StaticResource ApiHashFeld}"/>
                     </StackPanel>
@@ -73,6 +74,8 @@
                 <Button Content="Katalog laden" Command="{Binding LadenCommand}" Style="{StaticResource ApiAktion}"/>
                 <Button Content="Vorschau anfordern" Command="{Binding VorschauCommand}" Style="{StaticResource ApiPrimaeraktion}"/>
                 <Button Content="SQLite-Basis prüfen" Command="{Binding SqlitePruefenCommand}" Style="{StaticResource ApiAktion}"/>
+                <Button Content="Sicherung herunterladen" IsEnabled="{Binding KannDownloaden, Mode=OneWay}"
+                        Click="Download_Click" Style="{StaticResource ApiAktion}"/>
                 <Button Content="Schließen" IsCancel="True" Padding="12,7" Margin="0"/>
             </WrapPanel>
         </Grid>

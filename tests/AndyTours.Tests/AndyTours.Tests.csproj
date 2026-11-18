@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="Microsoft.AspNetCore.Builder" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
@@ -113,6 +114,7 @@
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiSicherungseinstellungenViewModel.cs" Link="Presentation\ApiSicherungseinstellungenViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiSicherungsarchivViewModel.cs" Link="Presentation\ApiSicherungsarchivViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiWiederherstellungsvorschauViewModel.cs" Link="Presentation\ApiWiederherstellungsvorschauViewModel.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiWiederherstellungsvorschauViewModel.Download.cs" Link="Presentation\ApiWiederherstellungsvorschauViewModel.Download.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiFormularMapper.cs" Link="Presentation\ApiFormularMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourdetailMapper.cs" Link="Presentation\ApiTourdetailMapper.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenMehrfachViewModel*.cs" Link="Presentation\%(Filename)%(Extension)" />
@@ -145,6 +147,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\..\src\AndyTours.Api\SicherungsdownloadEndpunkt.cs" LogicalName="AndyTours.SicherungsdownloadEndpunkt.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Api\SicherungsdownloadGrenzen.cs" LogicalName="AndyTours.SicherungsdownloadGrenzen.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Client\SicherungsdownloadHttpClient.cs" LogicalName="AndyTours.SicherungsdownloadHttpClient.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Application\Sicherung\ISicherungsdownload.cs" LogicalName="AndyTours.ISicherungsdownload.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Application\Sicherung\ISicherungsdownloadClient.cs" LogicalName="AndyTours.ISicherungsdownloadClient.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Contracts\V1\SicherungsdownloadVertrag.cs" LogicalName="AndyTours.SicherungsdownloadVertrag.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Daten\DateisystemSicherungskatalog.cs" LogicalName="AndyTours.DateisystemSicherungskatalog.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Daten\DateisystemSicherungskatalog.Pruefquelle.cs" LogicalName="AndyTours.DateisystemSicherungskatalog.Pruefquelle.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiWiederherstellungsvorschauViewModel.cs" LogicalName="AndyTours.ApiWiederherstellungsvorschauViewModel.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiWiederherstellungsvorschauViewModel.Download.cs" LogicalName="AndyTours.ApiWiederherstellungsvorschauViewModel.Download.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\Funktionen\SicherungsdownloadDatei.cs" LogicalName="AndyTours.SicherungsdownloadDatei.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="..\..\src\AndyTours.Api\TourenFilterauswahlEndpunkt.cs" LogicalName="AndyTours.TourenFilterauswahlEndpunkt.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.Api\TourenFilterauswahlGrenzen.cs" LogicalName="AndyTours.TourenFilterauswahlGrenzen.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.Api\TourenFilterauswahlAntwortSerialisierer.cs" LogicalName="AndyTours.TourenFilterauswahlAntwortSerialisierer.cs" />
@@ -157,6 +173,9 @@
     <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiUebersichtViewModel.Filterauswahl.cs" LogicalName="AndyTours.ApiUebersichtViewModel.Filterauswahl.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiTourenauswahl.cs" LogicalName="AndyTours.ApiTourenauswahl.cs" />
 
+    <Compile Include="..\..\src\AndyTours.Api\SicherungsdownloadGrenzen.cs" Link="Infrastructure\SicherungsdownloadGrenzen.cs" />
+    <Compile Include="..\..\src\AndyTours.Api\SicherungsdownloadEndpunkt.cs" Link="Infrastructure\SicherungsdownloadEndpunkt.cs" />
+    <Compile Include="..\..\src\AndyTours.App\Funktionen\SicherungsdownloadDatei.cs" Link="Presentation\SicherungsdownloadDatei.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenFilterauswahlCommit.cs" Link="Presentation\ApiTourenFilterauswahlCommit.cs" />
     <Compile Include="..\..\src\AndyTours.Api\TourenFilterauswahlGrenzen.cs" Link="Infrastructure\TourenFilterauswahlGrenzen.cs" />
     <Compile Include="..\..\src\AndyTours.Api\TourenFilterauswahlAntwortSerialisierer.cs" Link="Infrastructure\TourenFilterauswahlAntwortSerialisierer.cs" />

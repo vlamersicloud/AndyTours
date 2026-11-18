@@ -29,12 +29,22 @@ public sealed partial class ApiWiederherstellungsvorschauViewModel : ObservableO
     public ApiWiederherstellungsvorschauViewModel(ISicherungskatalog katalog, IWiederherstellungsvorschau vorschauDienst,
         CancellationToken lifetime = default) : this(katalog, vorschauDienst, new DisabledSqliteBasispruefung(), lifetime) { }
 
+    public static ApiWiederherstellungsvorschauViewModel CreateWithDownloadClient(
+        ISicherungskatalog katalog, IWiederherstellungsvorschau vorschauDienst,
+        ISicherungsdownloadClient downloadClient, CancellationToken lifetime = default) =>
+        new(katalog, vorschauDienst, new DisabledSqliteBasispruefung(), downloadClient, lifetime);
+
     public ApiWiederherstellungsvorschauViewModel(ISicherungskatalog katalog, IWiederherstellungsvorschau vorschauDienst,
         ISqliteBasispruefung basispruefung, CancellationToken lifetime = default)
+        : this(katalog, vorschauDienst, basispruefung, null, lifetime) { }
+
+    public ApiWiederherstellungsvorschauViewModel(ISicherungskatalog katalog, IWiederherstellungsvorschau vorschauDienst,
+        ISqliteBasispruefung basispruefung, ISicherungsdownloadClient? downloadClient, CancellationToken lifetime = default)
     {
         _katalog = katalog ?? throw new ArgumentNullException(nameof(katalog));
         _vorschauDienst = vorschauDienst ?? throw new ArgumentNullException(nameof(vorschauDienst));
         _basispruefung = basispruefung ?? throw new ArgumentNullException(nameof(basispruefung));
+        _downloadClient = downloadClient;
         _lifetime = CancellationTokenSource.CreateLinkedTokenSource(lifetime);
     }
     private sealed class DisabledSqliteBasispruefung : ISqliteBasispruefung
@@ -46,16 +56,18 @@ public sealed partial class ApiWiederherstellungsvorschauViewModel : ObservableO
     private bool CanLaden() => !_disposed && !IstBeschaeftigt;
     private bool CanVorschau() => !_disposed && !IstBeschaeftigt && !MussNeuLaden && Auswahl is not null && Eintraege.Contains(Auswahl);
     private bool CanSqlitePruefen() => CanVorschau() && Auswahl?.Art == Sicherungsart.Vollarchiv;
-    partial void OnIstBeschaeftigtChanged(bool value) => NotifyCommands();
-    partial void OnMussNeuLadenChanged(bool value) { VorschauCommand.NotifyCanExecuteChanged(); SqlitePruefenCommand.NotifyCanExecuteChanged(); }
+    partial void OnIstBeschaeftigtChanged(bool value) { NotifyCommands(); OnPropertyChanged(nameof(KannDownloaden)); }
+    partial void OnMussNeuLadenChanged(bool value) { VorschauCommand.NotifyCanExecuteChanged(); SqlitePruefenCommand.NotifyCanExecuteChanged(); OnPropertyChanged(nameof(KannDownloaden)); }
     partial void OnAuswahlChanged(SicherungAntwort? value)
     {
         if (_disposed) return;
         _revision++;
         _activeCheck?.Cancel();
+        _activeDownload?.Cancel();
+        _downloadGeneration++;
         Vorschau = null; SqliteErgebnis = null; SqliteStatus = "SQLite-Basisprüfung nicht ausgeführt.";
         if (value is not null) Status = "Auswahl geändert; Vorschau erneut anfordern.";
-        VorschauCommand.NotifyCanExecuteChanged(); SqlitePruefenCommand.NotifyCanExecuteChanged();
+        VorschauCommand.NotifyCanExecuteChanged(); SqlitePruefenCommand.NotifyCanExecuteChanged(); OnPropertyChanged(nameof(KannDownloaden));
     }
     [RelayCommand(CanExecute = nameof(CanLaden))]
     public async Task LadenAsync(CancellationToken cancellationToken = default)
@@ -147,5 +159,5 @@ public sealed partial class ApiWiederherstellungsvorschauViewModel : ObservableO
     }
     private bool Current(SicherungAntwort selected, string hash, int revision) => !_disposed && revision == _revision && Auswahl?.Id == selected.Id && string.Equals(Auswahl.InhaltHash, hash, StringComparison.Ordinal);
     private void NotifyCommands() { LadenCommand.NotifyCanExecuteChanged(); VorschauCommand.NotifyCanExecuteChanged(); SqlitePruefenCommand.NotifyCanExecuteChanged(); }
-    public void Dispose() { if (_disposed) return; _disposed = true; _activeCheck?.Cancel(); _lifetime.Cancel(); NotifyCommands(); _lifetime.Dispose(); GC.SuppressFinalize(this); }
+    public void Dispose() { if (_disposed) return; _disposed = true; _activeCheck?.Cancel(); _activeDownload?.Cancel(); _downloadGeneration++; _lifetime.Cancel(); NotifyCommands(); OnPropertyChanged(nameof(KannDownloaden)); _lifetime.Dispose(); GC.SuppressFinalize(this); }
 }

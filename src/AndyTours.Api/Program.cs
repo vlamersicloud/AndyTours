@@ -198,6 +198,7 @@ app.MapRoutingKonfiguration();
 app.MapSicherungskonfiguration();
 app.MapEinheitentabellenlayout();
 app.MapSicherungskatalog();
+app.MapSicherungsdownload();
 app.MapSicherungsarchivErstellung();
 app.MapWiederherstellungsvorschau();
 app.MapSqliteBasispruefung();

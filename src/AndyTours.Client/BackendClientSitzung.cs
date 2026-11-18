@@ -66,6 +66,7 @@ public sealed class BackendClientSitzung : IDisposable
         Sicherungskonfiguration = new SicherungskonfigurationHttpClient(_httpClient);
         Einheitentabellenlayout = new EinheitentabellenlayoutHttpClient(_httpClient);
         Sicherungskatalog = new SicherungskatalogHttpClient(_importHttpClient);
+        Sicherungsdownload = new SicherungsdownloadHttpClient(_importHttpClient);
         SicherungsarchivErstellung = new SicherungsarchivErstellungHttpClient(_importHttpClient);
         Wiederherstellungsvorschau = new WiederherstellungsvorschauHttpClient(_importHttpClient);
         SqliteBasispruefung = new SqliteBasispruefungHttpClient(_importHttpClient);
@@ -104,6 +105,7 @@ public sealed class BackendClientSitzung : IDisposable
     public ISicherungskonfiguration Sicherungskonfiguration { get; }
     public IEinheitentabellenlayout Einheitentabellenlayout { get; }
     public ISicherungskatalog Sicherungskatalog { get; }
+    public ISicherungsdownloadClient Sicherungsdownload { get; }
     public ISicherungsarchivErstellung SicherungsarchivErstellung { get; }
     public IWiederherstellungsvorschau Wiederherstellungsvorschau { get; }
     public ISqliteBasispruefung SqliteBasispruefung { get; }

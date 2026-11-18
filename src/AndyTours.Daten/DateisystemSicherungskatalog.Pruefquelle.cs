@@ -14,6 +14,17 @@ using AndyTours.Daten.Datensicherung;
 /// </summary>
 public sealed partial class DateisystemSicherungskatalog
 {
+    public async Task<SicherungsdownloadQuelle> Oeffnen(
+        SicherungsdownloadAnfrage anfrage, long serverMaxBytes, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(anfrage);
+        var source = await OeffnePruefquelle(
+            new WiederherstellungsvorschauAnfrage(anfrage.SicherungsId, anfrage.ErwarteterInhaltHash),
+            serverMaxBytes, cancellationToken).ConfigureAwait(false);
+        return new SicherungsdownloadQuelle(source.Inhalt, source.Metadaten, source.DisposeAsync);
+    }
+
     private const string QuelleNichtGefunden = "Sicherungsquelle nicht gefunden.";
     private const string QuelleGeaendert = "Sicherungsquelle wurde geändert.";
 

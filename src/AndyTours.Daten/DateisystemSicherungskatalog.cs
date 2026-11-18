@@ -8,7 +8,7 @@ using AndyTours.Contracts.V1;
 using AndyTours.Daten.Datensicherung;
 
 /// <summary>Read-only metadata reader for strict legacy SQLite backups and verified full archives.</summary>
-public sealed partial class DateisystemSicherungskatalog : ISicherungskatalog, IDisposable
+public sealed partial class DateisystemSicherungskatalog : ISicherungskatalog, ISicherungsdownload, IDisposable
 {
     private readonly string _ordner;
     private readonly VollarchivKatalogGrenzen? _vollarchivGrenzen;
