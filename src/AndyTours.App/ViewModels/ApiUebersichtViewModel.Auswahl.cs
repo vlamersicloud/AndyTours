@@ -54,6 +54,7 @@ public partial class ApiUebersichtViewModel
 
     partial void OnEditorOffenChanged(bool value)
     {
+        OnPropertyChanged(nameof(KannAlleFiltertrefferAuswaehlen));
         OnPropertyChanged(nameof(HatTourenauswahl));
         BenachrichtigeTourCommands();
     }

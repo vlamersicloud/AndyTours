@@ -1,15 +1,20 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using AndyTours.Application.Touren;
 using AndyTours.Contracts.V1;
 
 namespace AndyTours.Client;
 
 /// <summary>HTTP-Implementierung des Touren-Persistenzports für das versionierte Backend.</summary>
-public sealed class TourenHttpClient(HttpClient http) : ITourenSpeicher
+public sealed class TourenHttpClient(HttpClient http) : ITourenSpeicher, ITourenFilterauswahlClient
 {
     private const string Basis = "api/v1/touren/";
+    private static readonly JsonSerializerOptions FilterauswahlJson = new(JsonSerializerDefaults.Web)
+    {
+        RespectRequiredConstructorParameters = true
+    };
 
     /// <inheritdoc />
     public Task<TourListeAntwort> Liste(int start, int anzahl, DateOnly? von, DateOnly? bis, CancellationToken ct = default) =>
@@ -44,6 +49,63 @@ public sealed class TourenHttpClient(HttpClient http) : ITourenSpeicher
         await Pruefe(response, ct);
         return await response.Content.ReadFromJsonAsync<TourListeAntwort>(cancellationToken: ct)
             ?? throw new BackendApiException(response.StatusCode);
+    }
+
+    /// <inheritdoc />
+    public async Task<TourenFilterauswahlAntwort> Auswaehlen(TourenFilterauswahlAnfrage filter, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        ct.ThrowIfCancellationRequested();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, Basis + "auswahl/filtertreffer")
+        {
+            Content = JsonContent.Create(filter, options: FilterauswahlJson)
+        };
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        ct.ThrowIfCancellationRequested();
+        await Pruefe(response, ct);
+
+        TourenFilterauswahlAntwort? antwort;
+        try
+        {
+            antwort = await response.Content.ReadFromJsonAsync<TourenFilterauswahlAntwort>(
+                FilterauswahlJson, ct);
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException("Filtertreffer-Antwort ist ungültig.", ex);
+        }
+        ct.ThrowIfCancellationRequested();
+
+        if (antwort is null || antwort.Filter is null || antwort.Filter != filter || antwort.Touren is null)
+            throw new InvalidDataException("Filtertreffer-Antwort passt nicht zur Anfrage.");
+
+        var rows = new TourAntwort[antwort.Touren.Count];
+        var ids = new HashSet<long>();
+        for (var i = 0; i < rows.Length; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var tour = antwort.Touren[i];
+            if (tour is null || tour.Id <= 0 ||
+                tour.Version is not { Length: 64 } version || !version.All(Uri.IsHexDigit) ||
+                tour.Werte is null || !ids.Add(tour.Id))
+                throw new InvalidDataException("Filtertreffer-Antwort enthält ungültige Touren.");
+            try
+            {
+                ValidiereTour.Ausfuehren(tour.Werte);
+            }
+            catch (UngueltigeTourException ex)
+            {
+                throw new InvalidDataException("Filtertreffer-Antwort enthält ungültige Tourwerte.", ex);
+            }
+            rows[i] = tour with
+            {
+                Werte = tour.Werte with { KategorieIds = (long[])tour.Werte.KategorieIds.Clone() }
+            };
+        }
+
+        ct.ThrowIfCancellationRequested();
+        return antwort with { Touren = Array.AsReadOnly(rows) };
     }
 
     /// <inheritdoc />

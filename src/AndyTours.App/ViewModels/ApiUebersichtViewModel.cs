@@ -296,6 +296,7 @@ public partial class ApiUebersichtViewModel : ObservableObject
     partial void OnLaedtChanged(bool value)
     {
         OnPropertyChanged(nameof(FilterControlsEnabled));
+        OnPropertyChanged(nameof(KannAlleFiltertrefferAuswaehlen));
         AktualisierenCommand.NotifyCanExecuteChanged();
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
         VorherigeSeiteCommand.NotifyCanExecuteChanged();
@@ -354,6 +355,8 @@ public partial class ApiUebersichtViewModel : ObservableObject
         var changed = _angewandteAuswahlQuery is not null && _angewandteAuswahlQuery != key;
         if (changed) HebeTourenauswahlAuf();
         _angewandteAuswahlQuery = key;
+        _angewandterFilterauswahlSnapshot = Auswahlfilter(filter);
+        OnPropertyChanged(nameof(KannAlleFiltertrefferAuswaehlen));
         return changed;
     }
 

@@ -11,9 +11,73 @@ using Microsoft.Data.Sqlite;
 namespace AndyTours.Daten;
 
 /// <summary>SQLite-basierter Tourenspeicher mit festgelegtem serverseitigem Datenbankpfad.</summary>
-public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher
+public sealed class SqliteTourenSpeicher(string datenbankpfad) : ITourenSpeicher, ITourenFilterauswahl
 {
     private SqliteConnection Oeffnen() => OeffneDatenbank.Ausfuehren(datenbankpfad);
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<TourAntwort>> AlleTreffer(
+        TourenFilterauswahlAnfrage filter, int maximaleTouren, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (filter is null || maximaleTouren <= 0 ||
+            filter.AktivitaetId is <= 0 || filter.KategorieId is <= 0 || filter.Von > filter.Bis)
+            throw new UngueltigeTourException("Filterauswahl ist ungültig.");
+
+        var readOnlyConnection = new SqliteConnectionStringBuilder
+        {
+            DataSource = Path.GetFullPath(datenbankpfad),
+            Mode = SqliteOpenMode.ReadOnly,
+            Pooling = false,
+            ForeignKeys = true
+        };
+        using var verbindung = new SqliteConnection(readOnlyConnection.ToString());
+        verbindung.Open();
+        using var transaktion = verbindung.BeginTransaction(deferred: true);
+        var trainings = TrainingseinheitenTabelle.Laden(verbindung);
+        ct.ThrowIfCancellationRequested();
+        var aktivitaeten = AktivitaetenTabelle.Laden(verbindung);
+        ct.ThrowIfCancellationRequested();
+        var kategorien = KategorienTabelle.Laden(verbindung);
+        ct.ThrowIfCancellationRequested();
+        var equipments = EquipmentsTabelle.Laden(verbindung);
+        ct.ThrowIfCancellationRequested();
+        var bestand = new Datenbestand
+        {
+            Trainingseinheiten = trainings,
+            Aktivitaeten = aktivitaeten,
+            Kategorien = kategorien,
+            Equipments = equipments,
+        };
+        var basis = trainings
+            .Where(t => (!filter.Von.HasValue || t.Datum >= filter.Von.Value) &&
+                        (!filter.Bis.HasValue || t.Datum <= filter.Bis.Value) &&
+                        (!filter.AktivitaetId.HasValue || t.AktivitaetId == filter.AktivitaetId.Value))
+            .ToList();
+        var coreTableFilter = TourenTabellenfilterMapper.ToFilter(filter.Tabellenfilter);
+        var alle = basis
+            .Where(t => !filter.KategorieId.HasValue || t.KategorieIds.Contains(filter.KategorieId.Value))
+            .ToList();
+        if (filter.Tabellenfilter is not null)
+        {
+            alle = FiltereEinheiten.Ausfuehren(alle, coreTableFilter, bestand);
+            ct.ThrowIfCancellationRequested();
+        }
+
+        if (alle.Count > maximaleTouren)
+            throw new TourenFilterauswahlLimitException();
+        var treffer = new TourAntwort[alle.Count];
+        for (var i = 0; i < alle.Count; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+            treffer[i] = TourenMapper.ToAntwort(alle[i]);
+        }
+        if (treffer.Length != alle.Count)
+            throw new InvalidOperationException("Filtertreffer-Snapshot ist unvollständig.");
+        ct.ThrowIfCancellationRequested();
+        transaktion.Commit();
+        return Task.FromResult<IReadOnlyList<TourAntwort>>(Array.AsReadOnly(treffer));
+    }
 
     /// <inheritdoc />
     public Task<TourListeAntwort> Liste(int start, int anzahl, DateOnly? von, DateOnly? bis, CancellationToken ct = default) =>

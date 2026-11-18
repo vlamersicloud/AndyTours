@@ -63,6 +63,27 @@ public partial class ApiHauptfenster
         finally { _auswahlAnwenden = false; }
     }
 
+    private async void AlleFiltertrefferAuswaehlen_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (_auswahlDisposed || _geschlossen || _verwaltungOffen || _lifetime.IsCancellationRequested ||
+            _viewModel.InlineGesperrt || _viewModel.Laedt || _viewModel.EditorOffen) return;
+
+        CancellationToken token;
+        try { token = _lifetime.Token; }
+        catch (ObjectDisposedException) { return; }
+
+        try
+        {
+            await _viewModel.WaehleAlleFiltertrefferAsync(token);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+        catch (Exception)
+        {
+            if (!_geschlossen && !token.IsCancellationRequested)
+                _viewModel.StatusText = "Filtertreffer konnten nicht ausgewählt werden; die bisherige Auswahl bleibt erhalten.";
+        }
+    }
+
     private void AuswahlAufheben_Click(object sender, System.Windows.RoutedEventArgs e)
     {
         if (_auswahlDisposed || _geschlossen || _viewModel.InlineGesperrt) return;

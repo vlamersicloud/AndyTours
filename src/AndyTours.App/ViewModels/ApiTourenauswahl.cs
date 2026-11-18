@@ -5,7 +5,7 @@ namespace AndyTours.App.ViewModels;
 /// <summary>WPF-unabhängiger, expliziter Snapshot manuell ausgewählter Touren.</summary>
 public sealed class ApiTourenauswahl
 {
-    private readonly Dictionary<long, TourAntwort> _items = new();
+    private Dictionary<long, TourAntwort> _items = new();
     public int Count => _items.Count;
     public IReadOnlyList<TourAntwort> Snapshot => Array.AsReadOnly(_items.Values.OrderBy(x => x.Id).Select(Copy).ToArray());
 
@@ -46,6 +46,21 @@ public sealed class ApiTourenauswahl
     {
         ArgumentNullException.ThrowIfNull(ids);
         foreach (var id in ids) _items.Remove(id);
+    }
+
+    /// <summary>Ersetzt den vollständigen Snapshot atomar, nachdem alle Zeilen validiert und defensiv kopiert wurden.</summary>
+    public void SetzeAlle(IEnumerable<TourAntwort> touren)
+    {
+        ArgumentNullException.ThrowIfNull(touren);
+        var candidate = new Dictionary<long, TourAntwort>();
+        foreach (var tour in touren)
+        {
+            ArgumentNullException.ThrowIfNull(tour);
+            Pruefe(tour);
+            if (!candidate.TryAdd(tour.Id, Copy(tour)))
+                throw new ArgumentException("Filtertreffer enthalten doppelte IDs.", nameof(touren));
+        }
+        _items = candidate;
     }
 
     public void Clear() => _items.Clear();

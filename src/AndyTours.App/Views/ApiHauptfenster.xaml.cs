@@ -310,7 +310,7 @@ public partial class ApiHauptfenster : Window, IDisposable
     private void TourenDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         if (e.Timestamp == _inlineDialogMouseTimestamp) { e.Handled = true; return; }
-        if (_viewModel.InlineGesperrt || e.ChangedButton != MouseButton.Left || sender is not DataGrid grid || e.OriginalSource is not DependencyObject ursprung) return;
+        if (_viewModel.InlineGesperrt || _viewModel.Laedt || _verwaltungOffen || _viewModel.EditorOffen || e.ChangedButton != MouseButton.Left || sender is not DataGrid grid || e.OriginalSource is not DependencyObject ursprung) return;
         if (ItemsControl.ContainerFromElement(grid, ursprung) is not DataGridRow { Item: Contracts.V1.TourAntwort tour } row)
             return;
 

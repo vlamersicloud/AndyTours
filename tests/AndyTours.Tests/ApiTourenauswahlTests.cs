@@ -59,6 +59,22 @@ public sealed class ApiTourenauswahlTests
     }
 
     [Fact]
+    public void ReplaceAllFilterSnapshotIsAtomicAndDeeplyImmutable()
+    {
+        var selection = new ApiTourenauswahl();
+        selection.Setze(Tour(1, 'A', 7), true);
+        var source = new[] { Tour(2, 'B', 9, 11), Tour(3, 'C', 13) };
+        selection.SetzeAlle(source);
+        source[0].Werte.KategorieIds[0] = 999;
+        Assert.Equal(new long[] { 2, 3 }, selection.Snapshot.Select(x => x.Id));
+        Assert.Equal(new long[] { 9, 11 }, selection.Snapshot[0].Werte.KategorieIds);
+        Assert.Throws<ArgumentException>(() => selection.SetzeAlle([Tour(4, 'D'), Tour(4, 'E')]));
+        Assert.Equal(new long[] { 2, 3 }, selection.Snapshot.Select(x => x.Id));
+        Assert.Throws<ArgumentException>(() => selection.SetzeAlle([Tour(5, 'F'), Tour(0, 'G')]));
+        Assert.Equal(new long[] { 2, 3 }, selection.Snapshot.Select(x => x.Id));
+    }
+
+    [Fact]
     public void ClearAndConfirmedIdsAreExactAndInvalidRowsRejected()
     {
         var selection = new ApiTourenauswahl();

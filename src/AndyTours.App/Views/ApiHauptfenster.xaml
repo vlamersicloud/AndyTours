@@ -214,7 +214,7 @@
                                         </WrapPanel>
                                         <TextBlock Text="Ungültige Zahlenbereiche sind nach Core-Regel inaktiv." Foreground="#875A12" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <WrapPanel Margin="0,10,0,6"><TextBlock Text="Manuell ausgewählt (alle Seiten):"/><TextBlock Text="{Binding AuswahlAnzahl, Mode=OneWay}" Margin="4,0,0,0"/><Button Content="Auswahl aufheben" Click="AuswahlAufheben_Click" IsEnabled="{Binding HatTourenauswahl}" Style="{StaticResource ApiFilterZuruecksetzen}" Margin="12,0,0,0"/></WrapPanel>
+                                    <WrapPanel Margin="0,10,0,6"><TextBlock Text="Ausgewählt (alle Seiten):"/><TextBlock Text="{Binding AuswahlAnzahl, Mode=OneWay}" Margin="4,0,0,0"/><Button Content="Alle Filtertreffer auswählen" Click="AlleFiltertrefferAuswaehlen_Click" IsEnabled="{Binding KannAlleFiltertrefferAuswaehlen}" Style="{StaticResource ApiFilterZuruecksetzen}" Margin="12,0,0,0"/><Button Content="Auswahl aufheben" Click="AuswahlAufheben_Click" IsEnabled="{Binding HatTourenauswahl}" Style="{StaticResource ApiFilterZuruecksetzen}" Margin="12,0,0,0"/></WrapPanel>
                                     <WrapPanel>
                                         <Button Content="Neue Tour" Command="{Binding NeueTourCommand}" Style="{StaticResource ApiAktion}"/>
                                         <Button Content="Bearbeiten" Command="{Binding TourBearbeitenCommand}" Style="{StaticResource ApiAktion}"/>

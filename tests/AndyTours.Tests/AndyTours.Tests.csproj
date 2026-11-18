@@ -144,4 +144,22 @@
     <ProjectReference Include="..\..\tools\AndyTours.Altdatenuebernahme\AndyTours.Altdatenuebernahme.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\src\AndyTours.Api\TourenFilterauswahlEndpunkt.cs" LogicalName="AndyTours.TourenFilterauswahlEndpunkt.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Api\TourenFilterauswahlGrenzen.cs" LogicalName="AndyTours.TourenFilterauswahlGrenzen.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Api\TourenFilterauswahlAntwortSerialisierer.cs" LogicalName="AndyTours.TourenFilterauswahlAntwortSerialisierer.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiTourenFilterauswahlCommit.cs" LogicalName="AndyTours.ApiTourenFilterauswahlCommit.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Daten\SqliteTourenSpeicher.cs" LogicalName="AndyTours.SqliteTourenSpeicher.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Application\Touren\ITourenFilterauswahl.cs" LogicalName="AndyTours.ITourenFilterauswahl.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Application\Touren\ITourenFilterauswahlClient.cs" LogicalName="AndyTours.ITourenFilterauswahlClient.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Contracts\V1\TourenFilterauswahlVertrag.cs" LogicalName="AndyTours.TourenFilterauswahlVertrag.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Client\TourenHttpClient.cs" LogicalName="AndyTours.TourenHttpClient.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiUebersichtViewModel.Filterauswahl.cs" LogicalName="AndyTours.ApiUebersichtViewModel.Filterauswahl.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.App\ViewModels\ApiTourenauswahl.cs" LogicalName="AndyTours.ApiTourenauswahl.cs" />
+
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenFilterauswahlCommit.cs" Link="Presentation\ApiTourenFilterauswahlCommit.cs" />
+    <Compile Include="..\..\src\AndyTours.Api\TourenFilterauswahlGrenzen.cs" Link="Infrastructure\TourenFilterauswahlGrenzen.cs" />
+    <Compile Include="..\..\src\AndyTours.Api\TourenFilterauswahlAntwortSerialisierer.cs" Link="Infrastructure\TourenFilterauswahlAntwortSerialisierer.cs" />
+  </ItemGroup>
+
 </Project>

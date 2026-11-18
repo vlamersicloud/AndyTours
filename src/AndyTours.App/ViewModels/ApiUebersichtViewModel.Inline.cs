@@ -37,6 +37,7 @@ public partial class ApiUebersichtViewModel
         OnPropertyChanged(nameof(InlineGesperrt));
         OnPropertyChanged(nameof(HatTourenauswahl));
         OnPropertyChanged(nameof(FilterControlsEnabled));
+        OnPropertyChanged(nameof(KannAlleFiltertrefferAuswaehlen));
         AktualisierenCommand.NotifyCanExecuteChanged();
         NaechsteSeiteCommand.NotifyCanExecuteChanged();
         VorherigeSeiteCommand.NotifyCanExecuteChanged();

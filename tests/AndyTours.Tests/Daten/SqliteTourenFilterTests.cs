@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using AndyTours.Application.Auswertung;
 using AndyTours.Application.Touren;
 using AndyTours.Contracts.V1;
@@ -17,6 +19,7 @@ public sealed class SqliteTourenFilterTests : IDisposable
     private long _aktivitaetA;
     private long _aktivitaetB;
     private long _kategorie;
+    private static readonly string[] MatchingNames = ["Passend Eins", "Passend Zwei"];
 
     public SqliteTourenFilterTests()
     {
@@ -77,6 +80,61 @@ public sealed class SqliteTourenFilterTests : IDisposable
         await Assert.ThrowsAsync<UngueltigeTourException>(async () => await _touren.ListeGefiltert(0, 10, filter));
         filter = new TourenListenfilter(null, null, null, -1);
         await Assert.ThrowsAsync<UngueltigeTourException>(async () => await _touren.ListeGefiltert(0, 10, filter));
+    }
+
+    [Fact]
+    public async Task FiltertrefferSnapshotIstVollstaendigVersioniertUndBeiCapUeberschreitungAbgelehnt()
+    {
+        await LegeTourAn(_aktivitaetA, [_kategorie], "Passend Eins");
+        await LegeTourAn(_aktivitaetA, [_kategorie], "Passend Zwei");
+        await LegeTourAn(_aktivitaetA, [], "Ohne Kategorie");
+        var filter = new TourenFilterauswahlAnfrage(
+            new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), _aktivitaetA, _kategorie,
+            new TourenTabellenfilter(null, null, "10", "15", "0", "10", "Passend"));
+        var schemaVorher = SchemaHash();
+
+        var snapshot = await _touren.AlleTreffer(filter, 10);
+        Assert.Equal(2, snapshot.Count);
+        Assert.Equal(MatchingNames, snapshot.Select(x => x.Werte.Name).OrderBy(x => x, StringComparer.Ordinal));
+        foreach (var row in snapshot)
+        {
+            var aktuelle = await _touren.Lesen(row.Id);
+            Assert.NotNull(aktuelle);
+            Assert.Equal(row.Version, aktuelle.Version);
+        }
+
+        await Assert.ThrowsAsync<TourenFilterauswahlLimitException>(() => _touren.AlleTreffer(filter, 1));
+        await Assert.ThrowsAsync<UngueltigeTourException>(() => _touren.AlleTreffer(filter, 0));
+        Assert.Equal(schemaVorher, SchemaHash());
+    }
+
+    [Fact]
+    public async Task FiltertrefferAbfrageBootstrappedKeinenFehlendenDatenbestand()
+    {
+        var missingPath = Path.Combine(_ordner, "nicht-vorhanden.db");
+        var reader = new SqliteTourenSpeicher(missingPath);
+        var filter = new TourenFilterauswahlAnfrage(null, null, null, null, null);
+
+        await Assert.ThrowsAsync<SqliteException>(() => reader.AlleTreffer(filter, 10));
+        Assert.False(File.Exists(missingPath));
+    }
+
+    private string SchemaHash()
+    {
+        var builder = new SqliteConnectionStringBuilder
+        {
+            DataSource = _datenbank,
+            Mode = SqliteOpenMode.ReadOnly,
+            Pooling = false
+        };
+        using var connection = new SqliteConnection(builder.ToString());
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT type || char(31) || name || char(31) || coalesce(sql, '') FROM sqlite_master ORDER BY type, name;";
+        using var reader = command.ExecuteReader();
+        var definitions = new List<string>();
+        while (reader.Read()) definitions.Add(reader.GetString(0));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\n", definitions))));
     }
 
     private async Task LegeTourAn(long aktivitaetId, long[] kategorien, string name)
