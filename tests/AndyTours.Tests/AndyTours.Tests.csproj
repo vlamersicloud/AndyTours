@@ -69,6 +69,8 @@
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiAktivitaetenFenster.xaml" LogicalName="AndyTours.ApiAktivitaetenFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiKategorienFenster.xaml" LogicalName="AndyTours.ApiKategorienFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiTextlisteFenster.xaml" LogicalName="AndyTours.ApiTextlisteFenster.xaml" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Api\TextlistenEndpunkte.cs" LogicalName="AndyTours.TextlistenEndpunkte.cs" />
+    <EmbeddedResource Include="..\..\src\AndyTours.Application\Stammdaten\ITextlistenVerwaltung.cs" LogicalName="AndyTours.ITextlistenVerwaltung.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiGarminEinstellungenFenster.xaml" LogicalName="AndyTours.ApiGarminEinstellungenFenster.xaml" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiAktivitaetenFenster.xaml.cs" LogicalName="AndyTours.ApiAktivitaetenFenster.xaml.cs" />
     <EmbeddedResource Include="..\..\src\AndyTours.App\Views\ApiKategorienFenster.xaml.cs" LogicalName="AndyTours.ApiKategorienFenster.xaml.cs" />
@@ -183,6 +185,7 @@
     <Compile Include="..\..\src\AndyTours.App\Funktionen\SicherungsdownloadDatei.cs" Link="Presentation\SicherungsdownloadDatei.cs" />
     <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTourenFilterauswahlCommit.cs" Link="Presentation\ApiTourenFilterauswahlCommit.cs" />
     <Compile Include="..\..\src\AndyTours.Api\TourenFilterauswahlGrenzen.cs" Link="Infrastructure\TourenFilterauswahlGrenzen.cs" />
+    <Compile Include="..\..\src\AndyTours.App\ViewModels\ApiTextlisteViewModel.cs" Link="Presentation\ApiTextlisteViewModel.cs" />
     <Compile Include="..\..\src\AndyTours.Api\TourenFilterauswahlAntwortSerialisierer.cs" Link="Infrastructure\TourenFilterauswahlAntwortSerialisierer.cs" />
   </ItemGroup>
 

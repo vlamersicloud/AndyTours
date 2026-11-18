@@ -13,6 +13,45 @@ public sealed class SqliteTextlistenVerwaltung(string datenbankpfad) : ITextlist
 {
     private sealed record Snapshot(Auswahlliste Liste, bool Gespeichert, List<string> Eintraege, string Version);
     private SqliteConnection Oeffnen() => OeffneDatenbank.Ausfuehren(datenbankpfad);
+    private SqliteConnection OeffnenNurLesen()
+    {
+        var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = datenbankpfad,
+            Mode = SqliteOpenMode.ReadOnly,
+            Pooling = false,
+        }.ToString());
+        try
+        {
+            connection.Open();
+            return connection;
+        }
+        catch
+        {
+            connection.Dispose();
+            throw;
+        }
+    }
+
+    public Task<TextlistenNutzungAntwort> NutzungLesen(Textlistenart art, string listenVersion, string name, CancellationToken ct = default)
+    {
+        ValidateVersion(listenVersion);
+        Map(art);
+        var canonical = ValidateName(name);
+        ct.ThrowIfCancellationRequested();
+        using var connection = OeffnenNurLesen();
+        using var tx = connection.BeginTransaction(deferred: true);
+        var snapshot = Lesen(connection, art);
+        if (!CryptographicOperations.FixedTimeEquals(Convert.FromHexString(snapshot.Version), Convert.FromHexString(listenVersion)))
+            throw new StammdatenException(StammdatenFehlerart.Konflikt, "Die Textliste wurde zwischenzeitlich geändert. Bitte neu laden.");
+        var currentName = snapshot.Eintraege.SingleOrDefault(x => VergleicheNamen.Ausfuehren(x, canonical));
+        if (currentName is null) throw NotFound();
+        var usage = ErmittleVerwendung(connection, tx, art, currentName, ct);
+        ct.ThrowIfCancellationRequested();
+        tx.Commit();
+        return Task.FromResult(new TextlistenNutzungAntwort(art, snapshot.Version, currentName,
+            usage.Touren, usage.Wartungen, usage.Alarme, usage.Version));
+    }
 
     public Task<TextlisteAntwort> Laden(Textlistenart art, CancellationToken ct = default)
     {
@@ -48,7 +87,14 @@ public sealed class SqliteTextlistenVerwaltung(string datenbankpfad) : ITextlist
             if (index < 0) throw NotFound();
             if (s.Eintraege.Where((_, i) => i != index).Any(x => VergleicheNamen.Ausfuehren(x, newName))) throw Invalid("Der Zielname ist bereits vorhanden.");
             var canonicalOld = s.Eintraege[index];
-            if (!string.Equals(canonicalOld, newName, StringComparison.Ordinal)) CascadeRename(c, tx, s.Liste, canonicalOld, newName);
+            if (string.IsNullOrWhiteSpace(anfrage.VerwendungsVersion) || anfrage.VerwendungsVersion.Length != 64 ||
+                !anfrage.VerwendungsVersion.All(Uri.IsHexDigit))
+                throw Invalid("Eine gültige Nutzungsvorschau ist erforderlich.");
+            var usage = ErmittleVerwendung(c, tx, art, canonicalOld, ct);
+            if (!CryptographicOperations.FixedTimeEquals(Convert.FromHexString(usage.Version), Convert.FromHexString(anfrage.VerwendungsVersion)))
+                throw new StammdatenException(StammdatenFehlerart.Konflikt, "Die Verwendung hat sich geändert. Bitte neu laden und erneut bestätigen.");
+            if (!string.Equals(canonicalOld, newName, StringComparison.Ordinal))
+                CascadeRename(c, tx, s.Liste, canonicalOld, newName, usage.Ids);
             s.Eintraege[index] = newName;
             AuswahllisteEinstellung.Speichern(c, tx, s.Liste, s.Eintraege);
         }, ct);
@@ -62,7 +108,7 @@ public sealed class SqliteTextlistenVerwaltung(string datenbankpfad) : ITextlist
         {
             var index = s.Eintraege.FindIndex(x => VergleicheNamen.Ausfuehren(x, name));
             if (index < 0) throw NotFound();
-            if (IstVerwendet(c, tx, s.Liste, s.Eintraege[index]))
+            if (IstVerwendet(c, tx, s.Liste, s.Eintraege[index], ct))
                 throw new StammdatenException(StammdatenFehlerart.Konflikt, "Der Eintrag wird noch verwendet und kann nicht gelöscht werden.");
             s.Eintraege.RemoveAt(index);
             AuswahllisteEinstellung.Speichern(c, tx, s.Liste, s.Eintraege);
@@ -135,21 +181,82 @@ public sealed class SqliteTextlistenVerwaltung(string datenbankpfad) : ITextlist
         _ => throw Invalid("Nicht unterstützte Textliste.")
     };
 
-    private static void CascadeRename(SqliteConnection c, SqliteTransaction tx, Auswahlliste list, string oldName, string newName)
+    private static void CascadeRename(SqliteConnection c, SqliteTransaction tx, Auswahlliste list, string oldName, string newName, IReadOnlyList<long> usageIds)
     {
-        if (list == Auswahlliste.Trainingsbereich) TrainingseinheitenTabelle.ErsetzeTrainingsbereich(c, tx, oldName, newName);
-        else WartungenTabelle.ErsetzeTaetigkeit(c, tx, oldName, newName);
+        if (list == Auswahlliste.Trainingsbereich)
+        {
+            using var command = c.CreateCommand();
+            command.Transaction = tx;
+            command.CommandText = "UPDATE Trainingseinheit SET Trainingsbereich = $new WHERE Id = $id;";
+            var id = command.Parameters.Add("$id", SqliteType.Integer);
+            command.Parameters.AddWithValue("$new", newName.Trim());
+            foreach (var usageId in usageIds)
+            {
+                id.Value = usageId;
+                if (command.ExecuteNonQuery() != 1)
+                    throw new StammdatenException(StammdatenFehlerart.Konflikt, "Die betroffenen Touren haben sich geändert. Bitte neu laden.");
+            }
+        }
+        else
+        {
+            WartungenTabelle.ErsetzeTaetigkeit(c, tx, oldName, newName);
+        }
     }
 
-    private static bool IstVerwendet(SqliteConnection c, SqliteTransaction tx, Auswahlliste list, string name)
+    private sealed record Verwendungszeile(long Id, string Wert, string Art);
+    private sealed record Verwendung(int Touren, int Wartungen, int Alarme, string Version, IReadOnlyList<long> Ids);
+
+    private static Verwendung ErmittleVerwendung(SqliteConnection c, SqliteTransaction? tx, Textlistenart art, string name, CancellationToken ct)
     {
-        var data = DatenbestandTabellen.Laden(c);
-        return list switch
+        var rows = new List<Verwendungszeile>();
+        if (art == Textlistenart.Trainingsbereich)
         {
-            Auswahlliste.Trainingsbereich => data.Trainingseinheiten.Any(x => VergleicheNamen.Ausfuehren(x.Trainingsbereich, name)),
-            Auswahlliste.Taetigkeit => data.Wartungen.Any(x => VergleicheNamen.Ausfuehren(x.Taetigkeit, name)),
+            using var command = c.CreateCommand();
+            command.Transaction = tx;
+            command.CommandText = "SELECT Id, Trainingsbereich FROM Trainingseinheit ORDER BY Id;";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                ct.ThrowIfCancellationRequested();
+                var value = reader.GetString(1);
+                if (VergleicheNamen.Ausfuehren(value, name)) rows.Add(new(reader.GetInt64(0), value, "Tour"));
+            }
+        }
+        else if (art == Textlistenart.Taetigkeit)
+        {
+            using var command = c.CreateCommand();
+            command.Transaction = tx;
+            command.CommandText = "SELECT Id, Taetigkeit, Typ FROM Wartung ORDER BY Id;";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                ct.ThrowIfCancellationRequested();
+                var value = reader.GetString(1);
+                var type = reader.GetString(2);
+                if (type != nameof(WartungsTyp.Wartung) && type != nameof(WartungsTyp.Alarm))
+                    throw Invalid("Wartungstyp in der Nutzungsvorschau ist ungültig.");
+                if (VergleicheNamen.Ausfuehren(value, name)) rows.Add(new(reader.GetInt64(0), value, type));
+            }
+        }
+        else throw Invalid();
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(new { Art = art, Name = name, Rows = rows });
+        var usageVersion = Convert.ToHexString(SHA256.HashData(bytes));
+        var tours = art == Textlistenart.Trainingsbereich ? rows.Count : 0;
+        var maint = art == Textlistenart.Taetigkeit ? rows.Count(x => x.Art == WartungsTyp.Wartung.ToString()) : 0;
+        var alarms = art == Textlistenart.Taetigkeit ? rows.Count(x => x.Art == WartungsTyp.Alarm.ToString()) : 0;
+        return new(tours, maint, alarms, usageVersion, rows.Select(row => row.Id).ToArray());
+    }
+
+    private static bool IstVerwendet(SqliteConnection c, SqliteTransaction tx, Auswahlliste list, string name, CancellationToken ct)
+    {
+        var art = list switch
+        {
+            Auswahlliste.Trainingsbereich => Textlistenart.Trainingsbereich,
+            Auswahlliste.Taetigkeit => Textlistenart.Taetigkeit,
             _ => throw Invalid()
         };
+        var usage = ErmittleVerwendung(c, tx, art, name, ct);
+        return usage.Touren + usage.Wartungen + usage.Alarme > 0;
     }
 
     private static string ValidateName(string? name)

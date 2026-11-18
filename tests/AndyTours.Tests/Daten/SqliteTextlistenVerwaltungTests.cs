@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using AndyTours.Application.Stammdaten;
 using AndyTours.Contracts.V1;
 using AndyTours.Core.Modell;
@@ -70,7 +71,8 @@ public sealed class SqliteTextlistenVerwaltungTests : IDisposable
             TrainingseinheitenTabelle.Einfuegen(db, new Trainingseinheit { AktivitaetId = _activity, EquipmentId = _equipment,
                 Datum = new DateOnly(2025, 1, 1), Name = "Fahrt", DistanzKm = 1, Trainingsbereich = "GA1" });
         var list = await _service.Laden(Textlistenart.Trainingsbereich);
-        await _service.Umbenennen(Textlistenart.Trainingsbereich, new(list.Version, "GA1", "ga1"));
+        var usage = await _service.NutzungLesen(Textlistenart.Trainingsbereich, list.Version, "GA1");
+        await _service.Umbenennen(Textlistenart.Trainingsbereich, new(list.Version, "GA1", "ga1", usage.VerwendungsVersion));
         using var verify = OeffneDatenbank.Ausfuehren(_database);
         Assert.Equal("ga1", Assert.Single(TrainingseinheitenTabelle.Laden(verify)).Trainingsbereich);
     }
@@ -84,10 +86,87 @@ public sealed class SqliteTextlistenVerwaltungTests : IDisposable
             WartungenTabelle.Einfuegen(db, new Wartung { Datum = new DateOnly(2020, 1, 1), EquipmentId = _equipment, Taetigkeit = "Kette", Typ = WartungsTyp.Alarm, AlarmKm = 500, Aktiv = true });
         }
         var list = await _service.Laden(Textlistenart.Taetigkeit);
-        var result = await _service.Umbenennen(Textlistenart.Taetigkeit, new(list.Version, "Kette", "Antrieb"));
+        var usage = await _service.NutzungLesen(Textlistenart.Taetigkeit, list.Version, "Kette");
+        Assert.Equal(1, usage.Wartungen);
+        Assert.Equal(1, usage.Alarme);
+        var result = await _service.Umbenennen(Textlistenart.Taetigkeit, new(list.Version, "Kette", "Antrieb", usage.VerwendungsVersion));
         using var verify = OeffneDatenbank.Ausfuehren(_database);
         Assert.All(WartungenTabelle.Laden(verify), w => Assert.Equal("Antrieb", w.Taetigkeit));
         Assert.Equal("Antrieb", Assert.Single(result.Eintraege));
+    }
+
+    [Fact]
+    public async Task UsagePreviewZaehltTourenUndReadOnlyMissingDatabaseBleibtFehlend()
+    {
+        var dbPath = Path.Combine(_directory, "missing.db");
+        var missingStore = new SqliteTextlistenVerwaltung(dbPath);
+        await Assert.ThrowsAsync<SqliteException>(() =>
+            missingStore.NutzungLesen(Textlistenart.Trainingsbereich, new string('0', 64), "GA1"));
+        Assert.False(File.Exists(dbPath));
+
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        {
+            TrainingseinheitenTabelle.Einfuegen(db, new Trainingseinheit { AktivitaetId = _activity, EquipmentId = _equipment,
+                Datum = new DateOnly(2025, 1, 1), Name = "A", DistanzKm = 1, Trainingsbereich = "GA1" });
+            TrainingseinheitenTabelle.Einfuegen(db, new Trainingseinheit { AktivitaetId = _activity, EquipmentId = _equipment,
+                Datum = new DateOnly(2025, 1, 2), Name = "B", DistanzKm = 1, Trainingsbereich = "ga1" });
+        }
+        var list = await _service.Laden(Textlistenart.Trainingsbereich);
+        var before = SHA256.HashData(File.ReadAllBytes(_database));
+        var usage = await _service.NutzungLesen(Textlistenart.Trainingsbereich, list.Version, "GA1");
+        var after = SHA256.HashData(File.ReadAllBytes(_database));
+        Assert.Equal(before, after);
+        Assert.Equal(2, usage.Touren);
+        Assert.Equal(0, usage.Wartungen);
+        Assert.Equal(0, usage.Alarme);
+    }
+
+    [Fact]
+    public async Task UnicodeCaseAndWhitespaceUsageRenamesOnlyCoreMatchedIds()
+    {
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        {
+            AuswahllisteEinstellung.Speichern(db, null, Auswahlliste.Trainingsbereich, ["Ä"]);
+            TrainingseinheitenTabelle.Einfuegen(db, new Trainingseinheit { AktivitaetId = _activity, EquipmentId = _equipment,
+                Datum = new DateOnly(2025, 1, 1), Name = "Matched", DistanzKm = 1, Trainingsbereich = "\u00A0Ä\u00A0" });
+            TrainingseinheitenTabelle.Einfuegen(db, new Trainingseinheit { AktivitaetId = _activity, EquipmentId = _equipment,
+                Datum = new DateOnly(2025, 1, 2), Name = "Unrelated", DistanzKm = 1, Trainingsbereich = "äx" });
+        }
+        var list = await _service.Laden(Textlistenart.Trainingsbereich);
+        var usage = await _service.NutzungLesen(Textlistenart.Trainingsbereich, list.Version, "Ä");
+        Assert.Equal(1, usage.Touren);
+        await _service.Umbenennen(Textlistenart.Trainingsbereich,
+            new(list.Version, "Ä", "Zone", usage.VerwendungsVersion));
+        using var verify = OeffneDatenbank.Ausfuehren(_database);
+        var units = TrainingseinheitenTabelle.Laden(verify);
+        Assert.Equal("Zone", units.Single(x => x.Name == "Matched").Trainingsbereich);
+        Assert.Equal("äx", units.Single(x => x.Name == "Unrelated").Trainingsbereich);
+    }
+
+    [Fact]
+    public async Task SameCountButDifferentAffectedRowInvalidatesRenameStamp()
+    {
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        {
+            AuswahllisteEinstellung.Speichern(db, null, Auswahlliste.Trainingsbereich, ["GA1"]);
+            TrainingseinheitenTabelle.Einfuegen(db, new Trainingseinheit { AktivitaetId = _activity, EquipmentId = _equipment,
+                Datum = new DateOnly(2025, 1, 1), Name = "A", DistanzKm = 1, Trainingsbereich = "GA1" });
+        }
+        var list = await _service.Laden(Textlistenart.Trainingsbereich);
+        var usage = await _service.NutzungLesen(Textlistenart.Trainingsbereich, list.Version, "GA1");
+        using (var db = OeffneDatenbank.Ausfuehren(_database))
+        using (var cmd = db.CreateCommand())
+        {
+            cmd.CommandText = "UPDATE Trainingseinheit SET Trainingsbereich = 'Anders' WHERE Id = (SELECT MIN(Id) FROM Trainingseinheit);";
+            cmd.ExecuteNonQuery();
+            TrainingseinheitenTabelle.Einfuegen(db, new Trainingseinheit { AktivitaetId = _activity, EquipmentId = _equipment,
+                Datum = new DateOnly(2025, 1, 2), Name = "B", DistanzKm = 1, Trainingsbereich = "GA1" });
+        }
+        var ex = await Assert.ThrowsAsync<StammdatenException>(() =>
+            _service.Umbenennen(Textlistenart.Trainingsbereich, new(list.Version, "GA1", "Zone", usage.VerwendungsVersion)));
+        Assert.Equal(StammdatenFehlerart.Konflikt, ex.Art);
+        using var verify = OeffneDatenbank.Ausfuehren(_database);
+        Assert.Equal("Anders", TrainingseinheitenTabelle.Laden(verify).Single(x => x.Name == "A").Trainingsbereich);
     }
 
     [Fact]

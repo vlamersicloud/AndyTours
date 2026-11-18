@@ -10,12 +10,54 @@ namespace AndyTours.Client;
 public sealed class TextlistenVerwaltungHttpClient(HttpClient http) : ITextlistenVerwaltung
 {
     private const string Root = "api/v1/textlisten/";
+    private static readonly JsonSerializerOptions UsageJson = CreateUsageJson();
+
+    private static JsonSerializerOptions CreateUsageJson()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            MaxDepth = 16,
+            RespectRequiredConstructorParameters = true,
+        };
+        return options;
+    }
 
     public async Task<TextlisteAntwort> Laden(Textlistenart art, CancellationToken ct = default)
     {
         using var response = await http.GetAsync(Path(art), HttpCompletionOption.ResponseHeadersRead, ct);
         await Check(response, ct);
         return await Read(response, ct);
+    }
+
+    public async Task<TextlistenNutzungAntwort> NutzungLesen(Textlistenart art, string listenVersion, string name, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        _ = Path(art);
+        if (!IsHash(listenVersion) || string.IsNullOrWhiteSpace(name) || name != name.Trim() ||
+            name.Length > 500 || name.Any(char.IsControl))
+            throw new ArgumentException("Die Nutzungsvorschau-Anfrage ist ungültig.");
+        var path = Path(art) + "/nutzung?version=" + Uri.EscapeDataString(listenVersion) + "&name=" + Uri.EscapeDataString(name);
+        using var response = await http.GetAsync(path, HttpCompletionOption.ResponseHeadersRead, ct);
+        ct.ThrowIfCancellationRequested();
+        CheckUsage(response);
+        TextlistenNutzungAntwort result;
+        try
+        {
+            result = await response.Content.ReadFromJsonAsync<TextlistenNutzungAntwort>(UsageJson, ct)
+                ?? throw new JsonException("Null usage response.");
+        }
+        catch (Exception e) when (e is JsonException or NotSupportedException or IOException)
+        {
+            throw new BackendApiException(response.StatusCode);
+        }
+        ct.ThrowIfCancellationRequested();
+        if (result.Art != art || result.ListenVersion != listenVersion || result.Name != name ||
+            !IsHash(result.ListenVersion) || !IsHash(result.VerwendungsVersion) ||
+            result.Touren < 0 || result.Wartungen < 0 || result.Alarme < 0 ||
+            (art == Textlistenart.Trainingsbereich && (result.Wartungen != 0 || result.Alarme != 0)) ||
+            (art == Textlistenart.Taetigkeit && result.Touren != 0))
+            throw new BackendApiException(response.StatusCode);
+        return result;
     }
 
     public Task<TextlisteAntwort> Anlegen(Textlistenart art, TextlisteneintragAnfrage anfrage, CancellationToken ct = default) =>
@@ -26,6 +68,20 @@ public sealed class TextlistenVerwaltungHttpClient(HttpClient http) : ITextliste
         Send(HttpMethod.Post, Path(art) + "/eintraege/loeschen", anfrage, ct);
     public Task<TextlisteAntwort> SetzeReihenfolge(Textlistenart art, TextlisteReihenfolgeAnfrage anfrage, CancellationToken ct = default) =>
         Send(HttpMethod.Put, Path(art) + "/reihenfolge", anfrage, ct);
+
+    private static bool IsHash(string? value) => value is { Length: 64 } && value.All(Uri.IsHexDigit);
+
+    private static void CheckUsage(HttpResponseMessage response)
+    {
+        if (response.IsSuccessStatusCode) return;
+        if (response.StatusCode == HttpStatusCode.BadRequest)
+            throw new StammdatenException(StammdatenFehlerart.Ungueltig, "Die Nutzungsvorschau-Anfrage ist ungültig.");
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            throw new StammdatenException(StammdatenFehlerart.NichtGefunden, "Der Listeneintrag wurde nicht gefunden.");
+        if (response.StatusCode == HttpStatusCode.Conflict)
+            throw new StammdatenException(StammdatenFehlerart.Konflikt, "Die Liste oder ihre Verwendung hat sich geändert. Bitte neu laden.");
+        throw new BackendApiException(response.StatusCode);
+    }
 
     private static string Path(Textlistenart art) => Root + art switch
     {

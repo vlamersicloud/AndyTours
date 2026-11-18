@@ -13,6 +13,9 @@ public static class TextlistenEndpunkte
         group.MapGet("", async (Textlistenart art, ITextlistenVerwaltung service, HttpContext context, CancellationToken ct) =>
             WithVersion(await service.Laden(art, ct), context))
             .Produces<TextlisteAntwort>().ProducesProblem(400).ProducesProblem(404);
+        group.MapGet("/nutzung", async (Textlistenart art, string version, string name, ITextlistenVerwaltung service, CancellationToken ct) =>
+            Results.Ok(await service.NutzungLesen(art, version, name, ct)))
+            .Produces<TextlistenNutzungAntwort>().ProducesProblem(400).ProducesProblem(404).ProducesProblem(409);
         group.MapPost("/eintraege", async (Textlistenart art, TextlisteneintragAnfrage request, ITextlistenVerwaltung service, HttpContext context, CancellationToken ct) =>
             WithVersion(await service.Anlegen(art, request, ct), context))
             .Produces<TextlisteAntwort>().ProducesProblem(400).ProducesProblem(404).ProducesProblem(409);
